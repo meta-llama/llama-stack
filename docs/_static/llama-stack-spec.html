@@ -62,11 +62,12 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "description": "",
+                "description": "Append rows to a dataset.",
                 "parameters": [
                     {
                         "name": "dataset_id",
                         "in": "path",
+                        "description": "The ID of the dataset to append the rows to.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -89,7 +90,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A BatchChatCompletionResponse with the full completions.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -114,7 +115,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "description": "",
+                "description": "Generate chat completions for a batch of messages using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -132,7 +133,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A BatchCompletionResponse with the full completions.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -157,7 +158,7 @@
                 "tags": [
                     "Inference"
                 ],
-                "description": "",
+                "description": "Generate completions for a batch of content using the specified model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -193,7 +194,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Cancel a training job.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -211,7 +212,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "If stream=False, returns a ChatCompletionResponse with the full completion. If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk",
+                        "description": "If stream=False, returns a ChatCompletionResponse with the full completion. If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -259,7 +260,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "If stream=False, returns a CompletionResponse with the full completion. If stream=True, returns an SSE event stream of CompletionResponseStreamChunk",
+                        "description": "If stream=False, returns a CompletionResponse with the full completion. If stream=True, returns an SSE event stream of CompletionResponseStreamChunk.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -453,7 +454,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "If stream=False, returns a Turn object. If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk",
+                        "description": "If stream=False, returns a Turn object. If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -520,7 +521,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Runtime representation of an annotated type.",
+                        "description": "An OpenAIResponseObject.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -568,7 +569,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListBucketResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -598,6 +599,7 @@
                     {
                         "name": "bucket",
                         "in": "query",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -608,7 +610,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A FileUploadResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -728,7 +730,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Session.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -835,7 +837,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A FileResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -865,7 +867,7 @@
                     {
                         "name": "bucket",
                         "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -874,7 +876,7 @@
                     {
                         "name": "key",
                         "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -908,7 +910,7 @@
                     {
                         "name": "bucket",
                         "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -917,7 +919,7 @@
                     {
                         "name": "key",
                         "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)",
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -930,7 +932,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}",
+                        "description": "An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -973,7 +975,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "EvaluateResponse object containing generations and scores",
+                        "description": "EvaluateResponse object containing generations and scores.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1157,7 +1159,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Benchmark.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1182,11 +1184,12 @@
                 "tags": [
                     "Benchmarks"
                 ],
-                "description": "",
+                "description": "Get a benchmark by its ID.",
                 "parameters": [
                     {
                         "name": "benchmark_id",
                         "in": "path",
+                        "description": "The ID of the benchmark to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1199,7 +1202,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Dataset.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1224,11 +1227,12 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "Get a dataset by its ID.",
                 "parameters": [
                     {
                         "name": "dataset_id",
                         "in": "path",
+                        "description": "The ID of the dataset to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1257,11 +1261,12 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "Unregister a dataset by its ID.",
                 "parameters": [
                     {
                         "name": "dataset_id",
                         "in": "path",
+                        "description": "The ID of the dataset to unregister.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1274,7 +1279,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Model.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1299,11 +1304,12 @@
                 "tags": [
                     "Models"
                 ],
-                "description": "",
+                "description": "Get a model by its identifier.",
                 "parameters": [
                     {
                         "name": "model_id",
                         "in": "path",
+                        "description": "The identifier of the model to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1332,11 +1338,12 @@
                 "tags": [
                     "Models"
                 ],
-                "description": "",
+                "description": "Unregister a model.",
                 "parameters": [
                     {
                         "name": "model_id",
                         "in": "path",
+                        "description": "The identifier of the model to unregister.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1392,7 +1399,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ScoringFn.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1417,11 +1424,12 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "description": "",
+                "description": "Get a scoring function by its ID.",
                 "parameters": [
                     {
                         "name": "scoring_fn_id",
                         "in": "path",
+                        "description": "The ID of the scoring function to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1434,7 +1442,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Shield.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1459,11 +1467,12 @@
                 "tags": [
                     "Shields"
                 ],
-                "description": "",
+                "description": "Get a shield by its identifier.",
                 "parameters": [
                     {
                         "name": "identifier",
                         "in": "path",
+                        "description": "The identifier of the shield to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1476,7 +1485,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Span.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1501,11 +1510,12 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Get a span by its ID.",
                 "parameters": [
                     {
                         "name": "trace_id",
                         "in": "path",
+                        "description": "The ID of the trace to get the span from.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1514,6 +1524,7 @@
                     {
                         "name": "span_id",
                         "in": "path",
+                        "description": "The ID of the span to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1526,7 +1537,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A QuerySpanTreeResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1551,11 +1562,12 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Get a span tree by its ID.",
                 "parameters": [
                     {
                         "name": "span_id",
                         "in": "path",
+                        "description": "The ID of the span to get the tree from.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1578,7 +1590,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Tool.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1603,11 +1615,12 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "",
+                "description": "Get a tool by its name.",
                 "parameters": [
                     {
                         "name": "tool_name",
                         "in": "path",
+                        "description": "The name of the tool to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1620,7 +1633,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ToolGroup.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1645,11 +1658,12 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "",
+                "description": "Get a tool group by its ID.",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
                         "in": "path",
+                        "description": "The ID of the tool group to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1678,11 +1692,12 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "Unregister a tool group",
+                "description": "Unregister a tool group.",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
                         "in": "path",
+                        "description": "The ID of the tool group to unregister.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1695,7 +1710,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Trace.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1720,11 +1735,12 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Get a trace by its ID.",
                 "parameters": [
                     {
                         "name": "trace_id",
                         "in": "path",
+                        "description": "The ID of the trace to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1737,7 +1753,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A PostTrainingJobArtifactsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1762,11 +1778,12 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Get the artifacts of a training job.",
                 "parameters": [
                     {
                         "name": "job_uuid",
                         "in": "query",
+                        "description": "The UUID of the job to get the artifacts of.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1779,7 +1796,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A PostTrainingJobStatusResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1804,11 +1821,12 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Get the status of a training job.",
                 "parameters": [
                     {
                         "name": "job_uuid",
                         "in": "query",
+                        "description": "The UUID of the job to get the status of.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1821,7 +1839,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListPostTrainingJobsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1846,7 +1864,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Get all training jobs.",
                 "parameters": []
             }
         },
@@ -1854,7 +1872,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A FileUploadResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1879,12 +1897,12 @@
                 "tags": [
                     "Files"
                 ],
-                "description": "Returns information about an existsing upload session",
+                "description": "Returns information about an existsing upload session.",
                 "parameters": [
                     {
                         "name": "upload_id",
                         "in": "path",
-                        "description": "ID of the upload session",
+                        "description": "ID of the upload session.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1895,7 +1913,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A FileResponse or None if the upload is not complete.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1932,7 +1950,7 @@
                     {
                         "name": "upload_id",
                         "in": "path",
-                        "description": "ID of the upload session",
+                        "description": "ID of the upload session.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1956,7 +1974,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A VectorDB.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1981,11 +1999,12 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "description": "",
+                "description": "Get a vector database by its identifier.",
                 "parameters": [
                     {
                         "name": "vector_db_id",
                         "in": "path",
+                        "description": "The identifier of the vector database to get.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2014,11 +2033,12 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "description": "",
+                "description": "Unregister a vector database.",
                 "parameters": [
                     {
                         "name": "vector_db_id",
                         "in": "path",
+                        "description": "The identifier of the vector database to unregister.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2031,7 +2051,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A HealthInfo.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2056,7 +2076,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "description": "",
+                "description": "Get the health of the service.",
                 "parameters": []
             }
         },
@@ -2118,7 +2138,7 @@
                 "tags": [
                     "VectorIO"
                 ],
-                "description": "",
+                "description": "Insert chunks into a vector database.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2136,7 +2156,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ProviderInfo object containing the provider's details.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2161,11 +2181,12 @@
                 "tags": [
                     "Providers"
                 ],
-                "description": "",
+                "description": "Get detailed information about a specific provider.",
                 "parameters": [
                     {
                         "name": "provider_id",
                         "in": "path",
+                        "description": "The ID of the provider to inspect.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2178,7 +2199,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ToolInvocationResult.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2203,7 +2224,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "description": "Run a tool with the given arguments",
+                "description": "Run a tool with the given arguments.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2221,7 +2242,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A PaginatedResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2246,7 +2267,7 @@
                 "tags": [
                     "DatasetIO"
                 ],
-                "description": "Get a paginated list of rows from a dataset.\nUses offset-based pagination where:\n- start_index: The starting index (0-based). If None, starts from beginning.\n- limit: Number of items to return. If None or -1, returns all items.\n\nThe response includes:\n- data: List of items for the current page\n- has_more: Whether there are more items available after this set",
+                "description": "Get a paginated list of rows from a dataset.\nUses offset-based pagination where:\n- start_index: The starting index (0-based). If None, starts from beginning.\n- limit: Number of items to return. If None or -1, returns all items.\n\nThe response includes:\n- data: List of items for the current page.\n- has_more: Whether there are more items available after this set.",
                 "parameters": [
                     {
                         "name": "dataset_id",
@@ -2282,7 +2303,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "The status of the evaluationjob.",
+                        "description": "The status of the evaluation job.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2490,7 +2511,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListBenchmarksResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2515,7 +2536,7 @@
                 "tags": [
                     "Benchmarks"
                 ],
-                "description": "",
+                "description": "List all benchmarks.",
                 "parameters": []
             },
             "post": {
@@ -2539,7 +2560,7 @@
                 "tags": [
                     "Benchmarks"
                 ],
-                "description": "",
+                "description": "Register a benchmark.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2557,7 +2578,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListDatasetsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2582,13 +2603,13 @@
                 "tags": [
                     "Datasets"
                 ],
-                "description": "",
+                "description": "List all datasets.",
                 "parameters": []
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Dataset.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2631,7 +2652,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListFileResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2661,7 +2682,7 @@
                     {
                         "name": "bucket",
                         "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-)",
+                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2674,7 +2695,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListModelsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2699,13 +2720,13 @@
                 "tags": [
                     "Models"
                 ],
-                "description": "",
+                "description": "List all models.",
                 "parameters": []
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Model.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2730,7 +2751,7 @@
                 "tags": [
                     "Models"
                 ],
-                "description": "",
+                "description": "Register a model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2748,7 +2769,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListProvidersResponse containing information about all providers.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2773,7 +2794,7 @@
                 "tags": [
                     "Providers"
                 ],
-                "description": "",
+                "description": "List all available providers.",
                 "parameters": []
             }
         },
@@ -2781,7 +2802,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListRoutesResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2806,7 +2827,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "description": "",
+                "description": "List all routes.",
                 "parameters": []
             }
         },
@@ -2814,7 +2835,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListToolDefsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2839,11 +2860,12 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "description": "",
+                "description": "List all tools in the runtime.",
                 "parameters": [
                     {
                         "name": "tool_group_id",
                         "in": "query",
+                        "description": "The ID of the tool group to list tools for.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2852,6 +2874,7 @@
                     {
                         "name": "mcp_endpoint",
                         "in": "query",
+                        "description": "The MCP endpoint to use for the tool group.",
                         "required": false,
                         "schema": {
                             "$ref": "#/components/schemas/URL"
@@ -2864,7 +2887,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListScoringFunctionsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2889,7 +2912,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "description": "",
+                "description": "List all scoring functions.",
                 "parameters": []
             },
             "post": {
@@ -2913,7 +2936,7 @@
                 "tags": [
                     "ScoringFunctions"
                 ],
-                "description": "",
+                "description": "Register a scoring function.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -2931,7 +2954,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListShieldsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2956,13 +2979,13 @@
                 "tags": [
                     "Shields"
                 ],
-                "description": "",
+                "description": "List all shields.",
                 "parameters": []
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A Shield.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -2987,7 +3010,7 @@
                 "tags": [
                     "Shields"
                 ],
-                "description": "",
+                "description": "Register a shield.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3005,7 +3028,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListToolGroupsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3030,7 +3053,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "List tool groups with optional provider",
+                "description": "List tool groups with optional provider.",
                 "parameters": []
             },
             "post": {
@@ -3054,7 +3077,7 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "Register a tool group",
+                "description": "Register a tool group.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3072,7 +3095,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListToolsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3097,11 +3120,12 @@
                 "tags": [
                     "ToolGroups"
                 ],
-                "description": "List tools with optional tool group",
+                "description": "List tools with optional tool group.",
                 "parameters": [
                     {
                         "name": "toolgroup_id",
                         "in": "query",
+                        "description": "The ID of the tool group to list tools for.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -3114,7 +3138,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ListVectorDBsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3139,13 +3163,13 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "description": "",
+                "description": "List all vector databases.",
                 "parameters": []
             },
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A VectorDB.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3170,7 +3194,7 @@
                 "tags": [
                     "VectorDBs"
                 ],
-                "description": "",
+                "description": "Register a vector database.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3206,7 +3230,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Log an event.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3224,7 +3248,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "Response from an OpenAI-compatible chat completion request. **OR** Chunk from a streaming response to an OpenAI-compatible chat completion request.",
+                        "description": "An OpenAIChatCompletion.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3274,7 +3298,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "An OpenAICompletion.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3317,7 +3341,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A OpenAIListModelsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3342,7 +3366,7 @@
                 "tags": [
                     "Models"
                 ],
-                "description": "",
+                "description": "List models using the OpenAI API.",
                 "parameters": []
             }
         },
@@ -3350,7 +3374,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A PostTrainingJob.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3375,7 +3399,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Run preference optimization of a model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3436,7 +3460,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A QueryChunksResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3461,7 +3485,7 @@
                 "tags": [
                     "VectorIO"
                 ],
-                "description": "",
+                "description": "Query chunks from a vector database.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3479,7 +3503,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A QueryMetricsResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3504,11 +3528,12 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Query metrics.",
                 "parameters": [
                     {
                         "name": "metric_name",
                         "in": "path",
+                        "description": "The name of the metric to query.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -3531,7 +3556,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A QuerySpansResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3556,7 +3581,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Query spans.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3574,7 +3599,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A QueryTracesResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3599,7 +3624,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Query traces.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3746,7 +3771,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A RunShieldResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3771,7 +3796,7 @@
                 "tags": [
                     "Safety"
                 ],
-                "description": "",
+                "description": "Run a shield.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3807,7 +3832,7 @@
                 "tags": [
                     "Telemetry"
                 ],
-                "description": "",
+                "description": "Save spans to a dataset.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3825,7 +3850,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "ScoreResponse object containing rows and aggregated results",
+                        "description": "A ScoreResponse object containing rows and aggregated results.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3868,7 +3893,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A ScoreBatchResponse.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3893,7 +3918,7 @@
                 "tags": [
                     "Scoring"
                 ],
-                "description": "",
+                "description": "Score a batch of rows.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3911,7 +3936,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A PostTrainingJob.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -3936,7 +3961,7 @@
                 "tags": [
                     "PostTraining (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Run supervised fine-tuning of a model.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -3997,7 +4022,7 @@
             "get": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "A VersionInfo.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4022,7 +4047,7 @@
                 "tags": [
                     "Inspect"
                 ],
-                "description": "",
+                "description": "Get the version of the service.",
                 "parameters": []
             }
         }
@@ -4088,7 +4113,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "The rows to append to the dataset."
                     }
                 },
                 "additionalProperties": false,
@@ -4795,7 +4821,8 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint."
                     },
                     "messages_batch": {
                         "type": "array",
@@ -4804,22 +4831,27 @@
                             "items": {
                                 "$ref": "#/components/schemas/Message"
                             }
-                        }
+                        },
+                        "description": "The messages to generate completions for."
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "(Optional) Parameters to control the sampling strategy."
                     },
                     "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
-                        }
+                        },
+                        "description": "(Optional) List of tool definitions available to the model."
                     },
                     "tool_config": {
-                        "$ref": "#/components/schemas/ToolConfig"
+                        "$ref": "#/components/schemas/ToolConfig",
+                        "description": "(Optional) Configuration for tool use."
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding."
                     },
                     "logprobs": {
                         "type": "object",
@@ -4831,7 +4863,7 @@
                             }
                         },
                         "additionalProperties": false,
-                        "title": "LogProbConfig"
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -4934,19 +4966,23 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint."
                     },
                     "content_batch": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/InterleavedContent"
-                        }
+                        },
+                        "description": "The content to generate completions for."
                     },
                     "sampling_params": {
-                        "$ref": "#/components/schemas/SamplingParams"
+                        "$ref": "#/components/schemas/SamplingParams",
+                        "description": "(Optional) Parameters to control the sampling strategy."
                     },
                     "response_format": {
-                        "$ref": "#/components/schemas/ResponseFormat"
+                        "$ref": "#/components/schemas/ResponseFormat",
+                        "description": "(Optional) Grammar specification for guided (structured) decoding."
                     },
                     "logprobs": {
                         "type": "object",
@@ -4958,7 +4994,7 @@
                             }
                         },
                         "additionalProperties": false,
-                        "title": "LogProbConfig"
+                        "description": "(Optional) If specified, log probabilities for each token position will be returned."
                     }
                 },
                 "additionalProperties": false,
@@ -5026,7 +5062,8 @@
                 "type": "object",
                 "properties": {
                     "job_uuid": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The UUID of the job to cancel."
                     }
                 },
                 "additionalProperties": false,
@@ -5047,18 +5084,18 @@
                         "items": {
                             "$ref": "#/components/schemas/Message"
                         },
-                        "description": "List of messages in the conversation"
+                        "description": "List of messages in the conversation."
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams",
-                        "description": "Parameters to control the sampling strategy"
+                        "description": "Parameters to control the sampling strategy."
                     },
                     "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDefinition"
                         },
-                        "description": "(Optional) List of tool definitions available to the model"
+                        "description": "(Optional) List of tool definitions available to the model."
                     },
                     "tool_choice": {
                         "type": "string",
@@ -5278,15 +5315,15 @@
                     },
                     "content": {
                         "$ref": "#/components/schemas/InterleavedContent",
-                        "description": "The content to generate a completion for"
+                        "description": "The content to generate a completion for."
                     },
                     "sampling_params": {
                         "$ref": "#/components/schemas/SamplingParams",
-                        "description": "(Optional) Parameters to control the sampling strategy"
+                        "description": "(Optional) Parameters to control the sampling strategy."
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/ResponseFormat",
-                        "description": "(Optional) Grammar specification for guided (structured) decoding"
+                        "description": "(Optional) Grammar specification for guided (structured) decoding."
                     },
                     "stream": {
                         "type": "boolean",
@@ -7065,19 +7102,19 @@
                 "properties": {
                     "bucket": {
                         "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
+                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)."
                     },
                     "key": {
                         "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
+                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)."
                     },
                     "mime_type": {
                         "type": "string",
-                        "description": "MIME type of the file"
+                        "description": "MIME type of the file."
                     },
                     "size": {
                         "type": "integer",
-                        "description": "File size in bytes"
+                        "description": "File size in bytes."
                     }
                 },
                 "additionalProperties": false,
@@ -8422,10 +8459,12 @@
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The attributes to return in the tree."
                     },
                     "max_depth": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The maximum depth of the tree."
                     }
                 },
                 "additionalProperties": false,
@@ -8977,7 +9016,8 @@
                 "type": "object",
                 "properties": {
                     "vector_db_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the vector database to insert the chunks into."
                     },
                     "chunks": {
                         "type": "array",
@@ -9019,10 +9059,12 @@
                                 "metadata"
                             ],
                             "title": "Chunk"
-                        }
+                        },
+                        "description": "The chunks to insert."
                     },
                     "ttl_seconds": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The time to live of the chunks."
                     }
                 },
                 "additionalProperties": false,
@@ -9109,7 +9151,8 @@
                 "type": "object",
                 "properties": {
                     "tool_name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The name of the tool to invoke."
                     },
                     "kwargs": {
                         "type": "object",
@@ -9134,7 +9177,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "A dictionary of arguments to pass to the tool."
                     }
                 },
                 "additionalProperties": false,
@@ -9797,10 +9841,12 @@
                 "type": "object",
                 "properties": {
                     "event": {
-                        "$ref": "#/components/schemas/Event"
+                        "$ref": "#/components/schemas/Event",
+                        "description": "The event to log."
                     },
                     "ttl_seconds": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The time to live of the event."
                     }
                 },
                 "additionalProperties": false,
@@ -10260,11 +10306,11 @@
                         "items": {
                             "$ref": "#/components/schemas/OpenAIMessageParam"
                         },
-                        "description": "List of messages in the conversation"
+                        "description": "List of messages in the conversation."
                     },
                     "frequency_penalty": {
                         "type": "number",
-                        "description": "(Optional) The penalty for repeated tokens"
+                        "description": "(Optional) The penalty for repeated tokens."
                     },
                     "function_call": {
                         "oneOf": [
@@ -10297,7 +10343,7 @@
                                 }
                             }
                         ],
-                        "description": "(Optional) The function call to use"
+                        "description": "(Optional) The function call to use."
                     },
                     "functions": {
                         "type": "array",
@@ -10326,46 +10372,46 @@
                                 ]
                             }
                         },
-                        "description": "(Optional) List of functions to use"
+                        "description": "(Optional) List of functions to use."
                     },
                     "logit_bias": {
                         "type": "object",
                         "additionalProperties": {
                             "type": "number"
                         },
-                        "description": "(Optional) The logit bias to use"
+                        "description": "(Optional) The logit bias to use."
                     },
                     "logprobs": {
                         "type": "boolean",
-                        "description": "(Optional) The log probabilities to use"
+                        "description": "(Optional) The log probabilities to use."
                     },
                     "max_completion_tokens": {
                         "type": "integer",
-                        "description": "(Optional) The maximum number of tokens to generate"
+                        "description": "(Optional) The maximum number of tokens to generate."
                     },
                     "max_tokens": {
                         "type": "integer",
-                        "description": "(Optional) The maximum number of tokens to generate"
+                        "description": "(Optional) The maximum number of tokens to generate."
                     },
                     "n": {
                         "type": "integer",
-                        "description": "(Optional) The number of completions to generate"
+                        "description": "(Optional) The number of completions to generate."
                     },
                     "parallel_tool_calls": {
                         "type": "boolean",
-                        "description": "(Optional) Whether to parallelize tool calls"
+                        "description": "(Optional) Whether to parallelize tool calls."
                     },
                     "presence_penalty": {
                         "type": "number",
-                        "description": "(Optional) The penalty for repeated tokens"
+                        "description": "(Optional) The penalty for repeated tokens."
                     },
                     "response_format": {
                         "$ref": "#/components/schemas/OpenAIResponseFormatParam",
-                        "description": "(Optional) The response format to use"
+                        "description": "(Optional) The response format to use."
                     },
                     "seed": {
                         "type": "integer",
-                        "description": "(Optional) The seed to use"
+                        "description": "(Optional) The seed to use."
                     },
                     "stop": {
                         "oneOf": [
@@ -10379,11 +10425,11 @@
                                 }
                             }
                         ],
-                        "description": "(Optional) The stop tokens to use"
+                        "description": "(Optional) The stop tokens to use."
                     },
                     "stream": {
                         "type": "boolean",
-                        "description": "(Optional) Whether to stream the response"
+                        "description": "(Optional) Whether to stream the response."
                     },
                     "stream_options": {
                         "type": "object",
@@ -10409,11 +10455,11 @@
                                 }
                             ]
                         },
-                        "description": "(Optional) The stream options to use"
+                        "description": "(Optional) The stream options to use."
                     },
                     "temperature": {
                         "type": "number",
-                        "description": "(Optional) The temperature to use"
+                        "description": "(Optional) The temperature to use."
                     },
                     "tool_choice": {
                         "oneOf": [
@@ -10446,7 +10492,7 @@
                                 }
                             }
                         ],
-                        "description": "(Optional) The tool choice to use"
+                        "description": "(Optional) The tool choice to use."
                     },
                     "tools": {
                         "type": "array",
@@ -10475,19 +10521,19 @@
                                 ]
                             }
                         },
-                        "description": "(Optional) The tools to use"
+                        "description": "(Optional) The tools to use."
                     },
                     "top_logprobs": {
                         "type": "integer",
-                        "description": "(Optional) The top log probabilities to use"
+                        "description": "(Optional) The top log probabilities to use."
                     },
                     "top_p": {
                         "type": "number",
-                        "description": "(Optional) The top p to use"
+                        "description": "(Optional) The top p to use."
                     },
                     "user": {
                         "type": "string",
-                        "description": "(Optional) The user to use"
+                        "description": "(Optional) The user to use."
                     }
                 },
                 "additionalProperties": false,
@@ -10773,46 +10819,46 @@
                                 }
                             }
                         ],
-                        "description": "The prompt to generate a completion for"
+                        "description": "The prompt to generate a completion for."
                     },
                     "best_of": {
                         "type": "integer",
-                        "description": "(Optional) The number of completions to generate"
+                        "description": "(Optional) The number of completions to generate."
                     },
                     "echo": {
                         "type": "boolean",
-                        "description": "(Optional) Whether to echo the prompt"
+                        "description": "(Optional) Whether to echo the prompt."
                     },
                     "frequency_penalty": {
                         "type": "number",
-                        "description": "(Optional) The penalty for repeated tokens"
+                        "description": "(Optional) The penalty for repeated tokens."
                     },
                     "logit_bias": {
                         "type": "object",
                         "additionalProperties": {
                             "type": "number"
                         },
-                        "description": "(Optional) The logit bias to use"
+                        "description": "(Optional) The logit bias to use."
                     },
                     "logprobs": {
                         "type": "boolean",
-                        "description": "(Optional) The log probabilities to use"
+                        "description": "(Optional) The log probabilities to use."
                     },
                     "max_tokens": {
                         "type": "integer",
-                        "description": "(Optional) The maximum number of tokens to generate"
+                        "description": "(Optional) The maximum number of tokens to generate."
                     },
                     "n": {
                         "type": "integer",
-                        "description": "(Optional) The number of completions to generate"
+                        "description": "(Optional) The number of completions to generate."
                     },
                     "presence_penalty": {
                         "type": "number",
-                        "description": "(Optional) The penalty for repeated tokens"
+                        "description": "(Optional) The penalty for repeated tokens."
                     },
                     "seed": {
                         "type": "integer",
-                        "description": "(Optional) The seed to use"
+                        "description": "(Optional) The seed to use."
                     },
                     "stop": {
                         "oneOf": [
@@ -10826,11 +10872,11 @@
                                 }
                             }
                         ],
-                        "description": "(Optional) The stop tokens to use"
+                        "description": "(Optional) The stop tokens to use."
                     },
                     "stream": {
                         "type": "boolean",
-                        "description": "(Optional) Whether to stream the response"
+                        "description": "(Optional) Whether to stream the response."
                     },
                     "stream_options": {
                         "type": "object",
@@ -10856,19 +10902,19 @@
                                 }
                             ]
                         },
-                        "description": "(Optional) The stream options to use"
+                        "description": "(Optional) The stream options to use."
                     },
                     "temperature": {
                         "type": "number",
-                        "description": "(Optional) The temperature to use"
+                        "description": "(Optional) The temperature to use."
                     },
                     "top_p": {
                         "type": "number",
-                        "description": "(Optional) The top p to use"
+                        "description": "(Optional) The top p to use."
                     },
                     "user": {
                         "type": "string",
-                        "description": "(Optional) The user to use"
+                        "description": "(Optional) The user to use."
                     },
                     "guided_choice": {
                         "type": "array",
@@ -11161,16 +11207,20 @@
                 "type": "object",
                 "properties": {
                     "job_uuid": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The UUID of the job to create."
                     },
                     "finetuned_model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The model to fine-tune."
                     },
                     "algorithm_config": {
-                        "$ref": "#/components/schemas/DPOAlignmentConfig"
+                        "$ref": "#/components/schemas/DPOAlignmentConfig",
+                        "description": "The algorithm configuration."
                     },
                     "training_config": {
-                        "$ref": "#/components/schemas/TrainingConfig"
+                        "$ref": "#/components/schemas/TrainingConfig",
+                        "description": "The training configuration."
                     },
                     "hyperparam_search_config": {
                         "type": "object",
@@ -11195,7 +11245,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The hyperparam search configuration."
                     },
                     "logger_config": {
                         "type": "object",
@@ -11220,7 +11271,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The logger configuration."
                     }
                 },
                 "additionalProperties": false,
@@ -11405,10 +11457,12 @@
                 "type": "object",
                 "properties": {
                     "vector_db_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the vector database to query."
                     },
                     "query": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The query to search for."
                     },
                     "params": {
                         "type": "object",
@@ -11433,7 +11487,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The parameters of the query."
                     }
                 },
                 "additionalProperties": false,
@@ -11506,13 +11561,16 @@
                 "type": "object",
                 "properties": {
                     "start_time": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The start time of the metric to query."
                     },
                     "end_time": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The end time of the metric to query."
                     },
                     "granularity": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The granularity of the metric to query."
                     },
                     "query_type": {
                         "type": "string",
@@ -11520,7 +11578,7 @@
                             "range",
                             "instant"
                         ],
-                        "title": "MetricQueryType"
+                        "description": "The type of query to perform."
                     },
                     "label_matchers": {
                         "type": "array",
@@ -11552,7 +11610,8 @@
                                 "operator"
                             ],
                             "title": "MetricLabelMatcher"
-                        }
+                        },
+                        "description": "The label matchers to apply to the metric."
                     }
                 },
                 "additionalProperties": false,
@@ -11696,16 +11755,19 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/QueryCondition"
-                        }
+                        },
+                        "description": "The attribute filters to apply to the spans."
                     },
                     "attributes_to_return": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The attributes to return in the spans."
                     },
                     "max_depth": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The maximum depth of the tree."
                     }
                 },
                 "additionalProperties": false,
@@ -11738,19 +11800,23 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/QueryCondition"
-                        }
+                        },
+                        "description": "The attribute filters to apply to the traces."
                     },
                     "limit": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The limit of traces to return."
                     },
                     "offset": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The offset of the traces to return."
                     },
                     "order_by": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The order by of the traces to return."
                     }
                 },
                 "additionalProperties": false,
@@ -11776,22 +11842,27 @@
                 "type": "object",
                 "properties": {
                     "benchmark_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the benchmark to register."
                     },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the dataset to use for the benchmark."
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The scoring functions to use for the benchmark."
                     },
                     "provider_benchmark_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the provider benchmark to use for the benchmark."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the provider to use for the benchmark."
                     },
                     "metadata": {
                         "type": "object",
@@ -11816,7 +11887,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The metadata to use for the benchmark."
                     }
                 },
                 "additionalProperties": false,
@@ -11837,7 +11909,7 @@
                             "eval/question-answer",
                             "eval/messages-answer"
                         ],
-                        "description": "The purpose of the dataset. One of - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. { \"question\": \"What is the capital of France?\", \"answer\": \"Paris\" } - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, my name is John Doe.\"}, {\"role\": \"assistant\", \"content\": \"Hello, John Doe. How can I help you today?\"}, {\"role\": \"user\", \"content\": \"What's my name?\"}, ], \"answer\": \"John Doe\" }"
+                        "description": "The purpose of the dataset. One of: - \"post-training/messages\": The dataset contains a messages column with list of messages for post-training. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, world!\"}, {\"role\": \"assistant\", \"content\": \"Hello, world!\"}, ] } - \"eval/question-answer\": The dataset contains a question column and an answer column for evaluation. { \"question\": \"What is the capital of France?\", \"answer\": \"Paris\" } - \"eval/messages-answer\": The dataset contains a messages column with list of messages and an answer column for evaluation. { \"messages\": [ {\"role\": \"user\", \"content\": \"Hello, my name is John Doe.\"}, {\"role\": \"assistant\", \"content\": \"Hello, John Doe. How can I help you today?\"}, {\"role\": \"user\", \"content\": \"What's my name?\"}, ], \"answer\": \"John Doe\" }"
                     },
                     "source": {
                         "$ref": "#/components/schemas/DataSource",
@@ -11867,7 +11939,7 @@
                                 }
                             ]
                         },
-                        "description": "The metadata for the dataset. - E.g. {\"description\": \"My dataset\"}"
+                        "description": "The metadata for the dataset. - E.g. {\"description\": \"My dataset\"}."
                     },
                     "dataset_id": {
                         "type": "string",
@@ -11885,13 +11957,16 @@
                 "type": "object",
                 "properties": {
                     "model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model to register."
                     },
                     "provider_model_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the model in the provider."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the provider."
                     },
                     "metadata": {
                         "type": "object",
@@ -11916,10 +11991,12 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Any additional metadata for this model."
                     },
                     "model_type": {
-                        "$ref": "#/components/schemas/ModelType"
+                        "$ref": "#/components/schemas/ModelType",
+                        "description": "The type of model to register."
                     }
                 },
                 "additionalProperties": false,
@@ -11932,22 +12009,28 @@
                 "type": "object",
                 "properties": {
                     "scoring_fn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the scoring function to register."
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The description of the scoring function."
                     },
                     "return_type": {
-                        "$ref": "#/components/schemas/ParamType"
+                        "$ref": "#/components/schemas/ParamType",
+                        "description": "The return type of the scoring function."
                     },
                     "provider_scoring_fn_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the provider scoring function to use for the scoring function."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the provider to use for the scoring function."
                     },
                     "params": {
-                        "$ref": "#/components/schemas/ScoringFnParams"
+                        "$ref": "#/components/schemas/ScoringFnParams",
+                        "description": "The parameters for the scoring function for benchmark eval, these can be overridden for app eval."
                     }
                 },
                 "additionalProperties": false,
@@ -11962,13 +12045,16 @@
                 "type": "object",
                 "properties": {
                     "shield_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the shield to register."
                     },
                     "provider_shield_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the shield in the provider."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the provider."
                     },
                     "params": {
                         "type": "object",
@@ -11993,7 +12079,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The parameters of the shield."
                     }
                 },
                 "additionalProperties": false,
@@ -12006,13 +12093,16 @@
                 "type": "object",
                 "properties": {
                     "toolgroup_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the tool group to register."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the provider to use for the tool group."
                     },
                     "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                        "$ref": "#/components/schemas/URL",
+                        "description": "The MCP endpoint to use for the tool group."
                     },
                     "args": {
                         "type": "object",
@@ -12037,7 +12127,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "A dictionary of arguments to pass to the tool group."
                     }
                 },
                 "additionalProperties": false,
@@ -12051,19 +12142,24 @@
                 "type": "object",
                 "properties": {
                     "vector_db_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the vector database to register."
                     },
                     "embedding_model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The embedding model to use."
                     },
                     "embedding_dimension": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The dimension of the embedding model."
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the provider."
                     },
                     "provider_vector_db_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the vector database in the provider."
                     }
                 },
                 "additionalProperties": false,
@@ -12112,13 +12208,15 @@
                 "type": "object",
                 "properties": {
                     "shield_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The identifier of the shield to run."
                     },
                     "messages": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Message"
-                        }
+                        },
+                        "description": "The messages to run the shield on."
                     },
                     "params": {
                         "type": "object",
@@ -12143,7 +12241,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The parameters of the shield."
                     }
                 },
                 "additionalProperties": false,
@@ -12171,19 +12270,23 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/QueryCondition"
-                        }
+                        },
+                        "description": "The attribute filters to apply to the spans."
                     },
                     "attributes_to_save": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "The attributes to save to the dataset."
                     },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the dataset to save the spans to."
                     },
                     "max_depth": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "The maximum depth of the tree."
                     }
                 },
                 "additionalProperties": false,
@@ -12270,7 +12373,8 @@
                 "type": "object",
                 "properties": {
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The ID of the dataset to score."
                     },
                     "scoring_functions": {
                         "type": "object",
@@ -12283,10 +12387,12 @@
                                     "type": "null"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The scoring functions to use for the scoring."
                     },
                     "save_results_dataset": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "Whether to save the results to a dataset."
                     }
                 },
                 "additionalProperties": false,
@@ -12406,10 +12512,12 @@
                 "type": "object",
                 "properties": {
                     "job_uuid": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The UUID of the job to create."
                     },
                     "training_config": {
-                        "$ref": "#/components/schemas/TrainingConfig"
+                        "$ref": "#/components/schemas/TrainingConfig",
+                        "description": "The training configuration."
                     },
                     "hyperparam_search_config": {
                         "type": "object",
@@ -12434,7 +12542,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The hyperparam search configuration."
                     },
                     "logger_config": {
                         "type": "object",
@@ -12459,16 +12568,20 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "The logger configuration."
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The model to fine-tune."
                     },
                     "checkpoint_dir": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The directory to save checkpoint(s) to."
                     },
                     "algorithm_config": {
-                        "$ref": "#/components/schemas/AlgorithmConfig"
+                        "$ref": "#/components/schemas/AlgorithmConfig",
+                        "description": "The algorithm configuration."
                     }
                 },
                 "additionalProperties": false,

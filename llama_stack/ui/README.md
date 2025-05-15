@@ -5,13 +5,13 @@ We use shadcdn/ui [Shadcn UI](https://ui.shadcn.com/) for the UI components.
 
 ## Getting Started
 
-## Install the NPM dependencies
+First, install dependencies:
 
 ```bash
-npm install
+npm install next react react-dom
 ```
 
-Run the development server:
+Then, run the development server:
 
 ```bash
 npm run dev

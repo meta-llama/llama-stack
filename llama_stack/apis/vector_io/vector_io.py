@@ -46,7 +46,14 @@ class VectorIO(Protocol):
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
-    ) -> None: ...
+    ) -> None:
+        """Insert chunks into a vector database.
+
+        :param vector_db_id: The identifier of the vector database to insert the chunks into.
+        :param chunks: The chunks to insert.
+        :param ttl_seconds: The time to live of the chunks.
+        """
+        ...
 
     @webmethod(route="/vector-io/query", method="POST")
     async def query_chunks(
@@ -54,4 +61,12 @@ class VectorIO(Protocol):
         vector_db_id: str,
         query: InterleavedContent,
         params: dict[str, Any] | None = None,
-    ) -> QueryChunksResponse: ...
+    ) -> QueryChunksResponse:
+        """Query chunks from a vector database.
+
+        :param vector_db_id: The identifier of the vector database to query.
+        :param query: The query to search for.
+        :param params: The parameters of the query.
+        :returns: A QueryChunksResponse.
+        """
+        ...

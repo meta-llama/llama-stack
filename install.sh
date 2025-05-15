@@ -38,6 +38,67 @@ wait_for_service() {
   return 0
 }
 
+usage() {
+    cat << EOF
+📚 Llama-Stack Deployment Script
+
+Description:
+    This script sets up and deploys Llama-Stack with Ollama integration in containers.
+    It handles both Docker and Podman runtimes and includes automatic platform detection.
+
+Usage:
+    $(basename "$0") [OPTIONS]
+
+Options:
+    -p, --port PORT            Server port for Llama-Stack (default: ${PORT})
+    -o, --ollama-port PORT     Ollama service port (default: ${OLLAMA_PORT})
+    -m, --model MODEL          Model alias to use (default: ${MODEL_ALIAS})
+    -i, --image IMAGE          Server image (default: ${SERVER_IMAGE})
+    -t, --timeout SECONDS      Service wait timeout in seconds (default: ${WAIT_TIMEOUT})
+    -h, --help                 Show this help message
+
+For more information:
+    Documentation: https://llama-stack.readthedocs.io/
+    GitHub: https://github.com/meta-llama/llama-stack
+
+Report issues:
+    https://github.com/meta-llama/llama-stack/issues
+EOF
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -p|--port)
+            PORT="$2"
+            shift 2
+            ;;
+        -o|--ollama-port)
+            OLLAMA_PORT="$2"
+            shift 2
+            ;;
+        -m|--model)
+            MODEL_ALIAS="$2"
+            shift 2
+            ;;
+        -i|--image)
+            SERVER_IMAGE="$2"
+            shift 2
+            ;;
+        -t|--timeout)
+            WAIT_TIMEOUT="$2"
+            shift 2
+            ;;
+        *)
+            die "Unknown option: $1"
+            ;;
+    esac
+done
+
 if command -v docker &> /dev/null; then
   ENGINE="docker"
 elif command -v podman &> /dev/null; then

@@ -179,6 +179,35 @@ def _validate_has_ellipsis(method) -> str | None:
     if "..." not in source and not "NotImplementedError" in source:
         return "does not contain ellipsis (...) in its implementation"
 
+def _validate_has_return_in_docstring(method) -> str | None:
+    source = inspect.getsource(method)
+    return_type = method.__annotations__.get('return')
+    if return_type is not None and return_type != type(None) and ":returns:" not in source:
+        return "does not have a ':returns:' in its docstring"
+
+def _validate_has_params_in_docstring(method) -> str | None:
+    source = inspect.getsource(method)
+    sig = inspect.signature(method)
+    # Only check if the method has more than one parameter
+    if len(sig.parameters) > 1 and ":param" not in source:
+        return "does not have a ':param' in its docstring"
+
+def _validate_has_no_return_none_in_docstring(method) -> str | None:
+    source = inspect.getsource(method)
+    return_type = method.__annotations__.get('return')
+    if return_type is None and ":returns: None" in source:
+        return "has a ':returns: None' in its docstring which is redundant for None-returning functions"
+
+def _validate_docstring_lines_end_with_dot(method) -> str | None:
+    docstring = inspect.getdoc(method)
+    if docstring is None:
+        return None
+
+    lines = docstring.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line and not any(line.endswith(char) for char in '.:{}[]()",'):
+            return f"docstring line '{line}' does not end with a valid character: . : {{ }} [ ] ( ) , \""
 
 _VALIDATORS = {
     "GET": [
@@ -186,13 +215,23 @@ _VALIDATORS = {
         _validate_list_parameters_contain_data,
         _validate_api_method_doesnt_return_list,
         _validate_has_ellipsis,
+        _validate_has_return_in_docstring,
+        _validate_has_params_in_docstring,
+        _validate_docstring_lines_end_with_dot,
     ],
     "DELETE": [
         _validate_api_delete_method_returns_none,
         _validate_has_ellipsis,
+        _validate_has_return_in_docstring,
+        _validate_has_params_in_docstring,
+        _validate_has_no_return_none_in_docstring
     ],
     "POST": [
         _validate_has_ellipsis,
+        _validate_has_return_in_docstring,
+        _validate_has_params_in_docstring,
+        _validate_has_no_return_none_in_docstring,
+        _validate_docstring_lines_end_with_dot,
     ],
 }
 

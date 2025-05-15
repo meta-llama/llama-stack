@@ -32,7 +32,18 @@ class Providers(Protocol):
     """
 
     @webmethod(route="/providers", method="GET")
-    async def list_providers(self) -> ListProvidersResponse: ...
+    async def list_providers(self) -> ListProvidersResponse:
+        """List all available providers.
+
+        :returns: A ListProvidersResponse containing information about all providers.
+        """
+        ...
 
     @webmethod(route="/providers/{provider_id}", method="GET")
-    async def inspect_provider(self, provider_id: str) -> ProviderInfo: ...
+    async def inspect_provider(self, provider_id: str) -> ProviderInfo:
+        """Get detailed information about a specific provider.
+
+        :param provider_id: The ID of the provider to inspect.
+        :returns: A ProviderInfo object containing the provider's details.
+        """
+        ...

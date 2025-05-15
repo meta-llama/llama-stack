@@ -46,6 +46,7 @@ from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOC
 from llama_stack.providers.remote.vector_io.pgvector.config import (
     PGVectorVectorIOConfig,
 )
+from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
@@ -53,7 +54,7 @@ from llama_stack.templates.template import (
 )
 
 
-def get_inference_providers() -> tuple[list[Provider], list[ModelInput]]:
+def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderModelEntry]]]:
     # in this template, we allow each API key to be optional
     providers = [
         (
@@ -119,7 +120,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
         ],
     }
-    name = "dev"
+    name = "starter"
 
     vector_io_providers = [
         Provider(
@@ -171,7 +172,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Distribution for running e2e tests in CI",
+        description="Quick start template for running Llama Stack with several popular providers",
         container_image=None,
         template_path=None,
         providers=providers,

@@ -845,13 +845,13 @@ class Inference(Protocol):
         """Generate a completion for the given content using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
-        :param content: The content to generate a completion for
-        :param sampling_params: (Optional) Parameters to control the sampling strategy
-        :param response_format: (Optional) Grammar specification for guided (structured) decoding
+        :param content: The content to generate a completion for.
+        :param sampling_params: (Optional) Parameters to control the sampling strategy.
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding.
         :param stream: (Optional) If True, generate an SSE event stream of the response. Defaults to False.
         :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
         :returns: If stream=False, returns a CompletionResponse with the full completion.
-                 If stream=True, returns an SSE event stream of CompletionResponseStreamChunk
+                 If stream=True, returns an SSE event stream of CompletionResponseStreamChunk.
         """
         ...
 
@@ -864,6 +864,15 @@ class Inference(Protocol):
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
     ) -> BatchCompletionResponse:
+        """Generate completions for a batch of content using the specified model.
+
+        :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
+        :param content_batch: The content to generate completions for.
+        :param sampling_params: (Optional) Parameters to control the sampling strategy.
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding.
+        :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
+        :returns: A BatchCompletionResponse with the full completions.
+        """
         raise NotImplementedError("Batch completion is not implemented")
 
     @webmethod(route="/inference/chat-completion", method="POST")
@@ -883,9 +892,9 @@ class Inference(Protocol):
         """Generate a chat completion for the given messages using the specified model.
 
         :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
-        :param messages: List of messages in the conversation
-        :param sampling_params: Parameters to control the sampling strategy
-        :param tools: (Optional) List of tool definitions available to the model
+        :param messages: List of messages in the conversation.
+        :param sampling_params: Parameters to control the sampling strategy.
+        :param tools: (Optional) List of tool definitions available to the model.
         :param tool_choice: (Optional) Whether tool use is required or automatic. Defaults to ToolChoice.auto.
             .. deprecated::
                Use tool_config instead.
@@ -902,7 +911,7 @@ class Inference(Protocol):
         :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
         :param tool_config: (Optional) Configuration for tool use.
         :returns: If stream=False, returns a ChatCompletionResponse with the full completion.
-                 If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk
+                 If stream=True, returns an SSE event stream of ChatCompletionResponseStreamChunk.
         """
         ...
 
@@ -917,6 +926,17 @@ class Inference(Protocol):
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
     ) -> BatchChatCompletionResponse:
+        """Generate chat completions for a batch of messages using the specified model.
+
+        :param model_id: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
+        :param messages_batch: The messages to generate completions for.
+        :param sampling_params: (Optional) Parameters to control the sampling strategy.
+        :param tools: (Optional) List of tool definitions available to the model.
+        :param tool_config: (Optional) Configuration for tool use.
+        :param response_format: (Optional) Grammar specification for guided (structured) decoding.
+        :param logprobs: (Optional) If specified, log probabilities for each token position will be returned.
+        :returns: A BatchChatCompletionResponse with the full completions.
+        """
         raise NotImplementedError("Batch chat completion is not implemented")
 
     @webmethod(route="/inference/embeddings", method="POST")
@@ -935,7 +955,7 @@ class Inference(Protocol):
         :param output_dimension: (Optional) Output dimensionality for the embeddings. Only supported by Matryoshka models.
         :param text_truncation: (Optional) Config for how to truncate text for embedding when text is longer than the model's max sequence length.
         :param task_type: (Optional) How is the embedding being used? This is only supported by asymmetric embedding models.
-        :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}
+        :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}.
         """
         ...
 
@@ -967,22 +987,23 @@ class Inference(Protocol):
         """Generate an OpenAI-compatible completion for the given prompt using the specified model.
 
         :param model: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
-        :param prompt: The prompt to generate a completion for
-        :param best_of: (Optional) The number of completions to generate
-        :param echo: (Optional) Whether to echo the prompt
-        :param frequency_penalty: (Optional) The penalty for repeated tokens
-        :param logit_bias: (Optional) The logit bias to use
-        :param logprobs: (Optional) The log probabilities to use
-        :param max_tokens: (Optional) The maximum number of tokens to generate
-        :param n: (Optional) The number of completions to generate
-        :param presence_penalty: (Optional) The penalty for repeated tokens
-        :param seed: (Optional) The seed to use
-        :param stop: (Optional) The stop tokens to use
-        :param stream: (Optional) Whether to stream the response
-        :param stream_options: (Optional) The stream options to use
-        :param temperature: (Optional) The temperature to use
-        :param top_p: (Optional) The top p to use
-        :param user: (Optional) The user to use
+        :param prompt: The prompt to generate a completion for.
+        :param best_of: (Optional) The number of completions to generate.
+        :param echo: (Optional) Whether to echo the prompt.
+        :param frequency_penalty: (Optional) The penalty for repeated tokens.
+        :param logit_bias: (Optional) The logit bias to use.
+        :param logprobs: (Optional) The log probabilities to use.
+        :param max_tokens: (Optional) The maximum number of tokens to generate.
+        :param n: (Optional) The number of completions to generate.
+        :param presence_penalty: (Optional) The penalty for repeated tokens.
+        :param seed: (Optional) The seed to use.
+        :param stop: (Optional) The stop tokens to use.
+        :param stream: (Optional) Whether to stream the response.
+        :param stream_options: (Optional) The stream options to use.
+        :param temperature: (Optional) The temperature to use.
+        :param top_p: (Optional) The top p to use.
+        :param user: (Optional) The user to use.
+        :returns: An OpenAICompletion.
         """
         ...
 
@@ -1016,27 +1037,28 @@ class Inference(Protocol):
         """Generate an OpenAI-compatible chat completion for the given messages using the specified model.
 
         :param model: The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint.
-        :param messages: List of messages in the conversation
-        :param frequency_penalty: (Optional) The penalty for repeated tokens
-        :param function_call: (Optional) The function call to use
-        :param functions: (Optional) List of functions to use
-        :param logit_bias: (Optional) The logit bias to use
-        :param logprobs: (Optional) The log probabilities to use
-        :param max_completion_tokens: (Optional) The maximum number of tokens to generate
-        :param max_tokens: (Optional) The maximum number of tokens to generate
-        :param n: (Optional) The number of completions to generate
-        :param parallel_tool_calls: (Optional) Whether to parallelize tool calls
-        :param presence_penalty: (Optional) The penalty for repeated tokens
-        :param response_format: (Optional) The response format to use
-        :param seed: (Optional) The seed to use
-        :param stop: (Optional) The stop tokens to use
-        :param stream: (Optional) Whether to stream the response
-        :param stream_options: (Optional) The stream options to use
-        :param temperature: (Optional) The temperature to use
-        :param tool_choice: (Optional) The tool choice to use
-        :param tools: (Optional) The tools to use
-        :param top_logprobs: (Optional) The top log probabilities to use
-        :param top_p: (Optional) The top p to use
-        :param user: (Optional) The user to use
+        :param messages: List of messages in the conversation.
+        :param frequency_penalty: (Optional) The penalty for repeated tokens.
+        :param function_call: (Optional) The function call to use.
+        :param functions: (Optional) List of functions to use.
+        :param logit_bias: (Optional) The logit bias to use.
+        :param logprobs: (Optional) The log probabilities to use.
+        :param max_completion_tokens: (Optional) The maximum number of tokens to generate.
+        :param max_tokens: (Optional) The maximum number of tokens to generate.
+        :param n: (Optional) The number of completions to generate.
+        :param parallel_tool_calls: (Optional) Whether to parallelize tool calls.
+        :param presence_penalty: (Optional) The penalty for repeated tokens.
+        :param response_format: (Optional) The response format to use.
+        :param seed: (Optional) The seed to use.
+        :param stop: (Optional) The stop tokens to use.
+        :param stream: (Optional) Whether to stream the response.
+        :param stream_options: (Optional) The stream options to use.
+        :param temperature: (Optional) The temperature to use.
+        :param tool_choice: (Optional) The tool choice to use.
+        :param tools: (Optional) The tools to use.
+        :param top_logprobs: (Optional) The top log probabilities to use.
+        :param top_p: (Optional) The top p to use.
+        :param user: (Optional) The user to use.
+        :returns: An OpenAIChatCompletion.
         """
         ...

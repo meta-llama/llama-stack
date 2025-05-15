@@ -54,4 +54,12 @@ class Safety(Protocol):
         shield_id: str,
         messages: list[Message],
         params: dict[str, Any],
-    ) -> RunShieldResponse: ...
+    ) -> RunShieldResponse:
+        """Run a shield.
+
+        :param shield_id: The identifier of the shield to run.
+        :param messages: The messages to run the shield on.
+        :param params: The parameters of the shield.
+        :returns: A RunShieldResponse.
+        """
+        ...

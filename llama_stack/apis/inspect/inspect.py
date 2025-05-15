@@ -36,10 +36,25 @@ class ListRoutesResponse(BaseModel):
 @runtime_checkable
 class Inspect(Protocol):
     @webmethod(route="/inspect/routes", method="GET")
-    async def list_routes(self) -> ListRoutesResponse: ...
+    async def list_routes(self) -> ListRoutesResponse:
+        """List all routes.
+
+        :returns: A ListRoutesResponse.
+        """
+        ...
 
     @webmethod(route="/health", method="GET")
-    async def health(self) -> HealthInfo: ...
+    async def health(self) -> HealthInfo:
+        """Get the health of the service.
+
+        :returns: A HealthInfo.
+        """
+        ...
 
     @webmethod(route="/version", method="GET")
-    async def version(self) -> VersionInfo: ...
+    async def version(self) -> VersionInfo:
+        """Get the version of the service.
+
+        :returns: A VersionInfo.
+        """
+        ...
