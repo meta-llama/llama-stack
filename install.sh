@@ -55,7 +55,7 @@ Options:
     -m, --model MODEL          Model alias to use (default: ${MODEL_ALIAS})
     -i, --image IMAGE          Server image (default: ${SERVER_IMAGE})
     -t, --timeout SECONDS      Service wait timeout in seconds (default: ${WAIT_TIMEOUT})
-    -h, --help                   Show this help message
+    -h, --help                 Show this help message
 
 For more information:
     Documentation: https://llama-stack.readthedocs.io/
