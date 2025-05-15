@@ -10,7 +10,7 @@ Llama Stack supports external providers that live outside of the main codebase. 
 To enable external providers, you need to configure the `external_providers_dir` in your Llama Stack configuration. This directory should contain your external provider specifications:
 
 ```yaml
-external_providers_dir: /etc/llama-stack/providers.d/
+external_providers_dir: ~/.llama/providers.d/
 ```
 
 ## Directory Structure
@@ -182,7 +182,7 @@ dependencies = ["llama-stack", "pydantic", "ollama", "aiohttp"]
 3. Create the provider specification:
 
 ```yaml
-# /etc/llama-stack/providers.d/remote/inference/custom_ollama.yaml
+# ~/.llama/providers.d/remote/inference/custom_ollama.yaml
 adapter:
   adapter_type: custom_ollama
   pip_packages: ["ollama", "aiohttp"]
@@ -201,7 +201,7 @@ uv pip install -e .
 5. Configure Llama Stack to use external providers:
 
 ```yaml
-external_providers_dir: /etc/llama-stack/providers.d/
+external_providers_dir: ~/.llama/providers.d/
 ```
 
 The provider will now be available in Llama Stack with the type `remote::custom_ollama`.

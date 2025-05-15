@@ -91,4 +91,4 @@ tool_groups:
   provider_id: wolfram-alpha
 server:
   port: 8321
-external_providers_dir: /tmp/providers.d
+external_providers_dir: ~/.llama/providers.d
