@@ -1,4 +1,5 @@
-import { MessageSquareText, MessagesSquare } from "lucide-react"
+import { MessageSquareText, MessagesSquare, MoveUpRight } from "lucide-react";
+import Link from "next/link";
 
 import {
   Sidebar,
@@ -10,8 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-} from "@/components/ui/sidebar"
-
+} from "@/components/ui/sidebar";
 
 const logItems = [
   {
@@ -24,14 +24,19 @@ const logItems = [
     url: "/logs/responses",
     icon: MessagesSquare,
   },
-]
+  {
+    title: "Documentation",
+    url: "https://llama-stack.readthedocs.io/en/latest/references/api_reference/index.html",
+    icon: MoveUpRight,
+  },
+];
 
 export function AppSidebar() {
   return (
     <Sidebar>
-        <SidebarHeader>
-            <a href="/">Llama Stack</a>
-        </SidebarHeader>
+      <SidebarHeader>
+        <Link href="/">Llama Stack</Link>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Logs</SidebarGroupLabel>
@@ -52,5 +57,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
