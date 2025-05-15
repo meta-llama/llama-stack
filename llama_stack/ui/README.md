@@ -1,14 +1,17 @@
 ## This is WIP.
 
+
+We use shadcdn/ui [Shadcn UI](https://ui.shadcn.com/) for the UI components.
+
 ## Getting Started
 
-## First install the NPM dependencies
+## Install the NPM dependencies
 
 ```bash
 npm install
 ```
 
-First, run the development server:
+Run the development server:
 
 ```bash
 npm run dev
