@@ -59,10 +59,10 @@ Options:
 
 For more information:
     Documentation: https://llama-stack.readthedocs.io/
-    GitHub: https://github.com/llamastack/llamastack
+    GitHub: https://github.com/meta-llama/llama-stack
 
 Report issues:
-    https://github.com/llamastack/llamastack/issues
+    https://github.com/meta-llama/llama-stack/issues
 EOF
 }
 
