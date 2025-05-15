@@ -132,9 +132,8 @@ jobs:
 
       - name: Build a single provider
         run: |
-          yq -i '.image_type = "container"' llama_stack/templates/dev/build.yaml
           yq -i '.image_name = "test"' llama_stack/templates/dev/build.yaml
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/dev/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --image-type=container --config llama_stack/templates/dev/build.yaml
 
       - name: Inspect the container image entrypoint
         run: |
