@@ -2,7 +2,9 @@
 
 ## Getting Started
 
-First, run the development server:
+Llama Stack UI is started by default when you run `llama stack run`.
+
+If you want to start the UI server manually, you can do so with the following commands:
 
 ```bash
 npm run dev

@@ -6,6 +6,7 @@
 
 import argparse
 import os
+import subprocess
 from pathlib import Path
 
 from llama_stack.cli.stack.utils import ImageType
@@ -42,6 +43,12 @@ class StackRun(Subcommand):
             default=int(os.getenv("LLAMA_STACK_PORT", 8321)),
         )
         self.parser.add_argument(
+            "--ui-port",
+            type=int,
+            help="Port to run the UI development server on. It can also be passed via the env var LLAMA_STACK_UI_PORT.",
+            default=int(os.getenv("LLAMA_STACK_UI_PORT", 3000)),
+        )
+        self.parser.add_argument(
             "--image-name",
             type=str,
             default=os.environ.get("CONDA_DEFAULT_ENV"),
@@ -58,6 +65,11 @@ class StackRun(Subcommand):
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
             choices=[e.value for e in ImageType],
+        )
+        self.parser.add_argument(
+            "--no-ui",
+            action="store_true",
+            help="Don't start the UI server",
         )
 
     # If neither image type nor image name is provided, but at the same time
@@ -118,6 +130,9 @@ class StackRun(Subcommand):
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
 
+        if not args.no_ui:
+            self._start_ui_development_server(args.ui_port)
+
         image_type, image_name = self._get_image_type_and_name(args)
 
         # If neither image type nor image name is provided, assume the server should be run directly
@@ -155,3 +170,43 @@ class StackRun(Subcommand):
                     run_args.extend(["--env", f"{key}={value}"])
 
             run_command(run_args)
+
+    def _start_ui_development_server(self, ui_port: int):
+        logger.info("Attempting to start UI development server...")
+        # Check if npm is available
+        npm_check = subprocess.run(["npm", "--version"], capture_output=True, text=True, check=False)
+        if npm_check.returncode != 0:
+            logger.warning(
+                f"'npm' command not found or not executable. UI development server will not be started. Error: {npm_check.stderr}"
+            )
+            return
+
+        ui_dir = REPO_ROOT / "llama_stack" / "ui"
+        logs_dir = Path("~/.llama/ui/logs").expanduser()
+        try:
+            # Create logs directory if it doesn't exist
+            logs_dir.mkdir(parents=True, exist_ok=True)
+
+            ui_stdout_log_path = logs_dir / "stdout.log"
+            ui_stderr_log_path = logs_dir / "stderr.log"
+
+            # Open log files in append mode
+            stdout_log_file = open(ui_stdout_log_path, "a")
+            stderr_log_file = open(ui_stderr_log_path, "a")
+
+            process = subprocess.Popen(
+                ["npm", "run", "dev", "--", "--port", str(ui_port)],
+                cwd=str(ui_dir),
+                stdout=stdout_log_file,
+                stderr=stderr_log_file,
+            )
+            logger.info(f"UI development server process started in {ui_dir} with PID {process.pid}.")
+            logger.info(f"Logs: stdout -> {ui_stdout_log_path}, stderr -> {ui_stderr_log_path}")
+            logger.info(f"UI will be available at http://localhost:{ui_port}")
+
+        except FileNotFoundError:
+            logger.error(
+                "Failed to start UI development server: 'npm' command not found. Make sure npm is installed and in your PATH."
+            )
+        except Exception as e:
+            logger.error(f"Failed to start UI development server in {ui_dir}: {e}")
