@@ -143,3 +143,87 @@ log "📖 Documentation: https://llama-stack.readthedocs.io/en/latest/references
 log "💻 To access the llama‑stack CLI, exec into the container:"
 log "   $ENGINE exec -ti llama-stack bash"
 log ""
+usage() {
+    cat << EOF
+📚 Llama-Stack Deployment Script v${VERSION}
+
+Description:
+    This script sets up and deploys Llama-Stack with Ollama integration in containers.
+    It handles both Docker and Podman runtimes and includes automatic platform detection.
+
+Usage: 
+    $(basename "$0") [OPTIONS]
+
+Options:
+    -p, --port PORT            Server port for Llama-Stack (default: ${DEFAULT_PORT})
+    -o, --ollama-port PORT     Ollama service port (default: ${DEFAULT_OLLAMA_PORT})
+    -m, --model MODEL          Model alias to use (default: ${DEFAULT_MODEL_ALIAS})
+    -i, --image IMAGE          Server image (default: ${DEFAULT_SERVER_IMAGE})
+    -t, --timeout SECONDS      Service wait timeout in seconds (default: ${DEFAULT_WAIT_TIMEOUT})
+    -c, --config FILE         Config file path (default: ${CONFIG_FILE})
+    -v, --verbose             Enable verbose output
+    -h, --help               Show this help message
+    --version                Show version information
+
+Configuration:
+    The script can be configured using either command-line arguments or a config file.
+    Config file location: ${CONFIG_FILE}
+    Configuration precedence: Command-line > Config file > Default values
+
+Environment Requirements:
+    - Docker or Podman installed and running
+    - Network connectivity for pulling images
+    - Available ports for services
+    - Sufficient system resources for running containers
+
+Examples:
+    1. Basic usage with default settings:
+       $ $(basename "$0")
+
+    2. Custom ports and model:
+       $ $(basename "$0") --port 8080 --ollama-port 11435 --model "llama3.2:7b"
+
+    3. Using verbose mode with custom timeout:
+       $ $(basename "$0") -v --timeout 600
+
+    4. Specify custom server image:
+       $ $(basename "$0") --image "llamastack/distribution-ollama:latest"
+
+Configuration File Example:
+    # Contents for ${CONFIG_FILE}
+    PORT=8080
+    OLLAMA_PORT=11435
+    MODEL_ALIAS="llama3.2:7b"
+    WAIT_TIMEOUT=600
+    SERVER_IMAGE="llamastack/distribution-ollama:latest"
+
+Services:
+    1. Ollama Server
+       - Runs the Ollama service for model hosting
+       - Default port: ${DEFAULT_OLLAMA_PORT}
+       - Container name: ollama-server
+
+    2. Llama-Stack
+       - Runs the main Llama-Stack service
+       - Default port: ${DEFAULT_PORT}
+       - Container name: llama-stack
+
+Network:
+    - Creates a Docker/Podman network named 'llama-net'
+    - All containers are connected to this network
+    - Internal communication uses container names as hostnames
+
+Logs and Debugging:
+    - Use -v flag for verbose output
+    - Container logs are available using:
+      $ docker/podman logs ollama-server
+      $ docker/podman logs llama-stack
+
+For more information:
+    Documentation: https://llama-stack.readthedocs.io/
+    GitHub: https://github.com/llamastack/llamastack
+
+Report issues:
+    https://github.com/llamastack/llamastack/issues
+EOF
+}
