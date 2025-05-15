@@ -162,7 +162,7 @@ def _process_vllm_chat_completion_end_of_stream(
     finish_reason: str | None,
     last_chunk_content: str | None,
     current_event_type: ChatCompletionResponseEventType,
-    tool_call_buf: UnparseableToolCall,
+    tool_call_bufs: dict[str, UnparseableToolCall] | None = None,
 ) -> list[OpenAIChatCompletionChunk]:
     chunks = []
 
@@ -171,9 +171,8 @@ def _process_vllm_chat_completion_end_of_stream(
     else:
         stop_reason = StopReason.end_of_message
 
-    if tool_call_buf.tool_name:
-        # at least one tool call request is received
-
+    tool_call_bufs = tool_call_bufs or {}
+    for _index, tool_call_buf in sorted(tool_call_bufs.items()):
         args_str = tool_call_buf.arguments or "{}"
         try:
             args = json.loads(args_str)
@@ -225,8 +224,14 @@ def _process_vllm_chat_completion_end_of_stream(
 async def _process_vllm_chat_completion_stream_response(
     stream: AsyncGenerator[OpenAIChatCompletionChunk, None],
 ) -> AsyncGenerator:
-    event_type = ChatCompletionResponseEventType.start
-    tool_call_buf = UnparseableToolCall()
+    yield ChatCompletionResponseStreamChunk(
+        event=ChatCompletionResponseEvent(
+            event_type=ChatCompletionResponseEventType.start,
+            delta=TextDelta(text=""),
+        )
+    )
+    event_type = ChatCompletionResponseEventType.progress
+    tool_call_bufs: dict[str, UnparseableToolCall] = {}
     end_of_stream_processed = False
 
     async for chunk in stream:
@@ -235,17 +240,22 @@ async def _process_vllm_chat_completion_stream_response(
             return
         choice = chunk.choices[0]
         if choice.delta.tool_calls:
-            tool_call = convert_tool_call(choice.delta.tool_calls[0])
-            tool_call_buf.tool_name += str(tool_call.tool_name)
-            tool_call_buf.call_id += tool_call.call_id
-            # TODO: remove str() when dict type for 'arguments' is no longer allowed
-            tool_call_buf.arguments += str(tool_call.arguments)
+            for delta_tool_call in choice.delta.tool_calls:
+                tool_call = convert_tool_call(delta_tool_call)
+                if delta_tool_call.index not in tool_call_bufs:
+                    tool_call_bufs[delta_tool_call.index] = UnparseableToolCall()
+                tool_call_buf = tool_call_bufs[delta_tool_call.index]
+                tool_call_buf.tool_name += str(tool_call.tool_name)
+                tool_call_buf.call_id += tool_call.call_id
+                tool_call_buf.arguments += (
+                    tool_call.arguments if isinstance(tool_call.arguments, str) else json.dumps(tool_call.arguments)
+                )
         if choice.finish_reason:
             chunks = _process_vllm_chat_completion_end_of_stream(
                 finish_reason=choice.finish_reason,
                 last_chunk_content=choice.delta.content,
                 current_event_type=event_type,
-                tool_call_buf=tool_call_buf,
+                tool_call_bufs=tool_call_bufs,
             )
             for c in chunks:
                 yield c
@@ -266,7 +276,7 @@ async def _process_vllm_chat_completion_stream_response(
     # the stream ended without a chunk containing finish_reason - we have to generate the
     # respective completion chunks manually
     chunks = _process_vllm_chat_completion_end_of_stream(
-        finish_reason=None, last_chunk_content=None, current_event_type=event_type, tool_call_buf=tool_call_buf
+        finish_reason=None, last_chunk_content=None, current_event_type=event_type, tool_call_bufs=tool_call_bufs
     )
     for c in chunks:
         yield c
