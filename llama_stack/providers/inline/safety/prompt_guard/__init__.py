@@ -6,12 +6,14 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
+
 from .config import PromptGuardConfig
 
 
-async def get_provider_impl(config: PromptGuardConfig, deps: dict[str, Any]):
+async def get_provider_impl(context: ProviderContext, config: PromptGuardConfig, deps: dict[str, Any]):
     from .prompt_guard import PromptGuardSafetyImpl
 
-    impl = PromptGuardSafetyImpl(config, deps)
+    impl = PromptGuardSafetyImpl(context, config, deps)
     await impl.initialize()
     return impl

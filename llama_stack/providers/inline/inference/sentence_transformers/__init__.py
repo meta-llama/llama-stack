@@ -6,12 +6,14 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.inline.inference.sentence_transformers.config import (
     SentenceTransformersInferenceConfig,
 )
 
 
 async def get_provider_impl(
+    context: ProviderContext,
     config: SentenceTransformersInferenceConfig,
     _deps: dict[str, Any],
 ):

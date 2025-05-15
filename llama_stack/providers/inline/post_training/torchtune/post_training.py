@@ -20,6 +20,7 @@ from llama_stack.apis.post_training import (
     PostTrainingJobStatusResponse,
     TrainingConfig,
 )
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
@@ -42,10 +43,12 @@ _JOB_TYPE_SUPERVISED_FINE_TUNE = "supervised-fine-tune"
 class TorchtunePostTrainingImpl:
     def __init__(
         self,
+        context: ProviderContext,
         config: TorchtunePostTrainingConfig,
         datasetio_api: DatasetIO,
         datasets: Datasets,
     ) -> None:
+        self.context = context
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets

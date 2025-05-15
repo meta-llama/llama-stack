@@ -10,6 +10,7 @@ import logging
 import sqlite3
 import struct
 import uuid
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -19,7 +20,7 @@ from numpy.typing import NDArray
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
-from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
+from llama_stack.providers.datatypes import ProviderContext, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
 
 logger = logging.getLogger(__name__)
@@ -206,15 +207,23 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     and creates a cache of VectorDBWithIndex instances (each wrapping a SQLiteVecIndex).
     """
 
-    def __init__(self, config, inference_api: Inference) -> None:
+    def __init__(self, context: ProviderContext, config, inference_api: Inference) -> None:
         self.config = config
         self.inference_api = inference_api
         self.cache: dict[str, VectorDBWithIndex] = {}
+        self.storage_dir = context.storage_dir
+        self.db_path = self._resolve_path(self.config.db_path)
+
+    def _resolve_path(self, path: str | Path) -> Path:
+        path = Path(path)
+        if path.is_absolute():
+            return path
+        return self.storage_dir / path
 
     async def initialize(self) -> None:
         def _setup_connection():
             # Open a connection to the SQLite database (the file is specified in the config).
-            connection = _create_sqlite_connection(self.config.db_path)
+            connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
             try:
                 # Create a table to persist vector DB registrations.
@@ -237,9 +246,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         for row in rows:
             vector_db_data = row[0]
             vector_db = VectorDB.model_validate_json(vector_db_data)
-            index = await SQLiteVecIndex.create(
-                vector_db.embedding_dimension, self.config.db_path, vector_db.identifier
-            )
+            index = await SQLiteVecIndex.create(vector_db.embedding_dimension, str(self.db_path), vector_db.identifier)
             self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def shutdown(self) -> None:
@@ -248,7 +255,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         def _register_db():
-            connection = _create_sqlite_connection(self.config.db_path)
+            connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
             try:
                 cur.execute(
@@ -261,7 +268,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
                 connection.close()
 
         await asyncio.to_thread(_register_db)
-        index = await SQLiteVecIndex.create(vector_db.embedding_dimension, self.config.db_path, vector_db.identifier)
+        index = await SQLiteVecIndex.create(vector_db.embedding_dimension, str(self.db_path), vector_db.identifier)
         self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def list_vector_dbs(self) -> list[VectorDB]:
@@ -275,7 +282,7 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         del self.cache[vector_db_id]
 
         def _delete_vector_db_from_registry():
-            connection = _create_sqlite_connection(self.config.db_path)
+            connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
             try:
                 cur.execute("DELETE FROM vector_dbs WHERE id = ?", (vector_db_id,))

@@ -6,15 +6,18 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
+
 from .config import LocalFSDatasetIOConfig
 
 
 async def get_provider_impl(
+    context: ProviderContext,
     config: LocalFSDatasetIOConfig,
     _deps: dict[str, Any],
 ):
     from .datasetio import LocalFSDatasetIOImpl
 
-    impl = LocalFSDatasetIOImpl(config)
+    impl = LocalFSDatasetIOImpl(context, config)
     await impl.initialize()
     return impl

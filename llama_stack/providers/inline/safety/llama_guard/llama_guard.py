@@ -24,7 +24,7 @@ from llama_stack.apis.shields import Shield
 from llama_stack.distribution.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
 from llama_stack.models.llama.sku_types import CoreModelId
-from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.datatypes import ProviderContext, ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
@@ -130,7 +130,8 @@ PROMPT_TEMPLATE = Template(f"{PROMPT_TASK}{SAFETY_CATEGORIES}{PROMPT_CONVERSATIO
 
 
 class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
-    def __init__(self, config: LlamaGuardConfig, deps) -> None:
+    def __init__(self, context: ProviderContext, config: LlamaGuardConfig, deps) -> None:
+        self.context = context
         self.config = config
         self.inference_api = deps[Api.inference]
 

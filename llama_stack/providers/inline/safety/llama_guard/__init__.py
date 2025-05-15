@@ -6,14 +6,16 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
+
 from .config import LlamaGuardConfig
 
 
-async def get_provider_impl(config: LlamaGuardConfig, deps: dict[str, Any]):
+async def get_provider_impl(context: ProviderContext, config: LlamaGuardConfig, deps: dict[str, Any]):
     from .llama_guard import LlamaGuardSafetyImpl
 
     assert isinstance(config, LlamaGuardConfig), f"Unexpected config type: {type(config)}"
 
-    impl = LlamaGuardSafetyImpl(config, deps)
+    impl = LlamaGuardSafetyImpl(context, config, deps)
     await impl.initialize()
     return impl

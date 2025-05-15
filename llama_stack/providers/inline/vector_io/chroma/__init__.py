@@ -6,16 +6,17 @@
 
 from typing import Any
 
-from llama_stack.providers.datatypes import Api
+from llama_stack.providers.datatypes import Api, ProviderContext
 
 from .config import ChromaVectorIOConfig
 
 
-async def get_provider_impl(config: ChromaVectorIOConfig, deps: dict[Api, Any]):
+async def get_provider_impl(context: ProviderContext, config: ChromaVectorIOConfig, deps: dict[Api, Any]):
     from llama_stack.providers.remote.vector_io.chroma.chroma import (
         ChromaVectorIOAdapter,
     )
 
+    # Pass config directly since ChromaVectorIOAdapter doesn't accept context
     impl = ChromaVectorIOAdapter(config, deps[Api.inference])
     await impl.initialize()
     return impl

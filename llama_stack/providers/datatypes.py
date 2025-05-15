@@ -4,7 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
@@ -161,7 +163,7 @@ If a provider depends on other providers, the dependencies MUST NOT specify a co
         description="""
 Fully-qualified name of the module to import. The module is expected to have:
 
- - `get_provider_impl(config, deps)`: returns the local implementation
+ - `get_provider_impl(context, config, deps)`: returns the local implementation
 """,
     )
     provider_data_validator: str | None = Field(
@@ -232,3 +234,19 @@ class HealthStatus(str, Enum):
 
 
 HealthResponse = dict[str, Any]
+
+
+@dataclass
+class ProviderContext:
+    """
+    Runtime context for provider instantiation.
+
+    This object is constructed by the Llama Stack runtime and injected into every provider.
+    It contains environment- and deployment-specific information that should not be part of the static config file.
+
+    Attributes:
+        storage_dir (Path): Directory for provider state (persistent or ephemeral),
+            resolved from CLI option, environment variable, or default distribution directory.
+    """
+
+    storage_dir: Path

@@ -36,6 +36,7 @@ from llama_stack.apis.telemetry import (
     UnstructuredLogEvent,
 )
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )
@@ -45,7 +46,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor
 from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
 
-from .config import TelemetryConfig, TelemetrySink
+from .config import TelemetrySink
 
 _GLOBAL_STORAGE: dict[str, dict[str | int, Any]] = {
     "active_spans": {},
@@ -63,8 +64,10 @@ def is_tracing_enabled(tracer):
 
 
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
-    def __init__(self, config: TelemetryConfig, deps: dict[Api, Any]) -> None:
+    def __init__(self, context: ProviderContext, config, deps):
+        self.context = context
         self.config = config
+        self.deps = deps
         self.datasetio_api = deps.get(Api.datasetio)
         self.meter = None
 

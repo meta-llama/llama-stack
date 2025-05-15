@@ -19,7 +19,7 @@ from llama_stack.apis.common.content_types import InterleavedContent
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
-from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
+from llama_stack.providers.datatypes import ProviderContext, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.vector_store import (
@@ -114,9 +114,11 @@ class FaissIndex(EmbeddingIndex):
 
 
 class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference) -> None:
+    def __init__(self, context: ProviderContext, config: FaissVectorIOConfig, inference_api: Inference) -> None:
+        self.context = context
         self.config = config
         self.inference_api = inference_api
+        self.storage_dir = context.storage_dir if context else None
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.kvstore: KVStore | None = None
 

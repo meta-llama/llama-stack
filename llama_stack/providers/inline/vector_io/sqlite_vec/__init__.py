@@ -6,15 +6,15 @@
 
 from typing import Any
 
-from llama_stack.providers.datatypes import Api
+from llama_stack.providers.datatypes import Api, ProviderContext
 
 from .config import SQLiteVectorIOConfig
 
 
-async def get_provider_impl(config: SQLiteVectorIOConfig, deps: dict[Api, Any]):
+async def get_provider_impl(context: ProviderContext, config: SQLiteVectorIOConfig, deps: dict[Api, Any]):
     from .sqlite_vec import SQLiteVecVectorIOAdapter
 
     assert isinstance(config, SQLiteVectorIOConfig), f"Unexpected config type: {type(config)}"
-    impl = SQLiteVecVectorIOAdapter(config, deps[Api.inference])
+    impl = SQLiteVecVectorIOAdapter(context, config, deps[Api.inference])
     await impl.initialize()
     return impl

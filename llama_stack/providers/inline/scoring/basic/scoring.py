@@ -15,7 +15,7 @@ from llama_stack.apis.scoring import (
 )
 from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.distribution.datatypes import Api
-from llama_stack.providers.datatypes import ScoringFunctionsProtocolPrivate
+from llama_stack.providers.datatypes import ProviderContext, ScoringFunctionsProtocolPrivate
 from llama_stack.providers.utils.common.data_schema_validator import (
     get_valid_schemas,
     validate_dataset_schema,
@@ -49,10 +49,12 @@ class BasicScoringImpl(
 ):
     def __init__(
         self,
+        context: ProviderContext,
         config: BasicScoringConfig,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
     ) -> None:
+        self.context = context
         self.config = config
         self.datasetio_api = datasetio_api
         self.datasets_api = datasets_api

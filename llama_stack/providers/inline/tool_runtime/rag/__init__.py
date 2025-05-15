@@ -6,12 +6,12 @@
 
 from typing import Any
 
-from llama_stack.providers.datatypes import Api
+from llama_stack.providers.datatypes import Api, ProviderContext
 
 from .config import RagToolRuntimeConfig
 
 
-async def get_provider_impl(config: RagToolRuntimeConfig, deps: dict[Api, Any]):
+async def get_provider_impl(context: ProviderContext, config: RagToolRuntimeConfig, deps: dict[Api, Any]):
     from .memory import MemoryToolRuntimeImpl
 
     impl = MemoryToolRuntimeImpl(config, deps[Api.vector_io], deps[Api.inference])

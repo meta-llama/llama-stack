@@ -37,6 +37,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
 
@@ -51,6 +52,7 @@ logger = logging.getLogger()
 class MetaReferenceAgentsImpl(Agents):
     def __init__(
         self,
+        context: ProviderContext,
         config: MetaReferenceAgentsImplConfig,
         inference_api: Inference,
         vector_io_api: VectorIO,
@@ -58,6 +60,7 @@ class MetaReferenceAgentsImpl(Agents):
         tool_runtime_api: ToolRuntime,
         tool_groups_api: ToolGroups,
     ):
+        self.context = context
         self.config = config
         self.inference_api = inference_api
         self.vector_io_api = vector_io_api

@@ -7,14 +7,16 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import Api
+from llama_stack.providers.datatypes import ProviderContext
 
 from .config import MetaReferenceAgentsImplConfig
 
 
-async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: dict[Api, Any]):
+async def get_provider_impl(context: ProviderContext, config: MetaReferenceAgentsImplConfig, deps: dict[Api, Any]):
     from .agents import MetaReferenceAgentsImpl
 
     impl = MetaReferenceAgentsImpl(
+        context,
         config,
         deps[Api.inference],
         deps[Api.vector_io],

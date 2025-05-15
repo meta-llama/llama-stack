@@ -6,15 +6,14 @@
 
 from typing import Any
 
+from llama_stack.providers.datatypes import ProviderContext
+
 from .config import MetaReferenceInferenceConfig
 
 
-async def get_provider_impl(
-    config: MetaReferenceInferenceConfig,
-    _deps: dict[str, Any],
-):
+async def get_provider_impl(context: ProviderContext, config: MetaReferenceInferenceConfig, _deps: dict[str, Any]):
     from .inference import MetaReferenceInferenceImpl
 
-    impl = MetaReferenceInferenceImpl(config)
+    impl = MetaReferenceInferenceImpl(context, config)
     await impl.initialize()
     return impl

@@ -59,6 +59,11 @@ class StackRun(Subcommand):
             help="Image Type used during the build. This can be either conda or container or venv.",
             choices=[e.value for e in ImageType],
         )
+        self.parser.add_argument(
+            "--storage-directory",
+            type=str,
+            help="Directory to use for provider state (overrides environment variable and default).",
+        )
 
     # If neither image type nor image name is provided, but at the same time
     # the current environment has conda breadcrumbs, then assume what the user
@@ -117,6 +122,9 @@ class StackRun(Subcommand):
             config = parse_and_maybe_upgrade_config(config_dict)
         except AttributeError as e:
             self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
+
+        # Pass the CLI storage directory option to run_config for resolver use
+        config.storage_dir = args.storage_directory
 
         image_type, image_name = self._get_image_type_and_name(args)
 

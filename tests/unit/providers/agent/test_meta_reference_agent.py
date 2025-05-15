@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
@@ -20,6 +21,7 @@ from llama_stack.apis.inference import Inference
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.providers.datatypes import ProviderContext
 from llama_stack.providers.inline.agents.meta_reference.agents import MetaReferenceAgentsImpl
 from llama_stack.providers.inline.agents.meta_reference.config import MetaReferenceAgentsImplConfig
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentInfo
@@ -48,7 +50,9 @@ def config(tmp_path):
 
 @pytest_asyncio.fixture
 async def agents_impl(config, mock_apis):
+    context = ProviderContext(storage_dir=Path("/tmp"))
     impl = MetaReferenceAgentsImpl(
+        context,
         config,
         mock_apis["inference_api"],
         mock_apis["vector_io_api"],
