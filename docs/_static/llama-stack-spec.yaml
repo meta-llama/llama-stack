@@ -7812,7 +7812,10 @@ components:
 
             Metadata: {metadata}
           description: >-
-            Template for formatting each retrieved chunk in the context.
+            Template for formatting each retrieved chunk in the context. Available
+            placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk
+            content string), {metadata} (chunk metadata dict). Default: "Result {index}\nContent:
+            {chunk.content}\nMetadata: {metadata}\n"
       additionalProperties: false
       required:
         - query_generator_config

@@ -93,7 +93,6 @@ class TestVectorStore:
         chunks = make_overlapped_chunks(document_id, text, window_len, overlap_len, original_metadata)
 
         assert len(chunks) == expected_chunks
-        print(len(chunks), expected_chunks)
 
         # Check that each chunk has the right metadata
         for chunk in chunks:

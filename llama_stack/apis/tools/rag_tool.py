@@ -74,6 +74,8 @@ class RAGQueryConfig(BaseModel):
     :param max_tokens_in_context: Maximum number of tokens in the context.
     :param max_chunks: Maximum number of chunks to retrieve.
     :param chunk_template: Template for formatting each retrieved chunk in the context.
+        Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
+        Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
     """
 
     # This config defines how a query is generated using the messages
@@ -81,8 +83,6 @@ class RAGQueryConfig(BaseModel):
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
-    # Optional template for formatting each retrieved chunk in the context.
-    # Available placeholders: {index} (1-based chunk ordinal), {metadata} (chunk metadata dict), {chunk.content} (chunk content string).
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
 
     @field_validator("chunk_template")
