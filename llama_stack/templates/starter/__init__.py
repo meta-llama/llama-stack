@@ -4,4 +4,4 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .dev import get_distribution_template  # noqa: F401
+from .starter import get_distribution_template  # noqa: F401
