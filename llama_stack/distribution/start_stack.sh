@@ -132,63 +132,31 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then
-    set -x
-
-    # Check if container command is available
-    if ! is_command_available $CONTAINER_BINARY; then
-      printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
-      exit 1
-    fi
-
-    if is_command_available selinuxenabled &> /dev/null && selinuxenabled; then
-        # Disable SELinux labels
-        CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
-    fi
-
-    mounts=""
-    if [ -n "$LLAMA_STACK_DIR" ]; then
-        mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):/app/llama-stack-source"
-    fi
-    if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
-        mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
-        CONTAINER_OPTS="$CONTAINER_OPTS --gpus=all"
-    fi
-
-    if [ -n "$PYPI_VERSION" ]; then
-        version_tag="$PYPI_VERSION"
-    elif [ -n "$LLAMA_STACK_DIR" ]; then
-        version_tag="dev"
-    elif [ -n "$TEST_PYPI_VERSION" ]; then
-        version_tag="test-$TEST_PYPI_VERSION"
+    # Determine the internal container address based on container runtime
+    if [ "$CONTAINER_BINARY" = "docker" ]; then
+        internal_host="host.docker.internal"
+    elif [ "$CONTAINER_BINARY" = "podman" ]; then
+        internal_host="host.containers.internal"
     else
-        if ! is_command_available jq; then
-            echo -e "${RED}Error: jq not found" >&2
-            exit 1
-        fi
-        URL="https://pypi.org/pypi/llama-stack/json"
-        version_tag=$(curl -s $URL | jq -r '.info.version')
+        internal_host="localhost"
     fi
-
-    # Build the command with optional yaml config
-    cmd="$CONTAINER_BINARY run $CONTAINER_OPTS -it \
-    -p $port:$port \
-    $env_vars \
-    $mounts \
-    --env LLAMA_STACK_PORT=$port \
-    --entrypoint python \
-    $container_image:$version_tag \
-    -m llama_stack.distribution.server.server"
-
-    # Add yaml config if provided, otherwise use default
-    if [ -n "$yaml_config" ]; then
-        cmd="$cmd -v $yaml_config:/app/run.yaml --config /app/run.yaml"
-    else
-        cmd="$cmd --config /app/run.yaml"
-    fi
-
-    # Add any other args
-    cmd="$cmd $other_args"
-
-    # Execute the command
-    eval $cmd
+    echo -e "${RED}Warning: Llama Stack no longer supports running Container.${NC}"
+    echo -e "Please use one of the following alternatives:"
+    echo -e "1. Use venv or conda environments"
+    echo -e "2. Run the container directly with Docker/Podman"
+    echo -e "\nExample $CONTAINER_BINARY command for ollama distribution:"
+    echo -e "$CONTAINER_BINARY run \\"
+    echo -e "  -it \\"
+    echo -e "  --network host \\"
+    echo -e "  -p $port:$port \\"
+    echo -e "  -v <path_to_yaml_config>:/app/run.yaml \\"
+    echo -e "  --entrypoint python \\"
+    echo -e "  localhost/distribution-ollama:<version> \\"
+    echo -e "  -m llama_stack.distribution.server.server \\"
+    echo -e "  --config /app/run.yaml \\"
+    echo -e "  --env INFERENCE_MODEL=\"llama3.2:3b\" \\"
+    echo -e "  --env LLAMA_STACK_PORT=<port> \\"
+    echo -e "  --env OLLAMA_URL=\"http://$internal_host:11434\""
+    echo -e "\nExiting..."
+    exit 1
 fi
