@@ -413,7 +413,7 @@ class Agents(Protocol):
         :param toolgroups: (Optional) List of toolgroups to create the turn with, will be used in addition to the agent's config toolgroups for the request.
         :param tool_config: (Optional) The tool configuration to create the turn with, will be used to override the agent's tool_config.
         :returns: If stream=False, returns a Turn object.
-                  If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk
+                  If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk.
         """
         ...
 
@@ -509,6 +509,7 @@ class Agents(Protocol):
         :param session_id: The ID of the session to get.
         :param agent_id: The ID of the agent to get the session for.
         :param turn_ids: (Optional) List of turn IDs to filter the session by.
+        :returns: A Session.
         """
         ...
 
@@ -606,5 +607,6 @@ class Agents(Protocol):
         :param input: Input message(s) to create the response.
         :param model: The underlying LLM used for completions.
         :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
+        :returns: An OpenAIResponseObject.
         """
         ...

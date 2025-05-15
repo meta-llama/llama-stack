@@ -93,7 +93,7 @@ class Eval(Protocol):
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
         :param benchmark_config: The configuration for the benchmark.
-        :return: The job that was created to run the evaluation.
+        :returns: The job that was created to run the evaluation.
         """
         ...
 
@@ -111,7 +111,7 @@ class Eval(Protocol):
         :param input_rows: The rows to evaluate.
         :param scoring_functions: The scoring functions to use for the evaluation.
         :param benchmark_config: The configuration for the benchmark.
-        :return: EvaluateResponse object containing generations and scores
+        :returns: EvaluateResponse object containing generations and scores.
         """
         ...
 
@@ -121,7 +121,7 @@ class Eval(Protocol):
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
         :param job_id: The ID of the job to get the status of.
-        :return: The status of the evaluationjob.
+        :returns: The status of the evaluation job.
         """
         ...
 
@@ -140,6 +140,6 @@ class Eval(Protocol):
 
         :param benchmark_id: The ID of the benchmark to run the evaluation on.
         :param job_id: The ID of the job to get the result of.
-        :return: The result of the job.
+        :returns: The result of the job.
         """
         ...
