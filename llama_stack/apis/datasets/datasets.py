@@ -137,7 +137,8 @@ class Datasets(Protocol):
         """
         Register a new dataset.
 
-        :param purpose: The purpose of the dataset. One of
+        :param purpose: The purpose of the dataset.
+        One of:
             - "post-training/messages": The dataset contains a messages column with list of messages for post-training.
                 {
                     "messages": [
@@ -188,8 +189,9 @@ class Datasets(Protocol):
                ]
            }
         :param metadata: The metadata for the dataset.
-           - E.g. {"description": "My dataset"}
+           - E.g. {"description": "My dataset"}.
         :param dataset_id: The ID of the dataset. If not provided, an ID will be generated.
+        :returns: A Dataset.
         """
         ...
 
@@ -197,13 +199,29 @@ class Datasets(Protocol):
     async def get_dataset(
         self,
         dataset_id: str,
-    ) -> Dataset: ...
+    ) -> Dataset:
+        """Get a dataset by its ID.
+
+        :param dataset_id: The ID of the dataset to get.
+        :returns: A Dataset.
+        """
+        ...
 
     @webmethod(route="/datasets", method="GET")
-    async def list_datasets(self) -> ListDatasetsResponse: ...
+    async def list_datasets(self) -> ListDatasetsResponse:
+        """List all datasets.
+
+        :returns: A ListDatasetsResponse.
+        """
+        ...
 
     @webmethod(route="/datasets/{dataset_id:path}", method="DELETE")
     async def unregister_dataset(
         self,
         dataset_id: str,
-    ) -> None: ...
+    ) -> None:
+        """Unregister a dataset by its ID.
+
+        :param dataset_id: The ID of the dataset to unregister.
+        """
+        ...

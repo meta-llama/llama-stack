@@ -33,7 +33,8 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "config",
             type=str,
-            help="Path to config file to use for the run",
+            nargs="?",  # Make it optional
+            help="Path to config file to use for the run. Required for venv and conda environments.",
         )
         self.parser.add_argument(
             "--port",
@@ -82,43 +83,54 @@ class StackRun(Subcommand):
         from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 
-        config_file = Path(args.config)
-        has_yaml_suffix = args.config.endswith(".yaml")
-        template_name = None
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if this is a template
-            config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
-            if config_file.exists():
-                template_name = args.config
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to ~/.llama dir
-            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
-
-        if not config_file.exists():
-            self.parser.error(
-                f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
-            )
-
-        if not config_file.is_file():
-            self.parser.error(
-                f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
-            )
-
-        logger.info(f"Using run configuration: {config_file}")
-
-        try:
-            config_dict = yaml.safe_load(config_file.read_text())
-        except yaml.parser.ParserError as e:
-            self.parser.error(f"failed to load config file '{config_file}':\n {e}")
-
-        try:
-            config = parse_and_maybe_upgrade_config(config_dict)
-        except AttributeError as e:
-            self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
-
         image_type, image_name = self._get_image_type_and_name(args)
+
+        # Check if config is required based on image type
+        if (image_type in [ImageType.CONDA.value, ImageType.VENV.value]) and not args.config:
+            self.parser.error("Config file is required for venv and conda environments")
+
+        if args.config:
+            config_file = Path(args.config)
+            has_yaml_suffix = args.config.endswith(".yaml")
+            template_name = None
+
+            if not config_file.exists() and not has_yaml_suffix:
+                # check if this is a template
+                config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
+                if config_file.exists():
+                    template_name = args.config
+
+            if not config_file.exists() and not has_yaml_suffix:
+                # check if it's a build config saved to ~/.llama dir
+                config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
+
+            if not config_file.exists():
+                self.parser.error(
+                    f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
+                )
+
+            if not config_file.is_file():
+                self.parser.error(
+                    f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
+                )
+
+            logger.info(f"Using run configuration: {config_file}")
+
+            try:
+                config_dict = yaml.safe_load(config_file.read_text())
+            except yaml.parser.ParserError as e:
+                self.parser.error(f"failed to load config file '{config_file}':\n {e}")
+
+            try:
+                config = parse_and_maybe_upgrade_config(config_dict)
+                if not os.path.exists(str(config.external_providers_dir)):
+                    os.makedirs(str(config.external_providers_dir), exist_ok=True)
+            except AttributeError as e:
+                self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
+        else:
+            config = None
+            config_file = None
+            template_name = None
 
         # If neither image type nor image name is provided, assume the server should be run directly
         # using the current environment packages.
@@ -141,7 +153,10 @@ class StackRun(Subcommand):
         else:
             run_args = formulate_run_args(image_type, image_name, config, template_name)
 
-            run_args.extend([str(config_file), str(args.port)])
+            run_args.extend([str(args.port)])
+
+            if config_file:
+                run_args.extend(["--config", str(config_file)])
 
             if args.env:
                 for env_var in args.env:

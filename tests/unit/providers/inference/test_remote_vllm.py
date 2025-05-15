@@ -24,6 +24,12 @@ from openai.types.chat.chat_completion_chunk import (
 from openai.types.chat.chat_completion_chunk import (
     ChoiceDelta as OpenAIChoiceDelta,
 )
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCall as OpenAIChoiceDeltaToolCall,
+)
+from openai.types.chat.chat_completion_chunk import (
+    ChoiceDeltaToolCallFunction as OpenAIChoiceDeltaToolCallFunction,
+)
 from openai.types.model import Model as OpenAIModel
 
 from llama_stack.apis.inference import (
@@ -206,8 +212,164 @@ async def test_tool_call_delta_empty_tool_call_buf():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 1
-    assert chunks[0].event.stop_reason == StopReason.end_of_turn
+    assert len(chunks) == 2
+    assert chunks[0].event.event_type.value == "start"
+    assert chunks[1].event.event_type.value == "complete"
+    assert chunks[1].event.stop_reason == StopReason.end_of_turn
+
+
+@pytest.mark.asyncio
+async def test_tool_call_delta_streaming_arguments_dict():
+    async def mock_stream():
+        mock_chunk_1 = OpenAIChatCompletionChunk(
+            id="chunk-1",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(
+                    delta=OpenAIChoiceDelta(
+                        content="",
+                        tool_calls=[
+                            OpenAIChoiceDeltaToolCall(
+                                id="tc_1",
+                                index=1,
+                                function=OpenAIChoiceDeltaToolCallFunction(
+                                    name="power",
+                                    arguments="",
+                                ),
+                            )
+                        ],
+                    ),
+                    finish_reason=None,
+                    index=0,
+                )
+            ],
+        )
+        mock_chunk_2 = OpenAIChatCompletionChunk(
+            id="chunk-2",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(
+                    delta=OpenAIChoiceDelta(
+                        content="",
+                        tool_calls=[
+                            OpenAIChoiceDeltaToolCall(
+                                id="tc_1",
+                                index=1,
+                                function=OpenAIChoiceDeltaToolCallFunction(
+                                    name="power",
+                                    arguments='{"number": 28, "power": 3}',
+                                ),
+                            )
+                        ],
+                    ),
+                    finish_reason=None,
+                    index=0,
+                )
+            ],
+        )
+        mock_chunk_3 = OpenAIChatCompletionChunk(
+            id="chunk-3",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(delta=OpenAIChoiceDelta(content="", tool_calls=None), finish_reason="tool_calls", index=0)
+            ],
+        )
+        for chunk in [mock_chunk_1, mock_chunk_2, mock_chunk_3]:
+            yield chunk
+
+    chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
+    assert len(chunks) == 3
+    assert chunks[0].event.event_type.value == "start"
+    assert chunks[1].event.event_type.value == "progress"
+    assert chunks[1].event.delta.type == "tool_call"
+    assert chunks[1].event.delta.parse_status.value == "succeeded"
+    assert chunks[1].event.delta.tool_call.arguments_json == '{"number": 28, "power": 3}'
+    assert chunks[2].event.event_type.value == "complete"
+
+
+@pytest.mark.asyncio
+async def test_multiple_tool_calls():
+    async def mock_stream():
+        mock_chunk_1 = OpenAIChatCompletionChunk(
+            id="chunk-1",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(
+                    delta=OpenAIChoiceDelta(
+                        content="",
+                        tool_calls=[
+                            OpenAIChoiceDeltaToolCall(
+                                id="",
+                                index=1,
+                                function=OpenAIChoiceDeltaToolCallFunction(
+                                    name="power",
+                                    arguments='{"number": 28, "power": 3}',
+                                ),
+                            ),
+                        ],
+                    ),
+                    finish_reason=None,
+                    index=0,
+                )
+            ],
+        )
+        mock_chunk_2 = OpenAIChatCompletionChunk(
+            id="chunk-2",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(
+                    delta=OpenAIChoiceDelta(
+                        content="",
+                        tool_calls=[
+                            OpenAIChoiceDeltaToolCall(
+                                id="",
+                                index=2,
+                                function=OpenAIChoiceDeltaToolCallFunction(
+                                    name="multiple",
+                                    arguments='{"first_number": 4, "second_number": 7}',
+                                ),
+                            ),
+                        ],
+                    ),
+                    finish_reason=None,
+                    index=0,
+                )
+            ],
+        )
+        mock_chunk_3 = OpenAIChatCompletionChunk(
+            id="chunk-3",
+            created=1,
+            model="foo",
+            object="chat.completion.chunk",
+            choices=[
+                OpenAIChoice(delta=OpenAIChoiceDelta(content="", tool_calls=None), finish_reason="tool_calls", index=0)
+            ],
+        )
+        for chunk in [mock_chunk_1, mock_chunk_2, mock_chunk_3]:
+            yield chunk
+
+    chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
+    assert len(chunks) == 4
+    assert chunks[0].event.event_type.value == "start"
+    assert chunks[1].event.event_type.value == "progress"
+    assert chunks[1].event.delta.type == "tool_call"
+    assert chunks[1].event.delta.parse_status.value == "succeeded"
+    assert chunks[1].event.delta.tool_call.arguments_json == '{"number": 28, "power": 3}'
+    assert chunks[2].event.event_type.value == "progress"
+    assert chunks[2].event.delta.type == "tool_call"
+    assert chunks[2].event.delta.parse_status.value == "succeeded"
+    assert chunks[2].event.delta.tool_call.arguments_json == '{"first_number": 4, "second_number": 7}'
+    assert chunks[3].event.event_type.value == "complete"
 
 
 @pytest.mark.asyncio
@@ -231,7 +393,8 @@ async def test_process_vllm_chat_completion_stream_response_no_choices():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 0
+    assert len(chunks) == 1
+    assert chunks[0].event.event_type.value == "start"
 
 
 def test_chat_completion_doesnt_block_event_loop(caplog):
@@ -369,7 +532,7 @@ async def test_process_vllm_chat_completion_stream_response_tool_call_args_last_
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
@@ -422,7 +585,7 @@ async def test_process_vllm_chat_completion_stream_response_no_finish_reason():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
@@ -471,7 +634,7 @@ async def test_process_vllm_chat_completion_stream_response_tool_without_args():
             yield chunk
 
     chunks = [chunk async for chunk in _process_vllm_chat_completion_stream_response(mock_stream())]
-    assert len(chunks) == 2
+    assert len(chunks) == 3
     assert chunks[-1].event.event_type == ChatCompletionResponseEventType.complete
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name

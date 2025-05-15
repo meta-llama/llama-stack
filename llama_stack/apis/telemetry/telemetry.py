@@ -247,7 +247,17 @@ class QueryMetricsResponse(BaseModel):
 @runtime_checkable
 class Telemetry(Protocol):
     @webmethod(route="/telemetry/events", method="POST")
-    async def log_event(self, event: Event, ttl_seconds: int = DEFAULT_TTL_DAYS * 86400) -> None: ...
+    async def log_event(
+        self,
+        event: Event,
+        ttl_seconds: int = DEFAULT_TTL_DAYS * 86400,
+    ) -> None:
+        """Log an event.
+
+        :param event: The event to log.
+        :param ttl_seconds: The time to live of the event.
+        """
+        ...
 
     @webmethod(route="/telemetry/traces", method="POST")
     async def query_traces(
@@ -256,13 +266,35 @@ class Telemetry(Protocol):
         limit: int | None = 100,
         offset: int | None = 0,
         order_by: list[str] | None = None,
-    ) -> QueryTracesResponse: ...
+    ) -> QueryTracesResponse:
+        """Query traces.
+
+        :param attribute_filters: The attribute filters to apply to the traces.
+        :param limit: The limit of traces to return.
+        :param offset: The offset of the traces to return.
+        :param order_by: The order by of the traces to return.
+        :returns: A QueryTracesResponse.
+        """
+        ...
 
     @webmethod(route="/telemetry/traces/{trace_id:path}", method="GET")
-    async def get_trace(self, trace_id: str) -> Trace: ...
+    async def get_trace(self, trace_id: str) -> Trace:
+        """Get a trace by its ID.
+
+        :param trace_id: The ID of the trace to get.
+        :returns: A Trace.
+        """
+        ...
 
     @webmethod(route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET")
-    async def get_span(self, trace_id: str, span_id: str) -> Span: ...
+    async def get_span(self, trace_id: str, span_id: str) -> Span:
+        """Get a span by its ID.
+
+        :param trace_id: The ID of the trace to get the span from.
+        :param span_id: The ID of the span to get.
+        :returns: A Span.
+        """
+        ...
 
     @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="POST")
     async def get_span_tree(
@@ -270,7 +302,15 @@ class Telemetry(Protocol):
         span_id: str,
         attributes_to_return: list[str] | None = None,
         max_depth: int | None = None,
-    ) -> QuerySpanTreeResponse: ...
+    ) -> QuerySpanTreeResponse:
+        """Get a span tree by its ID.
+
+        :param span_id: The ID of the span to get the tree from.
+        :param attributes_to_return: The attributes to return in the tree.
+        :param max_depth: The maximum depth of the tree.
+        :returns: A QuerySpanTreeResponse.
+        """
+        ...
 
     @webmethod(route="/telemetry/spans", method="POST")
     async def query_spans(
@@ -278,7 +318,15 @@ class Telemetry(Protocol):
         attribute_filters: list[QueryCondition],
         attributes_to_return: list[str],
         max_depth: int | None = None,
-    ) -> QuerySpansResponse: ...
+    ) -> QuerySpansResponse:
+        """Query spans.
+
+        :param attribute_filters: The attribute filters to apply to the spans.
+        :param attributes_to_return: The attributes to return in the spans.
+        :param max_depth: The maximum depth of the tree.
+        :returns: A QuerySpansResponse.
+        """
+        ...
 
     @webmethod(route="/telemetry/spans/export", method="POST")
     async def save_spans_to_dataset(
@@ -287,7 +335,15 @@ class Telemetry(Protocol):
         attributes_to_save: list[str],
         dataset_id: str,
         max_depth: int | None = None,
-    ) -> None: ...
+    ) -> None:
+        """Save spans to a dataset.
+
+        :param attribute_filters: The attribute filters to apply to the spans.
+        :param attributes_to_save: The attributes to save to the dataset.
+        :param dataset_id: The ID of the dataset to save the spans to.
+        :param max_depth: The maximum depth of the tree.
+        """
+        ...
 
     @webmethod(route="/telemetry/metrics/{metric_name}", method="POST")
     async def query_metrics(
@@ -298,4 +354,15 @@ class Telemetry(Protocol):
         granularity: str | None = "1d",
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: list[MetricLabelMatcher] | None = None,
-    ) -> QueryMetricsResponse: ...
+    ) -> QueryMetricsResponse:
+        """Query metrics.
+
+        :param metric_name: The name of the metric to query.
+        :param start_time: The start time of the metric to query.
+        :param end_time: The end time of the metric to query.
+        :param granularity: The granularity of the metric to query.
+        :param query_type: The type of query to perform.
+        :param label_matchers: The label matchers to apply to the metric.
+        :returns: A QueryMetricsResponse.
+        """
+        ...

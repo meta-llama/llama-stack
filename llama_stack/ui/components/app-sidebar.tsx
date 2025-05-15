@@ -1,4 +1,5 @@
 import { MessageSquareText, MessagesSquare } from "lucide-react"
+import Link from "next/link"
 
 import {
   Sidebar,
@@ -29,9 +30,9 @@ const logItems = [
 export function AppSidebar() {
   return (
     <Sidebar>
-        <SidebarHeader>
-            <a href="/">Llama Stack</a>
-        </SidebarHeader>
+      <SidebarHeader>
+        <Link href="/">Llama Stack</Link>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Logs</SidebarGroupLabel>
@@ -40,10 +41,10 @@ export function AppSidebar() {
               {logItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
