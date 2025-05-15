@@ -11294,24 +11294,34 @@
                 "type": "object",
                 "properties": {
                     "query_generator_config": {
-                        "$ref": "#/components/schemas/RAGQueryGeneratorConfig"
+                        "$ref": "#/components/schemas/RAGQueryGeneratorConfig",
+                        "description": "Configuration for the query generator."
                     },
                     "max_tokens_in_context": {
                         "type": "integer",
-                        "default": 4096
+                        "default": 4096,
+                        "description": "Maximum number of tokens in the context."
                     },
                     "max_chunks": {
                         "type": "integer",
-                        "default": 5
+                        "default": 5,
+                        "description": "Maximum number of chunks to retrieve."
+                    },
+                    "chunk_template": {
+                        "type": "string",
+                        "default": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n",
+                        "description": "Template for formatting each retrieved chunk in the context. Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict). Default: \"Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "query_generator_config",
                     "max_tokens_in_context",
-                    "max_chunks"
+                    "max_chunks",
+                    "chunk_template"
                 ],
-                "title": "RAGQueryConfig"
+                "title": "RAGQueryConfig",
+                "description": "Configuration for the RAG query generation."
             },
             "RAGQueryGeneratorConfig": {
                 "oneOf": [

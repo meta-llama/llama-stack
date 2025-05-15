@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from llama_stack.apis.tools import RAGDocument
-from llama_stack.providers.utils.memory.vector_store import URL, content_from_doc
+from llama_stack.providers.utils.memory.vector_store import URL, content_from_doc, make_overlapped_chunks
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
 # Depending on the machine, this can get parsed a couple of ways
@@ -76,3 +76,53 @@ class TestVectorStore:
         )
         content = await content_from_doc(doc)
         assert content in DUMMY_PDF_TEXT_CHOICES
+
+    @pytest.mark.parametrize(
+        "window_len, overlap_len, expected_chunks",
+        [
+            (5, 2, 4),  # Create 4 chunks with window of 5 and overlap of 2
+            (4, 1, 4),  # Create 4 chunks with window of 4 and overlap of 1
+        ],
+    )
+    def test_make_overlapped_chunks(self, window_len, overlap_len, expected_chunks):
+        document_id = "test_doc_123"
+        text = "This is a sample document for testing the chunking behavior"
+        original_metadata = {"source": "test", "date": "2023-01-01", "author": "llama"}
+        len_metadata_tokens = 24  # specific to the metadata above
+
+        chunks = make_overlapped_chunks(document_id, text, window_len, overlap_len, original_metadata)
+
+        assert len(chunks) == expected_chunks
+
+        # Check that each chunk has the right metadata
+        for chunk in chunks:
+            # Original metadata should be preserved
+            assert chunk.metadata["source"] == "test"
+            assert chunk.metadata["date"] == "2023-01-01"
+            assert chunk.metadata["author"] == "llama"
+
+            # New metadata should be added
+            assert chunk.metadata["document_id"] == document_id
+            assert "token_count" in chunk.metadata
+            assert isinstance(chunk.metadata["token_count"], int)
+            assert chunk.metadata["token_count"] > 0
+            assert chunk.metadata["metadata_token_count"] == len_metadata_tokens
+
+    def test_raise_overlapped_chunks_metadata_serialization_error(self):
+        document_id = "test_doc_ex"
+        text = "Some text"
+        window_len = 5
+        overlap_len = 2
+
+        class BadMetadata:
+            def __repr__(self):
+                raise TypeError("Cannot convert to string")
+
+        problematic_metadata = {"bad_metadata_example": BadMetadata()}
+
+        with pytest.raises(ValueError) as excinfo:
+            make_overlapped_chunks(document_id, text, window_len, overlap_len, problematic_metadata)
+
+        assert str(excinfo.value) == "Failed to serialize metadata to string"
+        assert isinstance(excinfo.value.__cause__, TypeError)
+        assert str(excinfo.value.__cause__) == "Cannot convert to string"
