@@ -14,6 +14,8 @@ on:
       - 'docs/**'
       - 'pyproject.toml'
       - '.github/workflows/update-readthedocs.yml'
+    tags:
+      - '*'
   pull_request:
     branches:
       - main
@@ -59,14 +61,11 @@ jobs:
             exit 1
           fi
 
-          # Get the version from the GitHub ref
-          VERSION=${GITHUB_REF#refs/*/}
-
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
             -d "{
               \"token\": \"$TOKEN\",
-              \"version\": \"$VERSION\"
+              \"version\": \"$GITHUB_REF_NAME\"
             }" \
             https://readthedocs.org/api/v2/webhook/llama-stack/289768/)
 
