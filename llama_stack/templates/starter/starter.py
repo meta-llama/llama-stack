@@ -120,7 +120,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::model-context-protocol",
         ],
     }
-    name = "dev"
+    name = "starter"
 
     vector_io_providers = [
         Provider(
@@ -172,7 +172,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Distribution for running e2e tests in CI",
+        description="Quick start template for running Llama Stack with several popular providers",
         container_image=None,
         template_path=None,
         providers=providers,

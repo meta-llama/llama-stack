@@ -602,7 +602,7 @@
     "sentence-transformers --no-deps",
     "torch torchvision --index-url https://download.pytorch.org/whl/cpu"
   ],
-  "dev": [
+  "starter": [
     "aiosqlite",
     "autoevals",
     "blobfile",
