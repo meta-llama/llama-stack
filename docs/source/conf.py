@@ -110,6 +110,8 @@ html_theme_options = {
     "canonical_url": "https://github.com/meta-llama/llama-stack",
     "collapse_navigation": False,
     # "style_nav_header_background": "#c3c9d4",
+    'display_version': True,
+    'version_selector': True,
 }
 
 default_dark_mode = False
