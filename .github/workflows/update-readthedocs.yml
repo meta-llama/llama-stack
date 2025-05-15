@@ -59,9 +59,15 @@ jobs:
             exit 1
           fi
 
+          # Get the version from the GitHub ref
+          VERSION=${GITHUB_REF#refs/*/}
+
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d "{\"token\": \"$TOKEN\"}" \
+            -d "{
+              \"token\": \"$TOKEN\",
+              \"version\": \"$VERSION\"
+            }" \
             https://readthedocs.org/api/v2/webhook/llama-stack/289768/)
 
           echo "Response: $response"
