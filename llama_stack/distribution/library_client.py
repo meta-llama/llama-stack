@@ -226,6 +226,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                     distribution_spec=DistributionSpec(
                         providers=provider_types,
                     ),
+                    external_providers_dir=self.config.external_providers_dir,
                 )
                 print_pip_install_help(build_config)
             else:
