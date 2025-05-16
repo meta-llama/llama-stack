@@ -53,7 +53,7 @@ The main points to consider are:
 
 ```
 llama stack build -h
-usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {conda,container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run]
+usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {conda,container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run] [--export-dir EXPORT_DIR]
 
 Build a Llama stack container
 
@@ -71,6 +71,8 @@ options:
                         found. (default: None)
   --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
   --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)
+  --export-dir EXPORT_DIR
+                        Export the build artifacts to a specified directory instead of building the container. This will create a tarball containing the Dockerfile and all necessary files to build the container. (default: None)
 
 ```
 
@@ -259,6 +261,24 @@ Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM pyth
 
 You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml`
 ```
+
+You can also export the build artifacts to a specified directory instead of building the container directly. This is useful when you want to:
+- Build the container in a different environment
+- Share the build configuration with others
+- Customize the build process
+
+To export the build artifacts, use the `--export-dir` flag:
+
+```
+llama stack build --config my-build.yaml --image-type container --export-dir ./my-build
+```
+
+This will create a tarball in the specified directory containing:
+- The Dockerfile (named Containerfile)
+- The run configuration file (if building from a config)
+- Any external provider files (if specified in the config)
+
+The tarball will be named with a timestamp to ensure uniqueness, for example: `<distro-name>_<timestamp>.tar.gz`
 
 After this step is successful, you should be able to find the built container image and test it with `llama stack run <path/to/run.yaml>`.
 :::

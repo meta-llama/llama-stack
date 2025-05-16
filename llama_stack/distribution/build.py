@@ -93,6 +93,7 @@ def build_image(
     image_name: str,
     template_or_config: str,
     run_config: str | None = None,
+    export_dir: str | None = None,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
@@ -108,6 +109,8 @@ def build_image(
             container_base,
             " ".join(normal_deps),
         ]
+        if export_dir is not None:
+            args.append(export_dir)
 
         # When building from a config file (not a template), include the run config path in the
         # build arguments

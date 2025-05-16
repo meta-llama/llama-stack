@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 import argparse
 import textwrap
+from pathlib import Path
 
 from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.subcommand import Subcommand
@@ -80,6 +81,13 @@ the build. If not specified, currently active environment will be used if found.
             type=str,
             default=None,
             help="Build a config for a list of providers and only those providers. This list is formatted like: api1=provider1,api2=provider2. Where there can be multiple providers per API.",
+        )
+
+        self.parser.add_argument(
+            "--export-dir",
+            type=Path,
+            default=None,
+            help="Export the build artifacts to a specified directory instead of building the container. This will create a directory containing the Dockerfile and all necessary files to build the container.",
         )
 
     def _run_stack_build_command(self, args: argparse.Namespace) -> None:
