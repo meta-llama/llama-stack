@@ -5,8 +5,10 @@
 # the root directory of this source tree.
 
 import json
+import ssl
 from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Any
 from urllib.parse import parse_qs
 
 import httpx
@@ -69,13 +71,14 @@ class AuthProviderType(str, Enum):
 
     KUBERNETES = "kubernetes"
     CUSTOM = "custom"
+    OAUTH_INTROSPECTION = "oauth_introspection"
 
 
 class AuthProviderConfig(BaseModel):
     """Base configuration for authentication providers."""
 
     provider_type: AuthProviderType = Field(..., description="Type of authentication provider")
-    config: dict[str, str] = Field(..., description="Provider-specific configuration")
+    config: dict[str, Any] = Field(..., description="Provider-specific configuration")
 
 
 class AuthProvider(ABC):
@@ -248,6 +251,87 @@ class CustomAuthProvider(AuthProvider):
             self._client = None
 
 
+def get_attributes_from_claims(
+    attributes: AccessAttributes, mapping: dict[str, str], claims: dict[str, str]
+) -> AccessAttributes:
+    for claim_key, attribute_key in mapping.items():
+        if claim_key in claims:
+            claim = claims[claim_key]
+            if isinstance(claim, list):
+                values = claim
+            else:
+                values = claim.split()
+            if hasattr(attributes, attribute_key):
+                current = getattr(attributes, attribute_key)
+                if current:
+                    current.extend(values)
+                else:
+                    setattr(attributes, attribute_key, values)
+    return attributes
+
+
+class OauthIntrospectionAuthProvider(AuthProvider):
+    """Authentication provider that uses OAuth 2 token introspection as defined in RFC 7662."""
+
+    def __init__(self, config: dict[str, Any]):
+        self.endpoint = config["endpoint"]
+        self.client_id = config["client_id"]
+        self.client_secret = config["client_secret"]
+        self.send_secret_in_body = config.get("send_secret_in_body", False)
+        self.tls_cafile = config.get("tls_cafile")
+        self.mapping = config.get("attribute_mapping", {"sub": "roles", "username": "roles", "groups": "teams"})
+        self._client = None
+
+    async def validate_token(self, token: str, scope: dict | None = None) -> AccessAttributes | None:
+        if not self.endpoint:
+            raise ValueError("Token introspection endpoint not configured")
+
+        form = {
+            "token": token,
+        }
+        if self.send_secret_in_body:
+            form["client_id"] = self.client_id
+            form["client_secret"] = self.client_secret
+            auth = None
+        else:
+            auth = (self.client_id, self.client_secret)
+        ssl_ctxt = None
+        if self.tls_cafile:
+            ssl_ctxt = ssl.create_default_context(cafile=self.tls_cafile)
+        try:
+            async with httpx.AsyncClient(verify=ssl_ctxt) as client:
+                response = await client.post(
+                    self.endpoint,
+                    data=form,
+                    auth=auth,
+                    timeout=10.0,  # Add a reasonable timeout
+                )
+                if response.status_code != 200:
+                    logger.warning(f"Token introspection failed with status code: {response.status_code}")
+                    raise ValueError(f"Token introspection failed: {response.status_code}")
+
+                fields = response.json()
+                if not fields["active"]:
+                    raise ValueError("Token not active")
+
+                return get_attributes_from_claims(AccessAttributes(), self.mapping, fields)
+
+        except httpx.TimeoutException:
+            logger.exception("Token introspection request timed out")
+            raise
+        except ValueError:
+            # Re-raise ValueError exceptions to preserve their message
+            raise
+        except Exception as e:
+            logger.exception("Error during token introspection")
+            raise ValueError("Token introspection error") from e
+
+    async def close(self):
+        if self._client:
+            await self._client.aclose()
+            self._client = None
+
+
 def create_auth_provider(config: AuthProviderConfig) -> AuthProvider:
     """Factory function to create the appropriate auth provider."""
     provider_type = config.provider_type.lower()
@@ -256,6 +340,8 @@ def create_auth_provider(config: AuthProviderConfig) -> AuthProvider:
         return KubernetesAuthProvider(config.config)
     elif provider_type == "custom":
         return CustomAuthProvider(config.config)
+    elif provider_type == "oauth_introspection":
+        return OauthIntrospectionAuthProvider(config.config)
     else:
         supported_providers = ", ".join([t.value for t in AuthProviderType])
         raise ValueError(f"Unsupported auth provider type: {provider_type}. Supported types are: {supported_providers}")
