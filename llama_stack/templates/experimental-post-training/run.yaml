@@ -49,16 +49,24 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/localfs_datasetio.db
+  - provider_id: huggingface
+    provider_type: remote::huggingface
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/huggingface}/huggingface_datasetio.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config: {}
   post_training:
-  - provider_id: torchtune-post-training
-    provider_type: inline::torchtune
-    config: {
+  - provider_id: huggingface
+    provider_type: inline::huggingface
+    config:
       checkpoint_format: huggingface
-    }
+      distributed_backend: null
+      device: cpu
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
