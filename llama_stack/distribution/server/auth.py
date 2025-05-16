@@ -26,6 +26,7 @@ class AuthenticationMiddleware:
     The middleware supports multiple authentication providers through the AuthProvider interface:
     - Kubernetes: Validates tokens against the Kubernetes API server
     - Custom: Validates tokens against a custom endpoint
+    - oauth_introspection: Uses Oauth 2 token introspection as defined in RFC 7662
 
     Authentication Request Format for Custom Auth Provider:
     ```json
@@ -64,6 +65,7 @@ class AuthenticationMiddleware:
     Each provider implements its own token validation logic:
     - Kubernetes: Uses TokenReview API to validate service account tokens
     - Custom: Sends token to custom endpoint for validation
+    - oauth_introspection: Uses Oauth 2 token introspection as defined in RFC 7662
 
     Attribute-Based Access Control:
     The attributes returned by the auth provider are used to determine which

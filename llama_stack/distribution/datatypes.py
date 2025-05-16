@@ -222,6 +222,7 @@ class AuthProviderType(str, Enum):
 
     KUBERNETES = "kubernetes"
     CUSTOM = "custom"
+    OAUTH_INTROSPECTION = "oauth_introspection"
 
 
 class AuthenticationConfig(BaseModel):
@@ -229,7 +230,7 @@ class AuthenticationConfig(BaseModel):
         ...,
         description="Type of authentication provider (e.g., 'kubernetes', 'custom')",
     )
-    config: dict[str, str] = Field(
+    config: dict[str, Any] = Field(
         ...,
         description="Provider-specific configuration",
     )
