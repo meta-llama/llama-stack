@@ -155,7 +155,7 @@ docker run \
   -v $HOME/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-dell \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env DEH_URL=$DEH_URL \

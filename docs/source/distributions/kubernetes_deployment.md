@@ -172,7 +172,7 @@ spec:
       - name: llama-stack
         image: localhost/llama-stack-run-k8s:latest
         imagePullPolicy: IfNotPresent
-        command: ["python", "-m", "llama_stack.distribution.server.server", "--yaml-config", "/app/config.yaml"]
+        command: ["python", "-m", "llama_stack.distribution.server.server", "--config", "/app/config.yaml"]
         ports:
           - containerPort: 5000
         volumeMounts:

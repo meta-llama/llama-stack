@@ -54,7 +54,7 @@ other_args=""
 # Process remaining arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --config|--yaml-config)
+    --config)
       if [[ -n "$2" ]]; then
         yaml_config="$2"
         shift 2
@@ -121,7 +121,7 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     set -x
 
     if [ -n "$yaml_config" ]; then
-        yaml_config_arg="--yaml-config $yaml_config"
+        yaml_config_arg="--config $yaml_config"
     else
         yaml_config_arg=""
     fi
@@ -181,9 +181,9 @@ elif [[ "$env_type" == "container" ]]; then
 
     # Add yaml config if provided, otherwise use default
     if [ -n "$yaml_config" ]; then
-        cmd="$cmd -v $yaml_config:/app/run.yaml --yaml-config /app/run.yaml"
+        cmd="$cmd -v $yaml_config:/app/run.yaml --config /app/run.yaml"
     else
-        cmd="$cmd --yaml-config /app/run.yaml"
+        cmd="$cmd --config /app/run.yaml"
     fi
 
     # Add any other args

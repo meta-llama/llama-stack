@@ -371,9 +371,9 @@ def main(args: argparse.Namespace | None = None):
         args = parser.parse_args()
 
     # Check for deprecated argument usage
-    if "--yaml-config" in sys.argv:
+    if "--config" in sys.argv:
         warnings.warn(
-            "The '--yaml-config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
+            "The '--config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -391,7 +391,7 @@ def main(args: argparse.Namespace | None = None):
             raise ValueError(f"Template {args.template} does not exist")
         log_line = f"Using template {args.template} config file: {config_file}"
     else:
-        raise ValueError("Either --yaml-config or --template must be provided")
+        raise ValueError("Either --config or --template must be provided")
 
     logger_config = None
     with open(config_file) as fp:

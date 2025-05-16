@@ -86,7 +86,7 @@ docker run \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/ollama/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-{{ name }} \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env SAFETY_MODEL=$SAFETY_MODEL \
