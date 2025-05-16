@@ -93,7 +93,7 @@ class AuthenticationMiddleware:
 
             # Validate token and get access attributes
             try:
-                access_attributes = await self.auth_provider.validate_token(token, scope)
+                validation_result = await self.auth_provider.validate_token(token, scope)
             except httpx.TimeoutException:
                 logger.exception("Authentication request timed out")
                 return await self._send_auth_error(send, "Authentication service timeout")
@@ -105,17 +105,20 @@ class AuthenticationMiddleware:
                 return await self._send_auth_error(send, "Authentication service error")
 
             # Store attributes in request scope for access control
-            if access_attributes:
-                user_attributes = access_attributes.model_dump(exclude_none=True)
+            if validation_result.access_attributes:
+                user_attributes = validation_result.access_attributes.model_dump(exclude_none=True)
             else:
                 logger.warning("No access attributes, setting namespace to token by default")
                 user_attributes = {
-                    "namespaces": [token],
+                    "roles": [token],
                 }
 
             # Store attributes in request scope
             scope["user_attributes"] = user_attributes
-            logger.debug(f"Authentication successful: {len(scope['user_attributes'])} attributes")
+            scope["principal"] = validation_result.principal
+            logger.debug(
+                f"Authentication successful: {validation_result.principal} with {len(scope['user_attributes'])} attributes"
+            )
 
         return await self.app(scope, receive, send)
 
