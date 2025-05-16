@@ -180,7 +180,7 @@ class KubernetesAuthProvider(AuthProvider):
 JWT_AUDIENCE = "llama-stack"
 
 
-class JWKSAuthProviderConfig(BaseModel):
+class JWTAuthProviderConfig(BaseModel):
     """Configuration for JWT token authentication provider."""
 
     # The JWKS URI for collecting public keys
@@ -189,10 +189,10 @@ class JWKSAuthProviderConfig(BaseModel):
     cache_ttl: int = 3600
 
 
-class JWKSAuthProvider(AuthProvider):
+class JWTAuthProvider(AuthProvider):
     """JWT token authentication provider that validates tokens against the JWT token."""
 
-    def __init__(self, config: JWKSAuthProviderConfig):
+    def __init__(self, config: JWTAuthProviderConfig):
         self.config = config
         self._jwks_at: float = 0.0
         self._jwks: dict[str, str] = {}
@@ -334,8 +334,8 @@ def create_auth_provider(config: AuthProviderConfig) -> AuthProvider:
         return KubernetesAuthProvider(KubernetesAuthProviderConfig.model_validate(config.config))
     elif provider_type == "custom":
         return CustomAuthProvider(CustomAuthProviderConfig.model_validate(config.config))
-    elif provider_type == "jwks":
-        return JWKSAuthProvider(JWKSAuthProviderConfig.model_validate(config.config))
+    elif provider_type == "jwt":
+        return JWTAuthProvider(JWTAuthProviderConfig.model_validate(config.config))
     else:
         supported_providers = ", ".join([t.value for t in AuthProviderType])
         raise ValueError(f"Unsupported auth provider type: {provider_type}. Supported types are: {supported_providers}")
