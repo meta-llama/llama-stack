@@ -34,6 +34,8 @@ logger = get_logger(__name__, category="core")
 INVALID_SPAN_ID = 0x0000000000000000
 INVALID_TRACE_ID = 0x00000000000000000000000000000000
 
+ROOT_SPAN_MARKERS = ["__root__", "__root_span__"]
+
 
 def trace_id_to_str(trace_id: int) -> str:
     """Convenience trace ID formatting method
@@ -178,7 +180,8 @@ async def start_trace(name: str, attributes: dict[str, Any] = None) -> TraceCont
 
     trace_id = generate_trace_id()
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
-    context.push_span(name, {"__root__": True, **(attributes or {})})
+    attributes = {marker: True for marker in ROOT_SPAN_MARKERS} | (attributes or {})
+    context.push_span(name, attributes)
 
     CURRENT_TRACE_CONTEXT.set(context)
     return context
