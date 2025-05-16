@@ -117,7 +117,7 @@ docker run \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-tgi \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env TGI_URL=http://host.docker.internal:$INFERENCE_PORT \
