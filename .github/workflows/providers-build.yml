@@ -132,9 +132,9 @@ jobs:
 
       - name: Build a single provider
         run: |
-          yq -i '.image_type = "container"' llama_stack/templates/dev/build.yaml
-          yq -i '.image_name = "test"' llama_stack/templates/dev/build.yaml
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/dev/build.yaml
+          yq -i '.image_type = "container"' llama_stack/templates/starter/build.yaml
+          yq -i '.image_name = "test"' llama_stack/templates/starter/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/starter/build.yaml
 
       - name: Inspect the container image entrypoint
         run: |
@@ -174,14 +174,14 @@ jobs:
             .image_type    = "container" |
             .image_name    = "ubi9-test" |
             .distribution_spec.container_image = "registry.access.redhat.com/ubi9:latest"
-          ' llama_stack/templates/dev/build.yaml
+          ' llama_stack/templates/starter/build.yaml
 
       - name: Build dev container (UBI9)
         env:
           USE_COPY_NOT_MOUNT: "true"
           LLAMA_STACK_DIR: "."
         run: |
-          uv run llama stack build --config llama_stack/templates/dev/build.yaml
+          uv run llama stack build --config llama_stack/templates/starter/build.yaml
 
       - name: Inspect UBI9 image
         run: |
