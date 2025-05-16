@@ -58,7 +58,7 @@ jobs:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
           source .venv/bin/activate
-          nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv > server.log 2>&1 &
+          LLAMA_STACK_LOG_FILE=server.log nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv &
 
       - name: Wait for Llama Stack server to be ready
         if: matrix.client-type == 'http'
@@ -85,6 +85,11 @@ jobs:
             echo "Ollama health check failed"
             exit 1
           fi
+      - name: Check Storage and Memory Available Before Tests
+        if: ${{ always() }}
+        run: |
+          free -h
+          df -h
 
       - name: Run Integration Tests
         env:
@@ -100,12 +105,19 @@ jobs:
             --text-model="meta-llama/Llama-3.2-3B-Instruct" \
             --embedding-model=all-MiniLM-L6-v2
 
+      - name: Check Storage and Memory Available After Tests
+        if: ${{ always() }}
+        run: |
+          free -h
+          df -h
+
       - name: Write ollama logs to file
+        if: ${{ always() }}
         run: |
           sudo journalctl -u ollama.service > ollama.log
 
       - name: Upload all logs to artifacts
-        if: always()
+        if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.client-type }}-${{ matrix.test-type }}

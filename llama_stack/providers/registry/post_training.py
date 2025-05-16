@@ -21,6 +21,17 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasets,
             ],
         ),
+        InlineProviderSpec(
+            api=Api.post_training,
+            provider_type="inline::huggingface",
+            pip_packages=["torch", "trl", "transformers", "peft", "datasets"],
+            module="llama_stack.providers.inline.post_training.huggingface",
+            config_class="llama_stack.providers.inline.post_training.huggingface.HuggingFacePostTrainingConfig",
+            api_dependencies=[
+                Api.datasetio,
+                Api.datasets,
+            ],
+        ),
         remote_provider_spec(
             api=Api.post_training,
             adapter=AdapterSpec(
