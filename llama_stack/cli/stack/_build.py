@@ -206,6 +206,8 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 contents = yaml.safe_load(f)
                 contents = replace_env_vars(contents)
                 build_config = BuildConfig(**contents)
+                if args.image_type:
+                    build_config.image_type = args.image_type
             except Exception as e:
                 cprint(
                     f"Could not parse config file {args.config}: {e}",
