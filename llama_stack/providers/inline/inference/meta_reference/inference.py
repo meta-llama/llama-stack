@@ -28,7 +28,7 @@ from llama_stack.apis.inference import (
     CompletionRequest,
     CompletionResponse,
     CompletionResponseStreamChunk,
-    Inference,
+    InferenceProvider,
     InterleavedContent,
     LogProbConfig,
     Message,
@@ -86,7 +86,7 @@ class MetaReferenceInferenceImpl(
     OpenAICompletionToLlamaStackMixin,
     OpenAIChatCompletionToLlamaStackMixin,
     SentenceTransformerEmbeddingMixin,
-    Inference,
+    InferenceProvider,
     ModelsProtocolPrivate,
 ):
     def __init__(self, config: MetaReferenceInferenceConfig) -> None:

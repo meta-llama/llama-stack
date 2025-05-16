@@ -820,15 +820,33 @@ class BatchChatCompletionResponse(BaseModel):
     batch: list[ChatCompletionResponse]
 
 
+@json_schema_type
+class ChatCompletion(BaseModel):
+    id: str
+    created: int
+    model: str
+    messages: list[OpenAIMessageParam]
+
+
+@json_schema_type
+class ListChatCompletionsResponse(BaseModel):
+    data: list[ChatCompletion]
+    has_more: bool
+
+
+class Order(Enum):
+    asc = "asc"
+    desc = "desc"
+
+
 @runtime_checkable
 @trace_protocol
-class Inference(Protocol):
-    """Llama Stack Inference API for generating completions, chat completions, and embeddings.
-
-    This API provides the raw interface to the underlying models. Two kinds of models are supported:
-    - LLM models: these models generate "raw" and "chat" (conversational) completions.
-    - Embedding models: these models generate embeddings to be used for semantic search.
+class InferenceProvider(Protocol):
     """
+    This protocol defines the interface that should be implemented by all inference providers.
+    """
+
+    API_NAMESPACE: str = "Inference"
 
     model_store: ModelStore | None = None
 
@@ -1062,3 +1080,39 @@ class Inference(Protocol):
         :returns: An OpenAIChatCompletion.
         """
         ...
+
+
+class Inference(InferenceProvider):
+    """Llama Stack Inference API for generating completions, chat completions, and embeddings.
+
+    This API provides the raw interface to the underlying models. Two kinds of models are supported:
+    - LLM models: these models generate "raw" and "chat" (conversational) completions.
+    - Embedding models: these models generate embeddings to be used for semantic search.
+    """
+
+    @webmethod(route="/inference/chat-completion", method="GET")
+    async def list_chat_completions(
+        self,
+        after: str | None = None,
+        limit: int | None = 20,
+        model: str | None = None,
+        order: Order | None = Order.desc,
+    ) -> ListChatCompletionsResponse:
+        """List all chat completions.
+
+        :param after: The ID of the last chat completion to return.
+        :param limit: The maximum number of chat completions to return.
+        :param model: The model to filter by.
+        :param order: The order to sort the chat completions by: "asc" or "desc". Defaults to "desc".
+        :returns: A ListChatCompletionsResponse.
+        """
+        raise NotImplementedError("List chat completions is not implemented")
+
+    @webmethod(route="/inference/chat-completion/{completion_id}", method="GET")
+    async def get_chat_completion(self, completion_id: str) -> ChatCompletion:
+        """Describe a chat completion by its ID.
+
+        :param completion_id: ID of the chat completion.
+        :returns: A ChatCompletion.
+        """
+        raise NotImplementedError("Get chat completion is not implemented")

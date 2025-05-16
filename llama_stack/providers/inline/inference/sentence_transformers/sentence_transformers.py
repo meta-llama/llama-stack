@@ -9,7 +9,7 @@ from collections.abc import AsyncGenerator
 
 from llama_stack.apis.inference import (
     CompletionResponse,
-    Inference,
+    InferenceProvider,
     InterleavedContent,
     LogProbConfig,
     Message,
@@ -38,7 +38,7 @@ class SentenceTransformersInferenceImpl(
     OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompletionToLlamaStackMixin,
     SentenceTransformerEmbeddingMixin,
-    Inference,
+    InferenceProvider,
     ModelsProtocolPrivate,
 ):
     def __init__(self, config: SentenceTransformersInferenceConfig) -> None:

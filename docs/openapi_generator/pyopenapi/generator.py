@@ -759,7 +759,7 @@ class Generator:
         )
 
         return Operation(
-            tags=[op.defining_class.__name__],
+            tags=[getattr(op.defining_class, "API_NAMESPACE", op.defining_class.__name__)],
             summary=None,
             # summary=doc_string.short_description,
             description=description,
@@ -805,6 +805,8 @@ class Generator:
         operation_tags: List[Tag] = []
         for cls in endpoint_classes:
             doc_string = parse_type(cls)
+            if hasattr(cls, "API_NAMESPACE") and cls.API_NAMESPACE != cls.__name__:
+                continue
             operation_tags.append(
                 Tag(
                     name=cls.__name__,

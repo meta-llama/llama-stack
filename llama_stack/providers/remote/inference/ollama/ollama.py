@@ -28,7 +28,7 @@ from llama_stack.apis.inference import (
     EmbeddingsResponse,
     EmbeddingTaskType,
     GrammarResponseFormat,
-    Inference,
+    InferenceProvider,
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
@@ -82,7 +82,7 @@ logger = get_logger(name=__name__, category="inference")
 
 
 class OllamaInferenceAdapter(
-    Inference,
+    InferenceProvider,
     ModelsProtocolPrivate,
 ):
     def __init__(self, url: str) -> None:
