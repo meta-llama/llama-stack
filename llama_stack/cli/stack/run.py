@@ -31,7 +31,7 @@ class StackRun(Subcommand):
 
     def _add_arguments(self):
         self.parser.add_argument(
-            "config",
+            "--config",
             type=str,
             nargs="?",  # Make it optional
             help="Path to config file to use for the run. Required for venv and conda environments.",
