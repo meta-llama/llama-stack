@@ -1,5 +1,8 @@
 ## This is WIP.
 
+
+We use shadcdn/ui [Shadcn UI](https://ui.shadcn.com/) for the UI components.
+
 ## Getting Started
 
 First, install dependencies:
