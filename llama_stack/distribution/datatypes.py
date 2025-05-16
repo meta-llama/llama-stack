@@ -25,7 +25,7 @@ from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.datatypes import Api, ProviderSpec
-from llama_stack.providers.utils.kvstore.config import KVStoreConfig
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -235,6 +235,19 @@ class AuthenticationConfig(BaseModel):
     )
 
 
+class QuotaPeriod(str, Enum):
+    DAY = "day"
+
+
+class QuotaConfig(BaseModel):
+    kvstore: SqliteKVStoreConfig = Field(description="Config for KV store backend (SQLite only for now)")
+    anonymous_max_requests: int = Field(default=100, description="Max requests for unauthenticated clients per period")
+    authenticated_max_requests: int = Field(
+        default=1000, description="Max requests for authenticated clients per period"
+    )
+    period: QuotaPeriod = Field(default=QuotaPeriod.DAY, description="Quota period to set")
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -261,6 +274,10 @@ class ServerConfig(BaseModel):
     host: str | None = Field(
         default=None,
         description="The host the server should listen on",
+    )
+    quota: QuotaConfig | None = Field(
+        default=None,
+        description="Per client quota request configuration",
     )
 
 
