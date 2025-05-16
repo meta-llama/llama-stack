@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import pytest
+from llama_stack_client import BadRequestError
 from llama_stack_client.types import Document
 
 
@@ -223,7 +224,7 @@ def test_rag_tool_insert_and_query(client_with_empty_registry, embedding_model_i
     assert_valid_text_response(response_without_metadata)
     assert not any("metadata:" in chunk.text.lower() for chunk in response_without_metadata.content)
 
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, BadRequestError)):
         client_with_empty_registry.tool_runtime.rag_tool.query(
             vector_db_ids=[vector_db_id],
             content="What is the name of the method used for fine-tuning?",
