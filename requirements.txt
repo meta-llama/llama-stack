@@ -11,6 +11,7 @@ click==8.1.8
 colorama==0.4.6 ; sys_platform == 'win32'
 distro==1.9.0
 durationpy==0.9
+ecdsa==0.19.1
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
 filelock==3.17.0
 fire==0.7.0
@@ -23,7 +24,6 @@ huggingface-hub==0.29.0
 idna==3.10
 jinja2==3.1.6
 jiter==0.8.2
-jose==1.0.0
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 kubernetes==32.0.1
@@ -40,14 +40,15 @@ pandas==2.2.3
 pillow==11.1.0
 prompt-toolkit==3.0.50
 pyaml==25.1.0
-pyasn1==0.6.1
-pyasn1-modules==0.4.2
+pyasn1==0.4.8
+pyasn1-modules==0.4.1
 pycryptodomex==3.21.0
 pydantic==2.10.6
 pydantic-core==2.27.2
 pygments==2.19.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+python-jose==3.4.0
 pytz==2025.1
 pyyaml==6.0.2
 referencing==0.36.2

@@ -12,7 +12,11 @@ from fastapi.testclient import TestClient
 
 from llama_stack.distribution.datatypes import AccessAttributes
 from llama_stack.distribution.server.auth import AuthenticationMiddleware
-from llama_stack.distribution.server.auth_providers import AuthProviderConfig, AuthProviderType
+from llama_stack.distribution.server.auth_providers import (
+    AuthProviderConfig,
+    AuthProviderType,
+    TokenValidationResult,
+)
 
 
 class MockResponse:
@@ -130,6 +134,7 @@ async def mock_post_success(*args, **kwargs):
         200,
         {
             "message": "Authentication successful",
+            "principal": "test-principal",
             "access_attributes": {
                 "roles": ["admin", "user"],
                 "teams": ["ml-team", "nlp-team"],
@@ -223,6 +228,7 @@ async def test_http_middleware_with_access_attributes(mock_http_middleware, mock
             200,
             {
                 "message": "Authentication successful",
+                "principal": "test-principal",
                 "access_attributes": {
                     "roles": ["admin", "user"],
                     "teams": ["ml-team", "nlp-team"],
@@ -268,8 +274,8 @@ async def test_http_middleware_no_attributes(mock_http_middleware, mock_scope):
 
         assert "user_attributes" in mock_scope
         attributes = mock_scope["user_attributes"]
-        assert "namespaces" in attributes
-        assert attributes["namespaces"] == ["test.jwt.token"]
+        assert "roles" in attributes
+        assert attributes["roles"] == ["test.jwt.token"]
 
 
 # Kubernetes Tests
@@ -296,8 +302,11 @@ def test_valid_k8s_authentication(mock_api_client, k8s_client, valid_token):
 
     # Mock the token validation to return valid access attributes
     with patch("llama_stack.distribution.server.auth_providers.KubernetesAuthProvider.validate_token") as mock_validate:
-        mock_validate.return_value = AccessAttributes(
-            roles=["admin"], teams=["ml-team"], projects=["llama-3"], namespaces=["research"]
+        mock_validate.return_value = TokenValidationResult(
+            principal="test-principal",
+            access_attributes=AccessAttributes(
+                roles=["admin"], teams=["ml-team"], projects=["llama-3"], namespaces=["research"]
+            ),
         )
         response = k8s_client.get("/test", headers={"Authorization": f"Bearer {valid_token}"})
         assert response.status_code == 200
