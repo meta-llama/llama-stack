@@ -230,6 +230,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             image_name=image_name,
             config_path=args.config,
             template_name=args.template,
+            export_dir=args.export_dir,
         )
 
     except (Exception, RuntimeError) as exc:
@@ -343,6 +344,7 @@ def _run_stack_build_command_from_build_config(
     image_name: str | None = None,
     template_name: str | None = None,
     config_path: str | None = None,
+    export_dir: str | None = None,
 ) -> str:
     image_name = image_name or build_config.image_name
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
@@ -385,6 +387,7 @@ def _run_stack_build_command_from_build_config(
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
         run_config=run_config_file,
+        export_dir=export_dir,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
