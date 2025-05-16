@@ -63,4 +63,13 @@ def available_providers() -> list[ProviderSpec]:
                 config_class="llama_stack.providers.remote.safety.nvidia.NVIDIASafetyConfig",
             ),
         ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="trustyai_fms",
+                pip_packages=[],
+                module="llama_stack.providers.remote.safety.trustyai_fms",
+                config_class="llama_stack.providers.remote.safety.trustyai_fms.config.FMSSafetyProviderConfig",
+            ),
+        ),
     ]
