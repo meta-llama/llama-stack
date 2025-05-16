@@ -15,8 +15,14 @@ class PromptGuardType(Enum):
     jailbreak = "jailbreak"
 
 
+class PromptGuardExecutionType(Enum):
+    cpu = "cpu"
+    cuda = "cuda"
+
+
 class PromptGuardConfig(BaseModel):
     guard_type: str = PromptGuardType.injection.value
+    guard_execution_type: str = PromptGuardExecutionType.cuda.value
 
     @classmethod
     @field_validator("guard_type")
@@ -26,7 +32,15 @@ class PromptGuardConfig(BaseModel):
         return v
 
     @classmethod
+    @field_validator("guard_execution_type")
+    def validate_guard_execution_type(cls, v):
+        if v not in [t.value for t in PromptGuardExecutionType]:
+            raise ValueError(f"Unknown prompt guard execution type: {v}")
+        return v
+
+    @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
         return {
             "guard_type": "injection",
+            "guard_execution_type": "cuda",
         }
