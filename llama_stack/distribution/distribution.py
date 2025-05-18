@@ -66,7 +66,7 @@ def builtin_automatically_routed_apis() -> list[AutoRoutedApiInfo]:
     ]
 
 
-def apis_provided_by_stack() -> set[Api]:
+def all_builtin_apis() -> set[Api]:
     return {
         Api.models,
         Api.shields,
@@ -82,7 +82,7 @@ def apis_provided_by_stack() -> set[Api]:
 
 
 def providable_apis() -> list[Api]:
-    return [api for api in Api if api not in apis_provided_by_stack()]
+    return [api for api in Api if api not in all_builtin_apis()]
 
 
 def _load_remote_provider_spec(spec_data: dict[str, Any], api: Api) -> ProviderSpec:
