@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -16,6 +17,7 @@ from llama_stack.distribution.server.auth_providers import (
     AuthProviderConfig,
     AuthProviderType,
     TokenValidationResult,
+    get_attributes_from_claims,
 )
 
 
@@ -435,7 +437,7 @@ async def mock_jwks_response(*args, **kwargs):
                     "kty": "oct",
                     "alg": "HS256",
                     "use": "sig",
-                    "k": "MTIzNDU2Nzg5MA",  # Base64-encoded "1234567890"
+                    "k": base64.b64encode(b"foobarbaz").decode(),
                 }
             ]
         },
@@ -446,7 +448,6 @@ async def mock_jwks_response(*args, **kwargs):
 def jwt_token_valid():
     from jose import jwt
 
-    # correctly signed jwt token with "kid" in header
     return jwt.encode(
         {
             "sub": "my-user",
@@ -454,7 +455,7 @@ def jwt_token_valid():
             "scope": "foo bar",
             "aud": "llama-stack",
         },
-        key="1234567890",
+        key="foobarbaz",
         algorithm="HS256",
         headers={"kid": "1234567890"},
     )
@@ -465,6 +466,54 @@ def test_valid_oauth2_authentication(oauth2_client, jwt_token_valid):
     response = oauth2_client.get("/test", headers={"Authorization": f"Bearer {jwt_token_valid}"})
     assert response.status_code == 200
     assert response.json() == {"message": "Authentication successful"}
+
+
+@patch("httpx.AsyncClient.get", new=mock_jwks_response)
+def test_invalid_oauth2_authentication(oauth2_client, invalid_token):
+    response = oauth2_client.get("/test", headers={"Authorization": f"Bearer {invalid_token}"})
+    assert response.status_code == 401
+    assert "Invalid JWT token" in response.json()["error"]["message"]
+
+
+def test_get_attributes_from_claims():
+    claims = {
+        "sub": "my-user",
+        "groups": ["group1", "group2"],
+        "scope": "foo bar",
+        "aud": "llama-stack",
+    }
+    attributes = get_attributes_from_claims(claims, {"sub": "roles", "groups": "teams"})
+    assert attributes.roles == ["my-user"]
+    assert attributes.teams == ["group1", "group2"]
+
+    claims = {
+        "sub": "my-user",
+        "tenant": "my-tenant",
+    }
+    attributes = get_attributes_from_claims(claims, {"sub": "roles", "tenant": "namespaces"})
+    assert attributes.roles == ["my-user"]
+    assert attributes.namespaces == ["my-tenant"]
+
+    claims = {
+        "sub": "my-user",
+        "username": "my-username",
+        "tenant": "my-tenant",
+        "groups": ["group1", "group2"],
+        "team": "my-team",
+    }
+    attributes = get_attributes_from_claims(
+        claims,
+        {
+            "sub": "roles",
+            "tenant": "namespaces",
+            "username": "roles",
+            "team": "teams",
+            "groups": "teams",
+        },
+    )
+    assert set(attributes.roles) == {"my-user", "my-username"}
+    assert set(attributes.teams) == {"my-team", "group1", "group2"}
+    assert attributes.namespaces == ["my-tenant"]
 
 
 # TODO: add more tests for oauth2 token provider
