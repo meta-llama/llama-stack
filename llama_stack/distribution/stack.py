@@ -15,6 +15,7 @@ import yaml
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.batch_inference import BatchInference
 from llama_stack.apis.benchmarks import Benchmarks
+from llama_stack.apis.credentials import Credentials
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
@@ -47,7 +48,6 @@ logger = get_logger(name=__name__, category="core")
 
 
 class LlamaStack(
-    Providers,
     VectorDBs,
     Inference,
     BatchInference,
@@ -65,11 +65,13 @@ class LlamaStack(
     DatasetIO,
     Models,
     Shields,
-    Inspect,
     ToolGroups,
     ToolRuntime,
     RAGToolRuntime,
     Files,
+    Providers,
+    Credentials,
+    Inspect,
 ):
     pass
 

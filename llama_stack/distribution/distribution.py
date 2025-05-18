@@ -66,9 +66,23 @@ def builtin_automatically_routed_apis() -> list[AutoRoutedApiInfo]:
     ]
 
 
+def apis_provided_by_stack() -> set[Api]:
+    return {
+        Api.models,
+        Api.shields,
+        Api.vector_dbs,
+        Api.datasets,
+        Api.scoring,
+        Api.eval,
+        Api.tool_runtime,
+        Api.credentials,
+        Api.providers,
+        Api.inspect,
+    }
+
+
 def providable_apis() -> list[Api]:
-    routing_table_apis = {x.routing_table_api for x in builtin_automatically_routed_apis()}
-    return [api for api in Api if api not in routing_table_apis and api != Api.inspect and api != Api.providers]
+    return [api for api in Api if api not in apis_provided_by_stack()]
 
 
 def _load_remote_provider_spec(spec_data: dict[str, Any], api: Api) -> ProviderSpec:

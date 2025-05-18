@@ -348,6 +348,36 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateAgentTurnRequest'
         required: true
+  /v1/credentials:
+    post:
+      responses:
+        '200':
+          description: created ProviderCredential object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCredential'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Credentials
+      description: >-
+        Create a new set of credentials for a given provider.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCredentialRequest'
+        required: true
   /v1/openai/v1/responses:
     post:
       responses:
@@ -566,6 +596,66 @@ paths:
           in: path
           description: >-
             The ID of the agent to delete the session for.
+          required: true
+          schema:
+            type: string
+  /v1/credentials/{credential_id}:
+    post:
+      responses:
+        '200':
+          description: updated ProviderCredential object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderCredential'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Credentials
+      description: >-
+        Update an existing set of credentials for a given provider.
+      parameters:
+        - name: credential_id
+          in: path
+          description: The ID of the credential to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCredentialRequest'
+        required: true
+    delete:
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Credentials
+      description: Delete a credential by its ID.
+      parameters:
+        - name: credential_id
+          in: path
+          description: The ID of the credential to delete.
           required: true
           schema:
             type: string
@@ -4680,6 +4770,58 @@ components:
         - event_type
         - turn_id
       title: AgentTurnResponseTurnStartPayload
+    CreateCredentialRequest:
+      type: object
+      properties:
+        provider_id:
+          type: string
+          description: >-
+            The ID of the provider to create credentials for.
+        token_type:
+          type: string
+          enum:
+            - oauth2
+            - api_key
+          description: >-
+            The type of token to create. This is provided in the API to serve as lightweight
+            documentation / metadata for the token.
+        token:
+          type: string
+          description: The token itself.
+        ttl_seconds:
+          type: integer
+          description: >-
+            The time to live for the credential in seconds. Defaults to 3600 seconds.
+      additionalProperties: false
+      required:
+        - provider_id
+        - token_type
+        - token
+        - ttl_seconds
+      title: CreateCredentialRequest
+    ProviderCredential:
+      type: object
+      properties:
+        credential_id:
+          type: string
+        provider_id:
+          type: string
+        token_type:
+          type: string
+          enum:
+            - oauth2
+            - api_key
+          title: CredentialTokenType
+          description: The type of credential token.
+        token:
+          type: string
+      additionalProperties: false
+      required:
+        - credential_id
+        - provider_id
+        - token_type
+        - token
+      title: ProviderCredential
     OpenAIResponseInput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
@@ -8971,6 +9113,16 @@ components:
       description: >-
         Response from the synthetic data generation. Batch of (prompt, response, score)
         tuples that pass the threshold.
+    UpdateCredentialRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The new token to set for the credential.
+      additionalProperties: false
+      required:
+        - token
+      title: UpdateCredentialRequest
     VersionInfo:
       type: object
       properties:
@@ -9059,6 +9211,32 @@ tags:
     x-displayName: >-
       Batch inference API for generating completions and chat completions.
   - name: Benchmarks
+  - name: Credentials
+    description: >-
+      Each provider may need optional authentication. This might be a persistent API
+      key, or
+
+      a short-lived OAuth2 token. There is a single credential for each provider instance.
+
+
+      Credentials are ephemeral -- they may be purged after the specified TTL.
+
+
+      Credentials are associated with the same ABAC access attributes and permissions
+      as other
+
+      resources in the system.
+
+
+      It is recommended to store these credentials using Envelope Encryption. The
+      storage could
+
+      be a regular KVStore, but you should use a secure Key Management Service for
+      encrypting
+
+      and decrypting.
+    x-displayName: >-
+      Create, update and delete ephemeral provider-specific credentials.
   - name: DatasetIO
   - name: Datasets
   - name: Eval
@@ -9099,6 +9277,7 @@ x-tagGroups:
       - Agents
       - BatchInference (Coming Soon)
       - Benchmarks
+      - Credentials
       - DatasetIO
       - Datasets
       - Eval
