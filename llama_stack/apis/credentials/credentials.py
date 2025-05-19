@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from datetime import datetime
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
@@ -30,6 +31,7 @@ class ProviderCredential(BaseModel):
     provider_id: str
     token_type: CredentialTokenType
     token: str
+    expires_at: datetime
 
 
 @runtime_checkable

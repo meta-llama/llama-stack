@@ -4815,12 +4815,16 @@ components:
           description: The type of credential token.
         token:
           type: string
+        expires_at:
+          type: string
+          format: date-time
       additionalProperties: false
       required:
         - credential_id
         - provider_id
         - token_type
         - token
+        - expires_at
       title: ProviderCredential
     OpenAIResponseInput:
       oneOf:

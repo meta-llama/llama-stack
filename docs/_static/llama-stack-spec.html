@@ -6797,6 +6797,10 @@
                     },
                     "token": {
                         "type": "string"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 },
                 "additionalProperties": false,
@@ -6804,7 +6808,8 @@
                     "credential_id",
                     "provider_id",
                     "token_type",
-                    "token"
+                    "token",
+                    "expires_at"
                 ],
                 "title": "ProviderCredential"
             },
