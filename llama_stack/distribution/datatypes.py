@@ -340,8 +340,17 @@ class BuildConfig(BaseModel):
         default=None,
         description="Name of the distribution to build",
     )
-    external_providers_dir: str | None = Field(
+    external_providers_dir: Path | None = Field(
         default=None,
         description="Path to directory containing external provider implementations. The providers packages will be resolved from this directory. "
         "pip_packages MUST contain the provider package name.",
     )
+
+    @field_validator("external_providers_dir")
+    @classmethod
+    def validate_external_providers_dir(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return Path(v)
+        return v
