@@ -178,7 +178,7 @@ image_name: ollama
 image_type: conda
 
 # If some providers are external, you can specify the path to the implementation
-external_providers_dir: /etc/llama-stack/providers.d
+external_providers_dir: ~/.llama/providers.d
 ```
 
 ```
@@ -206,7 +206,7 @@ distribution_spec:
 image_type: container
 image_name: ci-test
 # Path to external provider implementations
-external_providers_dir: /etc/llama-stack/providers.d
+external_providers_dir: ~/.llama/providers.d
 ```
 
 Here's an example for a custom Ollama provider:
@@ -271,7 +271,7 @@ Now, let's start the Llama Stack Distribution Server. You will need the YAML con
 
 ```
 llama stack run -h
-usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--disable-ipv6] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE] [--tls-certfile TLS_CERTFILE]
+usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE] [--tls-certfile TLS_CERTFILE]
                        [--image-type {conda,container,venv}]
                        config
 
@@ -285,7 +285,6 @@ options:
   --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. (default: 8321)
   --image-name IMAGE_NAME
                         Name of the image to run. Defaults to the current environment (default: None)
-  --disable-ipv6        Disable IPv6 support (default: False)
   --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: [])
   --tls-keyfile TLS_KEYFILE
                         Path to TLS key file for HTTPS (default: None)

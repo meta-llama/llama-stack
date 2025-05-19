@@ -28,7 +28,7 @@ from llama_stack.apis.inference import (
     EmbeddingsResponse,
     EmbeddingTaskType,
     GrammarResponseFormat,
-    Inference,
+    InferenceProvider,
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
@@ -61,6 +61,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
     get_sampling_options,
+    prepare_openai_completion_params,
     process_chat_completion_response,
     process_chat_completion_stream_response,
     process_completion_response,
@@ -81,7 +82,7 @@ logger = get_logger(name=__name__, category="inference")
 
 
 class OllamaInferenceAdapter(
-    Inference,
+    InferenceProvider,
     ModelsProtocolPrivate,
 ):
     def __init__(self, url: str) -> None:
@@ -139,6 +140,8 @@ class OllamaInferenceAdapter(
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         request = CompletionRequest(
             model=model.provider_resource_id,
             content=content,
@@ -202,6 +205,8 @@ class OllamaInferenceAdapter(
         if sampling_params is None:
             sampling_params = SamplingParams()
         model = await self._get_model(model_id)
+        if model.provider_resource_id is None:
+            raise ValueError(f"Model {model_id} has no provider_resource_id set")
         request = ChatCompletionRequest(
             model=model.provider_resource_id,
             messages=messages,
@@ -346,6 +351,8 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m["model"] for m in response["models"]]
+        if model.provider_resource_id is None:
+            raise ValueError("Model provider_resource_id cannot be None")
         provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
         if provider_resource_id is None:
             provider_resource_id = model.provider_resource_id
@@ -389,29 +396,25 @@ class OllamaInferenceAdapter(
             raise ValueError("Ollama does not support non-string prompts for completion")
 
         model_obj = await self._get_model(model)
-        params = {
-            k: v
-            for k, v in {
-                "model": model_obj.provider_resource_id,
-                "prompt": prompt,
-                "best_of": best_of,
-                "echo": echo,
-                "frequency_penalty": frequency_penalty,
-                "logit_bias": logit_bias,
-                "logprobs": logprobs,
-                "max_tokens": max_tokens,
-                "n": n,
-                "presence_penalty": presence_penalty,
-                "seed": seed,
-                "stop": stop,
-                "stream": stream,
-                "stream_options": stream_options,
-                "temperature": temperature,
-                "top_p": top_p,
-                "user": user,
-            }.items()
-            if v is not None
-        }
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            prompt=prompt,
+            best_of=best_of,
+            echo=echo,
+            frequency_penalty=frequency_penalty,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_tokens=max_tokens,
+            n=n,
+            presence_penalty=presence_penalty,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            top_p=top_p,
+            user=user,
+        )
         return await self.openai_client.completions.create(**params)  # type: ignore
 
     async def openai_chat_completion(
@@ -441,41 +444,31 @@ class OllamaInferenceAdapter(
         user: str | None = None,
     ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
         model_obj = await self._get_model(model)
-
-        # ollama still makes tool calls even when tool_choice is "none"
-        # so we need to remove the tools in that case
-        if tool_choice == "none" and tools is not None:
-            tools = None
-
-        params = {
-            k: v
-            for k, v in {
-                "model": model_obj.provider_resource_id,
-                "messages": messages,
-                "frequency_penalty": frequency_penalty,
-                "function_call": function_call,
-                "functions": functions,
-                "logit_bias": logit_bias,
-                "logprobs": logprobs,
-                "max_completion_tokens": max_completion_tokens,
-                "max_tokens": max_tokens,
-                "n": n,
-                "parallel_tool_calls": parallel_tool_calls,
-                "presence_penalty": presence_penalty,
-                "response_format": response_format,
-                "seed": seed,
-                "stop": stop,
-                "stream": stream,
-                "stream_options": stream_options,
-                "temperature": temperature,
-                "tool_choice": tool_choice,
-                "tools": tools,
-                "top_logprobs": top_logprobs,
-                "top_p": top_p,
-                "user": user,
-            }.items()
-            if v is not None
-        }
+        params = await prepare_openai_completion_params(
+            model=model_obj.provider_resource_id,
+            messages=messages,
+            frequency_penalty=frequency_penalty,
+            function_call=function_call,
+            functions=functions,
+            logit_bias=logit_bias,
+            logprobs=logprobs,
+            max_completion_tokens=max_completion_tokens,
+            max_tokens=max_tokens,
+            n=n,
+            parallel_tool_calls=parallel_tool_calls,
+            presence_penalty=presence_penalty,
+            response_format=response_format,
+            seed=seed,
+            stop=stop,
+            stream=stream,
+            stream_options=stream_options,
+            temperature=temperature,
+            tool_choice=tool_choice,
+            tools=tools,
+            top_logprobs=top_logprobs,
+            top_p=top_p,
+            user=user,
+        )
         return await self.openai_client.chat.completions.create(**params)  # type: ignore
 
     async def batch_completion(

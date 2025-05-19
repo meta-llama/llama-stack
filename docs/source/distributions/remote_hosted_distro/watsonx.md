@@ -18,7 +18,7 @@ The `llamastack/distribution-watsonx` distribution consists of the following pro
 | agents | `inline::meta-reference` |
 | datasetio | `remote::huggingface`, `inline::localfs` |
 | eval | `inline::meta-reference` |
-| inference | `remote::watsonx` |
+| inference | `remote::watsonx`, `inline::sentence-transformers` |
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
@@ -70,7 +70,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-watsonx \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env WATSONX_API_KEY=$WATSONX_API_KEY \
   --env WATSONX_PROJECT_ID=$WATSONX_PROJECT_ID \

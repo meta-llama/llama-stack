@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.5"
+version = "0.2.7"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -27,10 +27,11 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.5",
+    "llama-stack-client>=0.2.7",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
+    "python-jose",
     "pydantic>=2",
     "requests",
     "rich",
@@ -45,6 +46,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-timeout",
     "pytest-asyncio",
     "pytest-cov",
     "pytest-html",
@@ -106,7 +108,7 @@ codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.5",
+    "llama-stack-client>=0.2.7",
     "streamlit-option-menu",
 ]
 
@@ -203,58 +205,24 @@ follow_imports = "silent"
 # to exclude the entire directory.
 exclude = [
     # As we fix more and more of these, we should remove them from the list
-    "^llama_stack/apis/agents/agents\\.py$",
-    "^llama_stack/apis/batch_inference/batch_inference\\.py$",
-    "^llama_stack/apis/benchmarks/benchmarks\\.py$",
-    "^llama_stack/apis/common/content_types\\.py$",
     "^llama_stack/apis/common/training_types\\.py$",
-    "^llama_stack/apis/datasetio/datasetio\\.py$",
-    "^llama_stack/apis/datasets/datasets\\.py$",
-    "^llama_stack/apis/eval/eval\\.py$",
-    "^llama_stack/apis/files/files\\.py$",
-    "^llama_stack/apis/inference/inference\\.py$",
-    "^llama_stack/apis/inspect/inspect\\.py$",
-    "^llama_stack/apis/models/models\\.py$",
-    "^llama_stack/apis/post_training/post_training\\.py$",
-    "^llama_stack/apis/providers/providers\\.py$",
-    "^llama_stack/apis/resource\\.py$",
-    "^llama_stack/apis/safety/safety\\.py$",
-    "^llama_stack/apis/scoring/scoring\\.py$",
-    "^llama_stack/apis/scoring_functions/scoring_functions\\.py$",
-    "^llama_stack/apis/shields/shields\\.py$",
-    "^llama_stack/apis/synthetic_data_generation/synthetic_data_generation\\.py$",
-    "^llama_stack/apis/telemetry/telemetry\\.py$",
-    "^llama_stack/apis/tools/rag_tool\\.py$",
-    "^llama_stack/apis/tools/tools\\.py$",
-    "^llama_stack/apis/vector_dbs/vector_dbs\\.py$",
-    "^llama_stack/apis/vector_io/vector_io\\.py$",
     "^llama_stack/cli/download\\.py$",
-    "^llama_stack/cli/llama\\.py$",
     "^llama_stack/cli/stack/_build\\.py$",
-    "^llama_stack/cli/stack/list_providers\\.py$",
     "^llama_stack/distribution/build\\.py$",
     "^llama_stack/distribution/client\\.py$",
-    "^llama_stack/distribution/configure\\.py$",
-    "^llama_stack/distribution/library_client\\.py$",
     "^llama_stack/distribution/request_headers\\.py$",
     "^llama_stack/distribution/routers/",
     "^llama_stack/distribution/server/endpoints\\.py$",
     "^llama_stack/distribution/server/server\\.py$",
-    "^llama_stack/distribution/server/websocket_server\\.py$",
     "^llama_stack/distribution/stack\\.py$",
     "^llama_stack/distribution/store/registry\\.py$",
-    "^llama_stack/distribution/ui/page/playground/chat\\.py$",
     "^llama_stack/distribution/utils/exec\\.py$",
     "^llama_stack/distribution/utils/prompt_for_config\\.py$",
-    "^llama_stack/models/llama/datatypes\\.py$",
     "^llama_stack/models/llama/llama3/chat_format\\.py$",
     "^llama_stack/models/llama/llama3/interface\\.py$",
-    "^llama_stack/models/llama/llama3/prompt_templates/system_prompts\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
     "^llama_stack/models/llama/llama3_3/prompts\\.py$",
-    "^llama_stack/models/llama/llama4/",
-    "^llama_stack/models/llama/sku_list\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/",
     "^llama_stack/providers/inline/agents/meta_reference/agent_instance\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/agents\\.py$",
@@ -333,13 +301,11 @@ exclude = [
     "^llama_stack/providers/utils/telemetry/dataset_mixin\\.py$",
     "^llama_stack/providers/utils/telemetry/trace_protocol\\.py$",
     "^llama_stack/providers/utils/telemetry/tracing\\.py$",
-    "^llama_stack/scripts/",
     "^llama_stack/strong_typing/auxiliary\\.py$",
     "^llama_stack/strong_typing/deserializer\\.py$",
     "^llama_stack/strong_typing/inspection\\.py$",
     "^llama_stack/strong_typing/schema\\.py$",
     "^llama_stack/strong_typing/serializer\\.py$",
-    "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
     "^llama_stack/templates/llama_api/llama_api\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",
@@ -355,3 +321,6 @@ ignore_missing_imports = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.field_validator"]

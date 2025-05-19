@@ -145,7 +145,7 @@ def get_provider_registry(
 
     # Check if config has the external_providers_dir attribute
     if config and hasattr(config, "external_providers_dir") and config.external_providers_dir:
-        external_providers_dir = os.path.abspath(config.external_providers_dir)
+        external_providers_dir = os.path.abspath(os.path.expanduser(config.external_providers_dir))
         if not os.path.exists(external_providers_dir):
             raise FileNotFoundError(f"External providers directory not found: {external_providers_dir}")
         logger.info(f"Loading external providers from {external_providers_dir}")

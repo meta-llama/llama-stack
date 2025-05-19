@@ -22,14 +22,14 @@ class CommonBenchmarkFields(BaseModel):
 
 @json_schema_type
 class Benchmark(CommonBenchmarkFields, Resource):
-    type: Literal[ResourceType.benchmark.value] = ResourceType.benchmark.value
+    type: Literal[ResourceType.benchmark] = ResourceType.benchmark
 
     @property
     def benchmark_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_benchmark_id(self) -> str:
+    def provider_benchmark_id(self) -> str | None:
         return self.provider_resource_id
 
 
@@ -46,13 +46,24 @@ class ListBenchmarksResponse(BaseModel):
 @runtime_checkable
 class Benchmarks(Protocol):
     @webmethod(route="/eval/benchmarks", method="GET")
-    async def list_benchmarks(self) -> ListBenchmarksResponse: ...
+    async def list_benchmarks(self) -> ListBenchmarksResponse:
+        """List all benchmarks.
+
+        :returns: A ListBenchmarksResponse.
+        """
+        ...
 
     @webmethod(route="/eval/benchmarks/{benchmark_id}", method="GET")
     async def get_benchmark(
         self,
         benchmark_id: str,
-    ) -> Benchmark: ...
+    ) -> Benchmark:
+        """Get a benchmark by its ID.
+
+        :param benchmark_id: The ID of the benchmark to get.
+        :returns: A Benchmark.
+        """
+        ...
 
     @webmethod(route="/eval/benchmarks", method="POST")
     async def register_benchmark(
@@ -63,4 +74,14 @@ class Benchmarks(Protocol):
         provider_benchmark_id: str | None = None,
         provider_id: str | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> None: ...
+    ) -> None:
+        """Register a benchmark.
+
+        :param benchmark_id: The ID of the benchmark to register.
+        :param dataset_id: The ID of the dataset to use for the benchmark.
+        :param scoring_functions: The scoring functions to use for the benchmark.
+        :param provider_benchmark_id: The ID of the provider benchmark to use for the benchmark.
+        :param provider_id: The ID of the provider to use for the benchmark.
+        :param metadata: The metadata to use for the benchmark.
+        """
+        ...

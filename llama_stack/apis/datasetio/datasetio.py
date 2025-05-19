@@ -34,14 +34,21 @@ class DatasetIO(Protocol):
         - limit: Number of items to return. If None or -1, returns all items.
 
         The response includes:
-        - data: List of items for the current page
-        - has_more: Whether there are more items available after this set
+        - data: List of items for the current page.
+        - has_more: Whether there are more items available after this set.
 
         :param dataset_id: The ID of the dataset to get the rows from.
         :param start_index: Index into dataset for the first row to get. Get all rows if None.
         :param limit: The number of rows to get.
+        :returns: A PaginatedResponse.
         """
         ...
 
     @webmethod(route="/datasetio/append-rows/{dataset_id:path}", method="POST")
-    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None: ...
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
+        """Append rows to a dataset.
+
+        :param dataset_id: The ID of the dataset to append the rows to.
+        :param rows: The rows to append to the dataset.
+        """
+        ...

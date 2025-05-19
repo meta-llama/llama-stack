@@ -1,0 +1,37 @@
+version: '2'
+distribution_spec:
+  description: Quick start template for running Llama Stack with several popular providers
+  providers:
+    inference:
+    - remote::openai
+    - remote::fireworks
+    - remote::anthropic
+    - remote::gemini
+    - remote::groq
+    - remote::sambanova
+    - inline::sentence-transformers
+    vector_io:
+    - inline::sqlite-vec
+    - remote::chromadb
+    - remote::pgvector
+    safety:
+    - inline::llama-guard
+    agents:
+    - inline::meta-reference
+    telemetry:
+    - inline::meta-reference
+    eval:
+    - inline::meta-reference
+    datasetio:
+    - remote::huggingface
+    - inline::localfs
+    scoring:
+    - inline::basic
+    - inline::llm-as-judge
+    - inline::braintrust
+    tool_runtime:
+    - remote::brave-search
+    - remote::tavily-search
+    - inline::rag-runtime
+    - remote::model-context-protocol
+image_type: conda

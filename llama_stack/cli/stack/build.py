@@ -49,7 +49,7 @@ class StackBuild(Subcommand):
             type=str,
             help="Image Type to use for the build. If not specified, will use the image type from the template config.",
             choices=[e.value for e in ImageType],
-            default=ImageType.CONDA.value,
+            default=None,  # no default so we can detect if a user specified --image-type and override image_type in the config
         )
 
         self.parser.add_argument(

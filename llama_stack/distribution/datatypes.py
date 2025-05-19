@@ -5,9 +5,10 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from pathlib import Path
 from typing import Annotated, Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.apis.benchmarks import Benchmark, BenchmarkInput
 from llama_stack.apis.datasetio import DatasetIO
@@ -249,9 +250,17 @@ class ServerConfig(BaseModel):
         default=None,
         description="Path to TLS key file for HTTPS",
     )
+    tls_cafile: str | None = Field(
+        default=None,
+        description="Path to TLS CA file for HTTPS with mutual TLS authentication",
+    )
     auth: AuthenticationConfig | None = Field(
         default=None,
         description="Authentication configuration for the server",
+    )
+    host: str | None = Field(
+        default=None,
+        description="The host the server should listen on",
     )
 
 
@@ -304,10 +313,19 @@ a default SQLite store will be used.""",
         description="Configuration for the HTTP(S) server",
     )
 
-    external_providers_dir: str | None = Field(
+    external_providers_dir: Path | None = Field(
         default=None,
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
+
+    @field_validator("external_providers_dir")
+    @classmethod
+    def validate_external_providers_dir(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return Path(v)
+        return v
 
 
 class BuildConfig(BaseModel):
@@ -322,8 +340,17 @@ class BuildConfig(BaseModel):
         default=None,
         description="Name of the distribution to build",
     )
-    external_providers_dir: str | None = Field(
+    external_providers_dir: Path | None = Field(
         default=None,
         description="Path to directory containing external provider implementations. The providers packages will be resolved from this directory. "
         "pip_packages MUST contain the provider package name.",
     )
+
+    @field_validator("external_providers_dir")
+    @classmethod
+    def validate_external_providers_dir(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            return Path(v)
+        return v

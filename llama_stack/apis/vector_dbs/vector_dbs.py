@@ -15,7 +15,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 @json_schema_type
 class VectorDB(Resource):
-    type: Literal[ResourceType.vector_db.value] = ResourceType.vector_db.value
+    type: Literal[ResourceType.vector_db] = ResourceType.vector_db
 
     embedding_model: str
     embedding_dimension: int
@@ -25,7 +25,7 @@ class VectorDB(Resource):
         return self.identifier
 
     @property
-    def provider_vector_db_id(self) -> str:
+    def provider_vector_db_id(self) -> str | None:
         return self.provider_resource_id
 
 
@@ -44,13 +44,24 @@ class ListVectorDBsResponse(BaseModel):
 @trace_protocol
 class VectorDBs(Protocol):
     @webmethod(route="/vector-dbs", method="GET")
-    async def list_vector_dbs(self) -> ListVectorDBsResponse: ...
+    async def list_vector_dbs(self) -> ListVectorDBsResponse:
+        """List all vector databases.
+
+        :returns: A ListVectorDBsResponse.
+        """
+        ...
 
     @webmethod(route="/vector-dbs/{vector_db_id:path}", method="GET")
     async def get_vector_db(
         self,
         vector_db_id: str,
-    ) -> VectorDB: ...
+    ) -> VectorDB:
+        """Get a vector database by its identifier.
+
+        :param vector_db_id: The identifier of the vector database to get.
+        :returns: A VectorDB.
+        """
+        ...
 
     @webmethod(route="/vector-dbs", method="POST")
     async def register_vector_db(
@@ -60,7 +71,22 @@ class VectorDBs(Protocol):
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
         provider_vector_db_id: str | None = None,
-    ) -> VectorDB: ...
+    ) -> VectorDB:
+        """Register a vector database.
+
+        :param vector_db_id: The identifier of the vector database to register.
+        :param embedding_model: The embedding model to use.
+        :param embedding_dimension: The dimension of the embedding model.
+        :param provider_id: The identifier of the provider.
+        :param provider_vector_db_id: The identifier of the vector database in the provider.
+        :returns: A VectorDB.
+        """
+        ...
 
     @webmethod(route="/vector-dbs/{vector_db_id:path}", method="DELETE")
-    async def unregister_vector_db(self, vector_db_id: str) -> None: ...
+    async def unregister_vector_db(self, vector_db_id: str) -> None:
+        """Unregister a vector database.
+
+        :param vector_db_id: The identifier of the vector database to unregister.
+        """
+        ...

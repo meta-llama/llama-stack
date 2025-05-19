@@ -948,6 +948,8 @@ def llama_meta_net_info(model: Model) -> LlamaDownloadInfo:
     elif model.core_model_id == CoreModelId.llama_guard_2_8b:
         folder = "llama-guard-2"
     else:
+        if model.huggingface_repo is None:
+            raise ValueError(f"Model {model.core_model_id} has no huggingface_repo set")
         folder = model.huggingface_repo.split("/")[-1]
         if "Llama-2" in folder:
             folder = folder.lower()
@@ -1024,3 +1026,4 @@ def llama_meta_pth_size(model: Model) -> int:
                 return 54121549657
             else:
                 return 100426653046
+    return 0

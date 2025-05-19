@@ -6,4 +6,4 @@ distribution_spec:
     - remote::custom_ollama
 image_type: container
 image_name: ci-test
-external_providers_dir: /tmp/providers.d
+external_providers_dir: ~/.llama/providers.d

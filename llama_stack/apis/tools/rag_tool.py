@@ -7,7 +7,7 @@
 from enum import Enum
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import Protocol, runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
@@ -67,11 +67,33 @@ register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
 
 @json_schema_type
 class RAGQueryConfig(BaseModel):
+    """
+    Configuration for the RAG query generation.
+
+    :param query_generator_config: Configuration for the query generator.
+    :param max_tokens_in_context: Maximum number of tokens in the context.
+    :param max_chunks: Maximum number of chunks to retrieve.
+    :param chunk_template: Template for formatting each retrieved chunk in the context.
+        Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
+        Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
+    """
+
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
+    chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
+
+    @field_validator("chunk_template")
+    def validate_chunk_template(cls, v: str) -> str:
+        if "{chunk.content}" not in v:
+            raise ValueError("chunk_template must contain {chunk.content}")
+        if "{index}" not in v:
+            raise ValueError("chunk_template must contain {index}")
+        if len(v) == 0:
+            raise ValueError("chunk_template must not be empty")
+        return v
 
 
 @runtime_checkable

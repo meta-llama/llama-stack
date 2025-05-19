@@ -20,7 +20,10 @@ from opentelemetry.semconv.resource import ResourceAttributes
 from llama_stack.apis.telemetry import (
     Event,
     MetricEvent,
+    MetricLabelMatcher,
+    MetricQueryType,
     QueryCondition,
+    QueryMetricsResponse,
     QuerySpanTreeResponse,
     QueryTracesResponse,
     Span,
@@ -122,6 +125,17 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             self._log_structured(event, ttl_seconds)
         else:
             raise ValueError(f"Unknown event type: {event}")
+
+    async def query_metrics(
+        self,
+        metric_name: str,
+        start_time: int,
+        end_time: int | None = None,
+        granularity: str | None = "1d",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: list[MetricLabelMatcher] | None = None,
+    ) -> QueryMetricsResponse:
+        raise NotImplementedError("Querying metrics is not implemented")
 
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:

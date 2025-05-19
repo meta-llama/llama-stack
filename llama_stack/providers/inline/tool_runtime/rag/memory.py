@@ -87,6 +87,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                     content,
                     chunk_size_in_tokens,
                     chunk_size_in_tokens // 4,
+                    doc.metadata,
                 )
             )
 
@@ -105,7 +106,9 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
         if not vector_db_ids:
-            return RAGQueryResult(content=None)
+            raise ValueError(
+                "No vector DBs were provided to the knowledge search tool. Please provide at least one vector DB ID."
+            )
 
         query_config = query_config or RAGQueryConfig()
         query = await generate_rag_query(
@@ -140,19 +143,21 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
                 text=f"knowledge_search tool found {len(chunks)} chunks:\nBEGIN of knowledge_search tool results.\n"
             )
         ]
-        for i, c in enumerate(chunks):
-            metadata = c.metadata
+        for i, chunk in enumerate(chunks):
+            metadata = chunk.metadata
             tokens += metadata["token_count"]
+            tokens += metadata["metadata_token_count"]
+
             if tokens > query_config.max_tokens_in_context:
                 log.error(
                     f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
                 )
                 break
-            picked.append(
-                TextContentItem(
-                    text=f"Result {i + 1}:\nDocument_id:{metadata['document_id'][:5]}\nContent: {c.content}\n",
-                )
-            )
+
+            metadata_subset = {k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]}
+            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
+            picked.append(TextContentItem(text=text_content))
+
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))
         picked.append(
             TextContentItem(

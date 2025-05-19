@@ -56,7 +56,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
         with:
           python-version: "3.10"
 
@@ -94,7 +94,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
         with:
           python-version: "3.10"
 
@@ -120,7 +120,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
         with:
           python-version: "3.10"
 
@@ -132,9 +132,9 @@ jobs:
 
       - name: Build a single provider
         run: |
-          yq -i '.image_type = "container"' llama_stack/templates/dev/build.yaml
-          yq -i '.image_name = "test"' llama_stack/templates/dev/build.yaml
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/dev/build.yaml
+          yq -i '.image_type = "container"' llama_stack/templates/starter/build.yaml
+          yq -i '.image_name = "test"' llama_stack/templates/starter/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/starter/build.yaml
 
       - name: Inspect the container image entrypoint
         run: |
@@ -158,7 +158,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5.4.1
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
         with:
           python-version: "3.10"
 
@@ -174,14 +174,14 @@ jobs:
             .image_type    = "container" |
             .image_name    = "ubi9-test" |
             .distribution_spec.container_image = "registry.access.redhat.com/ubi9:latest"
-          ' llama_stack/templates/dev/build.yaml
+          ' llama_stack/templates/starter/build.yaml
 
       - name: Build dev container (UBI9)
         env:
           USE_COPY_NOT_MOUNT: "true"
           LLAMA_STACK_DIR: "."
         run: |
-          uv run llama stack build --config llama_stack/templates/dev/build.yaml
+          uv run llama stack build --config llama_stack/templates/starter/build.yaml
 
       - name: Inspect UBI9 image
         run: |

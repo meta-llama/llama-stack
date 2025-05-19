@@ -44,7 +44,7 @@ def main(output_dir: str):
     if return_type_errors:
         print("\nAPI Method Return Type Validation Errors:\n")
         for error in return_type_errors:
-            print(error)
+            print(error, file=sys.stderr)
         sys.exit(1)
     now = str(datetime.now())
     print(

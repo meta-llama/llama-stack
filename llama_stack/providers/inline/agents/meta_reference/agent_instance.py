@@ -95,6 +95,7 @@ class ChatAgent(ShieldRunnerMixin):
         tool_groups_api: ToolGroups,
         vector_io_api: VectorIO,
         persistence_store: KVStore,
+        created_at: str,
     ):
         self.agent_id = agent_id
         self.agent_config = agent_config
@@ -104,6 +105,7 @@ class ChatAgent(ShieldRunnerMixin):
         self.storage = AgentPersistence(agent_id, persistence_store)
         self.tool_runtime_api = tool_runtime_api
         self.tool_groups_api = tool_groups_api
+        self.created_at = created_at
 
         ShieldRunnerMixin.__init__(
             self,

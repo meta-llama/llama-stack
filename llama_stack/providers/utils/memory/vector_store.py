@@ -118,45 +118,53 @@ async def content_from_doc(doc: RAGDocument) -> str:
     if isinstance(doc.content, URL):
         if doc.content.uri.startswith("data:"):
             return content_from_data(doc.content.uri)
-        else:
-            async with httpx.AsyncClient() as client:
-                r = await client.get(doc.content.uri)
-            if doc.mime_type == "application/pdf":
-                return parse_pdf(r.content)
-            else:
-                return r.text
-
-    pattern = re.compile("^(https?://|file://|data:)")
-    if pattern.match(doc.content):
-        if doc.content.startswith("data:"):
-            return content_from_data(doc.content)
-        else:
+        async with httpx.AsyncClient() as client:
+            r = await client.get(doc.content.uri)
+        if doc.mime_type == "application/pdf":
+            return parse_pdf(r.content)
+        return r.text
+    elif isinstance(doc.content, str):
+        pattern = re.compile("^(https?://|file://|data:)")
+        if pattern.match(doc.content):
+            if doc.content.startswith("data:"):
+                return content_from_data(doc.content)
             async with httpx.AsyncClient() as client:
                 r = await client.get(doc.content)
             if doc.mime_type == "application/pdf":
                 return parse_pdf(r.content)
-            else:
-                return r.text
+            return r.text
+        return doc.content
+    else:
+        # will raise ValueError if the content is not List[InterleavedContent] or InterleavedContent
+        return interleaved_content_as_str(doc.content)
 
-    return interleaved_content_as_str(doc.content)
 
-
-def make_overlapped_chunks(document_id: str, text: str, window_len: int, overlap_len: int) -> list[Chunk]:
+def make_overlapped_chunks(
+    document_id: str, text: str, window_len: int, overlap_len: int, metadata: dict[str, Any]
+) -> list[Chunk]:
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
+    try:
+        metadata_string = str(metadata)
+    except Exception as e:
+        raise ValueError("Failed to serialize metadata to string") from e
+
+    metadata_tokens = tokenizer.encode(metadata_string, bos=False, eos=False)
 
     chunks = []
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
+        chunk_metadata = metadata.copy()
+        chunk_metadata["document_id"] = document_id
+        chunk_metadata["token_count"] = len(toks)
+        chunk_metadata["metadata_token_count"] = len(metadata_tokens)
+
         # chunk is a string
         chunks.append(
             Chunk(
                 content=chunk,
-                metadata={
-                    "token_count": len(toks),
-                    "document_id": document_id,
-                },
+                metadata=chunk_metadata,
             )
         )
 

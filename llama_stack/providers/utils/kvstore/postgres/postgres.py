@@ -85,7 +85,7 @@ class PostgresKVStoreImpl(KVStore):
             (key,),
         )
 
-    async def range(self, start_key: str, end_key: str) -> list[str]:
+    async def values_in_range(self, start_key: str, end_key: str) -> list[str]:
         start_key = self._namespaced_key(start_key)
         end_key = self._namespaced_key(end_key)
 
@@ -96,6 +96,16 @@ class PostgresKVStoreImpl(KVStore):
             AND (expiration IS NULL OR expiration > NOW())
             ORDER BY key
             """,
+            (start_key, end_key),
+        )
+        return [row[0] for row in self.cursor.fetchall()]
+
+    async def keys_in_range(self, start_key: str, end_key: str) -> list[str]:
+        start_key = self._namespaced_key(start_key)
+        end_key = self._namespaced_key(end_key)
+
+        self.cursor.execute(
+            f"SELECT key FROM {self.config.table_name} WHERE key >= %s AND key < %s",
             (start_key, end_key),
         )
         return [row[0] for row in self.cursor.fetchall()]

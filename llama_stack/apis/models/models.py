@@ -29,14 +29,14 @@ class ModelType(str, Enum):
 
 @json_schema_type
 class Model(CommonModelFields, Resource):
-    type: Literal[ResourceType.model.value] = ResourceType.model.value
+    type: Literal[ResourceType.model] = ResourceType.model
 
     @property
     def model_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_model_id(self) -> str:
+    def provider_model_id(self) -> str | None:
         return self.provider_resource_id
 
     model_config = ConfigDict(protected_namespaces=())
@@ -80,16 +80,32 @@ class OpenAIListModelsResponse(BaseModel):
 @trace_protocol
 class Models(Protocol):
     @webmethod(route="/models", method="GET")
-    async def list_models(self) -> ListModelsResponse: ...
+    async def list_models(self) -> ListModelsResponse:
+        """List all models.
+
+        :returns: A ListModelsResponse.
+        """
+        ...
 
     @webmethod(route="/openai/v1/models", method="GET")
-    async def openai_list_models(self) -> OpenAIListModelsResponse: ...
+    async def openai_list_models(self) -> OpenAIListModelsResponse:
+        """List models using the OpenAI API.
+
+        :returns: A OpenAIListModelsResponse.
+        """
+        ...
 
     @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(
         self,
         model_id: str,
-    ) -> Model: ...
+    ) -> Model:
+        """Get a model by its identifier.
+
+        :param model_id: The identifier of the model to get.
+        :returns: A Model.
+        """
+        ...
 
     @webmethod(route="/models", method="POST")
     async def register_model(
@@ -99,10 +115,25 @@ class Models(Protocol):
         provider_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         model_type: ModelType | None = None,
-    ) -> Model: ...
+    ) -> Model:
+        """Register a model.
+
+        :param model_id: The identifier of the model to register.
+        :param provider_model_id: The identifier of the model in the provider.
+        :param provider_id: The identifier of the provider.
+        :param metadata: Any additional metadata for this model.
+        :param model_type: The type of model to register.
+        :returns: A Model.
+        """
+        ...
 
     @webmethod(route="/models/{model_id:path}", method="DELETE")
     async def unregister_model(
         self,
         model_id: str,
-    ) -> None: ...
+    ) -> None:
+        """Unregister a model.
+
+        :param model_id: The identifier of the model to unregister.
+        """
+        ...

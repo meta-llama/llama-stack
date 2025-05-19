@@ -14,6 +14,8 @@ on:
       - 'docs/**'
       - 'pyproject.toml'
       - '.github/workflows/update-readthedocs.yml'
+    tags:
+      - '*'
   pull_request:
     branches:
       - main
@@ -41,7 +43,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
 
       - name: Sync with uv
         run: uv sync --extra docs
@@ -61,7 +63,10 @@ jobs:
 
           response=$(curl -X POST \
             -H "Content-Type: application/json" \
-            -d "{\"token\": \"$TOKEN\"}" \
+            -d "{
+              \"token\": \"$TOKEN\",
+              \"version\": \"$GITHUB_REF_NAME\"
+            }" \
             https://readthedocs.org/api/v2/webhook/llama-stack/289768/)
 
           echo "Response: $response"

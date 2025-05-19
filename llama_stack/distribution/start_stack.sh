@@ -29,7 +29,7 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <env_type> <env_path_or_name> <yaml_config> <port> <script_args...>"
+  echo "Usage: $0 <env_type> <env_path_or_name> <port> [--config <yaml_config>] [--env KEY=VALUE]..."
   exit 1
 fi
 
@@ -40,37 +40,51 @@ env_path_or_name="$1"
 container_image="localhost/$env_path_or_name"
 shift
 
-yaml_config="$1"
-shift
-
 port="$1"
 shift
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
 
-# Initialize env_vars as an string
+# Initialize variables
+yaml_config=""
 env_vars=""
 other_args=""
-# Process environment variables from --env arguments
+
+# Process remaining arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --env)
-
-    if [[ -n "$2" ]]; then
-      env_vars="$env_vars --env $2"
-      shift 2
-    else
-      echo -e "${RED}Error: --env requires a KEY=VALUE argument${NC}" >&2
-      exit 1
-    fi
-    ;;
-  *)
-    other_args="$other_args $1"
-    shift
-    ;;
+    --config)
+      if [[ -n "$2" ]]; then
+        yaml_config="$2"
+        shift 2
+      else
+        echo -e "${RED}Error: $1 requires a CONFIG argument${NC}" >&2
+        exit 1
+      fi
+      ;;
+    --env)
+      if [[ -n "$2" ]]; then
+        env_vars="$env_vars --env $2"
+        shift 2
+      else
+        echo -e "${RED}Error: --env requires a KEY=VALUE argument${NC}" >&2
+        exit 1
+      fi
+      ;;
+    *)
+      other_args="$other_args $1"
+      shift
+      ;;
   esac
 done
+
+# Check if yaml_config is required based on env_type
+if [[ "$env_type" == "venv" || "$env_type" == "conda" ]] && [ -z "$yaml_config" ]; then
+  echo -e "${RED}Error: --config is required for venv and conda environments${NC}" >&2
+  exit 1
+fi
+
 PYTHON_BINARY="python"
 case "$env_type" in
   "venv")
@@ -106,8 +120,14 @@ esac
 if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     set -x
 
+    if [ -n "$yaml_config" ]; then
+        yaml_config_arg="--config $yaml_config"
+    else
+        yaml_config_arg=""
+    fi
+
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
-    --yaml-config "$yaml_config" \
+    $yaml_config_arg \
     --port "$port" \
     $env_vars \
     $other_args
@@ -149,15 +169,26 @@ elif [[ "$env_type" == "container" ]]; then
         version_tag=$(curl -s $URL | jq -r '.info.version')
     fi
 
-    $CONTAINER_BINARY run $CONTAINER_OPTS -it \
+    # Build the command with optional yaml config
+    cmd="$CONTAINER_BINARY run $CONTAINER_OPTS -it \
     -p $port:$port \
     $env_vars \
-    -v "$yaml_config:/app/config.yaml" \
     $mounts \
     --env LLAMA_STACK_PORT=$port \
     --entrypoint python \
     $container_image:$version_tag \
-    -m llama_stack.distribution.server.server \
-    --yaml-config /app/config.yaml \
-    $other_args
+    -m llama_stack.distribution.server.server"
+
+    # Add yaml config if provided, otherwise use default
+    if [ -n "$yaml_config" ]; then
+        cmd="$cmd -v $yaml_config:/app/run.yaml --config /app/run.yaml"
+    else
+        cmd="$cmd --config /app/run.yaml"
+    fi
+
+    # Add any other args
+    cmd="$cmd $other_args"
+
+    # Execute the command
+    eval $cmd
 fi

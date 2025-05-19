@@ -11,9 +11,9 @@ from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_uri
 from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.pagination import paginate_records
 
 from .config import LocalFSDatasetIOConfig
 
@@ -64,7 +64,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         # Load existing datasets from kvstore
         start_key = DATASETS_PREFIX
         end_key = f"{DATASETS_PREFIX}\xff"
-        stored_datasets = await self.kvstore.range(start_key, end_key)
+        stored_datasets = await self.kvstore.values_in_range(start_key, end_key)
 
         for dataset in stored_datasets:
             dataset = Dataset.model_validate_json(dataset)

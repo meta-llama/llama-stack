@@ -110,25 +110,9 @@ uv run pre-commit run --all-files
 > [!CAUTION]
 > Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
 
-## Running unit tests
+## Running tests
 
-You can run the unit tests by running:
-
-```bash
-source .venv/bin/activate
-./scripts/unit-tests.sh
-```
-
-If you'd like to run for a non-default version of Python (currently 3.10), pass `PYTHON_VERSION` variable as follows:
-
-```
-source .venv/bin/activate
-PYTHON_VERSION=3.13 ./scripts/unit-tests.sh
-```
-
-## Running integration tests
-
-You can run integration tests following the instructions [here](tests/integration/README.md).
+You can find the Llama Stack testing documentation here [here](tests/README.md).
 
 ## Adding a new dependency to the project
 
@@ -153,6 +137,8 @@ uv sync
   justification for bypassing the check.
 * When using `# type: ignore` to suppress a mypy warning, include a comment explaining the
   justification for bypassing the check.
+* Don't use unicode characters in the codebase. ASCII-only is preferred for compatibility or
+  readability reasons.
 
 ## Common Tasks
 

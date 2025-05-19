@@ -73,7 +73,7 @@ class DiskDistributionRegistry(DistributionRegistry):
 
     async def get_all(self) -> list[RoutableObjectWithProvider]:
         start_key, end_key = _get_registry_key_range()
-        values = await self.kvstore.range(start_key, end_key)
+        values = await self.kvstore.values_in_range(start_key, end_key)
         return _parse_registry_values(values)
 
     async def get(self, type: str, identifier: str) -> RoutableObjectWithProvider | None:
@@ -134,7 +134,7 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
                 return
 
             start_key, end_key = _get_registry_key_range()
-            values = await self.kvstore.range(start_key, end_key)
+            values = await self.kvstore.values_in_range(start_key, end_key)
             objects = _parse_registry_values(values)
 
             async with self._locked_cache() as cache:

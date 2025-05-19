@@ -11,7 +11,7 @@ pytest --help
 Here are the most important options:
 - `--stack-config`: specify the stack config to use. You have three ways to point to a stack:
   - a URL which points to a Llama Stack distribution server
-  - a template (e.g., `fireworks`, `together`) or a path to a run.yaml file
+  - a template (e.g., `fireworks`, `together`) or a path to a `run.yaml` file
   - a comma-separated list of api=provider pairs, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`. This is most useful for testing a single API surface.
 - `--env`: set environment variables, e.g. --env KEY=value. this is a utility option to set environment variables required by various providers.
 
@@ -28,7 +28,6 @@ if no model is specified.
 
 Experimental, under development, options:
 - `--record-responses`: record new API responses instead of using cached ones
-- `--report`: path where the test report should be written, e.g. --report=/path/to/report.md
 
 
 ## Examples

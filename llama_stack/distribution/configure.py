@@ -17,6 +17,7 @@ from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
     get_provider_registry,
 )
+from llama_stack.distribution.utils.config_dirs import EXTERNAL_PROVIDERS_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.distribution.utils.prompt_for_config import prompt_for_config
 from llama_stack.providers.datatypes import Api, ProviderSpec
@@ -73,11 +74,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
 
         existing_providers = config.providers.get(api_str, [])
         if existing_providers:
-            logger.info(
-                f"Re-configuring existing providers for API `{api_str}`...",
-                "green",
-                attrs=["bold"],
-            )
+            logger.info(f"Re-configuring existing providers for API `{api_str}`...")
             updated_providers = []
             for p in existing_providers:
                 logger.info(f"> Configuring provider `({p.provider_type})`")
@@ -91,7 +88,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
             if not plist:
                 raise ValueError(f"No provider configured for API {api_str}?")
 
-            logger.info(f"Configuring API `{api_str}`...", "green", attrs=["bold"])
+            logger.info(f"Configuring API `{api_str}`...")
             updated_providers = []
             for i, provider_type in enumerate(plist):
                 if i >= 1:
@@ -173,5 +170,8 @@ def parse_and_maybe_upgrade_config(config_dict: dict[str, Any]) -> StackRunConfi
         config_dict = upgrade_from_routing_table(config_dict)
 
     config_dict["version"] = LLAMA_STACK_RUN_CONFIG_VERSION
+
+    if not config_dict.get("external_providers_dir", None):
+        config_dict["external_providers_dir"] = EXTERNAL_PROVIDERS_DIR
 
     return StackRunConfig(**config_dict)

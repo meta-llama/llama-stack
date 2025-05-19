@@ -573,6 +573,12 @@ class InferenceRouter(Inference):
             for tool in tools:
                 TypeAdapter(OpenAIChatCompletionToolParam).validate_python(tool)
 
+        # Some providers make tool calls even when tool_choice is "none"
+        # so just clear them both out to avoid unexpected tool calls
+        if tool_choice == "none" and tools is not None:
+            tool_choice = None
+            tools = None
+
         params = dict(
             model=model_obj.identifier,
             messages=messages,
@@ -600,7 +606,19 @@ class InferenceRouter(Inference):
         )
 
         provider = self.routing_table.get_provider_impl(model_obj.identifier)
-        return await provider.openai_chat_completion(**params)
+        if stream:
+            return await provider.openai_chat_completion(**params)
+        else:
+            return await self._nonstream_openai_chat_completion(provider, params)
+
+    async def _nonstream_openai_chat_completion(self, provider: Inference, params: dict) -> OpenAIChatCompletion:
+        response = await provider.openai_chat_completion(**params)
+        for choice in response.choices:
+            # some providers return an empty list for no tool calls in non-streaming responses
+            # but the OpenAI API returns None. So, set tool_calls to None if it's empty
+            if choice.message and choice.message.tool_calls is not None and len(choice.message.tool_calls) == 0:
+                choice.message.tool_calls = None
+        return response
 
     async def health(self) -> dict[str, HealthResponse]:
         health_statuses = {}
@@ -612,7 +630,7 @@ class InferenceRouter(Inference):
                     continue
                 health = await asyncio.wait_for(impl.health(), timeout=timeout)
                 health_statuses[provider_id] = health
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, TimeoutError):
                 health_statuses[provider_id] = HealthResponse(
                     status=HealthStatus.ERROR,
                     message=f"Health check timed out after {timeout} seconds",
