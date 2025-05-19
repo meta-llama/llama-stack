@@ -4952,6 +4952,8 @@ components:
         model:
           type: string
           description: The underlying LLM used for completions.
+        instructions:
+          type: string
         previous_response_id:
           type: string
           description: >-
