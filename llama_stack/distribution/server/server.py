@@ -370,14 +370,6 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    # Check for deprecated argument usage
-    if "--config" in sys.argv:
-        warnings.warn(
-            "The '--config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
     log_line = ""
     if args.config:
         # if the user provided a config file, use it, even if template was specified
