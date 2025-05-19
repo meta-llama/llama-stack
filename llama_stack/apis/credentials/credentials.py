@@ -8,7 +8,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Protocol, runtime_checkable
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from llama_stack.schema_utils import json_schema_type, webmethod
 
@@ -31,7 +31,7 @@ class ProviderCredential(BaseModel):
     provider_id: str
     token_type: CredentialTokenType
     token: str
-    expires_at: datetime
+    expires_at: datetime = Field(description="The time at which the credential expires. In UTC.")
 
 
 @runtime_checkable
