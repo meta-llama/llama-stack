@@ -34,6 +34,7 @@ from llama_stack.apis.telemetry import Telemetry
 from llama_stack.apis.tools import RAGToolRuntime, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDBs
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.credentials import DistributionCredentialsConfig, DistributionCredentialsImpl
 from llama_stack.distribution.datatypes import Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.inspect import DistributionInspectConfig, DistributionInspectImpl
@@ -199,24 +200,30 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
         ) from e
 
 
-def add_internal_implementations(impls: dict[Api, Any], run_config: StackRunConfig) -> None:
-    """Add internal implementations (inspect and providers) to the implementations dictionary.
-
-    Args:
-        impls: Dictionary of API implementations
-        run_config: Stack run configuration
-    """
+async def instantiate_internal_impls(impls: dict[Api, Any], run_config: StackRunConfig) -> dict[Api, Any]:
+    """Add internal implementations (inspect, providers, credentials)."""
     inspect_impl = DistributionInspectImpl(
         DistributionInspectConfig(run_config=run_config),
         deps=impls,
     )
-    impls[Api.inspect] = inspect_impl
+    await inspect_impl.initialize()
 
     providers_impl = ProviderImpl(
         ProviderImplConfig(run_config=run_config),
         deps=impls,
     )
-    impls[Api.providers] = providers_impl
+    await providers_impl.initialize()
+
+    credentials_impl = DistributionCredentialsImpl(
+        DistributionCredentialsConfig(kvstore=run_config.credentials_store),
+        deps=impls,
+    )
+    await credentials_impl.initialize()
+    return {
+        Api.inspect: inspect_impl,
+        Api.providers: providers_impl,
+        Api.credentials: credentials_impl,
+    }
 
 
 # Produces a stack of providers for the given run config. Not all APIs may be
@@ -228,7 +235,14 @@ async def construct_stack(
     impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
 
     # Add internal implementations after all other providers are resolved
-    add_internal_implementations(impls, run_config)
+    internal_impls = await instantiate_internal_impls(impls, run_config)
+    impls.update(internal_impls)
+
+    # credentials_store = internal_impls[Api.credentials]
+    # for impl in impls.values():
+    #     # in an ideal world, we would pass the credentials store as a dependency
+    #     if hasattr(impl, "credentials_store"):
+    #         impl.credentials_store = credentials_store
 
     await register_resources(run_config, impls)
     return impls

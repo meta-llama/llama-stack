@@ -296,6 +296,14 @@ can be instantiated multiple times (with different configs) if necessary.
 Configuration for the persistence store used by the distribution registry. If not specified,
 a default SQLite store will be used.""",
     )
+    credentials_store: KVStoreConfig | None = Field(
+        default=None,
+        description="""
+Configuration for the persistence store used for store ephemeral per-(user, provider) credentials. This
+store is different since it may have different security properties (e.g. not encrypted) and may have different
+reliability requirements (e.g. not durable).
+""",
+    )
 
     # registry of "resources" in the distribution
     models: list[ModelInput] = Field(default_factory=list)

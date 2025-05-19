@@ -209,11 +209,15 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
     async def endpoint(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
+        principal = request.scope.get("principal", None)
 
         await log_request_pre_validation(request)
 
+        # TODO: before request execution starts, we need to check for authorization
+        # so we can send back 40X errors before StreamingResponse starts (and returns a 200).
+
         # Use context manager with both provider data and auth attributes
-        with request_provider_data_context(request.headers, user_attributes):
+        with request_provider_data_context(request.headers, user_attributes, principal):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
             try:

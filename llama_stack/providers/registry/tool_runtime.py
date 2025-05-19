@@ -83,5 +83,6 @@ def available_providers() -> list[ProviderSpec]:
                 config_class="llama_stack.providers.remote.tool_runtime.model_context_protocol.config.ModelContextProtocolConfig",
                 pip_packages=["mcp"],
             ),
+            api_dependencies=[Api.credentials],
         ),
     ]

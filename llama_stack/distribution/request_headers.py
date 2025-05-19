@@ -22,11 +22,16 @@ class RequestProviderDataContext(AbstractContextManager):
     """Context manager for request provider data"""
 
     def __init__(
-        self, provider_data: dict[str, Any] | None = None, auth_attributes: dict[str, list[str]] | None = None
+        self,
+        provider_data: dict[str, Any] | None = None,
+        auth_attributes: dict[str, list[str]] | None = None,
+        logged_in_user: str | None = None,
     ):
         self.provider_data = provider_data or {}
         if auth_attributes:
             self.provider_data["__auth_attributes"] = auth_attributes
+        if logged_in_user:
+            self.provider_data["__logged_in_user"] = logged_in_user
 
         self.token = None
 
@@ -88,11 +93,13 @@ def parse_request_provider_data(headers: dict[str, str]) -> dict[str, Any] | Non
 
 
 def request_provider_data_context(
-    headers: dict[str, str], auth_attributes: dict[str, list[str]] | None = None
+    headers: dict[str, str],
+    auth_attributes: dict[str, list[str]] | None = None,
+    logged_in_user: str | None = None,
 ) -> AbstractContextManager:
     """Context manager that sets request provider data from headers and auth attributes for the duration of the context"""
     provider_data = parse_request_provider_data(headers)
-    return RequestProviderDataContext(provider_data, auth_attributes)
+    return RequestProviderDataContext(provider_data, auth_attributes, logged_in_user)
 
 
 def get_auth_attributes() -> dict[str, list[str]] | None:
@@ -101,3 +108,9 @@ def get_auth_attributes() -> dict[str, list[str]] | None:
     if not provider_data:
         return None
     return provider_data.get("__auth_attributes")
+
+
+def get_logged_in_user() -> str | None:
+    """Helper to retrieve logged in user from the provider data context"""
+    provider_data = PROVIDER_DATA_VAR.get()
+    return provider_data.get("__logged_in_user")
