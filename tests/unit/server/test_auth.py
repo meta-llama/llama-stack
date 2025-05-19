@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -12,7 +13,12 @@ from fastapi.testclient import TestClient
 
 from llama_stack.distribution.datatypes import AccessAttributes
 from llama_stack.distribution.server.auth import AuthenticationMiddleware
-from llama_stack.distribution.server.auth_providers import AuthProviderConfig, AuthProviderType
+from llama_stack.distribution.server.auth_providers import (
+    AuthProviderConfig,
+    AuthProviderType,
+    TokenValidationResult,
+    get_attributes_from_claims,
+)
 
 
 class MockResponse:
@@ -22,6 +28,10 @@ class MockResponse:
 
     def json(self):
         return self._json_data
+
+    def raise_for_status(self):
+        if self.status_code != 200:
+            raise Exception(f"HTTP error: {self.status_code}")
 
 
 @pytest.fixture
@@ -130,6 +140,7 @@ async def mock_post_success(*args, **kwargs):
         200,
         {
             "message": "Authentication successful",
+            "principal": "test-principal",
             "access_attributes": {
                 "roles": ["admin", "user"],
                 "teams": ["ml-team", "nlp-team"],
@@ -223,6 +234,7 @@ async def test_http_middleware_with_access_attributes(mock_http_middleware, mock
             200,
             {
                 "message": "Authentication successful",
+                "principal": "test-principal",
                 "access_attributes": {
                     "roles": ["admin", "user"],
                     "teams": ["ml-team", "nlp-team"],
@@ -268,8 +280,8 @@ async def test_http_middleware_no_attributes(mock_http_middleware, mock_scope):
 
         assert "user_attributes" in mock_scope
         attributes = mock_scope["user_attributes"]
-        assert "namespaces" in attributes
-        assert attributes["namespaces"] == ["test.jwt.token"]
+        assert "roles" in attributes
+        assert attributes["roles"] == ["test.jwt.token"]
 
 
 # Kubernetes Tests
@@ -296,8 +308,11 @@ def test_valid_k8s_authentication(mock_api_client, k8s_client, valid_token):
 
     # Mock the token validation to return valid access attributes
     with patch("llama_stack.distribution.server.auth_providers.KubernetesAuthProvider.validate_token") as mock_validate:
-        mock_validate.return_value = AccessAttributes(
-            roles=["admin"], teams=["ml-team"], projects=["llama-3"], namespaces=["research"]
+        mock_validate.return_value = TokenValidationResult(
+            principal="test-principal",
+            access_attributes=AccessAttributes(
+                roles=["admin"], teams=["ml-team"], projects=["llama-3"], namespaces=["research"]
+            ),
         )
         response = k8s_client.get("/test", headers={"Authorization": f"Bearer {valid_token}"})
         assert response.status_code == 200
@@ -370,3 +385,135 @@ async def test_k8s_middleware_no_attributes(mock_k8s_middleware, mock_scope):
         assert attributes["roles"] == ["admin"]
 
         mock_app.assert_called_once_with(mock_scope, mock_receive, mock_send)
+
+
+# oauth2 token provider tests
+
+
+@pytest.fixture
+def oauth2_app():
+    app = FastAPI()
+    auth_config = AuthProviderConfig(
+        provider_type=AuthProviderType.OAUTH2_TOKEN,
+        config={
+            "jwks_uri": "http://mock-authz-service/token/introspect",
+            "cache_ttl": "3600",
+            "audience": "llama-stack",
+        },
+    )
+    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
+
+    @app.get("/test")
+    def test_endpoint():
+        return {"message": "Authentication successful"}
+
+    return app
+
+
+@pytest.fixture
+def oauth2_client(oauth2_app):
+    return TestClient(oauth2_app)
+
+
+def test_missing_auth_header_oauth2(oauth2_client):
+    response = oauth2_client.get("/test")
+    assert response.status_code == 401
+    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+
+
+def test_invalid_auth_header_format_oauth2(oauth2_client):
+    response = oauth2_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
+    assert response.status_code == 401
+    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+
+
+async def mock_jwks_response(*args, **kwargs):
+    return MockResponse(
+        200,
+        {
+            "keys": [
+                {
+                    "kid": "1234567890",
+                    "kty": "oct",
+                    "alg": "HS256",
+                    "use": "sig",
+                    "k": base64.b64encode(b"foobarbaz").decode(),
+                }
+            ]
+        },
+    )
+
+
+@pytest.fixture
+def jwt_token_valid():
+    from jose import jwt
+
+    return jwt.encode(
+        {
+            "sub": "my-user",
+            "groups": ["group1", "group2"],
+            "scope": "foo bar",
+            "aud": "llama-stack",
+        },
+        key="foobarbaz",
+        algorithm="HS256",
+        headers={"kid": "1234567890"},
+    )
+
+
+@patch("httpx.AsyncClient.get", new=mock_jwks_response)
+def test_valid_oauth2_authentication(oauth2_client, jwt_token_valid):
+    response = oauth2_client.get("/test", headers={"Authorization": f"Bearer {jwt_token_valid}"})
+    assert response.status_code == 200
+    assert response.json() == {"message": "Authentication successful"}
+
+
+@patch("httpx.AsyncClient.get", new=mock_jwks_response)
+def test_invalid_oauth2_authentication(oauth2_client, invalid_token):
+    response = oauth2_client.get("/test", headers={"Authorization": f"Bearer {invalid_token}"})
+    assert response.status_code == 401
+    assert "Invalid JWT token" in response.json()["error"]["message"]
+
+
+def test_get_attributes_from_claims():
+    claims = {
+        "sub": "my-user",
+        "groups": ["group1", "group2"],
+        "scope": "foo bar",
+        "aud": "llama-stack",
+    }
+    attributes = get_attributes_from_claims(claims, {"sub": "roles", "groups": "teams"})
+    assert attributes.roles == ["my-user"]
+    assert attributes.teams == ["group1", "group2"]
+
+    claims = {
+        "sub": "my-user",
+        "tenant": "my-tenant",
+    }
+    attributes = get_attributes_from_claims(claims, {"sub": "roles", "tenant": "namespaces"})
+    assert attributes.roles == ["my-user"]
+    assert attributes.namespaces == ["my-tenant"]
+
+    claims = {
+        "sub": "my-user",
+        "username": "my-username",
+        "tenant": "my-tenant",
+        "groups": ["group1", "group2"],
+        "team": "my-team",
+    }
+    attributes = get_attributes_from_claims(
+        claims,
+        {
+            "sub": "roles",
+            "tenant": "namespaces",
+            "username": "roles",
+            "team": "teams",
+            "groups": "teams",
+        },
+    )
+    assert set(attributes.roles) == {"my-user", "my-username"}
+    assert set(attributes.teams) == {"my-team", "group1", "group2"}
+    assert attributes.namespaces == ["my-tenant"]
+
+
+# TODO: add more tests for oauth2 token provider
