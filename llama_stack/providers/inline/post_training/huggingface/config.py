@@ -57,7 +57,7 @@ class HuggingFacePostTrainingConfig(BaseModel):
 
     # L2 regularization coefficient
     # Helps prevent overfitting
-    weight_decay: float = 0.01
+    weight_decay: float = 0.00
 
     # Number of worker processes for data loading
     # Higher values can improve data loading speed but increase memory usage
@@ -67,6 +67,17 @@ class HuggingFacePostTrainingConfig(BaseModel):
     # Can improve data transfer speed to GPU but uses more memory
     dataloader_pin_memory: bool = True
 
+    # Recipe type for training (single or multi device)
+    recipe: str = "single"
+
+    # NCCL debug configuration for distributed training
+    # Enable detailed NCCL logging for debugging distributed training issues
+    enable_nccl_debug: bool = False
+
+    # NCCL subsystems to debug (NONE, ALL, INIT, COLL, P2P, SHM, NET)
+    # Controls which NCCL components generate debug output
+    nccl_debug_subsys: str = "NONE"
+
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
-        return {"checkpoint_format": "huggingface", "distributed_backend": None, "device": "cpu"}
+        return {"checkpoint_format": "huggingface", "distributed_backend": None, "device": "cpu", "recipe": "single"}
