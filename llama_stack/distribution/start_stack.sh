@@ -7,10 +7,6 @@
 # the root directory of this source tree.
 
 
-CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
-LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 VIRTUAL_ENV=${VIRTUAL_ENV:-}
@@ -132,31 +128,7 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then
-    # Determine the internal container address based on container runtime
-    if [ "$CONTAINER_BINARY" = "docker" ]; then
-        internal_host="host.docker.internal"
-    elif [ "$CONTAINER_BINARY" = "podman" ]; then
-        internal_host="host.containers.internal"
-    else
-        internal_host="localhost"
-    fi
-    echo -e "${RED}Warning: Llama Stack no longer supports running Container.${NC}"
-    echo -e "Please use one of the following alternatives:"
-    echo -e "1. Use venv or conda environments"
-    echo -e "2. Run the container directly with Docker/Podman"
-    echo -e "\nExample $CONTAINER_BINARY command for ollama distribution:"
-    echo -e "$CONTAINER_BINARY run \\"
-    echo -e "  -it \\"
-    echo -e "  --network host \\"
-    echo -e "  -p $port:$port \\"
-    echo -e "  -v <path_to_yaml_config>:/app/run.yaml \\"
-    echo -e "  --entrypoint python \\"
-    echo -e "  localhost/distribution-ollama:<version> \\"
-    echo -e "  -m llama_stack.distribution.server.server \\"
-    echo -e "  --config /app/run.yaml \\"
-    echo -e "  --env INFERENCE_MODEL=\"llama3.2:3b\" \\"
-    echo -e "  --env LLAMA_STACK_PORT=<port> \\"
-    echo -e "  --env OLLAMA_URL=\"http://$internal_host:11434\""
-    echo -e "\nExiting..."
+    echo -e "${RED}Warning: Llama Stack no longer supports running Containers via the 'llama stack run' command.${NC}"
+    echo -e "Please refer to the documentation for more information: https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html#llama-stack-build"
     exit 1
 fi
