@@ -19,7 +19,7 @@ from llama_stack.apis.inference import (
     ChatCompletionResponseStreamChunk,
     EmbeddingsResponse,
     EmbeddingTaskType,
-    Inference,
+    InferenceProvider,
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
@@ -59,7 +59,7 @@ logger = get_logger(name=__name__, category="inference")
 
 class LiteLLMOpenAIMixin(
     ModelRegistryHelper,
-    Inference,
+    InferenceProvider,
     NeedsRequestProviderData,
 ):
     # TODO: avoid exposing the litellm specific model names to the user.
