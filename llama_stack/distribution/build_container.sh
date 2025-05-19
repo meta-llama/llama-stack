@@ -26,7 +26,7 @@ BUILD_CONTEXT_DIR=$(pwd)
 
 if [ "$#" -lt 4 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>]" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] --special-pip-deps <special_pip_deps> --export-dir <export_dir>" >&2
   exit 1
 fi
 set -euo pipefail
@@ -43,23 +43,37 @@ shift
 # Handle optional arguments
 run_config=""
 special_pip_deps=""
+export_dir=""
 
-# Check if there are more arguments
-# The logics is becoming cumbersom, we should refactor it if we can do better
-if [ $# -gt 0 ]; then
-  # Check if the argument ends with .yaml
-  if [[ "$1" == *.yaml ]]; then
-    run_config="$1"
-    shift
-    # If there's another argument after .yaml, it must be special_pip_deps
-    if [ $# -gt 0 ]; then
-      special_pip_deps="$1"
-    fi
-  else
-    # If it's not .yaml, it must be special_pip_deps
-    special_pip_deps="$1"
-  fi
-fi
+# Process remaining arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    *.yaml)
+      run_config="$1"
+      shift
+      ;;
+    --export-dir)
+      if [ -z "${2:-}" ]; then
+        echo "Error: --export-dir requires a value" >&2
+        exit 1
+      fi
+      export_dir="$2"
+      shift 2
+      ;;
+    --special-pip-deps)
+      if [ -z "${2:-}" ]; then
+        echo "Error: --special-pip-deps requires a value" >&2
+        exit 1
+      fi
+      special_pip_deps="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 1
+      ;;
+  esac
+done
 
 # Define color codes
 RED='\033[0;31m'
@@ -83,8 +97,8 @@ add_to_container() {
   fi
 }
 
-# Check if container command is available
-if ! is_command_available $CONTAINER_BINARY; then
+# Check if container command is available only if not running in export mode
+if ! is_command_available $CONTAINER_BINARY && [ -z "$export_dir" ]; then
   printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
   exit 1
 fi
@@ -96,7 +110,7 @@ FROM $container_base
 WORKDIR /app
 
 # We install the Python 3.11 dev headers and build tools so that any
-# C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
+# C-extension wheels (e.g. polyleven, faiss-cpu) can compile successfully.
 
 RUN dnf -y update && dnf install -y iputils git net-tools wget \
     vim-minimal python3.11 python3.11-pip python3.11-wheel \
@@ -269,6 +283,64 @@ EOF
 printf "Containerfile created successfully in %s/Containerfile\n\n" "$TEMP_DIR"
 cat "$TEMP_DIR"/Containerfile
 printf "\n"
+
+create_export_tarball() {
+  local export_dir="$1"
+  local image_name="$2"
+  local run_config="$3"
+  local external_providers_dir="$4"
+  local TEMP_DIR="$5"
+  local BUILD_CONTEXT_DIR="$6"
+
+  mkdir -p "$export_dir"
+  local timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
+  local tar_name="${image_name//[^a-zA-Z0-9]/_}_${timestamp}.tar.gz"
+
+  # If a run config is provided, copy it to the export directory otherwise it's a template build and
+  # we don't need to copy anything
+  if [ -n "$run_config" ]; then
+    mv "$run_config" "$TEMP_DIR"/run.yaml
+  fi
+
+  # Create the archive with all files
+  echo "Creating tarball with the following files:"
+  echo "- Containerfile"
+
+  # Capture both stdout and stderr from tar command
+  local tar_cmd="tar -czf \"$export_dir/$tar_name\" -C \"$TEMP_DIR\" Containerfile"
+
+  if [ -n "$run_config" ]; then
+    echo "- run.yaml"
+    tar_cmd="$tar_cmd -C \"$BUILD_CONTEXT_DIR\" \"$(basename run.yaml)\""
+  fi
+
+  if [ -n "$external_providers_dir" ] && [ -d "$external_providers_dir" ]; then
+    echo "- providers.d directory"
+    tar_cmd="$tar_cmd -C \"$BUILD_CONTEXT_DIR\" providers.d"
+  fi
+
+  local tar_output=$(eval "$tar_cmd" 2>&1)
+  local tar_status=$?
+
+  if [ $tar_status -ne 0 ]; then
+    echo "ERROR: Failed to create tarball" >&2
+    echo "Tar command output:" >&2
+    echo "$tar_output" >&2
+    return 1
+  fi
+  rm -rf providers.d run.yaml
+
+  echo "Build artifacts tarball created: $export_dir/$tar_name"
+  return 0
+}
+
+# If export_dir is specified, copy all necessary files and exit
+if [ -n "$export_dir" ]; then
+  if ! create_export_tarball "$export_dir" "$image_name" "$run_config" "$external_providers_dir" "$TEMP_DIR" "$BUILD_CONTEXT_DIR"; then
+    exit 1
+  fi
+  exit 0
+fi
 
 # Start building the CLI arguments
 CLI_ARGS=()
