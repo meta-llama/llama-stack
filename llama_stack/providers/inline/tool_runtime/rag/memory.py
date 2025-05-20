@@ -146,7 +146,7 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
         for i, chunk in enumerate(chunks):
             metadata = chunk.metadata
             tokens += metadata["token_count"]
-            tokens += metadata["metadata_token_count"]
+            tokens += metadata.get("metadata_token_count", 0)
 
             if tokens > query_config.max_tokens_in_context:
                 log.error(
