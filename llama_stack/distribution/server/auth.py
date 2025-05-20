@@ -8,7 +8,8 @@ import json
 
 import httpx
 
-from llama_stack.distribution.server.auth_providers import AuthProviderConfig, create_auth_provider
+from llama_stack.distribution.datatypes import AuthenticationConfig
+from llama_stack.distribution.server.auth_providers import create_auth_provider
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="auth")
@@ -77,7 +78,7 @@ class AuthenticationMiddleware:
     access resources that don't have access_attributes defined.
     """
 
-    def __init__(self, app, auth_config: AuthProviderConfig):
+    def __init__(self, app, auth_config: AuthenticationConfig):
         self.app = app
         self.auth_provider = create_auth_provider(auth_config)
 

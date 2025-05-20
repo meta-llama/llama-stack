@@ -118,11 +118,6 @@ server:
   port: 8321  # Port to listen on (default: 8321)
   tls_certfile: "/path/to/cert.pem"  # Optional: Path to TLS certificate for HTTPS
   tls_keyfile: "/path/to/key.pem"    # Optional: Path to TLS key for HTTPS
-  auth:                              # Optional: Authentication configuration
-    provider_type: "kubernetes"      # Type of auth provider
-    config:                          # Provider-specific configuration
-      api_server_url: "https://kubernetes.default.svc"
-      ca_cert_path: "/path/to/ca.crt" # Optional: Path to CA certificate
 ```
 
 ### Authentication Configuration
@@ -135,7 +130,7 @@ Authorization: Bearer <token>
 
 The server supports multiple authentication providers:
 
-#### Kubernetes Provider
+#### OAuth 2.0/OpenID Connect Provider with Kubernetes
 
 The Kubernetes cluster must be configured to use a service account for authentication.
 
@@ -146,14 +141,67 @@ kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --se
 kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
 ```
 
-Validates tokens against the Kubernetes API server:
+Make sure the `kube-apiserver` runs with `--anonymous-auth=true` to allow unauthenticated requests
+and that the correct RoleBinding is created to allow the service account to access the necessary
+resources. If that is not the case, you can create a RoleBinding for the service account to access
+the necessary resources:
+
+```yaml
+# allow-anonymous-openid.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: allow-anonymous-openid
+rules:
+- nonResourceURLs: ["/openid/v1/jwks"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: allow-anonymous-openid
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: allow-anonymous-openid
+subjects:
+- kind: User
+  name: system:anonymous
+  apiGroup: rbac.authorization.k8s.io
+```
+
+And then apply the configuration:
+```bash
+kubectl apply -f allow-anonymous-openid.yaml
+```
+
+Validates tokens against the Kubernetes API server through the OIDC provider:
 ```yaml
 server:
   auth:
-    provider_type: "kubernetes"
+    provider_type: "oauth2_token"
     config:
-      api_server_url: "https://kubernetes.default.svc"  # URL of the Kubernetes API server
-      ca_cert_path: "/path/to/ca.crt"                   # Optional: Path to CA certificate
+      jwks:
+        uri: "https://kubernetes.default.svc"
+        cache_ttl: 3600
+      tls_cafile: "/path/to/ca.crt"
+      issuer: "https://kubernetes.default.svc"
+      audience: "https://kubernetes.default.svc"
+```
+
+To find your cluster's audience, run:
+```bash
+kubectl create token default --duration=1h | cut -d. -f2 | base64 -d | jq .aud
+```
+
+For the issuer, you can use the OIDC provider's URL:
+```bash
+kubectl get --raw /.well-known/openid-configuration| jq .issuer
+```
+
+For the tls_cafile, you can use the CA certificate of the OIDC provider:
+```bash
+kubectl config view --minify -o jsonpath='{.clusters[0].cluster.certificate-authority}'
 ```
 
 The provider extracts user information from the JWT token:
