@@ -349,14 +349,38 @@ paths:
               $ref: '#/components/schemas/CreateAgentTurnRequest'
         required: true
   /v1/credentials:
+    get:
+      responses:
+        '200':
+          description: >-
+            A list of all credentials for the current user.
+          content:
+            application/jsonl:
+              schema:
+                $ref: '#/components/schemas/CredentialListItem'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Credentials
+      description: >-
+        Get all credentials for the current user.
+      parameters: []
     post:
       responses:
         '200':
-          description: created ProviderCredential object
+          description: The ID of the created credential.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProviderCredential'
+                type: string
         '400':
           $ref: '#/components/responses/BadRequest400'
         '429':
@@ -600,41 +624,6 @@ paths:
           schema:
             type: string
   /v1/credentials/{credential_id}:
-    post:
-      responses:
-        '200':
-          description: updated ProviderCredential object
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProviderCredential'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Credentials
-      description: >-
-        Update an existing set of credentials for a given provider.
-      parameters:
-        - name: credential_id
-          in: path
-          description: The ID of the credential to update.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateCredentialRequest'
-        required: true
     delete:
       responses:
         '200':
@@ -4780,18 +4769,24 @@ components:
         token_type:
           type: string
           enum:
-            - oauth2
-            - api_key
+            - oauth2_authorization_code
+            - access_token
           description: >-
             The type of token to create. This is provided in the API to serve as lightweight
             documentation / metadata for the token.
         token:
           type: string
           description: The token itself.
+        nonce:
+          type: string
+          description: >-
+            The nonce is required when the token type is oauth2_authorization_code.
         ttl_seconds:
           type: integer
           description: >-
             The time to live for the credential in seconds. Defaults to 3600 seconds.
+            When token_type is oauth2_authorization_code, the TTL is ignored and is
+            obtained from the provider when exchanging the code for an access token.
       additionalProperties: false
       required:
         - provider_id
@@ -4799,33 +4794,6 @@ components:
         - token
         - ttl_seconds
       title: CreateCredentialRequest
-    ProviderCredential:
-      type: object
-      properties:
-        credential_id:
-          type: string
-        provider_id:
-          type: string
-        token_type:
-          type: string
-          enum:
-            - oauth2
-            - api_key
-          title: CredentialTokenType
-          description: The type of credential token.
-        token:
-          type: string
-        expires_at:
-          type: string
-          format: date-time
-      additionalProperties: false
-      required:
-        - credential_id
-        - provider_id
-        - token_type
-        - token
-        - expires_at
-      title: ProviderCredential
     OpenAIResponseInput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
@@ -6069,6 +6037,30 @@ components:
         - model
         - input_messages
       title: OpenAICompletionWithInputMessages
+    CredentialListItem:
+      type: object
+      properties:
+        credential_id:
+          type: string
+        provider_id:
+          type: string
+        token_type:
+          type: string
+          enum:
+            - oauth2_authorization_code
+            - access_token
+          title: CredentialTokenType
+          description: The type of credential token.
+        expires_at:
+          type: string
+          format: date-time
+      additionalProperties: false
+      required:
+        - credential_id
+        - provider_id
+        - token_type
+        - expires_at
+      title: CredentialListItem
     DataSource:
       oneOf:
         - $ref: '#/components/schemas/URIDataSource'
@@ -9117,16 +9109,6 @@ components:
       description: >-
         Response from the synthetic data generation. Batch of (prompt, response, score)
         tuples that pass the threshold.
-    UpdateCredentialRequest:
-      type: object
-      properties:
-        token:
-          type: string
-          description: The new token to set for the credential.
-      additionalProperties: false
-      required:
-        - token
-      title: UpdateCredentialRequest
     VersionInfo:
       type: object
       properties:
@@ -9218,18 +9200,19 @@ tags:
   - name: Credentials
     description: >-
       Each provider may need optional authentication. This might be a persistent API
-      key, or
+      key, a short-lived OAuth2
 
-      a short-lived OAuth2 token. There is a single credential for each provider instance.
+      access token or a refreshable OAuth2 token. There is a single credential for
+      each provider instance.
 
 
       Credentials are ephemeral -- they may be purged after the specified TTL.
 
 
-      Credentials are associated with the same ABAC access attributes and permissions
-      as other
+      Credentials are associated with the logged in user. If no user is logged in,
+      the credentials
 
-      resources in the system.
+      are associated with the anonymous user.
 
 
       It is recommended to store these credentials using Envelope Encryption. The
