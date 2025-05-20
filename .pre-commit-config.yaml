@@ -94,9 +94,6 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^llama_stack/templates/.*$|^llama_stack/providers/.*/inference/.*/models\.py$
-
--   repo: local
-    hooks:
       - id: openapi-codegen
         name: API Spec Codegen
         additional_dependencies:
