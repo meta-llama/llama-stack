@@ -37,33 +37,44 @@ The following models are available by default:
 
 ### Prerequisite: API Keys
 
-Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaNova.ai](https://sambanova.ai/).
+Make sure you have access to a SambaNova API Key. You can get one by visiting [SambaNova.ai](http://cloud.sambanova.ai?utm_source=llamastack&utm_medium=external&utm_campaign=cloud_signup).
 
 
 ## Running Llama Stack with SambaNova
 
 You can do this via Conda (build code) or Docker which has a pre-built image.
 
-### Via Docker
 
-This method allows you to get started quickly without having to build the distribution code.
+### Via Docker
 
 ```bash
 LLAMA_STACK_PORT=8321
+llama stack build --template sambanova --image-type container
 docker run \
   -it \
-  --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  llamastack/distribution-{{ name }} \
+  -v ~/.llama:/root/.llama \
+  distribution-{{ name }} \
   --port $LLAMA_STACK_PORT \
   --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY
 ```
+
+
+### Via Venv
+
+```bash
+llama stack build --template sambanova --image-type venv
+llama stack run --image-type venv ~/.llama/distributions/sambanova/sambanova-run.yaml \
+  --port $LLAMA_STACK_PORT \
+  --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY
+```
+
 
 ### Via Conda
 
 ```bash
 llama stack build --template sambanova --image-type conda
-llama stack run ./run.yaml \
+llama stack run --image-type conda ~/.llama/distributions/sambanova/sambanova-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env SAMBANOVA_API_KEY=$SAMBANOVA_API_KEY
 ```
