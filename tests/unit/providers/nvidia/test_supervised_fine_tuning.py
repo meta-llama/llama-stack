@@ -165,7 +165,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
             training_job = self.run_async(
                 self.adapter.supervised_fine_tune(
                     job_uuid="1234",
-                    model="meta-llama/Llama-3.1-8B-Instruct",
+                    model="meta/llama-3.2-1b-instruct@v1.0.0+L40",
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
                     training_config=convert_pydantic_to_json_value(training_config),
@@ -184,7 +184,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
             "POST",
             "/v1/customization/jobs",
             expected_json={
-                "config": "meta/llama-3.1-8b-instruct",
+                "config": "meta/llama-3.2-1b-instruct@v1.0.0+L40",
                 "dataset": {"name": "sample-basic-test", "namespace": "default"},
                 "hyperparameters": {
                     "training_type": "sft",
@@ -219,7 +219,7 @@ class TestNvidiaPostTraining(unittest.TestCase):
             self.run_async(
                 self.adapter.supervised_fine_tune(
                     job_uuid="1234",
-                    model="meta-llama/Llama-3.1-8B-Instruct",
+                    model="meta/llama-3.2-1b-instruct@v1.0.0+L40",
                     checkpoint_dir="",
                     algorithm_config=algorithm_config,
                     training_config=convert_pydantic_to_json_value(training_config),
