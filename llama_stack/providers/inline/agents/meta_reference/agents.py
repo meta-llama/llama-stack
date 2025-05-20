@@ -313,6 +313,7 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         input: str | list[OpenAIResponseInput],
         model: str,
+        instructions: str | None = None,
         previous_response_id: str | None = None,
         store: bool | None = True,
         stream: bool | None = False,
@@ -320,5 +321,5 @@ class MetaReferenceAgentsImpl(Agents):
         tools: list[OpenAIResponseInputTool] | None = None,
     ) -> OpenAIResponseObject:
         return await self.openai_responses_impl.create_openai_response(
-            input, model, previous_response_id, store, stream, temperature, tools
+            input, model, instructions, previous_response_id, store, stream, temperature, tools
         )

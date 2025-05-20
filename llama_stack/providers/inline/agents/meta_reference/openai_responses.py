@@ -208,6 +208,10 @@ class OpenAIResponsesImpl:
 
         return input
 
+    async def _prepend_instructions(self, messages, instructions):
+        if instructions:
+            messages.insert(0, OpenAISystemMessageParam(content=instructions))
+
     async def get_openai_response(
         self,
         id: str,
@@ -219,6 +223,7 @@ class OpenAIResponsesImpl:
         self,
         input: str | list[OpenAIResponseInput],
         model: str,
+        instructions: str | None = None,
         previous_response_id: str | None = None,
         store: bool | None = True,
         stream: bool | None = False,
@@ -229,7 +234,9 @@ class OpenAIResponsesImpl:
 
         input = await self._prepend_previous_response(input, previous_response_id)
         messages = await _convert_response_input_to_chat_messages(input)
+        await self._prepend_instructions(messages, instructions)
         chat_tools = await self._convert_response_tools_to_chat_tools(tools) if tools else None
+
         chat_response = await self.inference_api.openai_chat_completion(
             model=model,
             messages=messages,

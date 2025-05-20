@@ -596,6 +596,7 @@ class Agents(Protocol):
         self,
         input: str | list[OpenAIResponseInput],
         model: str,
+        instructions: str | None = None,
         previous_response_id: str | None = None,
         store: bool | None = True,
         stream: bool | None = False,
