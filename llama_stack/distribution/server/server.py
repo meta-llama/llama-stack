@@ -280,7 +280,18 @@ class TracingMiddleware:
             logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
             return await self.app(scope, receive, send)
 
-        trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+        trace_attributes = {"__location__": "server", "raw_path": path}
+
+        # Extract W3C trace context headers and store as trace attributes
+        headers = dict(scope.get("headers", []))
+        traceparent = headers.get(b"traceparent", b"").decode()
+        if traceparent:
+            trace_attributes["traceparent"] = traceparent
+        tracestate = headers.get(b"tracestate", b"").decode()
+        if tracestate:
+            trace_attributes["tracestate"] = tracestate
+
+        trace_context = await start_trace(trace_path, trace_attributes)
 
         async def send_with_trace_id(message):
             if message["type"] == "http.response.start":
@@ -369,14 +380,6 @@ def main(args: argparse.Namespace | None = None):
     # parsed from the command line
     if args is None:
         args = parser.parse_args()
-
-    # Check for deprecated argument usage
-    if "--config" in sys.argv:
-        warnings.warn(
-            "The '--config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
 
     log_line = ""
     if args.config:

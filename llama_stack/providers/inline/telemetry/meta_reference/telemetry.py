@@ -16,6 +16,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from llama_stack.apis.telemetry import (
     Event,
@@ -44,6 +45,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor
 )
 from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
+from llama_stack.providers.utils.telemetry.tracing import ROOT_SPAN_MARKERS
 
 from .config import TelemetryConfig, TelemetrySink
 
@@ -206,6 +208,15 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 event.attributes = {}
             event.attributes["__ttl__"] = ttl_seconds
 
+            # Extract these W3C trace context attributes so they are not written to
+            # underlying storage, as we just need them to propagate the trace context.
+            traceparent = event.attributes.pop("traceparent", None)
+            tracestate = event.attributes.pop("tracestate", None)
+            if traceparent:
+                # If we have a traceparent header value, we're not the root span.
+                for root_attribute in ROOT_SPAN_MARKERS:
+                    event.attributes.pop(root_attribute, None)
+
             if isinstance(event.payload, SpanStartPayload):
                 # Check if span already exists to prevent duplicates
                 if span_id in _GLOBAL_STORAGE["active_spans"]:
@@ -216,8 +227,12 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     parent_span_id = int(event.payload.parent_span_id, 16)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
                     context = trace.set_span_in_context(parent_span)
-                else:
-                    event.attributes["__root_span__"] = "true"
+                elif traceparent:
+                    carrier = {
+                        "traceparent": traceparent,
+                        "tracestate": tracestate,
+                    }
+                    context = TraceContextTextMapPropagator().extract(carrier=carrier)
 
                 span = tracer.start_span(
                     name=event.payload.name,

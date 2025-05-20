@@ -13,7 +13,7 @@ from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.files import Files
-from llama_stack.apis.inference import Inference
+from llama_stack.apis.inference import Inference, InferenceProvider
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
@@ -80,6 +80,13 @@ def api_protocol_map() -> dict[Api, Any]:
         Api.tool_groups: ToolGroups,
         Api.tool_runtime: ToolRuntime,
         Api.files: Files,
+    }
+
+
+def api_protocol_map_for_compliance_check() -> dict[Api, Any]:
+    return {
+        **api_protocol_map(),
+        Api.inference: InferenceProvider,
     }
 
 
@@ -302,9 +309,6 @@ async def instantiate_provider(
     inner_impls: dict[str, Any],
     dist_registry: DistributionRegistry,
 ):
-    protocols = api_protocol_map()
-    additional_protocols = additional_protocols_map()
-
     provider_spec = provider.spec
     if not hasattr(provider_spec, "module"):
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
@@ -342,6 +346,8 @@ async def instantiate_provider(
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
 
+    protocols = api_protocol_map_for_compliance_check()
+    additional_protocols = additional_protocols_map()
     # TODO: check compliance for special tool groups
     # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol
     check_protocol_compliance(impl, protocols[provider_spec.api])
