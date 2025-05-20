@@ -8,7 +8,7 @@ We use shadcdn/ui [Shadcn UI](https://ui.shadcn.com/) for the UI components.
 First, install dependencies:
 
 ```bash
-npm install next react react-dom
+npm install
 ```
 
 Then, run the development server:
