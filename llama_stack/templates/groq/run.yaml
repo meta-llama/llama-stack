@@ -99,6 +99,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/registry.db
+credentials_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/credentials.db
 models:
 - metadata: {}
   model_id: groq/llama3-8b-8192

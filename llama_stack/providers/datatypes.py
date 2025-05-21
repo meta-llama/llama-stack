@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Protocol
+from typing import Any, Protocol, runtime_checkable
 from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field
@@ -112,6 +112,7 @@ class ProviderSpec(BaseModel):
         return self.provider_type in ("sample", "remote::sample")
 
 
+@runtime_checkable
 class RoutingTable(Protocol):
     def get_provider_impl(self, routing_key: str) -> Any: ...
 

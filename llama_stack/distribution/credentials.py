@@ -106,10 +106,10 @@ class DistributionCredentialsImpl(CredentialsAPI, CredentialsStore):
         principal = get_principal()
 
         # check that provider_id is registered
-        run_config = self.deps[Api.inspect].run_config
+        run_config = self.deps[Api.inspect].config.run_config
 
         # TODO: we should make provider_ids unique across all APIs which is not enforced yet
-        provider_ids = [p.provider_id for p in run_config.providers.values()]
+        provider_ids = [p.provider_id for plist in run_config.providers.values() for p in plist]
         if provider_id not in provider_ids:
             raise ValueError(f"Provider {provider_id} is not registered")
 

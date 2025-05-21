@@ -11,10 +11,8 @@ from typing import Protocol
 import pydantic
 
 from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
-from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 logger = get_logger(__name__, category="core")
 
@@ -189,16 +187,9 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
 
 
 async def create_dist_registry(
-    metadata_store: KVStoreConfig | None,
-    image_name: str,
+    kvstore_config: KVStoreConfig,
 ) -> tuple[CachedDiskDistributionRegistry, KVStore]:
-    # instantiate kvstore for storing and retrieving distribution metadata
-    if metadata_store:
-        dist_kvstore = await kvstore_impl(metadata_store)
-    else:
-        dist_kvstore = await kvstore_impl(
-            SqliteKVStoreConfig(db_path=(DISTRIBS_BASE_DIR / image_name / "kvstore.db").as_posix())
-        )
+    dist_kvstore = await kvstore_impl(kvstore_config)
     dist_registry = CachedDiskDistributionRegistry(dist_kvstore)
     await dist_registry.initialize()
     return dist_registry, dist_kvstore

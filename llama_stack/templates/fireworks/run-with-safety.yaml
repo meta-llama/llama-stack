@@ -111,6 +111,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/registry.db
+credentials_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/credentials.db
 models:
 - metadata: {}
   model_id: accounts/fireworks/models/llama-v3p1-8b-instruct

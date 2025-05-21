@@ -117,6 +117,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/registry.db
+credentials_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/credentials.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}

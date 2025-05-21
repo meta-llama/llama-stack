@@ -117,6 +117,10 @@ class RunConfigSettings(BaseModel):
                 __distro_dir__=f"~/.llama/distributions/{name}",
                 db_name="registry.db",
             ),
+            credentials_store=SqliteKVStoreConfig.sample_run_config(
+                __distro_dir__=f"~/.llama/distributions/{name}",
+                db_name="credentials.db",
+            ),
             models=self.default_models or [],
             shields=self.default_shields or [],
             tool_groups=self.default_tool_groups or [],

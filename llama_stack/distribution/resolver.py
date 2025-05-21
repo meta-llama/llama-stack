@@ -9,6 +9,7 @@ from typing import Any
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
+from llama_stack.apis.credentials import Credentials
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
@@ -61,6 +62,7 @@ class InvalidProviderError(Exception):
 def api_protocol_map() -> dict[Api, Any]:
     return {
         Api.providers: ProvidersAPI,
+        Api.credentials: Credentials,
         Api.agents: Agents,
         Api.inference: Inference,
         Api.inspect: Inspect,

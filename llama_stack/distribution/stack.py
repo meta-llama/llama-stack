@@ -41,9 +41,11 @@ from llama_stack.distribution.inspect import DistributionInspectConfig, Distribu
 from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
+from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 logger = get_logger(name=__name__, category="core")
 
@@ -214,8 +216,12 @@ async def instantiate_internal_impls(impls: dict[Api, Any], run_config: StackRun
     )
     await providers_impl.initialize()
 
+    # TODO: make metadata_store and credentials_store non-optional by including it in the templates
     credentials_impl = DistributionCredentialsImpl(
-        DistributionCredentialsConfig(kvstore=run_config.credentials_store),
+        DistributionCredentialsConfig(
+            kvstore=run_config.credentials_store
+            or SqliteKVStoreConfig(db_path=(DISTRIBS_BASE_DIR / run_config.image_name / "credentials.db").as_posix())
+        ),
         deps=impls,
     )
     await credentials_impl.initialize()
@@ -231,18 +237,26 @@ async def instantiate_internal_impls(impls: dict[Api, Any], run_config: StackRun
 async def construct_stack(
     run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
 ) -> dict[Api, Any]:
-    dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
+    kvstore_config = run_config.metadata_store or SqliteKVStoreConfig(
+        db_path=(DISTRIBS_BASE_DIR / run_config.image_name / "kvstore.db").as_posix()
+    )
+    dist_registry, _ = await create_dist_registry(kvstore_config)
     impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
 
     # Add internal implementations after all other providers are resolved
     internal_impls = await instantiate_internal_impls(impls, run_config)
     impls.update(internal_impls)
 
-    # credentials_store = internal_impls[Api.credentials]
-    # for impl in impls.values():
-    #     # in an ideal world, we would pass the credentials store as a dependency
-    #     if hasattr(impl, "credentials_store"):
-    #         impl.credentials_store = credentials_store
+    # HACK: this is a hack to work around circular dependency issues. we probably need to
+    # make resolving internal implementations be part of `resolve_impls` again (as it used to be
+    # a while ago) so that dependencies can be expressed properly.
+    for impl in impls.values():
+        from llama_stack.distribution.routers.routing_tables import CommonRoutingTableImpl
+
+        if isinstance(impl, CommonRoutingTableImpl):
+            for provider_impl in impl.impls_by_provider_id.values():
+                if hasattr(provider_impl, "credentials_store"):
+                    provider_impl.credentials_store = internal_impls[Api.credentials]
 
     await register_resources(run_config, impls)
     return impls
