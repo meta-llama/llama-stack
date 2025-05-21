@@ -31,7 +31,7 @@ async def get_provider_impl(config, deps):
 
 
 class DistributionInspectImpl(Inspect):
-    def __init__(self, config, deps):
+    def __init__(self, config: DistributionInspectConfig, deps):
         self.config = config
         self.deps = deps
 
@@ -39,22 +39,36 @@ class DistributionInspectImpl(Inspect):
         pass
 
     async def list_routes(self) -> ListRoutesResponse:
-        run_config = self.config.run_config
+        run_config: StackRunConfig = self.config.run_config
 
         ret = []
         all_endpoints = get_all_api_endpoints()
         for api, endpoints in all_endpoints.items():
-            providers = run_config.providers.get(api.value, [])
-            ret.extend(
-                [
-                    RouteInfo(
-                        route=e.route,
-                        method=e.method,
-                        provider_types=[p.provider_type for p in providers],
+            # Always include provider and inspect APIs, filter others based on run config
+            if api.value in ["providers", "inspect"]:
+                ret.extend(
+                    [
+                        RouteInfo(
+                            route=e.route,
+                            method=e.method,
+                            provider_types=[],  # These APIs don't have "real" providers - they're internal to the stack
+                        )
+                        for e in endpoints
+                    ]
+                )
+            else:
+                providers = run_config.providers.get(api.value, [])
+                if providers:  # Only process if there are providers for this API
+                    ret.extend(
+                        [
+                            RouteInfo(
+                                route=e.route,
+                                method=e.method,
+                                provider_types=[p.provider_type for p in providers],
+                            )
+                            for e in endpoints
+                        ]
                     )
-                    for e in endpoints
-                ]
-            )
 
         return ListRoutesResponse(data=ret)
 
