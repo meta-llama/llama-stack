@@ -183,7 +183,7 @@ server:
     config:
       jwks:
         uri: "https://kubernetes.default.svc"
-        cache_ttl: 3600
+        key_recheck_period: 3600
       tls_cafile: "/path/to/ca.crt"
       issuer: "https://kubernetes.default.svc"
       audience: "https://kubernetes.default.svc"
