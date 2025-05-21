@@ -110,7 +110,7 @@ def get_attributes_from_claims(claims: dict[str, str], mapping: dict[str, str]) 
 class OAuth2JWKSConfig(BaseModel):
     # The JWKS URI for collecting public keys
     uri: str
-    cache_ttl: int = 3600
+    key_recheck_period: int = Field(default=3600, description="The period to recheck the JWKS URI for key updates")
 
 
 class OAuth2IntrospectionConfig(BaseModel):
@@ -263,7 +263,7 @@ class OAuth2TokenAuthProvider(AuthProvider):
         """
         Refresh the JWKS cache.
 
-        This is a simple cache that expires after a certain amount of time (defined by `cache_ttl`).
+        This is a simple cache that expires after a certain amount of time (defined by `key_recheck_period`).
         If the cache is expired, we refresh the JWKS from the JWKS URI.
 
         Notes: for Kubernetes which doesn't fully implement the OIDC protocol:
@@ -273,7 +273,7 @@ class OAuth2TokenAuthProvider(AuthProvider):
         async with self._jwks_lock:
             if self.config.jwks is None:
                 raise ValueError("JWKS is not configured")
-            if time.time() - self._jwks_at > self.config.jwks.cache_ttl:
+            if time.time() - self._jwks_at > self.config.jwks.key_recheck_period:
                 verify = self.config.tls_cafile.as_posix() if self.config.tls_cafile else self.config.verify_tls
                 async with httpx.AsyncClient(verify=verify) as client:
                     res = await client.get(self.config.jwks.uri, timeout=5)

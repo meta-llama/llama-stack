@@ -293,7 +293,7 @@ def oauth2_app():
         config={
             "jwks": {
                 "uri": "http://mock-authz-service/token/introspect",
-                "cache_ttl": "3600",
+                "key_recheck_period": "3600",
             },
             "audience": "llama-stack",
         },
