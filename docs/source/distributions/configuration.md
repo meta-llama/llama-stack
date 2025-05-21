@@ -208,6 +208,80 @@ And must respond with:
 
 If no access attributes are returned, the token is used as a namespace.
 
+### Quota Configuration
+
+The `quota` section allows you to enable server-side request throttling for both
+authenticated and anonymous clients. This is useful for preventing abuse, enforcing
+fairness across tenants, and controlling infrastructure costs without requiring
+client-side rate limiting or external proxies.
+
+Quotas are disabled by default. When enabled, each client is tracked using either:
+
+* Their authenticated `client_id` (derived from the Bearer token), or
+* Their IP address (fallback for anonymous requests)
+
+Quota state is stored in a SQLite-backed key-value store, and rate limits are applied
+within a configurable time window (currently only `day` is supported).
+
+#### Example
+
+```yaml
+server:
+  quota:
+    kvstore:
+      type: sqlite
+      db_path: ./quotas.db
+    anonymous_max_requests: 100
+    authenticated_max_requests: 1000
+    period: day
+```
+
+#### Configuration Options
+
+| Field                        | Description                                                                |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `kvstore`                    | Required. Backend storage config for tracking request counts.              |
+| `kvstore.type`               | Must be `"sqlite"` for now. Other backends may be supported in the future. |
+| `kvstore.db_path`            | File path to the SQLite database.                                          |
+| `anonymous_max_requests`     | Max requests per period for unauthenticated clients.                       |
+| `authenticated_max_requests` | Max requests per period for authenticated clients.                         |
+| `period`                     | Time window for quota enforcement. Only `"day"` is supported.              |
+
+> Note: if `authenticated_max_requests` is set but no authentication provider is
+configured, the server will fall back to applying `anonymous_max_requests` to all
+clients.
+
+#### Example with Authentication Enabled
+
+```yaml
+server:
+  port: 8321
+  auth:
+    provider_type: custom
+    config:
+      endpoint: https://auth.example.com/validate
+  quota:
+    kvstore:
+      type: sqlite
+      db_path: ./quotas.db
+    anonymous_max_requests: 100
+    authenticated_max_requests: 1000
+    period: day
+```
+
+If a client exceeds their limit, the server responds with:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/json
+
+{
+  "error": {
+    "message": "Quota exceeded"
+  }
+}
+```
+
 ## Extending to handle Safety
 
 Configuring Safety can be a little involved so it is instructive to go through an example.
