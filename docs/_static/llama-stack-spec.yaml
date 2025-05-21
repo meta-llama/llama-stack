@@ -394,7 +394,8 @@ paths:
       tags:
         - Credentials
       description: >-
-        Create a new set of credentials for a given provider.
+        Create a new set of credentials for a given provider. The unique key is (provider_id,
+        context)
       parameters: []
       requestBody:
         content:
@@ -4787,6 +4788,14 @@ components:
             The time to live for the credential in seconds. Defaults to 3600 seconds.
             When token_type is oauth2_authorization_code, the TTL is ignored and is
             obtained from the provider when exchanging the code for an access token.
+        context:
+          type: object
+          additionalProperties:
+            type: string
+          description: >-
+            Context to distinguish between different credentials for the same provider.
+            For example, for the MCP provider, this could be the toolgroup_id (which
+            corresponds to a unique MCP endpoint).
       additionalProperties: false
       required:
         - provider_id

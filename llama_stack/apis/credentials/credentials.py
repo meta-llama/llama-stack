@@ -59,8 +59,9 @@ class Credentials(Protocol):
         token: str,
         nonce: str | None = None,
         ttl_seconds: int = 3600,
+        context: dict[str, str] | None = None,
     ) -> str:
-        """Create a new set of credentials for a given provider.
+        """Create a new set of credentials for a given provider. The unique key is (provider_id, context)
 
         :param provider_id: The ID of the provider to create credentials for.
         :param token_type: The type of token to create. This is provided in the API to serve as lightweight
@@ -70,6 +71,9 @@ class Credentials(Protocol):
         :param ttl_seconds: The time to live for the credential in seconds. Defaults to 3600 seconds.
                             When token_type is oauth2_authorization_code, the TTL is ignored and is obtained
                             from the provider when exchanging the code for an access token.
+        :param context: Context to distinguish between different credentials for the same provider. For example,
+                        for the MCP provider, this could be the toolgroup_id (which corresponds to a unique MCP
+                        endpoint).
         :returns: The ID of the created credential.
         """
         ...
