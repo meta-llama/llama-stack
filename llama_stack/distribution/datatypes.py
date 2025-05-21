@@ -220,14 +220,14 @@ class LoggingConfig(BaseModel):
 class AuthProviderType(str, Enum):
     """Supported authentication provider types."""
 
-    KUBERNETES = "kubernetes"
+    OAUTH2_TOKEN = "oauth2_token"
     CUSTOM = "custom"
 
 
 class AuthenticationConfig(BaseModel):
     provider_type: AuthProviderType = Field(
         ...,
-        description="Type of authentication provider (e.g., 'kubernetes', 'custom')",
+        description="Type of authentication provider",
     )
     config: dict[str, Any] = Field(
         ...,

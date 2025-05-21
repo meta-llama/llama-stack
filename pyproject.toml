@@ -40,7 +40,6 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
-    "kubernetes",
 ]
 
 [project.optional-dependencies]
