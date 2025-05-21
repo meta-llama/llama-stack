@@ -167,14 +167,11 @@ If you have made changes to a provider's configuration in any form (introducing 
 If you are making changes to the documentation at [https://llama-stack.readthedocs.io/en/latest/](https://llama-stack.readthedocs.io/en/latest/), you can use the following command to build the documentation and preview your changes. You will need [Sphinx](https://www.sphinx-doc.org/en/master/) and the readthedocs theme.
 
 ```bash
-cd docs
-uv sync --extra docs
-
 # This rebuilds the documentation pages.
-uv run make html
+uv run --with ".[docs]" make -C docs/ html
 
 # This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and refreshes when you make changes to the documentation.
-uv run sphinx-autobuild source build/html --write-all
+uv run --with ".[docs]" sphinx-autobuild docs/source docs/build/html --write-all
 ```
 
 ### Update API Documentation

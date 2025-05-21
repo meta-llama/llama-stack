@@ -4,19 +4,16 @@ annotated-types==0.7.0
 anyio==4.8.0
 attrs==25.1.0
 blobfile==3.0.0
-cachetools==5.5.2
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
 colorama==0.4.6 ; sys_platform == 'win32'
 distro==1.9.0
-durationpy==0.9
 ecdsa==0.19.1
 exceptiongroup==1.2.2 ; python_full_version < '3.11'
 filelock==3.17.0
 fire==0.7.0
 fsspec==2024.12.0
-google-auth==2.38.0
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -26,14 +23,12 @@ jinja2==3.1.6
 jiter==0.8.2
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
-kubernetes==32.0.1
 llama-stack-client==0.2.7
 lxml==5.3.1
 markdown-it-py==3.0.0
 markupsafe==3.0.2
 mdurl==0.1.2
 numpy==2.2.3
-oauthlib==3.2.2
 openai==1.71.0
 packaging==24.2
 pandas==2.2.3
@@ -41,7 +36,6 @@ pillow==11.1.0
 prompt-toolkit==3.0.50
 pyaml==25.1.0
 pyasn1==0.4.8
-pyasn1-modules==0.4.1
 pycryptodomex==3.21.0
 pydantic==2.10.6
 pydantic-core==2.27.2
@@ -54,7 +48,6 @@ pyyaml==6.0.2
 referencing==0.36.2
 regex==2024.11.6
 requests==2.32.3
-requests-oauthlib==2.0.0
 rich==13.9.4
 rpds-py==0.22.3
 rsa==4.9
@@ -68,4 +61,3 @@ typing-extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 wcwidth==0.2.13
-websocket-client==1.8.0
