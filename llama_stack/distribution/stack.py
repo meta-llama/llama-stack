@@ -38,6 +38,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.inspect import DistributionInspectConfig, DistributionInspectImpl
 from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
+from llama_stack.distribution.resource_attributes import ResourceAccessAttributes
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
@@ -223,12 +224,19 @@ async def construct_stack(
     run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
 ) -> dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
-    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
+    if run_config.server.auth:
+        resource_attributes = ResourceAccessAttributes(run_config.server.auth.resource_attribute_rules)
+    else:
+        resource_attributes = ResourceAccessAttributes([])
+    impls = await resolve_impls(
+        run_config, provider_registry or get_provider_registry(run_config), dist_registry, resource_attributes
+    )
 
     # Add internal implementations after all other providers are resolved
     add_internal_implementations(impls, run_config)
 
     await register_resources(run_config, impls)
+    resource_attributes.enable_access_checks()
     return impls
 
 

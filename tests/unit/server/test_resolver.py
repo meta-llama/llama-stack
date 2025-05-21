@@ -19,6 +19,7 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.resolver import resolve_impls
+from llama_stack.distribution.resource_attributes import ResourceAccessAttributes
 from llama_stack.distribution.routers.routers import InferenceRouter
 from llama_stack.distribution.routers.routing_tables import ModelsRoutingTable
 from llama_stack.providers.datatypes import InlineProviderSpec, ProviderSpec
@@ -102,7 +103,7 @@ async def test_resolve_impls_basic():
     mock_module.get_provider_impl = AsyncMock(return_value=impl)
     sys.modules["test_module"] = mock_module
 
-    impls = await resolve_impls(run_config, provider_registry, dist_registry)
+    impls = await resolve_impls(run_config, provider_registry, dist_registry, ResourceAccessAttributes([]))
 
     assert Api.inference in impls
     assert isinstance(impls[Api.inference], InferenceRouter)

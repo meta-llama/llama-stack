@@ -34,6 +34,7 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.resource_attributes import ResourceAccessAttributes
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
@@ -118,6 +119,7 @@ async def resolve_impls(
     run_config: StackRunConfig,
     provider_registry: ProviderRegistry,
     dist_registry: DistributionRegistry,
+    resource_attributes: ResourceAccessAttributes,
 ) -> dict[Api, Any]:
     """
     Resolves provider implementations by:
@@ -140,7 +142,7 @@ async def resolve_impls(
 
     sorted_providers = sort_providers_by_deps(providers_with_specs, run_config)
 
-    return await instantiate_providers(sorted_providers, router_apis, dist_registry)
+    return await instantiate_providers(sorted_providers, router_apis, dist_registry, resource_attributes)
 
 
 def specs_for_autorouted_apis(apis_to_serve: list[str] | set[str]) -> dict[str, dict[str, ProviderWithSpec]]:
@@ -243,7 +245,10 @@ def sort_providers_by_deps(
 
 
 async def instantiate_providers(
-    sorted_providers: list[tuple[str, ProviderWithSpec]], router_apis: set[Api], dist_registry: DistributionRegistry
+    sorted_providers: list[tuple[str, ProviderWithSpec]],
+    router_apis: set[Api],
+    dist_registry: DistributionRegistry,
+    resource_attributes: ResourceAccessAttributes,
 ) -> dict:
     """Instantiates providers asynchronously while managing dependencies."""
     impls: dict[Api, Any] = {}
@@ -258,7 +263,7 @@ async def instantiate_providers(
         if isinstance(provider.spec, RoutingTableProviderSpec):
             inner_impls = inner_impls_by_provider_id[f"inner-{provider.spec.router_api.value}"]
 
-        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry)
+        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry, resource_attributes)
 
         if api_str.startswith("inner-"):
             inner_impls_by_provider_id[api_str][provider.provider_id] = impl
@@ -308,6 +313,7 @@ async def instantiate_provider(
     deps: dict[Api, Any],
     inner_impls: dict[str, Any],
     dist_registry: DistributionRegistry,
+    resource_attributes: ResourceAccessAttributes,
 ):
     provider_spec = provider.spec
     if not hasattr(provider_spec, "module"):
@@ -332,7 +338,7 @@ async def instantiate_provider(
         method = "get_routing_table_impl"
 
         config = None
-        args = [provider_spec.api, inner_impls, deps, dist_registry]
+        args = [provider_spec.api, inner_impls, deps, dist_registry, resource_attributes]
     else:
         method = "get_provider_impl"
 
