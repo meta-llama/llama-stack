@@ -53,14 +53,6 @@ myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"
 html_use_relative_paths = True
-
-# html_theme = "sphinx_pdj_theme"
-# html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
-
-# html_theme = "pytorch_sphinx_theme"
-# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
-
-
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
