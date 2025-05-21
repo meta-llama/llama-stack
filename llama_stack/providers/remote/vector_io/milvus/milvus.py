@@ -73,7 +73,7 @@ class MilvusIndex(EmbeddingIndex):
             logger.error(f"Error inserting chunks into Milvus collection {self.collection_name}: {e}")
             raise e
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         search_res = await asyncio.to_thread(
             self.client.search,
             collection_name=self.collection_name,
@@ -85,6 +85,14 @@ class MilvusIndex(EmbeddingIndex):
         chunks = [Chunk(**res["entity"]["chunk_content"]) for res in search_res[0]]
         scores = [res["distance"] for res in search_res[0]]
         return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Milvus")
 
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):

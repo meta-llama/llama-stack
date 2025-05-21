@@ -68,7 +68,7 @@ class QdrantIndex(EmbeddingIndex):
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -94,6 +94,14 @@ class QdrantIndex(EmbeddingIndex):
             scores.append(point.score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Qdrant")
 
     async def delete(self):
         await self.client.delete_collection(collection_name=self.collection_name)

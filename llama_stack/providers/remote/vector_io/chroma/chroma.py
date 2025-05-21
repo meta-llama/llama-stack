@@ -84,6 +84,14 @@ class ChromaIndex(EmbeddingIndex):
     async def delete(self):
         await maybe_await(self.client.delete_collection(self.collection.name))
 
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Chroma")
+
 
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(

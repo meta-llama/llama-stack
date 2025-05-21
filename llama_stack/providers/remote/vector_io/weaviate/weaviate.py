@@ -55,7 +55,7 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
         results = collection.query.near_vector(
@@ -83,6 +83,14 @@ class WeaviateIndex(EmbeddingIndex):
     async def delete(self, chunk_ids: list[str]) -> None:
         collection = self.client.collections.get(self.collection_name)
         collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Weaviate")
 
 
 class WeaviateVectorIOAdapter(

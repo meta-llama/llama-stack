@@ -98,7 +98,7 @@ async def test_qdrant_adapter_returns_expected_chunks(
     response = await qdrant_adapter.query_chunks(
         query=__QUERY,
         vector_db_id=vector_db_id,
-        params={"max_chunks": max_query_chunks},
+        params={"max_chunks": max_query_chunks, "mode": "vector"},
     )
     assert isinstance(response, QueryChunksResponse)
     assert len(response.chunks) == expected_chunks

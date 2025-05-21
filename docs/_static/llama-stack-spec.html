@@ -11608,6 +11608,10 @@
                         "type": "string",
                         "default": "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n",
                         "description": "Template for formatting each retrieved chunk in the context. Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict). Default: \"Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n\""
+                    },
+                    "mode": {
+                        "type": "string",
+                        "description": "Search mode for retrieval—either \"vector\" or \"keyword\". Default \"vector\"."
                     }
                 },
                 "additionalProperties": false,

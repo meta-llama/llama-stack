@@ -24,6 +24,11 @@ from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, Vect
 
 logger = logging.getLogger(__name__)
 
+# Specifying search mode is dependent on the VectorIO provider.
+VECTOR_SEARCH = "vector"
+KEYWORD_SEARCH = "keyword"
+SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH}
+
 
 def serialize_vector(vector: list[float]) -> bytes:
     """Serialize a list of floats into a compact binary representation."""
@@ -45,6 +50,7 @@ class SQLiteVecIndex(EmbeddingIndex):
     Two tables are used:
       - A metadata table (chunks_{bank_id}) that holds the chunk JSON.
       - A virtual table (vec_chunks_{bank_id}) that holds the serialized vector.
+      - An FTS5 table (fts_chunks_{bank_id}) for full-text keyword search.
     """
 
     def __init__(self, dimension: int, db_path: str, bank_id: str):
@@ -53,6 +59,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         self.bank_id = bank_id
         self.metadata_table = f"chunks_{bank_id}".replace("-", "_")
         self.vector_table = f"vec_chunks_{bank_id}".replace("-", "_")
+        self.fts_table = f"fts_chunks_{bank_id}".replace("-", "_")
 
     @classmethod
     async def create(cls, dimension: int, db_path: str, bank_id: str):
@@ -78,6 +85,14 @@ class SQLiteVecIndex(EmbeddingIndex):
                     USING vec0(embedding FLOAT[{self.dimension}], id TEXT);
                 """)
                 connection.commit()
+                # FTS5 table (for keyword search) - creating both the tables by default. Will use the relevant one
+                # based on query. Implementation of the change on client side will allow passing the search_mode option
+                # during initialization to make it easier to create the table that is required.
+                cur.execute(f"""
+                            CREATE VIRTUAL TABLE IF NOT EXISTS {self.fts_table}
+                            USING fts5(id, content);
+                        """)
+                connection.commit()
             finally:
                 cur.close()
                 connection.close()
@@ -91,6 +106,7 @@ class SQLiteVecIndex(EmbeddingIndex):
             try:
                 cur.execute(f"DROP TABLE IF EXISTS {self.metadata_table};")
                 cur.execute(f"DROP TABLE IF EXISTS {self.vector_table};")
+                cur.execute(f"DROP TABLE IF EXISTS {self.fts_table};")
                 connection.commit()
             finally:
                 cur.close()
@@ -104,6 +120,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         For each chunk, we insert its JSON into the metadata table and then insert its
         embedding (serialized to raw bytes) into the virtual table using the assigned rowid.
         If any insert fails, the transaction is rolled back to maintain consistency.
+        Also inserts chunk content into FTS table for keyword search support.
         """
         assert all(isinstance(chunk.content, str) for chunk in chunks), "SQLiteVecIndex only supports text chunks"
 
@@ -112,18 +129,16 @@ class SQLiteVecIndex(EmbeddingIndex):
             cur = connection.cursor()
 
             try:
-                # Start transaction a single transcation for all batches
                 cur.execute("BEGIN TRANSACTION")
                 for i in range(0, len(chunks), batch_size):
                     batch_chunks = chunks[i : i + batch_size]
                     batch_embeddings = embeddings[i : i + batch_size]
-                    # Prepare metadata inserts
+
+                    # Insert metadata
                     metadata_data = [
                         (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.model_dump_json())
                         for chunk in batch_chunks
-                        if isinstance(chunk.content, str)
                     ]
-                    # Insert metadata (ON CONFLICT to avoid duplicates)
                     cur.executemany(
                         f"""
                         INSERT INTO {self.metadata_table} (id, chunk)
@@ -132,21 +147,43 @@ class SQLiteVecIndex(EmbeddingIndex):
                         """,
                         metadata_data,
                     )
-                    # Prepare embeddings inserts
+
+                    # Insert vector embeddings
                     embedding_data = [
                         (
-                            generate_chunk_id(chunk.metadata["document_id"], chunk.content),
-                            serialize_vector(emb.tolist()),
+                            (
+                                generate_chunk_id(chunk.metadata["document_id"], chunk.content),
+                                serialize_vector(emb.tolist()),
+                            )
                         )
                         for chunk, emb in zip(batch_chunks, batch_embeddings, strict=True)
-                        if isinstance(chunk.content, str)
                     ]
-                    # Insert embeddings in batch
-                    cur.executemany(f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);", embedding_data)
+                    cur.executemany(
+                        f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);",
+                        embedding_data,
+                    )
+
+                    # Insert FTS content
+                    fts_data = [
+                        (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.content)
+                        for chunk in batch_chunks
+                    ]
+                    # DELETE existing entries with same IDs (FTS5 doesn't support ON CONFLICT)
+                    cur.executemany(
+                        f"DELETE FROM {self.fts_table} WHERE id = ?;",
+                        [(row[0],) for row in fts_data],
+                    )
+
+                    # INSERT new entries
+                    cur.executemany(
+                        f"INSERT INTO {self.fts_table} (id, content) VALUES (?, ?);",
+                        fts_data,
+                    )
+
                 connection.commit()
 
             except sqlite3.Error as e:
-                connection.rollback()  # Rollback on failure
+                connection.rollback()
                 logger.error(f"Error inserting into {self.vector_table}: {e}")
                 raise
 
@@ -154,22 +191,25 @@ class SQLiteVecIndex(EmbeddingIndex):
                 cur.close()
                 connection.close()
 
-        # Process all batches in a single thread
+        # Run batch insertion in a background thread
         await asyncio.to_thread(_execute_all_batch_inserts)
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(
+        self,
+        embedding: NDArray,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
         """
-        Query for the k most similar chunks. We convert the query embedding to a blob and run a SQL query
-        against the virtual table. The SQL joins the metadata table to recover the chunk JSON.
+        Performs vector-based search using a virtual table for vector similarity.
         """
-        emb_list = embedding.tolist() if isinstance(embedding, np.ndarray) else list(embedding)
-        emb_blob = serialize_vector(emb_list)
 
         def _execute_query():
             connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
-
             try:
+                emb_list = embedding.tolist() if isinstance(embedding, np.ndarray) else list(embedding)
+                emb_blob = serialize_vector(emb_list)
                 query_sql = f"""
                     SELECT m.id, m.chunk, v.distance
                     FROM {self.vector_table} AS v
@@ -184,17 +224,66 @@ class SQLiteVecIndex(EmbeddingIndex):
                 connection.close()
 
         rows = await asyncio.to_thread(_execute_query)
-
         chunks, scores = [], []
-        for _id, chunk_json, distance in rows:
+        for row in rows:
+            _id, chunk_json, distance = row
+            score = 1.0 / distance if distance != 0 else float("inf")
+            if score < score_threshold:
+                continue
             try:
                 chunk = Chunk.model_validate_json(chunk_json)
             except Exception as e:
                 logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
                 continue
             chunks.append(chunk)
-            # Mimic the Faiss scoring: score = 1/distance (avoid division by zero)
-            score = 1.0 / distance if distance != 0 else float("inf")
+            scores.append(score)
+        return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        """
+        Performs keyword-based search using SQLite FTS5 for relevance-ranked full-text search.
+        """
+        if query_string is None:
+            raise ValueError("query_string is required for keyword search.")
+
+        def _execute_query():
+            connection = _create_sqlite_connection(self.db_path)
+            cur = connection.cursor()
+            try:
+                query_sql = f"""
+                    SELECT DISTINCT m.id, m.chunk, bm25({self.fts_table}) AS score
+                    FROM {self.fts_table} AS f
+                    JOIN {self.metadata_table} AS m ON m.id = f.id
+                    WHERE f.content MATCH ?
+                    ORDER BY score ASC
+                    LIMIT ?;
+                """
+                cur.execute(query_sql, (query_string, k))
+                return cur.fetchall()
+            finally:
+                cur.close()
+                connection.close()
+
+        rows = await asyncio.to_thread(_execute_query)
+        chunks, scores = [], []
+        for row in rows:
+            _id, chunk_json, score = row
+            # BM25 scores returned by sqlite-vec are NEGATED (i.e., more relevant = more negative).
+            # This design is intentional to simplify sorting by ascending score.
+            # Reference: https://alexgarcia.xyz/blog/2024/sqlite-vec-hybrid-search/index.html
+            if score > -score_threshold:
+                continue
+            try:
+                chunk = Chunk.model_validate_json(chunk_json)
+            except Exception as e:
+                logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
+                continue
+            chunks.append(chunk)
             scores.append(score)
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
