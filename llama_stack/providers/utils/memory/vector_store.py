@@ -181,7 +181,7 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def query_keyword(self, query_string: str | None, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_keyword(self, query_string: str, k: int, score_threshold: float) -> QueryChunksResponse:
         raise NotImplementedError()
 
     @abstractmethod

@@ -203,8 +203,6 @@ class SQLiteVecIndex(EmbeddingIndex):
         """
         Performs vector-based search using a virtual table for vector similarity.
         """
-        if embedding is None:
-            raise ValueError("embedding is required for vector search.")
 
         def _execute_query():
             connection = _create_sqlite_connection(self.db_path)
@@ -243,7 +241,7 @@ class SQLiteVecIndex(EmbeddingIndex):
 
     async def query_keyword(
         self,
-        query_string: str | None,
+        query_string: str,
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:

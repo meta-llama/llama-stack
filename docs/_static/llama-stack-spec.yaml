@@ -8089,7 +8089,7 @@ components:
         mode:
           type: string
           description: >-
-            Search mode for retrieval—either "vector" or "keyword".
+            Search mode for retrieval—either "vector" or "keyword". Default "vector".
       additionalProperties: false
       required:
         - query_generator_config

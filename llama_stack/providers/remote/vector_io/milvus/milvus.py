@@ -88,7 +88,7 @@ class MilvusIndex(EmbeddingIndex):
 
     async def query_keyword(
         self,
-        query_string: str | None,
+        query_string: str,
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:
