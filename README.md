@@ -110,7 +110,7 @@ Here is a list of the various API providers and available distributions that can
 | **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
 |:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
 |      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |
-|        SambaNova         |         Hosted         |            |       ✅       |            |            |               |
+|        SambaNova         |         Hosted         |            |       ✅       |            |     ✅      |               |
 |         Cerebras         |         Hosted         |            |       ✅       |            |            |               |
 |        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |
 |       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |
