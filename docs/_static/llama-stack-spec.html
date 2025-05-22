@@ -6742,6 +6742,9 @@
                     },
                     {
                         "$ref": "#/components/schemas/OpenAIResponseInputToolFunction"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseInputToolMCP"
                     }
                 ],
                 "discriminator": {
@@ -6749,7 +6752,8 @@
                     "mapping": {
                         "web_search": "#/components/schemas/OpenAIResponseInputToolWebSearch",
                         "file_search": "#/components/schemas/OpenAIResponseInputToolFileSearch",
-                        "function": "#/components/schemas/OpenAIResponseInputToolFunction"
+                        "function": "#/components/schemas/OpenAIResponseInputToolFunction",
+                        "mcp": "#/components/schemas/OpenAIResponseInputToolMCP"
                     }
                 }
             },
@@ -6838,6 +6842,110 @@
                     "name"
                 ],
                 "title": "OpenAIResponseInputToolFunction"
+            },
+            "OpenAIResponseInputToolMCP": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "mcp",
+                        "default": "mcp"
+                    },
+                    "server_label": {
+                        "type": "string"
+                    },
+                    "server_url": {
+                        "type": "string"
+                    },
+                    "headers": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "require_approval": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "always"
+                            },
+                            {
+                                "type": "string",
+                                "const": "never"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "always": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "never": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "title": "ApprovalFilter"
+                            }
+                        ],
+                        "default": "never"
+                    },
+                    "allowed_tools": {
+                        "oneOf": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "tool_names": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "title": "AllowedToolsFilter"
+                            }
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "server_label",
+                    "server_url",
+                    "require_approval"
+                ],
+                "title": "OpenAIResponseInputToolMCP"
             },
             "OpenAIResponseInputToolWebSearch": {
                 "type": "object",
