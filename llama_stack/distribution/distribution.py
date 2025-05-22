@@ -12,6 +12,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel
 
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -133,15 +134,28 @@ def get_provider_registry(
         ValueError: If any provider spec is invalid
     """
 
-    ret: dict[Api, dict[str, ProviderSpec]] = {}
+    registry: dict[Api, dict[str, ProviderSpec]] = {}
     for api in providable_apis():
         name = api.name.lower()
         logger.debug(f"Importing module {name}")
         try:
             module = importlib.import_module(f"llama_stack.providers.registry.{name}")
-            ret[api] = {a.provider_type: a for a in module.available_providers()}
+            registry[api] = {a.provider_type: a for a in module.available_providers()}
         except ImportError as e:
             logger.warning(f"Failed to import module {name}: {e}")
+
+    # Refresh providable APIs with external APIs if any
+    external_apis = load_external_apis(config)
+    for api, api_spec in external_apis.items():
+        name = api_spec.name.lower()
+        logger.info(f"Importing external API {name} module {api_spec.module}")
+        try:
+            module = importlib.import_module(api_spec.module)
+            registry[api] = {a.provider_type: a for a in module.available_providers()}
+        except ImportError as e:
+            raise ImportError(
+                f"Failed to import external API module {name}. Is the external API package installed? {e}"
+            ) from e
 
     # Check if config has the external_providers_dir attribute
     if config and hasattr(config, "external_providers_dir") and config.external_providers_dir:
@@ -175,11 +189,9 @@ def get_provider_registry(
                         else:
                             spec = _load_inline_provider_spec(spec_data, api, provider_name)
                             provider_type_key = f"inline::{provider_name}"
-
-                        logger.info(f"Loaded {provider_type} provider spec for {provider_type_key} from {spec_path}")
-                        if provider_type_key in ret[api]:
+                        if provider_type_key in registry[api]:
                             logger.warning(f"Overriding already registered provider {provider_type_key} for {api.name}")
-                        ret[api][provider_type_key] = spec
+                        registry[api][provider_type_key] = spec
                         logger.info(f"Successfully loaded external provider {provider_type_key}")
                     except yaml.YAMLError as yaml_err:
                         logger.error(f"Failed to parse YAML file {spec_path}: {yaml_err}")
@@ -187,4 +199,4 @@ def get_provider_registry(
                     except Exception as e:
                         logger.error(f"Failed to load provider spec from {spec_path}: {e}")
                         raise e
-    return ret
+    return registry
