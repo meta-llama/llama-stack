@@ -28,7 +28,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
-from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
+from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
@@ -122,6 +122,8 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
         return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
     elif isinstance(exc, NotImplementedError):
         return HTTPException(status_code=501, detail=f"Not implemented: {str(exc)}")
+    elif isinstance(exc, AuthenticationRequiredError):
+        return HTTPException(status_code=401, detail=f"Authentication required: {str(exc)}")
     else:
         return HTTPException(
             status_code=500,
