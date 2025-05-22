@@ -1,0 +1,179 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
+import pytest_asyncio
+
+from llama_stack.apis.vector_io import QueryChunksResponse
+
+# Mock the entire pymilvus module
+pymilvus_mock = MagicMock()
+pymilvus_mock.DataType = MagicMock()
+pymilvus_mock.MilvusClient = MagicMock
+
+# Apply the mock before importing MilvusIndex
+with patch.dict("sys.modules", {"pymilvus": pymilvus_mock}):
+    from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusIndex
+
+# This test is a unit test for the MilvusVectorIOAdapter class. This should only contain
+# tests which are specific to this class. More general (API-level) tests should be placed in
+# tests/integration/vector_io/
+#
+# How to run this test:
+#
+# pytest tests/unit/providers/vector_io/test_milvus.py \
+# -v -s --tb=short --disable-warnings --asyncio-mode=auto
+
+MILVUS_PROVIDER = "milvus"
+
+
+@pytest_asyncio.fixture
+async def mock_milvus_client():
+    """Create a mock Milvus client with common method behaviors."""
+    client = MagicMock()
+
+    # Mock collection operations
+    client.has_collection.return_value = False  # Initially no collection
+    client.create_collection.return_value = None
+    client.drop_collection.return_value = None
+
+    # Mock insert operation
+    client.insert.return_value = {"insert_count": 10}
+
+    # Mock search operation - return mock results (data should be dict, not JSON string)
+    client.search.return_value = [
+        [
+            {
+                "id": 0,
+                "distance": 0.1,
+                "entity": {"chunk_content": {"content": "mock chunk 1", "metadata": {"document_id": "doc1"}}},
+            },
+            {
+                "id": 1,
+                "distance": 0.2,
+                "entity": {"chunk_content": {"content": "mock chunk 2", "metadata": {"document_id": "doc2"}}},
+            },
+        ]
+    ]
+
+    # Mock query operation for keyword search (data should be dict, not JSON string)
+    client.query.return_value = [
+        {
+            "chunk_id": "chunk1",
+            "chunk_content": {"content": "mock chunk 1", "metadata": {"document_id": "doc1"}},
+            "score": 0.9,
+        },
+        {
+            "chunk_id": "chunk2",
+            "chunk_content": {"content": "mock chunk 2", "metadata": {"document_id": "doc2"}},
+            "score": 0.8,
+        },
+        {
+            "chunk_id": "chunk3",
+            "chunk_content": {"content": "mock chunk 3", "metadata": {"document_id": "doc3"}},
+            "score": 0.7,
+        },
+    ]
+
+    return client
+
+
+@pytest_asyncio.fixture
+async def milvus_index(mock_milvus_client):
+    """Create a MilvusIndex with mocked client."""
+    index = MilvusIndex(client=mock_milvus_client, collection_name="test_collection")
+    yield index
+    # No real cleanup needed since we're using mocks
+
+
+@pytest.mark.asyncio
+async def test_add_chunks(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
+    # Setup: collection doesn't exist initially, then exists after creation
+    mock_milvus_client.has_collection.side_effect = [False, True]
+
+    await milvus_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Verify collection was created and data was inserted
+    mock_milvus_client.create_collection.assert_called_once()
+    mock_milvus_client.insert.assert_called_once()
+
+    # Verify the insert call had the right number of chunks
+    insert_call = mock_milvus_client.insert.call_args
+    assert len(insert_call[1]["data"]) == len(sample_chunks)
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_vector(
+    milvus_index, sample_chunks, sample_embeddings, embedding_dimension, mock_milvus_client
+):
+    # Setup: Add chunks first
+    mock_milvus_client.has_collection.return_value = True
+    await milvus_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Test vector search
+    query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
+    response = await milvus_index.query_vector(query_embedding, k=2, score_threshold=0.0)
+
+    assert isinstance(response, QueryChunksResponse)
+    assert len(response.chunks) == 2
+    mock_milvus_client.search.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_keyword_search(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
+    mock_milvus_client.has_collection.return_value = True
+    await milvus_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Test keyword search
+    query_string = "Sentence 5"
+    response = await milvus_index.query_keyword(query_string=query_string, k=3, score_threshold=0.0)
+
+    assert isinstance(response, QueryChunksResponse)
+    assert len(response.chunks) == 3
+    mock_milvus_client.query.assert_called_once()
+
+    # Test no results case
+    mock_milvus_client.query.return_value = []
+    response_no_results = await milvus_index.query_keyword(query_string="nonexistent", k=1, score_threshold=0.0)
+
+    assert isinstance(response_no_results, QueryChunksResponse)
+    assert len(response_no_results.chunks) == 0
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_keyword_search_k_greater_than_results(
+    milvus_index, sample_chunks, sample_embeddings, mock_milvus_client
+):
+    mock_milvus_client.has_collection.return_value = True
+    await milvus_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Mock returning only 1 result even though k=5
+    mock_milvus_client.query.return_value = [
+        {
+            "chunk_id": "chunk1",
+            "chunk_content": {"content": "Sentence 1 from document 0", "metadata": {"document_id": "doc1"}},
+            "score": 0.9,
+        }
+    ]
+
+    query_str = "Sentence 1 from document 0"
+    response = await milvus_index.query_keyword(query_string=query_str, k=5, score_threshold=0.0)
+
+    assert 0 < len(response.chunks) <= 4
+    assert any("Sentence 1 from document 0" in chunk.content for chunk in response.chunks)
+
+
+@pytest.mark.asyncio
+async def test_delete_collection(milvus_index, mock_milvus_client):
+    # Test collection deletion
+    mock_milvus_client.has_collection.return_value = True
+
+    await milvus_index.delete()
+
+    mock_milvus_client.drop_collection.assert_called_once_with(collection_name=milvus_index.collection_name)
