@@ -140,7 +140,7 @@ async def resolve_impls(
 
     sorted_providers = sort_providers_by_deps(providers_with_specs, run_config)
 
-    return await instantiate_providers(sorted_providers, router_apis, dist_registry)
+    return await instantiate_providers(sorted_providers, router_apis, dist_registry, run_config)
 
 
 def specs_for_autorouted_apis(apis_to_serve: list[str] | set[str]) -> dict[str, dict[str, ProviderWithSpec]]:
@@ -243,7 +243,10 @@ def sort_providers_by_deps(
 
 
 async def instantiate_providers(
-    sorted_providers: list[tuple[str, ProviderWithSpec]], router_apis: set[Api], dist_registry: DistributionRegistry
+    sorted_providers: list[tuple[str, ProviderWithSpec]],
+    router_apis: set[Api],
+    dist_registry: DistributionRegistry,
+    run_config: StackRunConfig,
 ) -> dict:
     """Instantiates providers asynchronously while managing dependencies."""
     impls: dict[Api, Any] = {}
@@ -258,7 +261,7 @@ async def instantiate_providers(
         if isinstance(provider.spec, RoutingTableProviderSpec):
             inner_impls = inner_impls_by_provider_id[f"inner-{provider.spec.router_api.value}"]
 
-        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry)
+        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry, run_config)
 
         if api_str.startswith("inner-"):
             inner_impls_by_provider_id[api_str][provider.provider_id] = impl
@@ -308,6 +311,7 @@ async def instantiate_provider(
     deps: dict[Api, Any],
     inner_impls: dict[str, Any],
     dist_registry: DistributionRegistry,
+    run_config: StackRunConfig,
 ):
     provider_spec = provider.spec
     if not hasattr(provider_spec, "module"):
@@ -327,7 +331,7 @@ async def instantiate_provider(
         method = "get_auto_router_impl"
 
         config = None
-        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps]
+        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps, run_config]
     elif isinstance(provider_spec, RoutingTableProviderSpec):
         method = "get_routing_table_impl"
 

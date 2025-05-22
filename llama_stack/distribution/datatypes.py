@@ -26,6 +26,7 @@ from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
+from llama_stack.providers.utils.sqlstore.sqlstore import SqlStoreConfig
 
 LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
 LLAMA_STACK_RUN_CONFIG_VERSION = "2"
@@ -314,6 +315,13 @@ Configuration for the persistence store used by the distribution registry. If no
 a default SQLite store will be used.""",
     )
 
+    inference_store: SqlStoreConfig | None = Field(
+        default=None,
+        description="""
+Configuration for the persistence store used by the inference API. If not specified,
+a default SQLite store will be used.""",
+    )
+
     # registry of "resources" in the distribution
     models: list[ModelInput] = Field(default_factory=list)
     shields: list[ShieldInput] = Field(default_factory=list)
@@ -361,6 +369,10 @@ class BuildConfig(BaseModel):
         default=None,
         description="Path to directory containing external provider implementations. The providers packages will be resolved from this directory. "
         "pip_packages MUST contain the provider package name.",
+    )
+    additional_pip_packages: list[str] = Field(
+        default_factory=list,
+        description="Additional pip packages to install in the distribution. These packages will be installed in the distribution environment.",
     )
 
     @field_validator("external_providers_dir")

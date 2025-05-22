@@ -96,6 +96,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/bedrock}/inference_store.db
 models:
 - metadata: {}
   model_id: meta.llama3-1-8b-instruct-v1:0

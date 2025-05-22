@@ -111,6 +111,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/passthrough}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/passthrough}/inference_store.db
 models:
 - metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
