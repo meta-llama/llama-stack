@@ -222,3 +222,105 @@ def test_openai_chat_completion_streaming(compat_client, client_with_models, tex
             streamed_content.append(chunk.choices[0].delta.content.lower().strip())
     assert len(streamed_content) > 0
     assert expected.lower() in "".join(streamed_content)
+
+
+@pytest.mark.parametrize(
+    "stream",
+    [
+        True,
+        False,
+    ],
+)
+def test_inference_store(openai_client, client_with_models, text_model_id, stream):
+    skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
+    client = openai_client
+    # make a chat completion
+    message = "Hello, world!"
+    response = client.chat.completions.create(
+        model=text_model_id,
+        messages=[
+            {
+                "role": "user",
+                "content": message,
+            }
+        ],
+        stream=stream,
+    )
+    if stream:
+        # accumulate the streamed content
+        content = ""
+        response_id = None
+        for chunk in response:
+            if response_id is None:
+                response_id = chunk.id
+            content += chunk.choices[0].delta.content
+    else:
+        response_id = response.id
+        content = response.choices[0].message.content
+
+    responses = client.chat.completions.list()
+    assert response_id in [r.id for r in responses.data]
+
+    retrieved_response = client.chat.completions.retrieve(response_id)
+    assert retrieved_response.id == response_id
+    assert retrieved_response.input_messages[0]["content"] == message
+    assert retrieved_response.choices[0].message.content == content
+
+
+@pytest.mark.parametrize(
+    "stream",
+    [
+        True,
+        False,
+    ],
+)
+def test_inference_store_tool_calls(openai_client, client_with_models, text_model_id, stream):
+    skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
+    client = openai_client
+    # make a chat completion
+    message = "What's the weather in Tokyo? Use the get_weather function to get the weather."
+    response = client.chat.completions.create(
+        model=text_model_id,
+        messages=[
+            {
+                "role": "user",
+                "content": message,
+            }
+        ],
+        stream=stream,
+        tools=[
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get the weather in a given city",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "city": {"type": "string", "description": "The city to get the weather for"},
+                        },
+                    },
+                },
+            }
+        ],
+    )
+    if stream:
+        # accumulate the streamed content
+        content = ""
+        response_id = None
+        for chunk in response:
+            if response_id is None:
+                response_id = chunk.id
+            content += chunk.choices[0].delta.content
+    else:
+        response_id = response.id
+        content = response.choices[0].message.content
+
+    responses = client.chat.completions.list()
+    assert response_id in [r.id for r in responses.data]
+
+    retrieved_response = client.chat.completions.retrieve(response_id)
+    assert retrieved_response.id == response_id
+    assert retrieved_response.input_messages[0]["content"] == message
+    assert retrieved_response.choices[0].message.tool_calls[0].function.name == "get_weather"
+    assert retrieved_response.choices[0].message.tool_calls[0].function.arguments == '{"city":"Tokyo"}'

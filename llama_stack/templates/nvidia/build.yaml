@@ -24,3 +24,6 @@ distribution_spec:
     tool_runtime:
     - inline::rag-runtime
 image_type: conda
+additional_pip_packages:
+- sqlalchemy[asyncio]
+- sqlalchemy[asyncio]

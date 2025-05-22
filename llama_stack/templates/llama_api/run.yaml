@@ -111,6 +111,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_api}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_api}/inference_store.db
 models:
 - metadata: {}
   model_id: Llama-3.3-70B-Instruct

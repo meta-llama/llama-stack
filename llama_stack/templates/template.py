@@ -29,6 +29,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 
 
 def get_model_registry(
@@ -117,6 +118,10 @@ class RunConfigSettings(BaseModel):
                 __distro_dir__=f"~/.llama/distributions/{name}",
                 db_name="registry.db",
             ),
+            inference_store=SqliteSqlStoreConfig.sample_run_config(
+                __distro_dir__=f"~/.llama/distributions/{name}",
+                db_name="inference_store.db",
+            ),
             models=self.default_models or [],
             shields=self.default_shields or [],
             tool_groups=self.default_tool_groups or [],
@@ -146,14 +151,20 @@ class DistributionTemplate(BaseModel):
     available_models_by_provider: dict[str, list[ProviderModelEntry]] | None = None
 
     def build_config(self) -> BuildConfig:
+        additional_pip_packages: list[str] = []
+        for run_config in self.run_configs.values():
+            run_config_ = run_config.run_config(self.name, self.providers, self.container_image)
+            if run_config_.inference_store:
+                additional_pip_packages.extend(run_config_.inference_store.pip_packages)
+
         return BuildConfig(
-            name=self.name,
             distribution_spec=DistributionSpec(
                 description=self.description,
                 container_image=self.container_image,
                 providers=self.providers,
             ),
             image_type="conda",  # default to conda, can be overridden
+            additional_pip_packages=additional_pip_packages,
         )
 
     def generate_markdown_docs(self) -> str:

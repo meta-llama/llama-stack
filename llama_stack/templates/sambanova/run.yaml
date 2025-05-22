@@ -81,6 +81,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/inference_store.db
 models:
 - metadata: {}
   model_id: sambanova/Meta-Llama-3.1-8B-Instruct

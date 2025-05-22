@@ -133,6 +133,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/inference_store.db
 models:
 - metadata: {}
   model_id: openai/gpt-4o

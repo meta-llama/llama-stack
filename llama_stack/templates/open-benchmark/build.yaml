@@ -33,3 +33,5 @@ distribution_spec:
     - inline::rag-runtime
     - remote::model-context-protocol
 image_type: conda
+additional_pip_packages:
+- sqlalchemy[asyncio]
