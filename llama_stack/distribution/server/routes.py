@@ -12,10 +12,10 @@ from typing import Any
 from aiohttp import hdrs
 from starlette.routing import Route
 
+from llama_stack.apis.datatypes import Api, ExternalApiSpec
 from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 from llama_stack.distribution.resolver import api_protocol_map
-from llama_stack.providers.datatypes import Api
 from llama_stack.schema_utils import WebMethod
 
 EndpointFunc = Callable[..., Any]
@@ -32,10 +32,14 @@ def toolgroup_protocol_map():
     }
 
 
-def get_all_api_routes() -> dict[Api, list[tuple[Route, WebMethod]]]:
+def get_all_api_routes(
+    external_apis: dict[Api, ExternalApiSpec] | None = None,
+) -> dict[Api, list[tuple[Route, WebMethod]]]:
     apis = {}
 
-    protocols = api_protocol_map()
+    # Lazy import to avoid circular dependency
+
+    protocols = api_protocol_map(external_apis)
     toolgroup_protocols = toolgroup_protocol_map()
     for api, protocol in protocols.items():
         routes = []
@@ -74,8 +78,8 @@ def get_all_api_routes() -> dict[Api, list[tuple[Route, WebMethod]]]:
     return apis
 
 
-def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
-    api_to_routes = get_all_api_routes()
+def initialize_route_impls(impls, external_apis: dict[Api, ExternalApiSpec] | None = None) -> RouteImpls:
+    api_to_routes = get_all_api_routes(external_apis)
     route_impls: RouteImpls = {}
 
     def _convert_path_to_regex(path: str) -> str:

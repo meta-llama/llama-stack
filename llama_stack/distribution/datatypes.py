@@ -387,6 +387,11 @@ a default SQLite store will be used.""",
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
 
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
+    )
+
     @field_validator("external_providers_dir")
     @classmethod
     def validate_external_providers_dir(cls, v):
