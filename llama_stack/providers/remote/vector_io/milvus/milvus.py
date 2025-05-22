@@ -75,11 +75,58 @@ class MilvusIndex(EmbeddingIndex):
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
         if not await asyncio.to_thread(self.client.has_collection, self.collection_name):
+            # Create schema for vector search
+            schema = self.client.create_schema()
+            schema.add_field(
+                field_name="chunk_id",
+                datatype=DataType.VARCHAR,
+                is_primary=True,
+                max_length=100,
+            )
+            schema.add_field(
+                field_name="content",
+                datatype=DataType.VARCHAR,
+                max_length=65535,
+                enable_analyzer=True,  # Enable text analysis for BM25
+            )
+            schema.add_field(
+                field_name="vector",
+                datatype=DataType.FLOAT_VECTOR,
+                dim=len(embeddings[0]),
+            )
+            schema.add_field(
+                field_name="chunk_content",
+                datatype=DataType.JSON,
+            )
+            # Add sparse vector field for BM25
+            schema.add_field(
+                field_name="sparse",
+                datatype=DataType.SPARSE_FLOAT_VECTOR,
+            )
+
+            # Create indexes
+            index_params = self.client.prepare_index_params()
+            index_params.add_index(
+                field_name="vector",
+                index_type="FLAT",
+                metric_type="COSINE",
+            )
+
+            # Add BM25 function for full-text search
+            from pymilvus import Function, FunctionType
+            bm25_function = Function(
+                name="text_bm25_emb",
+                input_field_names=["content"],
+                output_field_names=["sparse"],
+                function_type=FunctionType.BM25,
+            )
+            schema.add_function(bm25_function)
+
             await asyncio.to_thread(
                 self.client.create_collection,
                 self.collection_name,
-                dimension=len(embeddings[0]),
-                auto_id=True,
+                schema=schema,
+                index_params=index_params,
                 consistency_level=self.consistency_level,
             )
 
@@ -88,8 +135,10 @@ class MilvusIndex(EmbeddingIndex):
             data.append(
                 {
                     "chunk_id": chunk.chunk_id,
+                    "content": chunk.content,
                     "vector": embedding,
                     "chunk_content": chunk.model_dump(),
+                    # sparse field will be automatically populated by BM25 function
                 }
             )
         try:
@@ -107,9 +156,10 @@ class MilvusIndex(EmbeddingIndex):
             self.client.search,
             collection_name=self.collection_name,
             data=[embedding],
+            anns_field="vector",
             limit=k,
             output_fields=["*"],
-            search_params={"params": {"radius": score_threshold}},
+            search_params={"metric_type": "COSINE", "params": {"score_threshold": score_threshold}},
         )
         chunks = [Chunk(**res["entity"]["chunk_content"]) for res in search_res[0]]
         scores = [res["distance"] for res in search_res[0]]
@@ -121,7 +171,41 @@ class MilvusIndex(EmbeddingIndex):
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Keyword search is not supported in Milvus")
+        """
+        Perform BM25-based keyword search using Milvus's built-in full-text search.
+        """
+        try:
+            from pymilvus import Function, FunctionType
+            search_res = await asyncio.to_thread(
+                self.client.search,
+                collection_name=self.collection_name,
+                data=[query_string],  # Raw text query
+                anns_field="sparse",  # Use sparse field for BM25
+                output_fields=["chunk_content"],  # Output the chunk content
+                limit=k,
+                search_params={
+                    "params": {
+                        "drop_ratio_search": 0.2,  # Ignore low-importance terms
+                    }
+                },
+            )
+            chunks = []
+            scores = []
+            for res in search_res[0]:
+                chunk = Chunk(**res["entity"]["chunk_content"])
+                chunks.append(chunk)
+                scores.append(res["distance"])  # BM25 score from Milvus
+            # Filter by score threshold
+            filtered_results = [(chunk, score) for chunk, score in zip(chunks, scores, strict=False) if score >= score_threshold]
+            if filtered_results:
+                chunks, scores = zip(*filtered_results, strict=False)
+                return QueryChunksResponse(chunks=list(chunks), scores=list(scores))
+            else:
+                return QueryChunksResponse(chunks=[], scores=[])
+        except Exception as e:
+            logger.error(f"Error performing BM25 search: {e}")
+            # Fallback to simple text search
+            return await self._fallback_keyword_search(query_string, k, score_threshold)
 
     async def query_hybrid(
         self,
@@ -245,6 +329,14 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
+
+        if params and params.get("mode") == "keyword":
+            # Check if this is inline Milvus (Milvus-Lite)
+            if hasattr(self.config, "db_path"):
+                raise NotImplementedError(
+                    "Keyword search is not supported in Milvus-Lite. "
+                    "Please use a remote Milvus server for keyword search functionality."
+                )
 
         return await index.query_chunks(query, params)
 
