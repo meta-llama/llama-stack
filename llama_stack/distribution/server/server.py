@@ -29,6 +29,7 @@ from pydantic import BaseModel, ValidationError
 
 from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.external import ExternalApiSpec, load_external_apis
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
     request_provider_data_context,
@@ -253,9 +254,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
 
 
 class TracingMiddleware:
-    def __init__(self, app, impls):
+    def __init__(self, app, impls, external_apis: dict[str, ExternalApiSpec]):
         self.app = app
         self.impls = impls
+        self.external_apis = external_apis
         # FastAPI built-in paths that should bypass custom routing
         self.fastapi_paths = ("/docs", "/redoc", "/openapi.json", "/favicon.ico", "/static")
 
@@ -272,7 +274,7 @@ class TracingMiddleware:
             return await self.app(scope, receive, send)
 
         if not hasattr(self, "endpoint_impls"):
-            self.endpoint_impls = initialize_endpoint_impls(self.impls)
+            self.endpoint_impls = initialize_endpoint_impls(self.impls, self.external_apis)
 
         try:
             _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
@@ -476,12 +478,14 @@ def main(args: argparse.Namespace | None = None):
     else:
         setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
 
-    all_endpoints = get_all_api_endpoints()
-
     if config.apis:
         apis_to_serve = set(config.apis)
     else:
         apis_to_serve = set(impls.keys())
+
+    # Load external APIs if configured
+    external_apis = load_external_apis(config)
+    all_endpoints = get_all_api_endpoints(external_apis)
 
     for inf in builtin_automatically_routed_apis():
         # if we do not serve the corresponding router API, we should not serve the routing table API
@@ -521,7 +525,7 @@ def main(args: argparse.Namespace | None = None):
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
-    app.add_middleware(TracingMiddleware, impls=impls)
+    app.add_middleware(TracingMiddleware, impls=impls, external_apis=external_apis)
 
     import uvicorn
 
