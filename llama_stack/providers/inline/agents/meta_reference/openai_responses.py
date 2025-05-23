@@ -382,6 +382,10 @@ class OpenAIResponsesImpl:
 
         return response
 
+    async def delete_openai_response(self, id: str) -> None:
+        key = f"{OPENAI_RESPONSES_PREFIX}{id}"
+        return await self.persistence_store.delete(key=key)
+
     async def _convert_response_tools_to_chat_tools(
         self, tools: list[OpenAIResponseInputTool]
     ) -> list[ChatCompletionToolParam]:

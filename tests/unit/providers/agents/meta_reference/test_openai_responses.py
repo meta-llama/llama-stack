@@ -36,13 +36,13 @@ from llama_stack.providers.inline.agents.meta_reference.openai_responses import 
     OpenAIResponsePreviousResponseWithInputItems,
     OpenAIResponsesImpl,
 )
-from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.providers.utils.kvstore.kvstore import InmemoryKVStoreImpl
 from tests.unit.providers.agents.meta_reference.fixtures import load_chat_completion_fixture
 
 
 @pytest.fixture
 def mock_kvstore():
-    kvstore = AsyncMock(spec=KVStore)
+    kvstore = InmemoryKVStoreImpl()
     return kvstore
 
 
@@ -100,7 +100,6 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         stream=False,
         temperature=0.1,
     )
-    openai_responses_impl.persistence_store.set.assert_called_once()
     assert result.model == model
     assert len(result.output) == 1
     assert isinstance(result.output[0], OpenAIResponseMessage)
@@ -166,8 +165,6 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
         tool_name="web_search",
         kwargs={"query": "What is the capital of Ireland?"},
     )
-
-    openai_responses_impl.persistence_store.set.assert_called_once()
 
     # Check that we got the content from our mocked tool execution result
     assert len(result.output) >= 1
@@ -522,3 +519,81 @@ async def test_create_openai_response_with_instructions_and_previous_response(
     assert sent_messages[2].content == "Galway, Longford, Sligo"
     assert sent_messages[3].role == "user"
     assert sent_messages[3].content == "Which is the largest?"
+
+
+@pytest.mark.asyncio
+async def test_get_openai_response(openai_responses_impl: OpenAIResponsesImpl):
+    key = "openai_responses:123"
+
+    input_item_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
+        role="user",
+    )
+    input_items = OpenAIResponseInputItemList(data=[input_item_message])
+    response_output_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseOutputMessageContentOutputText(text="fake_response")],
+        status="completed",
+        role="assistant",
+    )
+    response = OpenAIResponseObject(
+        created_at=1,
+        id="resp_123",
+        model="fake_model",
+        output=[response_output_message],
+        status="completed",
+    )
+    previous_response = OpenAIResponsePreviousResponseWithInputItems(
+        input_items=input_items,
+        response=response,
+    ).model_dump_json()
+
+    await openai_responses_impl.persistence_store.set(key=key, value=previous_response)
+    response = await openai_responses_impl.get_openai_response("123")
+
+    resp = response.output[0].content[0]
+    assert resp.text == "fake_response"
+
+    with pytest.raises(ValueError):
+        await openai_responses_impl.get_openai_response("Mock Invalid Key")
+
+
+@pytest.mark.asyncio
+async def test_delete_openai_response(openai_responses_impl: OpenAIResponsesImpl):
+    key = "openai_responses:123"
+
+    input_item_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
+        role="user",
+    )
+    input_items = OpenAIResponseInputItemList(data=[input_item_message])
+    response_output_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseOutputMessageContentOutputText(text="fake_response")],
+        status="completed",
+        role="assistant",
+    )
+    response = OpenAIResponseObject(
+        created_at=1,
+        id="resp_123",
+        model="fake_model",
+        output=[response_output_message],
+        status="completed",
+    )
+    previous_response = OpenAIResponsePreviousResponseWithInputItems(
+        input_items=input_items,
+        response=response,
+    ).model_dump_json()
+
+    await openai_responses_impl.persistence_store.set(key=key, value=previous_response)
+    response = await openai_responses_impl.get_openai_response("123")
+
+    resp = response.output[0].content[0]
+    assert resp.text == "fake_response"
+
+    await openai_responses_impl.delete_openai_response("123")
+
+    with pytest.raises(ValueError):
+        await openai_responses_impl.get_openai_response("123")

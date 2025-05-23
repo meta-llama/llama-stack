@@ -611,3 +611,11 @@ class Agents(Protocol):
         :returns: An OpenAIResponseObject.
         """
         ...
+
+    @webmethod(route="/openai/v1/responses/{id}", method="DELETE")
+    async def delete_openai_response(self, id: str) -> None:
+        """Delete an OpenAI response by its ID.
+
+        :param id: The ID of the OpenAI response to delete.
+        """
+        ...

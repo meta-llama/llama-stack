@@ -323,3 +323,6 @@ class MetaReferenceAgentsImpl(Agents):
         return await self.openai_responses_impl.create_openai_response(
             input, model, instructions, previous_response_id, store, stream, temperature, tools
         )
+
+    async def delete_openai_response(self, id: str) -> None:
+        return await self.openai_responses_impl.delete_openai_response(id)

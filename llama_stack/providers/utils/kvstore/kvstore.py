@@ -5,6 +5,8 @@
 # the root directory of this source tree.
 
 
+from datetime import datetime
+
 from .api import KVStore
 from .config import KVStoreConfig, KVStoreType
 
@@ -23,7 +25,7 @@ class InmemoryKVStoreImpl(KVStore):
     async def get(self, key: str) -> str | None:
         return self._store.get(key)
 
-    async def set(self, key: str, value: str) -> None:
+    async def set(self, key: str, value: str, expiration: datetime | None = None) -> None:
         self._store[key] = value
 
     async def values_in_range(self, start_key: str, end_key: str) -> list[str]:
