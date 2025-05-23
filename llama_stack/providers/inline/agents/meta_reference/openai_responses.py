@@ -214,9 +214,9 @@ class OpenAIResponsesImpl:
 
     async def get_openai_response(
         self,
-        id: str,
+        response_id: str,
     ) -> OpenAIResponseObject:
-        response_with_input = await self._get_previous_response_with_input(id)
+        response_with_input = await self._get_previous_response_with_input(response_id)
         return response_with_input.response
 
     async def create_openai_response(

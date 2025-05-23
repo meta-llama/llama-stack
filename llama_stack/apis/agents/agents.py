@@ -579,14 +579,14 @@ class Agents(Protocol):
     #
     # Both of these APIs are inherently stateful.
 
-    @webmethod(route="/openai/v1/responses/{id}", method="GET")
+    @webmethod(route="/openai/v1/responses/{response_id}", method="GET")
     async def get_openai_response(
         self,
-        id: str,
+        response_id: str,
     ) -> OpenAIResponseObject:
         """Retrieve an OpenAI response by its ID.
 
-        :param id: The ID of the OpenAI response to retrieve.
+        :param response_id: The ID of the OpenAI response to retrieve.
         :returns: An OpenAIResponseObject.
         """
         ...
