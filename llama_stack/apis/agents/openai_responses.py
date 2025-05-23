@@ -219,3 +219,17 @@ register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
 class OpenAIResponseInputItemList(BaseModel):
     data: list[OpenAIResponseInput]
     object: Literal["list"] = "list"
+
+
+@json_schema_type
+class OpenAIResponseObjectWithInput(OpenAIResponseObject):
+    input: list[OpenAIResponseInput]
+
+
+@json_schema_type
+class ListOpenAIResponseObject(BaseModel):
+    data: list[OpenAIResponseObjectWithInput]
+    has_more: bool
+    first_id: str
+    last_id: str
+    object: Literal["list"] = "list"

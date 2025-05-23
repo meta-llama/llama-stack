@@ -50,6 +50,9 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_api}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/llama_api}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
