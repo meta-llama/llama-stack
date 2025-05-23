@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1526,6 +1527,7 @@ test = [
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
     { name = "pypdf" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "torch", version = "2.6.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.6.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
     { name = "torchvision", version = "0.21.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or sys_platform == 'darwin'" },
@@ -1616,7 +1618,9 @@ requires-dist = [
     { name = "sphinxcontrib-openapi", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-redoc", marker = "extra == 'docs'" },
     { name = "sphinxcontrib-video", marker = "extra == 'docs'" },
+    { name = "sqlalchemy", marker = "extra == 'test'" },
     { name = "sqlalchemy", marker = "extra == 'unit'" },
+    { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'test'", specifier = ">=2.0.41" },
     { name = "sqlalchemy", extras = ["asyncio"], marker = "extra == 'unit'", specifier = ">=2.0.41" },
     { name = "sqlite-vec", marker = "extra == 'unit'" },
     { name = "streamlit", marker = "extra == 'ui'" },
@@ -1631,6 +1635,7 @@ requires-dist = [
     { name = "types-setuptools", marker = "extra == 'dev'" },
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev", "unit", "test", "docs", "codegen", "ui"]
 
 [[package]]
 name = "llama-stack-client"
