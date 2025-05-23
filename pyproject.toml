@@ -91,6 +91,8 @@ test = [
     "datasets",
     "autoevals",
     "transformers",
+    "sqlalchemy",
+    "sqlalchemy[asyncio]>=2.0.41",
 ]
 docs = [
     "sphinx-autobuild",
