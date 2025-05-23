@@ -1,6 +1,5 @@
 ## This is WIP.
 
-
 We use shadcdn/ui [Shadcn UI](https://ui.shadcn.com/) for the UI components.
 
 ## Getting Started
@@ -23,4 +22,4 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:8322](http://localhost:8322) with your browser to see the result.
