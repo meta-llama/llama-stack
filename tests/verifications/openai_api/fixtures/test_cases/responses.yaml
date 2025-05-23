@@ -41,8 +41,6 @@ test_response_mcp_tool:
       - type: mcp
         server_label: "localmcp"
         server_url: "<FILLED_BY_TEST_RUNNER>"
-        headers:
-          Authorization: "Bearer test-token"
       output: "Hello, world!"
 
 test_response_custom_tool:

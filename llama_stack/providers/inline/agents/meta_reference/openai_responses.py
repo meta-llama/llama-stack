@@ -57,7 +57,7 @@ from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
-from llama_stack.providers.utils.tools.mcp import convert_header_list_to_dict, invoke_mcp_tool, list_mcp_tools
+from llama_stack.providers.utils.tools.mcp import invoke_mcp_tool, list_mcp_tools
 
 logger = get_logger(name=__name__, category="openai_responses")
 
@@ -277,7 +277,7 @@ class OpenAIResponsesImpl:
         messages = await _convert_response_input_to_chat_messages(input)
         await self._prepend_instructions(messages, instructions)
         chat_tools, mcp_tool_to_server, mcp_list_message = (
-            await self._convert_response_tools_to_chat_tools(tools) if tools else (None, {})
+            await self._convert_response_tools_to_chat_tools(tools) if tools else (None, {}, None)
         )
         if mcp_list_message:
             output_messages.append(mcp_list_message)
@@ -487,7 +487,7 @@ class OpenAIResponsesImpl:
 
                 tool_defs = await list_mcp_tools(
                     endpoint=input_tool.server_url,
-                    headers=convert_header_list_to_dict(input_tool.headers or []),
+                    headers=input_tool.headers or {},
                 )
 
                 mcp_list_message = OpenAIResponseOutputMessageMCPListTools(
@@ -584,12 +584,13 @@ class OpenAIResponsesImpl:
             return None, None
 
         error_exc = None
+        result = None
         try:
             if function.name in ctx.mcp_tool_to_server:
                 mcp_tool = ctx.mcp_tool_to_server[function.name]
                 result = await invoke_mcp_tool(
                     endpoint=mcp_tool.server_url,
-                    headers=convert_header_list_to_dict(mcp_tool.headers or []),
+                    headers=mcp_tool.headers or {},
                     tool_name=function.name,
                     kwargs=json.loads(function.arguments) if function.arguments else {},
                 )
@@ -628,7 +629,7 @@ class OpenAIResponsesImpl:
                 raise ValueError(f"Unknown tool {function.name} called")
 
         input_message = None
-        if result.content:
+        if result and result.content:
             if isinstance(result.content, str):
                 content = result.content
             elif isinstance(result.content, list):

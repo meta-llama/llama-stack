@@ -6,8 +6,11 @@
 
 import json
 
+import httpx
 import pytest
 
+from llama_stack import LlamaStackAsLibraryClient
+from llama_stack.distribution.datatypes import AuthenticationRequiredError
 from tests.common.mcp import make_mcp_server
 from tests.verifications.openai_api.fixtures.fixtures import (
     case_id_generator,
@@ -165,6 +168,38 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
         message = response.output[2]
         text_content = message.content[0].text
         assert "boiling point" in text_content.lower()
+
+    with make_mcp_server(required_auth_token="test-token") as mcp_server_info:
+        tools = case["tools"]
+        for tool in tools:
+            if tool["type"] == "mcp":
+                tool["server_url"] = mcp_server_info["server_url"]
+
+        exc_type = (
+            AuthenticationRequiredError
+            if isinstance(openai_client, LlamaStackAsLibraryClient)
+            else httpx.HTTPStatusError
+        )
+        with pytest.raises(exc_type):
+            openai_client.responses.create(
+                model=model,
+                input=case["input"],
+                tools=tools,
+                stream=False,
+            )
+
+        for tool in tools:
+            if tool["type"] == "mcp":
+                tool["server_url"] = mcp_server_info["server_url"]
+                tool["headers"] = {"Authorization": "Bearer test-token"}
+
+        response = openai_client.responses.create(
+            model=model,
+            input=case["input"],
+            tools=tools,
+            stream=False,
+        )
+        assert len(response.output) >= 3
 
 
 @pytest.mark.parametrize(
