@@ -80,8 +80,9 @@ def available_providers() -> list[ProviderSpec]:
             adapter=AdapterSpec(
                 adapter_type="model-context-protocol",
                 module="llama_stack.providers.remote.tool_runtime.model_context_protocol",
-                config_class="llama_stack.providers.remote.tool_runtime.model_context_protocol.config.ModelContextProtocolConfig",
+                config_class="llama_stack.providers.remote.tool_runtime.model_context_protocol.config.MCPProviderConfig",
                 pip_packages=["mcp"],
+                provider_data_validator="llama_stack.providers.remote.tool_runtime.model_context_protocol.config.MCPProviderDataValidator",
             ),
         ),
     ]

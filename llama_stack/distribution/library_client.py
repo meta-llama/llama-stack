@@ -261,9 +261,11 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             raise ValueError("Client not initialized")
 
         # Create headers with provider data if available
-        headers = {}
+        headers = options.headers or {}
         if self.provider_data:
-            headers["X-LlamaStack-Provider-Data"] = json.dumps(self.provider_data)
+            keys = ["X-LlamaStack-Provider-Data", "x-llamastack-provider-data"]
+            if all(key not in headers for key in keys):
+                headers["X-LlamaStack-Provider-Data"] = json.dumps(self.provider_data)
 
         # Use context manager for provider data
         with request_provider_data_context(headers):

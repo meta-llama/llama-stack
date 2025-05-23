@@ -236,6 +236,10 @@ class AuthenticationConfig(BaseModel):
     )
 
 
+class AuthenticationRequiredError(Exception):
+    pass
+
+
 class QuotaPeriod(str, Enum):
     DAY = "day"
 
