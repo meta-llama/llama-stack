@@ -1,5 +1,9 @@
+"use client";
+
 import { MessageSquareText, MessagesSquare, MoveUpRight } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 import {
   Sidebar,
@@ -32,6 +36,8 @@ const logItems = [
 ];
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -42,16 +48,31 @@ export function AppSidebar() {
           <SidebarGroupLabel>Logs</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {logItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {logItems.map((item) => {
+                const isActive = pathname.startsWith(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      className={cn(
+                        "justify-start",
+                        isActive &&
+                          "bg-gray-200 hover:bg-gray-200 text-primary hover:text-primary",
+                      )}
+                    >
+                      <Link href={item.url}>
+                        <item.icon
+                          className={cn(
+                            isActive && "text-primary",
+                            "mr-2 h-4 w-4",
+                          )}
+                        />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
