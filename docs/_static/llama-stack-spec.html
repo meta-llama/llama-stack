@@ -1395,7 +1395,7 @@
                 ]
             }
         },
-        "/v1/openai/v1/responses/{id}": {
+        "/v1/openai/v1/responses/{response_id}": {
             "get": {
                 "responses": {
                     "200": {
@@ -1427,7 +1427,7 @@
                 "description": "Retrieve an OpenAI response by its ID.",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "response_id",
                         "in": "path",
                         "description": "The ID of the OpenAI response to retrieve.",
                         "required": true,

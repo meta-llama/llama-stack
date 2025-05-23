@@ -305,9 +305,9 @@ class MetaReferenceAgentsImpl(Agents):
     # OpenAI responses
     async def get_openai_response(
         self,
-        id: str,
+        response_id: str,
     ) -> OpenAIResponseObject:
-        return await self.openai_responses_impl.get_openai_response(id)
+        return await self.openai_responses_impl.get_openai_response(response_id)
 
     async def create_openai_response(
         self,
