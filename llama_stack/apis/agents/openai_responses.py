@@ -10,6 +10,9 @@ from pydantic import BaseModel, Field
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
+# NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
+# take their YAML and generate this file automatically. Their YAML is available.
+
 
 @json_schema_type
 class OpenAIResponseError(BaseModel):
@@ -79,16 +82,45 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 @json_schema_type
 class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
-    arguments: str
     call_id: str
     name: str
+    arguments: str
     type: Literal["function_call"] = "function_call"
+    id: str | None = None
+    status: str | None = None
+
+
+@json_schema_type
+class OpenAIResponseOutputMessageMCPCall(BaseModel):
     id: str
-    status: str
+    type: Literal["mcp_call"] = "mcp_call"
+    arguments: str
+    name: str
+    server_label: str
+    error: str | None = None
+    output: str | None = None
+
+
+class MCPListToolsTool(BaseModel):
+    input_schema: dict[str, Any]
+    name: str
+    description: str | None = None
+
+
+@json_schema_type
+class OpenAIResponseOutputMessageMCPListTools(BaseModel):
+    id: str
+    type: Literal["mcp_list_tools"] = "mcp_list_tools"
+    server_label: str
+    tools: list[MCPListToolsTool]
 
 
 OpenAIResponseOutput = Annotated[
-    OpenAIResponseMessage | OpenAIResponseOutputMessageWebSearchToolCall | OpenAIResponseOutputMessageFunctionToolCall,
+    OpenAIResponseMessage
+    | OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFunctionToolCall
+    | OpenAIResponseOutputMessageMCPCall
+    | OpenAIResponseOutputMessageMCPListTools,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")

@@ -31,6 +31,20 @@ test_response_web_search:
         search_context_size: "low"
       output: "128"
 
+test_response_mcp_tool:
+  test_name: test_response_mcp_tool
+  test_params:
+    case:
+    - case_id: "boiling_point_tool"
+      input: "What is the boiling point of polyjuice?"
+      tools:
+      - type: mcp
+        server_label: "localmcp"
+        server_url: "<FILLED_BY_TEST_RUNNER>"
+        headers:
+          Authorization: "Bearer test-token"
+      output: "Hello, world!"
+
 test_response_custom_tool:
   test_name: test_response_custom_tool
   test_params:

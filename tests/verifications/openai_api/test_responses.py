@@ -4,9 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 
 import pytest
 
+from tests.common.mcp import make_mcp_server
 from tests.verifications.openai_api.fixtures.fixtures import (
     case_id_generator,
     get_base_test_name,
@@ -122,6 +124,47 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     assert response.output[1].role == "assistant"
     assert len(response.output[1].content) > 0
     assert case["output"].lower() in response.output_text.lower().strip()
+
+
+@pytest.mark.parametrize(
+    "case",
+    responses_test_cases["test_response_mcp_tool"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_response_non_streaming_mcp_tool(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    with make_mcp_server() as mcp_server_info:
+        tools = case["tools"]
+        for tool in tools:
+            if tool["type"] == "mcp":
+                tool["server_url"] = mcp_server_info["server_url"]
+
+        response = openai_client.responses.create(
+            model=model,
+            input=case["input"],
+            tools=tools,
+            stream=False,
+        )
+        assert len(response.output) >= 3
+        list_tools = response.output[0]
+        assert list_tools.type == "mcp_list_tools"
+        assert list_tools.server_label == "localmcp"
+        assert len(list_tools.tools) == 2
+        assert {t["name"] for t in list_tools.tools} == {"get_boiling_point", "greet_everyone"}
+
+        call = response.output[1]
+        assert call.type == "mcp_call"
+        assert call.name == "get_boiling_point"
+        assert json.loads(call.arguments) == {"liquid_name": "polyjuice", "celcius": True}
+        assert call.error is None
+        assert "-100" in call.output
+
+        message = response.output[2]
+        text_content = message.content[0].text
+        assert "boiling point" in text_content.lower()
 
 
 @pytest.mark.parametrize(
