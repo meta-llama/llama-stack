@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from openai.types.chat.chat_completion_chunk import (
@@ -16,12 +16,11 @@ from openai.types.chat.chat_completion_chunk import (
 )
 
 from llama_stack.apis.agents.openai_responses import (
-    OpenAIResponseInputItemList,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputToolFunction,
     OpenAIResponseInputToolWebSearch,
     OpenAIResponseMessage,
-    OpenAIResponseObject,
+    OpenAIResponseObjectWithInput,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageWebSearchToolCall,
 )
@@ -33,17 +32,10 @@ from llama_stack.apis.inference.inference import (
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
 from llama_stack.providers.inline.agents.meta_reference.openai_responses import (
-    OpenAIResponsePreviousResponseWithInputItems,
     OpenAIResponsesImpl,
 )
-from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 from tests.unit.providers.agents.meta_reference.fixtures import load_chat_completion_fixture
-
-
-@pytest.fixture
-def mock_kvstore():
-    kvstore = AsyncMock(spec=KVStore)
-    return kvstore
 
 
 @pytest.fixture
@@ -65,12 +57,18 @@ def mock_tool_runtime_api():
 
 
 @pytest.fixture
-def openai_responses_impl(mock_kvstore, mock_inference_api, mock_tool_groups_api, mock_tool_runtime_api):
+def mock_responses_store():
+    responses_store = AsyncMock(spec=ResponsesStore)
+    return responses_store
+
+
+@pytest.fixture
+def openai_responses_impl(mock_inference_api, mock_tool_groups_api, mock_tool_runtime_api, mock_responses_store):
     return OpenAIResponsesImpl(
-        persistence_store=mock_kvstore,
         inference_api=mock_inference_api,
         tool_groups_api=mock_tool_groups_api,
         tool_runtime_api=mock_tool_runtime_api,
+        responses_store=mock_responses_store,
     )
 
 
@@ -100,7 +98,7 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         stream=False,
         temperature=0.1,
     )
-    openai_responses_impl.persistence_store.set.assert_called_once()
+    openai_responses_impl.responses_store.store_response_object.assert_called_once()
     assert result.model == model
     assert len(result.output) == 1
     assert isinstance(result.output[0], OpenAIResponseMessage)
@@ -167,7 +165,7 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
         kwargs={"query": "What is the capital of Ireland?"},
     )
 
-    openai_responses_impl.persistence_store.set.assert_called_once()
+    openai_responses_impl.responses_store.store_response_object.assert_called_once()
 
     # Check that we got the content from our mocked tool execution result
     assert len(result.output) >= 1
@@ -292,8 +290,7 @@ async def test_prepend_previous_response_none(openai_responses_impl):
 
 
 @pytest.mark.asyncio
-@patch.object(OpenAIResponsesImpl, "_get_previous_response_with_input")
-async def test_prepend_previous_response_basic(get_previous_response_with_input, openai_responses_impl):
+async def test_prepend_previous_response_basic(openai_responses_impl, mock_responses_store):
     """Test prepending a basic previous response to a new response."""
 
     input_item_message = OpenAIResponseMessage(
@@ -301,25 +298,21 @@ async def test_prepend_previous_response_basic(get_previous_response_with_input,
         content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
         role="user",
     )
-    input_items = OpenAIResponseInputItemList(data=[input_item_message])
     response_output_message = OpenAIResponseMessage(
         id="123",
         content=[OpenAIResponseOutputMessageContentOutputText(text="fake_response")],
         status="completed",
         role="assistant",
     )
-    response = OpenAIResponseObject(
+    previous_response = OpenAIResponseObjectWithInput(
         created_at=1,
         id="resp_123",
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        input=[input_item_message],
     )
-    previous_response = OpenAIResponsePreviousResponseWithInputItems(
-        input_items=input_items,
-        response=response,
-    )
-    get_previous_response_with_input.return_value = previous_response
+    mock_responses_store.get_response_object.return_value = previous_response
 
     input = await openai_responses_impl._prepend_previous_response("fake_input", "resp_123")
 
@@ -336,16 +329,13 @@ async def test_prepend_previous_response_basic(get_previous_response_with_input,
 
 
 @pytest.mark.asyncio
-@patch.object(OpenAIResponsesImpl, "_get_previous_response_with_input")
-async def test_prepend_previous_response_web_search(get_previous_response_with_input, openai_responses_impl):
+async def test_prepend_previous_response_web_search(openai_responses_impl, mock_responses_store):
     """Test prepending a web search previous response to a new response."""
-
     input_item_message = OpenAIResponseMessage(
         id="123",
         content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
         role="user",
     )
-    input_items = OpenAIResponseInputItemList(data=[input_item_message])
     output_web_search = OpenAIResponseOutputMessageWebSearchToolCall(
         id="ws_123",
         status="completed",
@@ -356,18 +346,15 @@ async def test_prepend_previous_response_web_search(get_previous_response_with_i
         status="completed",
         role="assistant",
     )
-    response = OpenAIResponseObject(
+    response = OpenAIResponseObjectWithInput(
         created_at=1,
         id="resp_123",
         model="fake_model",
         output=[output_web_search, output_message],
         status="completed",
+        input=[input_item_message],
     )
-    previous_response = OpenAIResponsePreviousResponseWithInputItems(
-        input_items=input_items,
-        response=response,
-    )
-    get_previous_response_with_input.return_value = previous_response
+    mock_responses_store.get_response_object.return_value = response
 
     input_messages = [OpenAIResponseMessage(content="fake_input", role="user")]
     input = await openai_responses_impl._prepend_previous_response(input_messages, "resp_123")
@@ -464,9 +451,8 @@ async def test_create_openai_response_with_instructions_and_multiple_messages(
 
 
 @pytest.mark.asyncio
-@patch.object(OpenAIResponsesImpl, "_get_previous_response_with_input")
 async def test_create_openai_response_with_instructions_and_previous_response(
-    get_previous_response_with_input, openai_responses_impl, mock_inference_api
+    openai_responses_impl, mock_responses_store, mock_inference_api
 ):
     """Test prepending both instructions and previous response."""
 
@@ -475,25 +461,21 @@ async def test_create_openai_response_with_instructions_and_previous_response(
         content="Name some towns in Ireland",
         role="user",
     )
-    input_items = OpenAIResponseInputItemList(data=[input_item_message])
     response_output_message = OpenAIResponseMessage(
         id="123",
         content="Galway, Longford, Sligo",
         status="completed",
         role="assistant",
     )
-    response = OpenAIResponseObject(
+    response = OpenAIResponseObjectWithInput(
         created_at=1,
         id="resp_123",
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        input=[input_item_message],
     )
-    previous_response = OpenAIResponsePreviousResponseWithInputItems(
-        input_items=input_items,
-        response=response,
-    )
-    get_previous_response_with_input.return_value = previous_response
+    mock_responses_store.get_response_object.return_value = response
 
     model = "meta-llama/Llama-3.1-8B-Instruct"
     instructions = "You are a geography expert. Provide concise answers."
@@ -511,7 +493,7 @@ async def test_create_openai_response_with_instructions_and_previous_response(
     sent_messages = call_args.kwargs["messages"]
 
     # Check that instructions were prepended as a system message
-    assert len(sent_messages) == 4
+    assert len(sent_messages) == 4, sent_messages
     assert sent_messages[0].role == "system"
     assert sent_messages[0].content == instructions
 

@@ -20,9 +20,11 @@ from llama_stack.apis.agents import (
     AgentTurnCreateRequest,
     AgentTurnResumeRequest,
     Document,
+    ListOpenAIResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
+    Order,
     Session,
     Turn,
 )
@@ -39,6 +41,7 @@ from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
+from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
@@ -66,15 +69,17 @@ class MetaReferenceAgentsImpl(Agents):
         self.tool_groups_api = tool_groups_api
 
         self.in_memory_store = InmemoryKVStoreImpl()
-        self.openai_responses_impl = None
+        self.openai_responses_impl: OpenAIResponsesImpl | None = None
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
+        self.responses_store = ResponsesStore(self.config.responses_store)
+        await self.responses_store.initialize()
         self.openai_responses_impl = OpenAIResponsesImpl(
-            self.persistence_store,
             inference_api=self.inference_api,
             tool_groups_api=self.tool_groups_api,
             tool_runtime_api=self.tool_runtime_api,
+            responses_store=self.responses_store,
         )
 
     async def create_agent(
@@ -323,3 +328,12 @@ class MetaReferenceAgentsImpl(Agents):
         return await self.openai_responses_impl.create_openai_response(
             input, model, instructions, previous_response_id, store, stream, temperature, tools
         )
+
+    async def list_openai_responses(
+        self,
+        after: str | None = None,
+        limit: int | None = 50,
+        model: str | None = None,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseObject:
+        return await self.openai_responses_impl.list_openai_responses(after, limit, model, order)

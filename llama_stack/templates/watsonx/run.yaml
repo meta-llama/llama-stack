@@ -42,6 +42,9 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/watsonx}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/watsonx}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

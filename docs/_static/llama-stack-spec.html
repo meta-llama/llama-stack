@@ -518,6 +518,74 @@
             }
         },
         "/v1/openai/v1/responses": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A ListOpenAIResponseObject.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListOpenAIResponseObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Agents"
+                ],
+                "description": "List all OpenAI responses.",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "The ID of the last response to return.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of responses to return.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "model",
+                        "in": "query",
+                        "description": "The model to filter responses by.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "The order to sort responses by when sorted by created_at ('asc' or 'desc').",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/Order"
+                        }
+                    }
+                ]
+            },
             "post": {
                 "responses": {
                     "200": {
@@ -10178,6 +10246,108 @@
                     "data"
                 ],
                 "title": "ListModelsResponse"
+            },
+            "ListOpenAIResponseObject": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseObjectWithInput"
+                        }
+                    },
+                    "has_more": {
+                        "type": "boolean"
+                    },
+                    "first_id": {
+                        "type": "string"
+                    },
+                    "last_id": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "list",
+                        "default": "list"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data",
+                    "has_more",
+                    "first_id",
+                    "last_id",
+                    "object"
+                ],
+                "title": "ListOpenAIResponseObject"
+            },
+            "OpenAIResponseObjectWithInput": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "integer"
+                    },
+                    "error": {
+                        "$ref": "#/components/schemas/OpenAIResponseError"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "model": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "response",
+                        "default": "response"
+                    },
+                    "output": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseOutput"
+                        }
+                    },
+                    "parallel_tool_calls": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "previous_response_id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "temperature": {
+                        "type": "number"
+                    },
+                    "top_p": {
+                        "type": "number"
+                    },
+                    "truncation": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "type": "string"
+                    },
+                    "input": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseInput"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "created_at",
+                    "id",
+                    "model",
+                    "object",
+                    "output",
+                    "parallel_tool_calls",
+                    "status",
+                    "input"
+                ],
+                "title": "OpenAIResponseObjectWithInput"
             },
             "ListProvidersResponse": {
                 "type": "object",
