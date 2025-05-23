@@ -16,6 +16,11 @@ def pytest_generate_tests(metafunc):
             metafunc.parametrize("model", [])
             return
 
+        model = metafunc.config.getoption("model")
+        if model:
+            metafunc.parametrize("model", [model])
+            return
+
         try:
             config_data = _load_all_verification_configs()
         except (OSError, FileNotFoundError) as e:
