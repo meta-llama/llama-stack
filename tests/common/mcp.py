@@ -7,6 +7,11 @@
 # we want the mcp server to be authenticated OR not, depends
 from contextlib import contextmanager
 
+# Unfortunately the toolgroup id must be tied to the tool names because the registry
+# indexes on both toolgroups and tools independently (and not jointly). That really
+# needs to be fixed.
+MCP_TOOLGROUP_ID = "mcp::localmcp"
+
 
 @contextmanager
 def make_mcp_server(required_auth_token: str | None = None):
@@ -22,7 +27,7 @@ def make_mcp_server(required_auth_token: str | None = None):
     from starlette.responses import Response
     from starlette.routing import Mount, Route
 
-    server = FastMCP("FastMCP Test Server")
+    server = FastMCP("FastMCP Test Server", log_level="WARNING")
 
     @server.tool()
     async def greet_everyone(
@@ -84,7 +89,8 @@ def make_mcp_server(required_auth_token: str | None = None):
 
     port = get_open_port()
 
-    config = uvicorn.Config(app, host="0.0.0.0", port=port)
+    # make uvicorn logs be less verbose
+    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="warning")
     server_instance = uvicorn.Server(config)
     app.state.uvicorn_server = server_instance
 
