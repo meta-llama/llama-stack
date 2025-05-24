@@ -40,6 +40,7 @@ pycryptodomex==3.21.0
 pydantic==2.10.6
 pydantic-core==2.27.2
 pygments==2.19.1
+pymilvus==2.3.6
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-jose==3.4.0
