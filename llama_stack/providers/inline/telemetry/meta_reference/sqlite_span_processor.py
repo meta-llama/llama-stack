@@ -9,7 +9,6 @@ import os
 import sqlite3
 import threading
 from datetime import datetime, timezone
-from enum import Enum
 
 from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
@@ -154,9 +153,6 @@ class SQLiteSpanProcessor(SpanProcessor):
             )
 
             for event in span.events:
-                name = event.name
-                if isinstance(name, Enum):
-                    name = name.value
                 cursor.execute(
                     """
                     INSERT INTO span_events (
@@ -165,7 +161,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                 """,
                     (
                         span_id,
-                        name,
+                        event.name,
                         datetime.fromtimestamp(event.timestamp / 1e9, timezone.utc).isoformat(),
                         json.dumps(dict(event.attributes)),
                     ),
