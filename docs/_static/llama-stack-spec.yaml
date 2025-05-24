@@ -2085,6 +2085,75 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterModelRequest'
         required: true
+  /v1/openai/v1/responses/{response_id}/input_items:
+    get:
+      responses:
+        '200':
+          description: An ListOpenAIResponseInputItem.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOpenAIResponseInputItem'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: >-
+        List input items for a given OpenAI response.
+      parameters:
+        - name: response_id
+          in: path
+          description: >-
+            The ID of the response to retrieve input items for.
+          required: true
+          schema:
+            type: string
+        - name: after
+          in: query
+          description: >-
+            An item ID to list items after, used for pagination.
+          required: false
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: >-
+            An item ID to list items before, used for pagination.
+          required: false
+          schema:
+            type: string
+        - name: include
+          in: query
+          description: >-
+            Additional fields to include in the response.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: >-
+            A limit on the number of objects to be returned. Limit can range between
+            1 and 100, and the default is 20.
+          required: false
+          schema:
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            The order to return the input items in. Default is desc.
+          required: false
+          schema:
+            $ref: '#/components/schemas/Order'
   /v1/providers:
     get:
       responses:
@@ -7153,6 +7222,22 @@ components:
       required:
         - data
       title: ListModelsResponse
+    ListOpenAIResponseInputItem:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIResponseInput'
+        object:
+          type: string
+          const: list
+          default: list
+      additionalProperties: false
+      required:
+        - data
+        - object
+      title: ListOpenAIResponseInputItem
     ListOpenAIResponseObject:
       type: object
       properties:
