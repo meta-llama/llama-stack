@@ -216,7 +216,7 @@ OpenAIResponseInputTool = Annotated[
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
 
 
-class OpenAIResponseInputItemList(BaseModel):
+class ListOpenAIResponseInputItem(BaseModel):
     data: list[OpenAIResponseInput]
     object: Literal["list"] = "list"
 

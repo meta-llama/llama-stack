@@ -7,6 +7,7 @@ from llama_stack.apis.agents import (
     Order,
 )
 from llama_stack.apis.agents.openai_responses import (
+    ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIResponseInput,
     OpenAIResponseObject,
@@ -96,3 +97,39 @@ class ResponsesStore:
         if not row:
             raise ValueError(f"Response with id {response_id} not found") from None
         return OpenAIResponseObjectWithInput(**row["response_object"])
+
+    async def list_response_input_items(
+        self,
+        response_id: str,
+        after: str | None = None,
+        before: str | None = None,
+        include: list[str] | None = None,
+        limit: int | None = 20,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseInputItem:
+        """
+        List input items for a given response.
+
+        :param response_id: The ID of the response to retrieve input items for.
+        :param after: An item ID to list items after, used for pagination.
+        :param before: An item ID to list items before, used for pagination.
+        :param include: Additional fields to include in the response.
+        :param limit: A limit on the number of objects to be returned.
+        :param order: The order to return the input items in.
+        """
+        # TODO: support after/before pagination
+        if after or before:
+            raise NotImplementedError("After/before pagination is not supported yet")
+        if include:
+            raise NotImplementedError("Include is not supported yet")
+
+        response_with_input = await self.get_response_object(response_id)
+        input_items = response_with_input.input
+
+        if order == Order.desc:
+            input_items = list(reversed(input_items))
+
+        if limit is not None and len(input_items) > limit:
+            input_items = input_items[:limit]
+
+        return ListOpenAIResponseInputItem(data=input_items)

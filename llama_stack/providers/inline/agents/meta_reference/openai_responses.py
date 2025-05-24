@@ -14,10 +14,10 @@ from pydantic import BaseModel
 
 from llama_stack.apis.agents import Order
 from llama_stack.apis.agents.openai_responses import (
+    ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
-    OpenAIResponseInputItemList,
     OpenAIResponseInputMessageContent,
     OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
@@ -164,7 +164,7 @@ async def _get_message_type_by_role(role: str):
 
 
 class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
-    input_items: OpenAIResponseInputItemList
+    input_items: ListOpenAIResponseInputItem
     response: OpenAIResponseObject
 
 
@@ -222,6 +222,27 @@ class OpenAIResponsesImpl:
         order: Order | None = Order.desc,
     ) -> ListOpenAIResponseObject:
         return await self.responses_store.list_responses(after, limit, model, order)
+
+    async def list_openai_response_input_items(
+        self,
+        response_id: str,
+        after: str | None = None,
+        before: str | None = None,
+        include: list[str] | None = None,
+        limit: int | None = 20,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseInputItem:
+        """List input items for a given OpenAI response.
+
+        :param response_id: The ID of the response to retrieve input items for.
+        :param after: An item ID to list items after, used for pagination.
+        :param before: An item ID to list items before, used for pagination.
+        :param include: Additional fields to include in the response.
+        :param limit: A limit on the number of objects to be returned.
+        :param order: The order to return the input items in.
+        :returns: An ListOpenAIResponseInputItem.
+        """
+        return await self.responses_store.list_response_input_items(response_id, after, before, include, limit, order)
 
     async def create_openai_response(
         self,

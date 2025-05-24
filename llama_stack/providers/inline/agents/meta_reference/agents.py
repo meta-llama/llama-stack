@@ -20,6 +20,7 @@ from llama_stack.apis.agents import (
     AgentTurnCreateRequest,
     AgentTurnResumeRequest,
     Document,
+    ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputTool,
@@ -337,3 +338,16 @@ class MetaReferenceAgentsImpl(Agents):
         order: Order | None = Order.desc,
     ) -> ListOpenAIResponseObject:
         return await self.openai_responses_impl.list_openai_responses(after, limit, model, order)
+
+    async def list_openai_response_input_items(
+        self,
+        response_id: str,
+        after: str | None = None,
+        before: str | None = None,
+        include: list[str] | None = None,
+        limit: int | None = 20,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseInputItem:
+        return await self.openai_responses_impl.list_openai_response_input_items(
+            response_id, after, before, include, limit, order
+        )
