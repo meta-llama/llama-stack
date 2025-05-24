@@ -67,6 +67,7 @@ unit = [
     "aiosqlite",
     "aiohttp",
     "pypdf",
+    "mcp",
     "chardet",
     "qdrant-client",
     "opentelemetry-exporter-otlp-proto-http",
