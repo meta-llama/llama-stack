@@ -102,6 +102,9 @@ def mcp_server():
 
 
 def test_mcp_invocation(llama_stack_client, mcp_server):
+    if not isinstance(llama_stack_client, LlamaStackAsLibraryClient):
+        pytest.skip("The local MCP server only reliably reachable from library client.")
+
     port = mcp_server
     test_toolgroup_id = "remote::mcptest"
 

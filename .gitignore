@@ -6,6 +6,7 @@ dev_requirements.txt
 build
 .DS_Store
 llama_stack/configs/*
+.cursor/
 xcuserdata/
 *.hmap
 .DS_Store

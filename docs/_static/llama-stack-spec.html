@@ -7218,13 +7218,13 @@
             "OpenAIResponseOutputMessageFunctionToolCall": {
                 "type": "object",
                 "properties": {
-                    "arguments": {
-                        "type": "string"
-                    },
                     "call_id": {
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    },
+                    "arguments": {
                         "type": "string"
                     },
                     "type": {
@@ -7241,12 +7241,10 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "arguments",
                     "call_id",
                     "name",
-                    "type",
-                    "id",
-                    "status"
+                    "arguments",
+                    "type"
                 ],
                 "title": "OpenAIResponseOutputMessageFunctionToolCall"
             },
@@ -7412,6 +7410,12 @@
                     },
                     {
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageMCPCall"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageMCPListTools"
                     }
                 ],
                 "discriminator": {
@@ -7419,9 +7423,117 @@
                     "mapping": {
                         "message": "#/components/schemas/OpenAIResponseMessage",
                         "web_search_call": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall",
-                        "function_call": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
+                        "function_call": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall",
+                        "mcp_call": "#/components/schemas/OpenAIResponseOutputMessageMCPCall",
+                        "mcp_list_tools": "#/components/schemas/OpenAIResponseOutputMessageMCPListTools"
                     }
                 }
+            },
+            "OpenAIResponseOutputMessageMCPCall": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "mcp_call",
+                        "default": "mcp_call"
+                    },
+                    "arguments": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "server_label": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    },
+                    "output": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "type",
+                    "arguments",
+                    "name",
+                    "server_label"
+                ],
+                "title": "OpenAIResponseOutputMessageMCPCall"
+            },
+            "OpenAIResponseOutputMessageMCPListTools": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "mcp_list_tools",
+                        "default": "mcp_list_tools"
+                    },
+                    "server_label": {
+                        "type": "string"
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "input_schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "input_schema",
+                                "name"
+                            ],
+                            "title": "MCPListToolsTool"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "type",
+                    "server_label",
+                    "tools"
+                ],
+                "title": "OpenAIResponseOutputMessageMCPListTools"
             },
             "OpenAIResponseObjectStream": {
                 "oneOf": [
