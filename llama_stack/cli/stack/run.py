@@ -59,7 +59,7 @@ class StackRun(Subcommand):
             "--image-type",
             type=str,
             help="Image Type used during the build. This can be either conda or container or venv.",
-            choices=[e.value for e in ImageType],
+            choices=[e.value for e in ImageType if e.value != ImageType.CONTAINER.value],
         )
         self.parser.add_argument(
             "--enable-ui",
