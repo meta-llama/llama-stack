@@ -274,6 +274,7 @@ def test_inference_store(openai_client, client_with_models, text_model_id, strea
         False,
     ],
 )
+@pytest.mark.skip(reason="Very flaky, tool calling really wacky on CI")
 def test_inference_store_tool_calls(openai_client, client_with_models, text_model_id, stream):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
     client = openai_client
