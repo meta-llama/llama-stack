@@ -58,7 +58,6 @@ class TestPostTraining:
         ],
     )
     @pytest.mark.timeout(360)  # 6 minutes timeout
-    @pytest.mark.skip(reason="test failing with No endpoint found for /v1/post-training/supervised-fine-tune")
     def test_supervised_fine_tune(self, llama_stack_client, purpose, source):
         logger.info("Starting supervised fine-tuning test")
 
