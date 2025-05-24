@@ -75,7 +75,7 @@ class PromptGuardShield:
         self.temperature = temperature
         self.threshold = threshold
 
-        self.device = "cuda"
+        self.device = self.config.guard_execution_type
 
         # load model and tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
