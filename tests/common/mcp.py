@@ -109,8 +109,31 @@ def make_mcp_server(required_auth_token: str | None = None):
             pass
         time.sleep(0.1)
 
-    yield {"server_url": server_url}
+    try:
+        yield {"server_url": server_url}
+    finally:
+        print("Telling SSE server to exit")
+        server_instance.should_exit = True
+        time.sleep(0.5)
 
-    # Tell server to exit
-    server_instance.should_exit = True
-    server_thread.join(timeout=5)
+        # Force shutdown if still running
+        if server_thread.is_alive():
+            try:
+                if hasattr(server_instance, "servers") and server_instance.servers:
+                    for srv in server_instance.servers:
+                        srv.close()
+
+                # Wait for graceful shutdown
+                server_thread.join(timeout=3)
+                if server_thread.is_alive():
+                    print("Warning: Server thread still alive after shutdown attempt")
+            except Exception as e:
+                print(f"Error during server shutdown: {e}")
+
+        # CRITICAL: Reset SSE global state to prevent event loop contamination
+        # Reset the SSE AppStatus singleton that stores anyio.Event objects
+        from sse_starlette.sse import AppStatus
+
+        AppStatus.should_exit = False
+        AppStatus.should_exit_event = None
+        print("SSE server exited")

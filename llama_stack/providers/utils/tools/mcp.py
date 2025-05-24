@@ -7,7 +7,14 @@
 from contextlib import asynccontextmanager
 from typing import Any
 
-import exceptiongroup
+try:
+    # for python < 3.11
+    import exceptiongroup
+
+    BaseExceptionGroup = exceptiongroup.BaseExceptionGroup
+except ImportError:
+    pass
+
 import httpx
 from mcp import ClientSession
 from mcp import types as mcp_types
@@ -34,7 +41,7 @@ async def sse_client_wrapper(endpoint: str, headers: dict[str, str]):
                 await session.initialize()
                 yield session
     except BaseException as e:
-        if isinstance(e, exceptiongroup.BaseExceptionGroup):
+        if isinstance(e, BaseExceptionGroup):
             for exc in e.exceptions:
                 if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 401:
                     raise AuthenticationRequiredError(exc) from exc
