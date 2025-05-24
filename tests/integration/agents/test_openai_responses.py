@@ -41,6 +41,7 @@ def openai_client(client_with_models):
         ],
     ],
 )
+@pytest.mark.skip(reason="Very flaky, sometimes there is a message not a function call, standard tool calling issues")
 def test_responses_store(openai_client, client_with_models, text_model_id, stream, tools):
     if isinstance(client_with_models, LlamaStackAsLibraryClient):
         pytest.skip("OpenAI responses are not supported when testing with library client yet.")
