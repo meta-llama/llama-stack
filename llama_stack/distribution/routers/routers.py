@@ -18,9 +18,6 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
@@ -54,14 +51,12 @@ from llama_stack.apis.inference.inference import (
     OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
     ScoreResponse,
     Scoring,
     ScoringFnParams,
 )
-from llama_stack.apis.shields import Shield
 from llama_stack.apis.telemetry import MetricEvent, MetricInResponse, Telemetry
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
@@ -671,102 +666,6 @@ class InferenceRouter(Inference):
                     status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
                 )
         return health_statuses
-
-
-class SafetyRouter(Safety):
-    def __init__(
-        self,
-        routing_table: RoutingTable,
-    ) -> None:
-        logger.debug("Initializing SafetyRouter")
-        self.routing_table = routing_table
-
-    async def initialize(self) -> None:
-        logger.debug("SafetyRouter.initialize")
-        pass
-
-    async def shutdown(self) -> None:
-        logger.debug("SafetyRouter.shutdown")
-        pass
-
-    async def register_shield(
-        self,
-        shield_id: str,
-        provider_shield_id: str | None = None,
-        provider_id: str | None = None,
-        params: dict[str, Any] | None = None,
-    ) -> Shield:
-        logger.debug(f"SafetyRouter.register_shield: {shield_id}")
-        return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
-
-    async def run_shield(
-        self,
-        shield_id: str,
-        messages: list[Message],
-        params: dict[str, Any] = None,
-    ) -> RunShieldResponse:
-        logger.debug(f"SafetyRouter.run_shield: {shield_id}")
-        return await self.routing_table.get_provider_impl(shield_id).run_shield(
-            shield_id=shield_id,
-            messages=messages,
-            params=params,
-        )
-
-
-class DatasetIORouter(DatasetIO):
-    def __init__(
-        self,
-        routing_table: RoutingTable,
-    ) -> None:
-        logger.debug("Initializing DatasetIORouter")
-        self.routing_table = routing_table
-
-    async def initialize(self) -> None:
-        logger.debug("DatasetIORouter.initialize")
-        pass
-
-    async def shutdown(self) -> None:
-        logger.debug("DatasetIORouter.shutdown")
-        pass
-
-    async def register_dataset(
-        self,
-        purpose: DatasetPurpose,
-        source: DataSource,
-        metadata: dict[str, Any] | None = None,
-        dataset_id: str | None = None,
-    ) -> None:
-        logger.debug(
-            f"DatasetIORouter.register_dataset: {purpose=} {source=} {metadata=} {dataset_id=}",
-        )
-        await self.routing_table.register_dataset(
-            purpose=purpose,
-            source=source,
-            metadata=metadata,
-            dataset_id=dataset_id,
-        )
-
-    async def iterrows(
-        self,
-        dataset_id: str,
-        start_index: int | None = None,
-        limit: int | None = None,
-    ) -> PaginatedResponse:
-        logger.debug(
-            f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
-        )
-        return await self.routing_table.get_provider_impl(dataset_id).iterrows(
-            dataset_id=dataset_id,
-            start_index=start_index,
-            limit=limit,
-        )
-
-    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
-        logger.debug(f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
-        return await self.routing_table.get_provider_impl(dataset_id).append_rows(
-            dataset_id=dataset_id,
-            rows=rows,
-        )
 
 
 class ScoringRouter(Scoring):
