@@ -54,11 +54,11 @@ async def get_auto_router_impl(
         DatasetIORouter,
         EvalRouter,
         InferenceRouter,
-        SafetyRouter,
         ScoringRouter,
         ToolRuntimeRouter,
         VectorIORouter,
     )
+    from .safety import SafetyRouter
 
     api_to_routers = {
         "vector_io": VectorIORouter,

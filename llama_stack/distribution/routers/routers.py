@@ -54,14 +54,12 @@ from llama_stack.apis.inference.inference import (
     OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
     ScoreResponse,
     Scoring,
     ScoringFnParams,
 )
-from llama_stack.apis.shields import Shield
 from llama_stack.apis.telemetry import MetricEvent, MetricInResponse, Telemetry
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
@@ -671,46 +669,6 @@ class InferenceRouter(Inference):
                     status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
                 )
         return health_statuses
-
-
-class SafetyRouter(Safety):
-    def __init__(
-        self,
-        routing_table: RoutingTable,
-    ) -> None:
-        logger.debug("Initializing SafetyRouter")
-        self.routing_table = routing_table
-
-    async def initialize(self) -> None:
-        logger.debug("SafetyRouter.initialize")
-        pass
-
-    async def shutdown(self) -> None:
-        logger.debug("SafetyRouter.shutdown")
-        pass
-
-    async def register_shield(
-        self,
-        shield_id: str,
-        provider_shield_id: str | None = None,
-        provider_id: str | None = None,
-        params: dict[str, Any] | None = None,
-    ) -> Shield:
-        logger.debug(f"SafetyRouter.register_shield: {shield_id}")
-        return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
-
-    async def run_shield(
-        self,
-        shield_id: str,
-        messages: list[Message],
-        params: dict[str, Any] = None,
-    ) -> RunShieldResponse:
-        logger.debug(f"SafetyRouter.run_shield: {shield_id}")
-        return await self.routing_table.get_provider_impl(shield_id).run_shield(
-            shield_id=shield_id,
-            messages=messages,
-            params=params,
-        )
 
 
 class DatasetIORouter(DatasetIO):
