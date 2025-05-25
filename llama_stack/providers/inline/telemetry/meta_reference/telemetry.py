@@ -148,7 +148,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             if span:
                 timestamp_ns = int(event.timestamp.timestamp() * 1e9)
                 span.add_event(
-                    name=event.type,
+                    name=event.type.value,
                     attributes={
                         "message": event.message,
                         "severity": event.severity.value,
