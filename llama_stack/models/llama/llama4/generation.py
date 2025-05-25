@@ -133,9 +133,9 @@ class Llama4:
 
         print_model_input = print_model_input or os.environ.get("LLAMA_MODELS_DEBUG", "0") == "1"
         if print_model_input:
-            cprint("Input to model:\n", "yellow")
+            cprint("Input to model:\n", color="yellow", file=sys.stderr)
             for inp in llm_inputs:
-                cprint(self.tokenizer.decode(inp.tokens), "grey")
+                cprint(self.tokenizer.decode(inp.tokens), color="grey", file=sys.stderr)
         prompt_tokens = [inp.tokens for inp in llm_inputs]
 
         bsz = len(llm_inputs)
@@ -145,7 +145,7 @@ class Llama4:
         max_prompt_len = max(len(t) for t in prompt_tokens)
 
         if max_prompt_len >= params.max_seq_len:
-            cprint(f"Out of token budget {max_prompt_len} vs {params.max_seq_len}", "red")
+            cprint(f"Out of token budget {max_prompt_len} vs {params.max_seq_len}", color="red", file=sys.stderr)
             return
 
         total_len = min(max_gen_len + max_prompt_len, params.max_seq_len)

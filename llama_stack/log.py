@@ -6,6 +6,7 @@
 
 import logging
 import os
+import sys
 from logging.config import dictConfig
 
 from rich.console import Console
@@ -234,7 +235,7 @@ def get_logger(
 
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
-    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", "yellow")
+    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", color="yellow", file=sys.stderr)
     _category_levels.update(parse_environment_config(env_config))
 
 log_file = os.environ.get("LLAMA_STACK_LOG_FILE")
