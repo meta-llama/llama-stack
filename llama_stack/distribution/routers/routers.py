@@ -18,9 +18,6 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.datasets import DatasetPurpose, DataSource
 from llama_stack.apis.eval import BenchmarkConfig, Eval, EvaluateResponse, Job
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
@@ -669,62 +666,6 @@ class InferenceRouter(Inference):
                     status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
                 )
         return health_statuses
-
-
-class DatasetIORouter(DatasetIO):
-    def __init__(
-        self,
-        routing_table: RoutingTable,
-    ) -> None:
-        logger.debug("Initializing DatasetIORouter")
-        self.routing_table = routing_table
-
-    async def initialize(self) -> None:
-        logger.debug("DatasetIORouter.initialize")
-        pass
-
-    async def shutdown(self) -> None:
-        logger.debug("DatasetIORouter.shutdown")
-        pass
-
-    async def register_dataset(
-        self,
-        purpose: DatasetPurpose,
-        source: DataSource,
-        metadata: dict[str, Any] | None = None,
-        dataset_id: str | None = None,
-    ) -> None:
-        logger.debug(
-            f"DatasetIORouter.register_dataset: {purpose=} {source=} {metadata=} {dataset_id=}",
-        )
-        await self.routing_table.register_dataset(
-            purpose=purpose,
-            source=source,
-            metadata=metadata,
-            dataset_id=dataset_id,
-        )
-
-    async def iterrows(
-        self,
-        dataset_id: str,
-        start_index: int | None = None,
-        limit: int | None = None,
-    ) -> PaginatedResponse:
-        logger.debug(
-            f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
-        )
-        return await self.routing_table.get_provider_impl(dataset_id).iterrows(
-            dataset_id=dataset_id,
-            start_index=start_index,
-            limit=limit,
-        )
-
-    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
-        logger.debug(f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
-        return await self.routing_table.get_provider_impl(dataset_id).append_rows(
-            dataset_id=dataset_id,
-            rows=rows,
-        )
 
 
 class ScoringRouter(Scoring):
