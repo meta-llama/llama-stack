@@ -50,15 +50,12 @@ async def get_routing_table_impl(
 async def get_auto_router_impl(
     api: Api, routing_table: RoutingTable, deps: dict[str, Any], run_config: StackRunConfig
 ) -> Any:
-    from .routers import (
-        DatasetIORouter,
-        EvalRouter,
-        InferenceRouter,
-        SafetyRouter,
-        ScoringRouter,
-        ToolRuntimeRouter,
-        VectorIORouter,
-    )
+    from .datasets import DatasetIORouter
+    from .eval_scoring import EvalRouter, ScoringRouter
+    from .inference import InferenceRouter
+    from .safety import SafetyRouter
+    from .tool_runtime import ToolRuntimeRouter
+    from .vector_io import VectorIORouter
 
     api_to_routers = {
         "vector_io": VectorIORouter,
