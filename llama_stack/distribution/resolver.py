@@ -47,7 +47,7 @@ from llama_stack.providers.datatypes import (
     RemoteProviderSpec,
     ScoringFunctionsProtocolPrivate,
     ShieldsProtocolPrivate,
-    ToolsProtocolPrivate,
+    ToolGroupsProtocolPrivate,
     VectorDBsProtocolPrivate,
 )
 
@@ -93,7 +93,7 @@ def api_protocol_map_for_compliance_check() -> dict[Api, Any]:
 def additional_protocols_map() -> dict[Api, Any]:
     return {
         Api.inference: (ModelsProtocolPrivate, Models, Api.models),
-        Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
+        Api.tool_groups: (ToolGroupsProtocolPrivate, ToolGroups, Api.tool_groups),
         Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),

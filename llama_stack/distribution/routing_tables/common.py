@@ -46,7 +46,7 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
     elif api == Api.eval:
         return await p.register_benchmark(obj)
     elif api == Api.tool_runtime:
-        return await p.register_tool(obj)
+        return await p.register_toolgroup(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -60,7 +60,7 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
     elif api == Api.datasetio:
         return await p.unregister_dataset(obj.identifier)
     elif api == Api.tool_runtime:
-        return await p.unregister_tool(obj.identifier)
+        return await p.unregister_toolgroup(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -136,7 +136,7 @@ class CommonRoutingTableImpl(RoutingTable):
             elif isinstance(self, BenchmarksRoutingTable):
                 return ("Eval", "benchmark")
             elif isinstance(self, ToolGroupsRoutingTable):
-                return ("Tools", "tool")
+                return ("ToolGroups", "tool_group")
             else:
                 raise ValueError("Unknown routing table type")
 

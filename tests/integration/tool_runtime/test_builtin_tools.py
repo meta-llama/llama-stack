@@ -25,10 +25,12 @@ def test_web_search_tool(llama_stack_client, sample_search_query):
     if "TAVILY_SEARCH_API_KEY" not in os.environ:
         pytest.skip("TAVILY_SEARCH_API_KEY not set, skipping test")
 
+    tools = llama_stack_client.tool_runtime.list_tools()
+    assert any(tool.identifier == "web_search" for tool in tools)
+
     response = llama_stack_client.tool_runtime.invoke_tool(
         tool_name="web_search", kwargs={"query": sample_search_query}
     )
-
     # Verify the response
     assert response.content is not None
     assert len(response.content) > 0
@@ -49,11 +51,12 @@ def test_wolfram_alpha_tool(llama_stack_client, sample_wolfram_alpha_query):
     if "WOLFRAM_ALPHA_API_KEY" not in os.environ:
         pytest.skip("WOLFRAM_ALPHA_API_KEY not set, skipping test")
 
+    tools = llama_stack_client.tool_runtime.list_tools()
+    assert any(tool.identifier == "wolfram_alpha" for tool in tools)
     response = llama_stack_client.tool_runtime.invoke_tool(
         tool_name="wolfram_alpha", kwargs={"query": sample_wolfram_alpha_query}
     )
 
-    print(response.content)
     assert response.content is not None
     assert len(response.content) > 0
     assert isinstance(response.content, str)

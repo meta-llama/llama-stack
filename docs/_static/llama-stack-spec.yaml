@@ -6713,8 +6713,6 @@ components:
           default: tool
         toolgroup_id:
           type: string
-        tool_host:
-          $ref: '#/components/schemas/ToolHost'
         description:
           type: string
         parameters:
@@ -6737,17 +6735,9 @@ components:
         - provider_id
         - type
         - toolgroup_id
-        - tool_host
         - description
         - parameters
       title: Tool
-    ToolHost:
-      type: string
-      enum:
-        - distribution
-        - client
-        - model_context_protocol
-      title: ToolHost
     ToolGroup:
       type: object
       properties:
