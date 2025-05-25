@@ -17,15 +17,13 @@ from llama_stack.apis.models.models import Model, ModelType
 from llama_stack.apis.shields.shields import Shield
 from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolParameter
 from llama_stack.apis.vector_dbs.vector_dbs import VectorDB
-from llama_stack.distribution.routers.routing_tables import (
-    BenchmarksRoutingTable,
-    DatasetsRoutingTable,
-    ModelsRoutingTable,
-    ScoringFunctionsRoutingTable,
-    ShieldsRoutingTable,
-    ToolGroupsRoutingTable,
-    VectorDBsRoutingTable,
-)
+from llama_stack.distribution.routing_tables.benchmarks import BenchmarksRoutingTable
+from llama_stack.distribution.routing_tables.datasets import DatasetsRoutingTable
+from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
+from llama_stack.distribution.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
+from llama_stack.distribution.routing_tables.shields import ShieldsRoutingTable
+from llama_stack.distribution.routing_tables.toolgroups import ToolGroupsRoutingTable
+from llama_stack.distribution.routing_tables.vector_dbs import VectorDBsRoutingTable
 
 
 class Impl:
