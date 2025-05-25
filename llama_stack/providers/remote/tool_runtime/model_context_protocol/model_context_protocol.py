@@ -18,7 +18,7 @@ from llama_stack.apis.tools import (
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
-from llama_stack.providers.utils.tools.mcp import convert_header_list_to_dict, invoke_mcp_tool, list_mcp_tools
+from llama_stack.providers.utils.tools.mcp import invoke_mcp_tool, list_mcp_tools
 
 from .config import MCPProviderConfig
 
@@ -69,5 +69,5 @@ class ModelContextProtocolToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime
             for uri, values in provider_data.mcp_headers.items():
                 if canonicalize_uri(uri) != canonicalize_uri(mcp_endpoint_uri):
                     continue
-                headers.update(convert_header_list_to_dict(values))
+                headers.update(values)
         return headers

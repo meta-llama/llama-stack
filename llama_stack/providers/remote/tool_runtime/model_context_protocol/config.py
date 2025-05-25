@@ -10,8 +10,8 @@ from pydantic import BaseModel
 
 
 class MCPProviderDataValidator(BaseModel):
-    # mcp_endpoint => list of headers to send
-    mcp_headers: dict[str, list[str]] | None = None
+    # mcp_endpoint => dict of headers to send
+    mcp_headers: dict[str, dict[str, str]] | None = None
 
 
 class MCPProviderConfig(BaseModel):
