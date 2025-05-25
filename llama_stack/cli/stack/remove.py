@@ -58,8 +58,8 @@ class StackRemove(Subcommand):
         """Display available stacks in a table"""
         distributions = self._get_distribution_dirs()
         if not distributions:
-            print("No stacks found in ~/.llama/distributions")
-            return
+            cprint("No stacks found in ~/.llama/distributions", color="red", file=sys.stderr)
+            sys.exit(1)
 
         headers = ["Stack Name", "Path"]
         rows = [[name, str(path)] for name, path in distributions.items()]
@@ -71,19 +71,20 @@ class StackRemove(Subcommand):
         if args.all:
             confirm = input("Are you sure you want to delete ALL stacks? [yes-i-really-want/N] ").lower()
             if confirm != "yes-i-really-want":
-                print("Deletion cancelled.")
+                cprint("Deletion cancelled.", color="green", file=sys.stderr)
                 return
 
             for name, path in distributions.items():
                 try:
                     shutil.rmtree(path)
-                    print(f"Deleted stack: {name}")
+                    cprint(f"Deleted stack: {name}", color="green", file=sys.stderr)
                 except Exception as e:
                     cprint(
                         f"Failed to delete stack {name}: {e}",
                         color="red",
+                        file=sys.stderr,
                     )
-                    sys.exit(2)
+                    sys.exit(1)
 
         if not args.name:
             self._list_stacks()
@@ -95,22 +96,20 @@ class StackRemove(Subcommand):
             cprint(
                 f"Stack not found: {args.name}",
                 color="red",
+                file=sys.stderr,
             )
-            return
+            sys.exit(1)
 
         stack_path = distributions[args.name]
 
         confirm = input(f"Are you sure you want to delete stack '{args.name}'? [y/N] ").lower()
         if confirm != "y":
-            print("Deletion cancelled.")
+            cprint("Deletion cancelled.", color="green", file=sys.stderr)
             return
 
         try:
             shutil.rmtree(stack_path)
-            print(f"Successfully deleted stack: {args.name}")
+            cprint(f"Successfully deleted stack: {args.name}", color="green", file=sys.stderr)
         except Exception as e:
-            cprint(
-                f"Failed to delete stack {args.name}: {e}",
-                color="red",
-            )
-            sys.exit(2)
+            cprint(f"Failed to delete stack {args.name}: {e}", color="red", file=sys.stderr)
+            sys.exit(1)

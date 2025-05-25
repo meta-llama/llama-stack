@@ -9,6 +9,7 @@ import inspect
 import json
 import logging
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
@@ -210,10 +211,11 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             self.endpoint_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)
         except ModuleNotFoundError as _e:
-            cprint(_e.msg, "red")
+            cprint(_e.msg, color="red", file=sys.stderr)
             cprint(
                 "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
-                "yellow",
+                color="yellow",
+                file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
                 # Convert Provider objects to their types
@@ -234,7 +236,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 cprint(
                     f"Please run:\n\n{prefix}llama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
                     "yellow",
+                    file=sys.stderr,
                 )
+            cprint(
+                "Please check your internet connection and try again.",
+                "red",
+                file=sys.stderr,
+            )
             raise _e
 
         if Api.telemetry in self.impls:
