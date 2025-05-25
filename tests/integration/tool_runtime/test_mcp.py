@@ -31,13 +31,12 @@ def test_mcp_invocation(llama_stack_client, mcp_server):
     test_toolgroup_id = MCP_TOOLGROUP_ID
     uri = mcp_server["server_url"]
 
-    # registering itself should fail since it requires listing tools
-    with pytest.raises(Exception, match="Unauthorized"):
-        llama_stack_client.toolgroups.register(
-            toolgroup_id=test_toolgroup_id,
-            provider_id="model-context-protocol",
-            mcp_endpoint=dict(uri=uri),
-        )
+    # registering should not raise an error anymore even if you don't specify the auth token
+    llama_stack_client.toolgroups.register(
+        toolgroup_id=test_toolgroup_id,
+        provider_id="model-context-protocol",
+        mcp_endpoint=dict(uri=uri),
+    )
 
     provider_data = {
         "mcp_headers": {
@@ -50,18 +49,9 @@ def test_mcp_invocation(llama_stack_client, mcp_server):
         "X-LlamaStack-Provider-Data": json.dumps(provider_data),
     }
 
-    try:
-        llama_stack_client.toolgroups.unregister(toolgroup_id=test_toolgroup_id, extra_headers=auth_headers)
-    except Exception as e:
-        # An error is OK since the toolgroup may not exist
-        print(f"Error unregistering toolgroup: {e}")
+    with pytest.raises(Exception, match="Unauthorized"):
+        llama_stack_client.tools.list()
 
-    llama_stack_client.toolgroups.register(
-        toolgroup_id=test_toolgroup_id,
-        provider_id="model-context-protocol",
-        mcp_endpoint=dict(uri=uri),
-        extra_headers=auth_headers,
-    )
     response = llama_stack_client.tools.list(
         toolgroup_id=test_toolgroup_id,
         extra_headers=auth_headers,

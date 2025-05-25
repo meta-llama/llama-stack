@@ -11,30 +11,30 @@ import httpx
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
-    Tool,
     ToolDef,
+    ToolGroup,
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.models.llama.datatypes import BuiltinTool
-from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 
 from .config import BraveSearchToolConfig
 
 
-class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
+class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: BraveSearchToolConfig):
         self.config = config
 
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool) -> None:
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None:
         pass
 
-    async def unregister_tool(self, tool_id: str) -> None:
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         return
 
     def _get_api_key(self) -> str:

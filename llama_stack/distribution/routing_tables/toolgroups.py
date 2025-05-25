@@ -24,9 +24,8 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
         # we don't index tools in the registry anymore, but only keep a cache of them by toolgroup_id
         # TODO: we may want to invalidate the cache (for a given toolgroup_id) every once in a while?
-        tool_name = routing_key
-        if tool_name in self.tool_to_toolgroup:
-            routing_key = self.tool_to_toolgroup[tool_name]
+        if routing_key in self.tool_to_toolgroup:
+            routing_key = self.tool_to_toolgroup[routing_key]
         return super().get_provider_impl(routing_key, provider_id)
 
     async def list_tools(self, toolgroup_id: str | None = None) -> ListToolsResponse:
@@ -39,11 +38,26 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         for toolgroup in toolgroups:
             group_id = toolgroup.identifier
             if group_id not in self.toolgroups_to_tools:
-                provider_impl = self.get_provider_impl(toolgroup.provider_id)
-                tools = await provider_impl.list_runtime_tools(group_id, toolgroup.mcp_endpoint)
+                provider_impl = super().get_provider_impl(group_id, toolgroup.provider_id)
+                tooldefs_response = await provider_impl.list_runtime_tools(group_id, toolgroup.mcp_endpoint)
 
-                self.toolgroups_to_tools[group_id] = tools.data
-                for tool in tools.data:
+                # TODO: kill this Tool vs ToolDef distinction
+                tooldefs = tooldefs_response.data
+                tools = []
+                for t in tooldefs:
+                    tools.append(
+                        Tool(
+                            identifier=t.name,
+                            toolgroup_id=group_id,
+                            description=t.description or "",
+                            parameters=t.parameters or [],
+                            metadata=t.metadata,
+                            provider_id=toolgroup.provider_id,
+                        )
+                    )
+
+                self.toolgroups_to_tools[group_id] = tools
+                for tool in tools:
                     self.tool_to_toolgroup[tool.identifier] = group_id
             all_tools.extend(self.toolgroups_to_tools[group_id])
 
@@ -74,15 +88,15 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         mcp_endpoint: URL | None = None,
         args: dict[str, Any] | None = None,
     ) -> None:
-        await self.dist_registry.register(
-            ToolGroupWithACL(
-                identifier=toolgroup_id,
-                provider_id=provider_id,
-                provider_resource_id=toolgroup_id,
-                mcp_endpoint=mcp_endpoint,
-                args=args,
-            )
+        toolgroup = ToolGroupWithACL(
+            identifier=toolgroup_id,
+            provider_id=provider_id,
+            provider_resource_id=toolgroup_id,
+            mcp_endpoint=mcp_endpoint,
+            args=args,
         )
+        await self.register_object(toolgroup)
+        return toolgroup
 
     async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         tool_group = await self.get_tool_group(toolgroup_id)
