@@ -20,7 +20,7 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.resolver import resolve_impls
 from llama_stack.distribution.routers.inference import InferenceRouter
-from llama_stack.distribution.routers.routing_tables import ModelsRoutingTable
+from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
 from llama_stack.providers.datatypes import InlineProviderSpec, ProviderSpec
 
 

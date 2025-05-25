@@ -219,6 +219,7 @@ exclude = [
     "^llama_stack/distribution/client\\.py$",
     "^llama_stack/distribution/request_headers\\.py$",
     "^llama_stack/distribution/routers/",
+    "^llama_stack/distribution/routing_tables/",
     "^llama_stack/distribution/server/endpoints\\.py$",
     "^llama_stack/distribution/server/server\\.py$",
     "^llama_stack/distribution/stack\\.py$",
