@@ -19,7 +19,8 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import RoutingTable
+
+from ..routing_tables.toolgroups import ToolGroupsRoutingTable
 
 logger = get_logger(name=__name__, category="core")
 
@@ -28,7 +29,7 @@ class ToolRuntimeRouter(ToolRuntime):
     class RagToolImpl(RAGToolRuntime):
         def __init__(
             self,
-            routing_table: RoutingTable,
+            routing_table: ToolGroupsRoutingTable,
         ) -> None:
             logger.debug("Initializing ToolRuntimeRouter.RagToolImpl")
             self.routing_table = routing_table
@@ -59,7 +60,7 @@ class ToolRuntimeRouter(ToolRuntime):
 
     def __init__(
         self,
-        routing_table: RoutingTable,
+        routing_table: ToolGroupsRoutingTable,
     ) -> None:
         logger.debug("Initializing ToolRuntimeRouter")
         self.routing_table = routing_table
