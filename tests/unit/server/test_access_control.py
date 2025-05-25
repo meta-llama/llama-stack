@@ -11,7 +11,7 @@ import pytest
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import AccessAttributes, ModelWithACL
-from llama_stack.distribution.routers.routing_tables import ModelsRoutingTable
+from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
 
 
 class AsyncMock(MagicMock):
@@ -37,7 +37,7 @@ async def test_setup(cached_disk_dist_registry):
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.distribution.routers.routing_tables.get_auth_attributes")
+@patch("llama_stack.distribution.routing_tables.common.get_auth_attributes")
 async def test_access_control_with_cache(mock_get_auth_attributes, test_setup):
     registry, routing_table = test_setup
     model_public = ModelWithACL(
@@ -102,7 +102,7 @@ async def test_access_control_with_cache(mock_get_auth_attributes, test_setup):
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.distribution.routers.routing_tables.get_auth_attributes")
+@patch("llama_stack.distribution.routing_tables.common.get_auth_attributes")
 async def test_access_control_and_updates(mock_get_auth_attributes, test_setup):
     registry, routing_table = test_setup
     model_public = ModelWithACL(
@@ -132,7 +132,7 @@ async def test_access_control_and_updates(mock_get_auth_attributes, test_setup):
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.distribution.routers.routing_tables.get_auth_attributes")
+@patch("llama_stack.distribution.routing_tables.common.get_auth_attributes")
 async def test_access_control_empty_attributes(mock_get_auth_attributes, test_setup):
     registry, routing_table = test_setup
     model = ModelWithACL(
@@ -154,7 +154,7 @@ async def test_access_control_empty_attributes(mock_get_auth_attributes, test_se
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.distribution.routers.routing_tables.get_auth_attributes")
+@patch("llama_stack.distribution.routing_tables.common.get_auth_attributes")
 async def test_no_user_attributes(mock_get_auth_attributes, test_setup):
     registry, routing_table = test_setup
     model_public = ModelWithACL(
@@ -185,7 +185,7 @@ async def test_no_user_attributes(mock_get_auth_attributes, test_setup):
 
 
 @pytest.mark.asyncio
-@patch("llama_stack.distribution.routers.routing_tables.get_auth_attributes")
+@patch("llama_stack.distribution.routing_tables.common.get_auth_attributes")
 async def test_automatic_access_attributes(mock_get_auth_attributes, test_setup):
     """Test that newly created resources inherit access attributes from their creator."""
     registry, routing_table = test_setup

@@ -22,7 +22,11 @@ from docutils import nodes
 # Read version from pyproject.toml
 with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") as f:
     pypi_url = "https://pypi.org/pypi/llama-stack/json"
-    version_tag = json.loads(requests.get(pypi_url).text)["info"]["version"]
+    headers = {
+        'User-Agent': 'pip/23.0.1 (python 3.11)',  # Mimic pip's user agent
+        'Accept': 'application/json'
+    }
+    version_tag = json.loads(requests.get(pypi_url, headers=headers).text)["info"]["version"]
     print(f"{version_tag=}")
 
     # generate the full link including text and url here
