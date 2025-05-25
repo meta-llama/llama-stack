@@ -40,9 +40,9 @@ def test_mcp_invocation(llama_stack_client, mcp_server):
 
     provider_data = {
         "mcp_headers": {
-            uri: [
-                f"Authorization: Bearer {AUTH_TOKEN}",
-            ],
+            uri: {
+                "Authorization": f"Bearer {AUTH_TOKEN}",
+            },
         },
     }
     auth_headers = {
