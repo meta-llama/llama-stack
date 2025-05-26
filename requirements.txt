@@ -3,7 +3,6 @@
 annotated-types==0.7.0
 anyio==4.8.0
 attrs==25.1.0
-blobfile==3.0.0
 certifi==2025.1.31
 charset-normalizer==3.4.1
 click==8.1.8
@@ -24,7 +23,6 @@ jiter==0.8.2
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 llama-stack-client==0.2.7
-lxml==5.3.1
 markdown-it-py==3.0.0
 markupsafe==3.0.2
 mdurl==0.1.2
@@ -36,7 +34,6 @@ pillow==11.1.0
 prompt-toolkit==3.0.50
 pyaml==25.1.0
 pyasn1==0.4.8
-pycryptodomex==3.21.0
 pydantic==2.10.6
 pydantic-core==2.27.2
 pygments==2.19.1
