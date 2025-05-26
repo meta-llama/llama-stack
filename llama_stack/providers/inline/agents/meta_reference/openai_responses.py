@@ -593,8 +593,8 @@ class OpenAIResponsesImpl:
                 # we need to list all the toolgroups so tools can be found. avoid MCPs because they
                 # may need authentication.
                 groups = await self.tool_groups_api.list_tool_groups()
-                for group in groups:
-                    if not group.mcp_endpoint:
+                for group in groups.data:
+                    if group.mcp_endpoint:
                         continue
                     _ = await self.tool_groups_api.list_tools(group.identifier)
 
