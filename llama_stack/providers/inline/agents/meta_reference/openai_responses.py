@@ -589,6 +589,15 @@ class OpenAIResponsesImpl:
                 chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
             elif input_tool.type == "web_search":
                 tool_name = "web_search"
+
+                # we need to list all the toolgroups so tools can be found. avoid MCPs because they
+                # may need authentication.
+                groups = await self.tool_groups_api.list_tool_groups()
+                for group in groups:
+                    if not group.mcp_endpoint:
+                        continue
+                    _ = await self.tool_groups_api.list_tools(group.identifier)
+
                 tool = await self.tool_groups_api.get_tool(tool_name)
                 if not tool:
                     raise ValueError(f"Tool {tool_name} not found")

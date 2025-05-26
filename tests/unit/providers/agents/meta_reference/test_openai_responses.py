@@ -232,9 +232,17 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
 
     # Check that we got the content from our mocked tool execution result
     chunks = [chunk async for chunk in result]
-    assert len(chunks) > 0
-    assert chunks[0].response.output[0].type == "function_call"
-    assert chunks[0].response.output[0].name == "get_weather"
+    assert len(chunks) == 2  # Should have response.created and response.completed
+
+    # Check response.created event (should have empty output)
+    assert chunks[0].type == "response.created"
+    assert len(chunks[0].response.output) == 0
+
+    # Check response.completed event (should have the tool call)
+    assert chunks[1].type == "response.completed"
+    assert len(chunks[1].response.output) == 1
+    assert chunks[1].response.output[0].type == "function_call"
+    assert chunks[1].response.output[0].name == "get_weather"
 
 
 @pytest.mark.asyncio

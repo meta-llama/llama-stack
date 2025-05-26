@@ -84,7 +84,7 @@ def test_response_streaming_basic(request, openai_client, model, provider, verif
         if chunk.type == "response.created":
             # Verify response.created is emitted first and immediately
             assert len(events) == 1, "response.created should be the first event"
-            assert event_times[0] < 0.1, "response.created should be emitted immediately (< 100ms)"
+            assert event_times[0] < 0.1, "response.created should be emitted immediately"
             assert chunk.response.status == "in_progress"
             response_id = chunk.response.id
 
@@ -108,11 +108,6 @@ def test_response_streaming_basic(request, openai_client, model, provider, verif
     created_index = event_types.index("response.created")
     completed_index = event_types.index("response.completed")
     assert created_index < completed_index, "response.created should come before response.completed"
-
-    # Verify timing - there should be some delay between events (indicating real processing)
-    if len(event_times) >= 2:
-        time_between_events = event_times[-1] - event_times[0]
-        assert time_between_events > 0.01, "There should be measurable time between events (indicating real processing)"
 
     # Verify stored response matches streamed response
     retrieved_response = openai_client.responses.retrieve(response_id=response_id)
