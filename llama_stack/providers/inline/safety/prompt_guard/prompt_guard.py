@@ -75,7 +75,9 @@ class PromptGuardShield:
         self.temperature = temperature
         self.threshold = threshold
 
-        self.device = self.config.guard_execution_type
+        self.device = "cpu"
+        if torch.cuda.is_available():
+            self.device = "cuda"
 
         # load model and tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
