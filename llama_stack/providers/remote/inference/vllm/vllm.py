@@ -313,7 +313,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         return AsyncOpenAI(
             base_url=self.config.url,
             api_key=self.config.api_token,
-            http_client=None if self.config.tls_verify else httpx.AsyncClient(verify=False),
+            http_client=httpx.AsyncClient(verify=self.config.tls_verify),
         )
 
     async def completion(
