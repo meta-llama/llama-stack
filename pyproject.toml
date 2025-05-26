@@ -21,6 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
+    "aiohttp",
     "fire",
     "httpx",
     "huggingface-hub",
@@ -35,6 +36,7 @@ dependencies = [
     "requests",
     "rich",
     "setuptools",
+    "starlette",
     "termcolor",
     "tiktoken",
     "pillow",
