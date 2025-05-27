@@ -8,3 +8,4 @@ include llama_stack/templates/*/*.yaml
 include llama_stack/providers/tests/test_cases/inference/*.json
 include llama_stack/models/llama/*/*.md
 include llama_stack/tests/integration/*.jpg
+include llama_stack/ui/package.json
