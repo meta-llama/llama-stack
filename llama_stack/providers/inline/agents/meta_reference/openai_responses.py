@@ -263,12 +263,9 @@ class OpenAIResponsesImpl:
         chat_response: OpenAIChatCompletion,
         ctx: ChatCompletionContext,
         tools: list[OpenAIResponseInputTool] | None,
-        output_messages: list[OpenAIResponseOutput],
     ) -> list[OpenAIResponseOutput]:
-        """
-        Handle tool execution and response message creation.
-        Returns: updated output_messages list
-        """
+        """Handle tool execution and response message creation."""
+        output_messages: list[OpenAIResponseOutput] = []
         # Execute tool calls if any
         for choice in chat_response.choices:
             if choice.message.tool_calls and tools:
@@ -362,6 +359,8 @@ class OpenAIResponsesImpl:
             temperature=temperature,
         )
 
+        print(f"chat_tools: {chat_tools}")
+        print(f"messages: {messages}")
         inference_result = await self.inference_api.openai_chat_completion(
             model=model,
             messages=messages,
@@ -404,11 +403,12 @@ class OpenAIResponsesImpl:
         chat_response = OpenAIChatCompletion(**inference_result.model_dump())
 
         # Process response choices (tool execution and message creation)
-        output_messages = await self._process_response_choices(
-            chat_response=chat_response,
-            ctx=ctx,
-            tools=tools,
-            output_messages=output_messages,
+        output_messages.extend(
+            await self._process_response_choices(
+                chat_response=chat_response,
+                ctx=ctx,
+                tools=tools,
+            )
         )
 
         response = OpenAIResponseObject(
@@ -525,11 +525,12 @@ class OpenAIResponsesImpl:
         )
 
         # Process response choices (tool execution and message creation)
-        output_messages = await self._process_response_choices(
-            chat_response=chat_response_obj,
-            ctx=ctx,
-            tools=tools,
-            output_messages=output_messages,
+        output_messages.extend(
+            await self._process_response_choices(
+                chat_response=chat_response_obj,
+                ctx=ctx,
+                tools=tools,
+            )
         )
 
         # Create final response
@@ -589,15 +590,6 @@ class OpenAIResponsesImpl:
                 chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
             elif input_tool.type == "web_search":
                 tool_name = "web_search"
-
-                # we need to list all the toolgroups so tools can be found. avoid MCPs because they
-                # may need authentication.
-                groups = await self.tool_groups_api.list_tool_groups()
-                for group in groups.data:
-                    if group.mcp_endpoint:
-                        continue
-                    _ = await self.tool_groups_api.list_tools(group.identifier)
-
                 tool = await self.tool_groups_api.get_tool(tool_name)
                 if not tool:
                     raise ValueError(f"Tool {tool_name} not found")
