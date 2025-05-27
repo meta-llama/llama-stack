@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.7"
+version = "0.2.8"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -26,7 +26,7 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.7",
+    "llama-stack-client>=0.2.8",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -115,7 +115,7 @@ codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.7",
+    "llama-stack-client>=0.2.8",
     "streamlit-option-menu",
 ]
 
