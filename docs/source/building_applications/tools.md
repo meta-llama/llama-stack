@@ -177,7 +177,6 @@ export TAVILY_SEARCH_API_KEY="your key"
 3. Run the following script.
 ```python
 from llama_stack_client.lib.agents.agent import Agent
-from llama_stack_client.types.agent_create_params import AgentConfig
 from llama_stack_client.lib.agents.event_logger import EventLogger
 from llama_stack_client import LlamaStackClient
 
