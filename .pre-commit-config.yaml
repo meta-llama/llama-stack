@@ -53,7 +53,7 @@ repos:
         - black==24.3.0
 
 -   repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.6.3
+    rev: 0.7.8
     hooks:
     -   id: uv-lock
     -   id: uv-export
@@ -88,7 +88,7 @@ repos:
       - id: distro-codegen
         name: Distribution Template Codegen
         additional_dependencies:
-          - uv==0.6.0
+          - uv==0.7.8
         entry: uv run --extra codegen ./scripts/distro_codegen.py
         language: python
         pass_filenames: false
@@ -97,7 +97,7 @@ repos:
       - id: openapi-codegen
         name: API Spec Codegen
         additional_dependencies:
-          - uv==0.6.2
+          - uv==0.7.8
         entry: sh -c 'uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh > /dev/null'
         language: python
         pass_filenames: false
