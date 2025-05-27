@@ -359,8 +359,6 @@ class OpenAIResponsesImpl:
             temperature=temperature,
         )
 
-        print(f"chat_tools: {chat_tools}")
-        print(f"messages: {messages}")
         inference_result = await self.inference_api.openai_chat_completion(
             model=model,
             messages=messages,

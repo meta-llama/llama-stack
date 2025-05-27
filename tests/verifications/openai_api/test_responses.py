@@ -7,6 +7,7 @@
 import json
 
 import httpx
+import openai
 import pytest
 
 from llama_stack import LlamaStackAsLibraryClient
@@ -306,7 +307,7 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
         exc_type = (
             AuthenticationRequiredError
             if isinstance(openai_client, LlamaStackAsLibraryClient)
-            else httpx.HTTPStatusError
+            else (httpx.HTTPStatusError, openai.AuthenticationError)
         )
         with pytest.raises(exc_type):
             openai_client.responses.create(
