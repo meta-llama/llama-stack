@@ -7541,6 +7541,9 @@
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated"
                     },
                     {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta"
+                    },
+                    {
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
                     }
                 ],
@@ -7548,6 +7551,7 @@
                     "propertyName": "type",
                     "mapping": {
                         "response.created": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated",
+                        "response.output_text.delta": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta",
                         "response.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
                     }
                 }
@@ -7589,6 +7593,41 @@
                     "type"
                 ],
                 "title": "OpenAIResponseObjectStreamResponseCreated"
+            },
+            "OpenAIResponseObjectStreamResponseOutputTextDelta": {
+                "type": "object",
+                "properties": {
+                    "content_index": {
+                        "type": "integer"
+                    },
+                    "delta": {
+                        "type": "string"
+                    },
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.output_text.delta",
+                        "default": "response.output_text.delta"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content_index",
+                    "delta",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseOutputTextDelta"
             },
             "CreateUploadSessionRequest": {
                 "type": "object",
