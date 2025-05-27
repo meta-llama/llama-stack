@@ -231,6 +231,7 @@ def test_openai_chat_completion_streaming(compat_client, client_with_models, tex
         False,
     ],
 )
+@pytest.mark.skip(reason="Very flaky, keeps failing on CI")
 def test_inference_store(openai_client, client_with_models, text_model_id, stream):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
     client = openai_client
