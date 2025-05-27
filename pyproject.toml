@@ -21,7 +21,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-    "fire",
     "httpx",
     "huggingface-hub",
     "jinja2>=3.1.6",
@@ -32,13 +31,14 @@ dependencies = [
     "python-dotenv",
     "python-jose",
     "pydantic>=2",
-    "requests",
     "rich",
-    "setuptools",
     "termcolor",
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "fastapi>=0.115.8",          # server
+    "uvicorn>=0.34.0",           # server
+    "aiosqlite>=0.21.0",         # server
 ]
 
 [project.optional-dependencies]
@@ -55,9 +55,8 @@ dev = [
     "types-requests",
     "types-setuptools",
     "pre-commit",
-    "uvicorn",
-    "fastapi",
     "ruamel.yaml",        # needed for openapi generator
+    "fire",               # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
 unit = [
@@ -94,6 +93,7 @@ test = [
     "transformers",
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
+    "requests",
 ]
 docs = [
     "sphinx-autobuild",
@@ -110,6 +110,7 @@ docs = [
     "tomli",
     "linkify",
     "sphinxcontrib.openapi",
+    "requests",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 ui = [

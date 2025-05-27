@@ -441,6 +441,7 @@
     "faiss-cpu",
     "fastapi",
     "fire",
+    "h11>=0.16.0",
     "httpx",
     "langdetect",
     "matplotlib",
