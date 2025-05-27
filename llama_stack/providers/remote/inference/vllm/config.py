@@ -34,11 +34,16 @@ class VLLMInferenceAdapterConfig(BaseModel):
     @classmethod
     def validate_tls_verify(cls, v):
         if isinstance(v, str):
-            cert_path = Path(v)
+            # Check if it's a boolean string
+            if v.lower() in ("true", "false"):
+                return v.lower() == "true"
+            # Otherwise, treat it as a cert path
+            cert_path = Path(v).expanduser().resolve()
             if not cert_path.exists():
                 raise ValueError(f"TLS certificate file does not exist: {v}")
             if not cert_path.is_file():
                 raise ValueError(f"TLS certificate path is not a file: {v}")
+            return v
         return v
 
     @classmethod
