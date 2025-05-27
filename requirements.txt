@@ -58,6 +58,8 @@ h11==0.16.0
     # via
     #   httpcore
     #   llama-stack
+hf-xet==1.1.3 ; (platform_machine == 'aarch64' and sys_platform != 'darwin') or (platform_machine == 'amd64' and sys_platform != 'darwin') or (platform_machine == 'arm64' and sys_platform != 'darwin') or (platform_machine == 'x86_64' and sys_platform != 'darwin')
+    # via huggingface-hub
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
@@ -65,7 +67,9 @@ httpx==0.28.1
     #   llama-stack
     #   llama-stack-client
     #   openai
-huggingface-hub==0.29.0
+huggingface-hub==0.29.0 ; sys_platform == 'darwin'
+    # via llama-stack
+huggingface-hub==0.32.4 ; sys_platform != 'darwin'
     # via llama-stack
 idna==3.10
     # via
@@ -99,7 +103,7 @@ openai==1.71.0
     # via llama-stack
 packaging==24.2
     # via huggingface-hub
-pandas==2.2.3
+pandas==2.1.1
     # via llama-stack-client
 pillow==11.1.0
     # via llama-stack
@@ -147,7 +151,12 @@ referencing==0.36.2
     #   jsonschema-specifications
 regex==2024.11.6
     # via tiktoken
-requests==2.32.3
+requests==2.32.2 ; (python_full_version < '3.11' and sys_platform == 'darwin') or (python_full_version >= '3.11' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
+    # via
+    #   huggingface-hub
+    #   llama-stack
+    #   tiktoken
+requests==2.32.3 ; (python_full_version < '3.11' and platform_machine == 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.11' and sys_platform == 'darwin')
     # via
     #   huggingface-hub
     #   llama-stack
@@ -203,7 +212,9 @@ typing-extensions==4.12.2
     #   rich
 tzdata==2025.1
     # via pandas
-urllib3==2.3.0
+urllib3==2.1.0 ; (python_full_version < '3.11' and platform_machine == 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.11' and sys_platform == 'darwin')
+    # via requests
+urllib3==2.3.0 ; (python_full_version < '3.11' and sys_platform == 'darwin') or (python_full_version >= '3.11' and sys_platform == 'linux') or (platform_machine != 'aarch64' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit

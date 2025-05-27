@@ -36,7 +36,7 @@ jobs:
       - name: Generate Template List
         id: set-matrix
         run: |
-          templates=$(ls llama_stack/templates/*/*build.yaml | awk -F'/' '{print $(NF-1)}' | jq -R -s -c 'split("\n")[:-1]')
+          templates=$(ls llama_stack/templates/*/*build.yaml | grep -v "experimental-post-training" | awk -F'/' '{print $(NF-1)}' | jq -R -s -c 'split("\n")[:-1]')
           echo "templates=$templates" >> "$GITHUB_OUTPUT"
 
   build:
@@ -54,16 +54,42 @@ jobs:
 
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
+        with:
+          install-ollama: false
 
-      - name: Print build dependencies
+      - name: Print dependencies in the image
+        if: matrix.image-type == 'venv'
         run: |
-          uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test --print-deps-only
+          uv pip list
 
-      - name: Run Llama Stack Build
+      - name: Run Llama Stack Build - VENV
+        if: matrix.image-type == 'venv'
         run: |
-          # USE_COPY_NOT_MOUNT is set to true since mounting is not supported by docker buildx, we use COPY instead
-          # LLAMA_STACK_DIR is set to the current directory so we are building from the source
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test
+          uv sync --no-default-groups --extra ${{ matrix.template }}
+
+      # TODO
+      - name: Run Llama Stack Build - CONTAINER
+        if: matrix.image-type == 'container'
+        run: |
+          # TODO: use llama_stack/templates/Containerfile when we have a new release!
+          cat << 'EOF' > Containerfile
+          FROM registry.access.redhat.com/ubi9
+          WORKDIR /app
+          ARG TEMPLATE
+
+          RUN dnf -y update \
+              && dnf install -y python3.11 python3.11-pip python3.11-wheel python3.11-setuptools python3.11-devel gcc make \
+              && ln -s /bin/pip3.11 /bin/pip \
+              && ln -s /bin/python3.11 /bin/python \
+              && dnf clean all
+
+          RUN mkdir -p /.llama/providers.d /.cache
+          COPY . /app/llama-stack
+          RUN cd llama-stack && pip install --no-cache .[${TEMPLATE}]
+          RUN chmod -R g+rw /app /.llama /.cache
+          ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--config", "/app/llama-stack/templates/${TEMPLATE}/run.yaml"]
+          EOF
+          docker build --build-arg TEMPLATE=${{ matrix.template }} -f Containerfile -t ${{ matrix.template }} .
 
       - name: Print dependencies in the image
         if: matrix.image-type == 'venv'
