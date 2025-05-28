@@ -6,13 +6,13 @@
 
 import inspect
 import re
+from typing import Any
 
 from pydantic import BaseModel
 
+from llama_stack.apis.datatypes import Api, ExternalApiSpec
 from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
-from llama_stack.distribution.resolver import api_protocol_map
-from llama_stack.providers.datatypes import Api
 
 
 class ApiEndpoint(BaseModel):
@@ -28,10 +28,13 @@ def toolgroup_protocol_map():
     }
 
 
-def get_all_api_endpoints() -> dict[Api, list[ApiEndpoint]]:
+def get_all_api_endpoints(external_apis: dict[Api, ExternalApiSpec] | None = None) -> dict[Api, list[ApiEndpoint]]:
     apis = {}
 
-    protocols = api_protocol_map()
+    # Lazy import to avoid circular dependency
+    from llama_stack.distribution.resolver import api_protocol_map
+
+    protocols = api_protocol_map(external_apis)
     toolgroup_protocols = toolgroup_protocol_map()
     for api, protocol in protocols.items():
         endpoints = []
@@ -68,8 +71,10 @@ def get_all_api_endpoints() -> dict[Api, list[ApiEndpoint]]:
     return apis
 
 
-def initialize_endpoint_impls(impls):
-    endpoints = get_all_api_endpoints()
+def initialize_endpoint_impls(
+    impls, external_apis: dict[str, ExternalApiSpec] | None = None
+) -> dict[str, dict[str, tuple[Any, str]]]:
+    endpoints = get_all_api_endpoints(external_apis)
     endpoint_impls = {}
 
     def _convert_path_to_regex(path: str) -> str:

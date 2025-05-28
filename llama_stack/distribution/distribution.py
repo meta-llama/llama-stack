@@ -12,6 +12,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel
 
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -142,6 +143,17 @@ def get_provider_registry(
             ret[api] = {a.provider_type: a for a in module.available_providers()}
         except ImportError as e:
             logger.warning(f"Failed to import module {name}: {e}")
+
+    # Refresh providable APIs with external APIs if any
+    external_apis = load_external_apis(config)
+    for api, api_spec in external_apis.items():
+        name = api_spec.name.lower()
+        logger.debug(f"Importing external api module {name}")
+        try:
+            module = importlib.import_module(api_spec.module)
+            ret[api] = {a.provider_type: a for a in module.available_providers()}
+        except ImportError as e:
+            logger.warning(f"Failed to import external api module {name} is the external api package installed? {e}")
 
     # Check if config has the external_providers_dir attribute
     if config and hasattr(config, "external_providers_dir") and config.external_providers_dir:

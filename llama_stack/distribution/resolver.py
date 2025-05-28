@@ -11,6 +11,7 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.datatypes import ExternalApiSpec
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference, InferenceProvider
@@ -58,8 +59,16 @@ class InvalidProviderError(Exception):
     pass
 
 
-def api_protocol_map() -> dict[Api, Any]:
-    return {
+def api_protocol_map(external_apis: dict[Api, ExternalApiSpec] | None = None) -> dict[Api, Any]:
+    """Get a mapping of API types to their protocol classes.
+
+    Args:
+        external_apis: Optional dictionary of external API specifications
+
+    Returns:
+        Dictionary mapping API types to their protocol classes
+    """
+    protocols = {
         Api.providers: ProvidersAPI,
         Api.agents: Agents,
         Api.inference: Inference,
@@ -81,6 +90,18 @@ def api_protocol_map() -> dict[Api, Any]:
         Api.tool_runtime: ToolRuntime,
         Api.files: Files,
     }
+
+    if external_apis:
+        for api, api_spec in external_apis.items():
+            try:
+                module = importlib.import_module(api_spec.module)
+                api_class = getattr(module, api_spec.protocol)
+
+                protocols[api] = api_class
+            except (ImportError, AttributeError) as e:
+                logger.warning(f"Failed to load external API {api_spec.name}: {e}")
+
+    return protocols
 
 
 def api_protocol_map_for_compliance_check() -> dict[Api, Any]:
