@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=80.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -39,15 +39,47 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "fastapi",                   # server
+    "uvicorn",                   # server
+    "starlette",                 # server
+    "aiosqlite",                 # server
+    "sqlalchemy",                # for inference store
+    "greenlet",                  # for inference store
 ]
+dynamic = ["optional-dependencies"]
 
-[project.optional-dependencies]
-ui = [
-    "streamlit",
-    "pandas",
-    "llama-stack-client>=0.2.8",
-    "streamlit-option-menu",
-]
+[tool.setuptools.dynamic.optional-dependencies]
+bedrock = { file = ["llama_stack/templates/bedrock/requirements.txt"] }
+cerebras = { file = ["llama_stack/templates/cerebras/requirements.txt"] }
+ci-tests = { file = ["llama_stack/templates/ci-tests/requirements.txt"] }
+dell = { file = ["llama_stack/templates/dell/requirements.txt"] }
+fireworks = { file = ["llama_stack/templates/fireworks/requirements.txt"] }
+groq = { file = ["llama_stack/templates/groq/requirements.txt"] }
+hf-endpoint = { file = ["llama_stack/templates/hf-endpoint/requirements.txt"] }
+hf-serverless = { file = [
+    "llama_stack/templates/hf-serverless/requirements.txt",
+] }
+llama-api = { file = ["llama_stack/templates/llama-api/requirements.txt"] }
+meta-reference-gpu = { file = [
+    "llama_stack/templates/meta-reference-gpu/requirements.txt",
+] }
+nvidia = { file = ["llama_stack/templates/nvidia/requirements.txt"] }
+ollama = { file = ["llama_stack/templates/ollama/requirements.txt"] }
+open-benchmark = { file = [
+    "llama_stack/templates/open-benchmark/requirements.txt",
+] }
+passthrough = { file = ["llama_stack/templates/passthrough/requirements.txt"] }
+remote-vllm = { file = ["llama_stack/templates/remote-vllm/requirements.txt"] }
+sambanova = { file = ["llama_stack/templates/sambanova/requirements.txt"] }
+starter = { file = ["llama_stack/templates/starter/requirements.txt"] }
+tgi = { file = ["llama_stack/templates/tgi/requirements.txt"] }
+together = { file = ["llama_stack/templates/together/requirements.txt"] }
+verification = { file = [
+    "llama_stack/templates/verification/requirements.txt",
+] }
+vllm-gpu = { file = ["llama_stack/templates/vllm-gpu/requirements.txt"] }
+watsonx = { file = ["llama_stack/templates/watsonx/requirements.txt"] }
+
 
 [dependency-groups]
 dev = [
