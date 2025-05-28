@@ -9,6 +9,7 @@ import asyncio
 import json
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
@@ -377,14 +378,15 @@ def _meta_download(
     downloader = ParallelDownloader(max_concurrent_downloads=max_concurrent_downloads)
     asyncio.run(downloader.download_all(tasks))
 
-    cprint(f"\nSuccessfully downloaded model to {output_dir}", "green")
+    cprint(f"\nSuccessfully downloaded model to {output_dir}", color="green", file=sys.stderr)
     cprint(
         f"\nView MD5 checksum files at: {output_dir / 'checklist.chk'}",
-        "white",
+        file=sys.stderr,
     )
     cprint(
         f"\n[Optionally] To run MD5 checksums, use the following command: llama model verify-download --model-id {model_id}",
-        "yellow",
+        color="yellow",
+        file=sys.stderr,
     )
 
 

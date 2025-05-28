@@ -10,6 +10,9 @@ from pydantic import BaseModel, Field
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
+# NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
+# take their YAML and generate this file automatically. Their YAML is available.
+
 
 @json_schema_type
 class OpenAIResponseError(BaseModel):
@@ -79,16 +82,45 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 @json_schema_type
 class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
-    arguments: str
     call_id: str
     name: str
+    arguments: str
     type: Literal["function_call"] = "function_call"
+    id: str | None = None
+    status: str | None = None
+
+
+@json_schema_type
+class OpenAIResponseOutputMessageMCPCall(BaseModel):
     id: str
-    status: str
+    type: Literal["mcp_call"] = "mcp_call"
+    arguments: str
+    name: str
+    server_label: str
+    error: str | None = None
+    output: str | None = None
+
+
+class MCPListToolsTool(BaseModel):
+    input_schema: dict[str, Any]
+    name: str
+    description: str | None = None
+
+
+@json_schema_type
+class OpenAIResponseOutputMessageMCPListTools(BaseModel):
+    id: str
+    type: Literal["mcp_list_tools"] = "mcp_list_tools"
+    server_label: str
+    tools: list[MCPListToolsTool]
 
 
 OpenAIResponseOutput = Annotated[
-    OpenAIResponseMessage | OpenAIResponseOutputMessageWebSearchToolCall | OpenAIResponseOutputMessageFunctionToolCall,
+    OpenAIResponseMessage
+    | OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFunctionToolCall
+    | OpenAIResponseOutputMessageMCPCall
+    | OpenAIResponseOutputMessageMCPListTools,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
@@ -118,13 +150,25 @@ class OpenAIResponseObjectStreamResponseCreated(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseObjectStreamResponseOutputTextDelta(BaseModel):
+    content_index: int
+    delta: str
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.output_text.delta"] = "response.output_text.delta"
+
+
+@json_schema_type
 class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
     response: OpenAIResponseObject
     type: Literal["response.completed"] = "response.completed"
 
 
 OpenAIResponseObjectStream = Annotated[
-    OpenAIResponseObjectStreamResponseCreated | OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseCreated
+    | OpenAIResponseObjectStreamResponseOutputTextDelta
+    | OpenAIResponseObjectStreamResponseCompleted,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")
@@ -186,13 +230,50 @@ class OpenAIResponseInputToolFileSearch(BaseModel):
     # TODO: add filters
 
 
+class ApprovalFilter(BaseModel):
+    always: list[str] | None = None
+    never: list[str] | None = None
+
+
+class AllowedToolsFilter(BaseModel):
+    tool_names: list[str] | None = None
+
+
+@json_schema_type
+class OpenAIResponseInputToolMCP(BaseModel):
+    type: Literal["mcp"] = "mcp"
+    server_label: str
+    server_url: str
+    headers: dict[str, Any] | None = None
+
+    require_approval: Literal["always"] | Literal["never"] | ApprovalFilter = "never"
+    allowed_tools: list[str] | AllowedToolsFilter | None = None
+
+
 OpenAIResponseInputTool = Annotated[
-    OpenAIResponseInputToolWebSearch | OpenAIResponseInputToolFileSearch | OpenAIResponseInputToolFunction,
+    OpenAIResponseInputToolWebSearch
+    | OpenAIResponseInputToolFileSearch
+    | OpenAIResponseInputToolFunction
+    | OpenAIResponseInputToolMCP,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseInputTool, name="OpenAIResponseInputTool")
 
 
-class OpenAIResponseInputItemList(BaseModel):
+class ListOpenAIResponseInputItem(BaseModel):
     data: list[OpenAIResponseInput]
+    object: Literal["list"] = "list"
+
+
+@json_schema_type
+class OpenAIResponseObjectWithInput(OpenAIResponseObject):
+    input: list[OpenAIResponseInput]
+
+
+@json_schema_type
+class ListOpenAIResponseObject(BaseModel):
+    data: list[OpenAIResponseObjectWithInput]
+    has_more: bool
+    first_id: str
+    last_id: str
     object: Literal["list"] = "list"

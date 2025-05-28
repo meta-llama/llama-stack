@@ -41,6 +41,9 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -102,6 +105,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/tgi}/inference_store.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}

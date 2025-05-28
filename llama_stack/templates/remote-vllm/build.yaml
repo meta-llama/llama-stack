@@ -31,3 +31,6 @@ distribution_spec:
     - remote::model-context-protocol
     - remote::wolfram-alpha
 image_type: conda
+additional_pip_packages:
+- sqlalchemy[asyncio]
+- sqlalchemy[asyncio]

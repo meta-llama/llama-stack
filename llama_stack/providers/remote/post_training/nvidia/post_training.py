@@ -224,7 +224,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         Parameters:
             training_config: TrainingConfig - Configuration for training
-            model: str - Model identifier
+            model: str - NeMo Customizer configuration name
             algorithm_config: Optional[AlgorithmConfig] - Algorithm-specific configuration
             checkpoint_dir: Optional[str] - Directory containing model checkpoints, ignored atm
             job_uuid: str - Unique identifier for the job, ignored atm
@@ -299,9 +299,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
             User is informed about unsupported parameters via warnings.
         """
-        # Map model to nvidia model name
-        # See `_MODEL_ENTRIES` for supported models
-        nvidia_model = self.get_provider_model_id(model)
 
         # Check for unsupported method parameters
         unsupported_method_params = []
@@ -347,7 +344,7 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
 
         # Prepare base job configuration
         job_config = {
-            "config": nvidia_model,
+            "config": model,
             "dataset": {
                 "name": training_config["data_config"]["dataset_id"],
                 "namespace": self.config.dataset_namespace,

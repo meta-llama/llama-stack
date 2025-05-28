@@ -131,7 +131,7 @@ class TestNvidiaParameters(unittest.TestCase):
 
     def test_required_parameters_passed(self):
         """Test scenario 2: When required parameters are passed."""
-        required_model = "meta-llama/Llama-3.1-8B-Instruct"
+        required_model = "meta/llama-3.2-1b-instruct@v1.0.0+L40"
         required_dataset_id = "required-dataset"
         required_job_uuid = "required-job"
 
@@ -190,7 +190,7 @@ class TestNvidiaParameters(unittest.TestCase):
         self.mock_make_request.assert_called_once()
         call_args = self.mock_make_request.call_args
 
-        assert call_args[1]["json"]["config"] == "meta/llama-3.1-8b-instruct"
+        assert call_args[1]["json"]["config"] == required_model
         assert call_args[1]["json"]["dataset"]["name"] == required_dataset_id
 
     def test_unsupported_parameters_warning(self):

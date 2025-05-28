@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing_extensions import TypedDict
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
+from llama_stack.apis.common.responses import Order
 from llama_stack.apis.models import Model
 from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
 from llama_stack.models.llama.datatypes import (
@@ -831,11 +832,6 @@ class ListOpenAIChatCompletionResponse(BaseModel):
     first_id: str
     last_id: str
     object: Literal["list"] = "list"
-
-
-class Order(Enum):
-    asc = "asc"
-    desc = "desc"
 
 
 @runtime_checkable

@@ -28,17 +28,9 @@ class ToolParameter(BaseModel):
 
 
 @json_schema_type
-class ToolHost(Enum):
-    distribution = "distribution"
-    client = "client"
-    model_context_protocol = "model_context_protocol"
-
-
-@json_schema_type
 class Tool(Resource):
     type: Literal[ResourceType.tool] = ResourceType.tool
     toolgroup_id: str
-    tool_host: ToolHost
     description: str
     parameters: list[ToolParameter]
     metadata: dict[str, Any] | None = None
@@ -76,8 +68,8 @@ class ToolInvocationResult(BaseModel):
 
 
 class ToolStore(Protocol):
-    def get_tool(self, tool_name: str) -> Tool: ...
-    def get_tool_group(self, toolgroup_id: str) -> ToolGroup: ...
+    async def get_tool(self, tool_name: str) -> Tool: ...
+    async def get_tool_group(self, toolgroup_id: str) -> ToolGroup: ...
 
 
 class ListToolGroupsResponse(BaseModel):

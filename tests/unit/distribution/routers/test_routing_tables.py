@@ -15,17 +15,15 @@ from llama_stack.apis.datasets.datasets import Dataset, DatasetPurpose, URIDataS
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models.models import Model, ModelType
 from llama_stack.apis.shields.shields import Shield
-from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolParameter
+from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolGroup, ToolParameter
 from llama_stack.apis.vector_dbs.vector_dbs import VectorDB
-from llama_stack.distribution.routers.routing_tables import (
-    BenchmarksRoutingTable,
-    DatasetsRoutingTable,
-    ModelsRoutingTable,
-    ScoringFunctionsRoutingTable,
-    ShieldsRoutingTable,
-    ToolGroupsRoutingTable,
-    VectorDBsRoutingTable,
-)
+from llama_stack.distribution.routing_tables.benchmarks import BenchmarksRoutingTable
+from llama_stack.distribution.routing_tables.datasets import DatasetsRoutingTable
+from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
+from llama_stack.distribution.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
+from llama_stack.distribution.routing_tables.shields import ShieldsRoutingTable
+from llama_stack.distribution.routing_tables.toolgroups import ToolGroupsRoutingTable
+from llama_stack.distribution.routing_tables.vector_dbs import VectorDBsRoutingTable
 
 
 class Impl:
@@ -103,11 +101,11 @@ class ToolGroupsImpl(Impl):
     def __init__(self):
         super().__init__(Api.tool_runtime)
 
-    async def register_tool(self, tool):
-        return tool
+    async def register_toolgroup(self, toolgroup: ToolGroup):
+        return toolgroup
 
-    async def unregister_tool(self, tool_name: str):
-        return tool_name
+    async def unregister_toolgroup(self, toolgroup_id: str):
+        return toolgroup_id
 
     async def list_runtime_tools(self, toolgroup_id, mcp_endpoint):
         return ListToolDefsResponse(

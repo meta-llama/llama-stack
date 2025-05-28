@@ -7,18 +7,10 @@
 from typing import Any
 
 from llama_stack.distribution.datatypes import RoutedProtocol
+from llama_stack.distribution.stack import StackRunConfig
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.providers.datatypes import Api, RoutingTable
-
-from .routing_tables import (
-    BenchmarksRoutingTable,
-    DatasetsRoutingTable,
-    ModelsRoutingTable,
-    ScoringFunctionsRoutingTable,
-    ShieldsRoutingTable,
-    ToolGroupsRoutingTable,
-    VectorDBsRoutingTable,
-)
+from llama_stack.providers.utils.inference.inference_store import InferenceStore
 
 
 async def get_routing_table_impl(
@@ -27,6 +19,14 @@ async def get_routing_table_impl(
     _deps,
     dist_registry: DistributionRegistry,
 ) -> Any:
+    from ..routing_tables.benchmarks import BenchmarksRoutingTable
+    from ..routing_tables.datasets import DatasetsRoutingTable
+    from ..routing_tables.models import ModelsRoutingTable
+    from ..routing_tables.scoring_functions import ScoringFunctionsRoutingTable
+    from ..routing_tables.shields import ShieldsRoutingTable
+    from ..routing_tables.toolgroups import ToolGroupsRoutingTable
+    from ..routing_tables.vector_dbs import VectorDBsRoutingTable
+
     api_to_tables = {
         "vector_dbs": VectorDBsRoutingTable,
         "models": ModelsRoutingTable,
@@ -45,16 +45,15 @@ async def get_routing_table_impl(
     return impl
 
 
-async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: dict[str, Any]) -> Any:
-    from .routers import (
-        DatasetIORouter,
-        EvalRouter,
-        InferenceRouter,
-        SafetyRouter,
-        ScoringRouter,
-        ToolRuntimeRouter,
-        VectorIORouter,
-    )
+async def get_auto_router_impl(
+    api: Api, routing_table: RoutingTable, deps: dict[str, Any], run_config: StackRunConfig
+) -> Any:
+    from .datasets import DatasetIORouter
+    from .eval_scoring import EvalRouter, ScoringRouter
+    from .inference import InferenceRouter
+    from .safety import SafetyRouter
+    from .tool_runtime import ToolRuntimeRouter
+    from .vector_io import VectorIORouter
 
     api_to_routers = {
         "vector_io": VectorIORouter,
@@ -75,6 +74,12 @@ async def get_auto_router_impl(api: Api, routing_table: RoutingTable, deps: dict
     for dep_name, dep_api in api_to_deps.get(api.value, {}).items():
         if dep_api in deps:
             api_to_dep_impl[dep_name] = deps[dep_api]
+
+    # TODO: move pass configs to routers instead
+    if api == Api.inference and run_config.inference_store:
+        inference_store = InferenceStore(run_config.inference_store)
+        await inference_store.initialize()
+        api_to_dep_impl["store"] = inference_store
 
     impl = api_to_routers[api.value](routing_table, **api_to_dep_impl)
     await impl.initialize()

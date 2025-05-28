@@ -349,6 +349,53 @@ paths:
               $ref: '#/components/schemas/CreateAgentTurnRequest'
         required: true
   /v1/openai/v1/responses:
+    get:
+      responses:
+        '200':
+          description: A ListOpenAIResponseObject.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOpenAIResponseObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: List all OpenAI responses.
+      parameters:
+        - name: after
+          in: query
+          description: The ID of the last response to return.
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: The number of responses to return.
+          required: false
+          schema:
+            type: integer
+        - name: model
+          in: query
+          description: The model to filter responses by.
+          required: false
+          schema:
+            type: string
+        - name: order
+          in: query
+          description: >-
+            The order to sort responses by when sorted by created_at ('asc' or 'desc').
+          required: false
+          schema:
+            $ref: '#/components/schemas/Order'
     post:
       responses:
         '200':
@@ -963,7 +1010,7 @@ paths:
           required: true
           schema:
             type: string
-  /v1/openai/v1/responses/{id}:
+  /v1/openai/v1/responses/{response_id}:
     get:
       responses:
         '200':
@@ -986,7 +1033,7 @@ paths:
         - Agents
       description: Retrieve an OpenAI response by its ID.
       parameters:
-        - name: id
+        - name: response_id
           in: path
           description: >-
             The ID of the OpenAI response to retrieve.
@@ -2038,6 +2085,75 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterModelRequest'
         required: true
+  /v1/openai/v1/responses/{response_id}/input_items:
+    get:
+      responses:
+        '200':
+          description: An ListOpenAIResponseInputItem.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOpenAIResponseInputItem'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: >-
+        List input items for a given OpenAI response.
+      parameters:
+        - name: response_id
+          in: path
+          description: >-
+            The ID of the response to retrieve input items for.
+          required: true
+          schema:
+            type: string
+        - name: after
+          in: query
+          description: >-
+            An item ID to list items after, used for pagination.
+          required: false
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: >-
+            An item ID to list items before, used for pagination.
+          required: false
+          schema:
+            type: string
+        - name: include
+          in: query
+          description: >-
+            Additional fields to include in the response.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: >-
+            A limit on the number of objects to be returned. Limit can range between
+            1 and 100, and the default is 20.
+          required: false
+          schema:
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            The order to return the input items in. Default is desc.
+          required: false
+          schema:
+            $ref: '#/components/schemas/Order'
   /v1/providers:
     get:
       responses:
@@ -4762,12 +4878,14 @@ components:
         - $ref: '#/components/schemas/OpenAIResponseInputToolWebSearch'
         - $ref: '#/components/schemas/OpenAIResponseInputToolFileSearch'
         - $ref: '#/components/schemas/OpenAIResponseInputToolFunction'
+        - $ref: '#/components/schemas/OpenAIResponseInputToolMCP'
       discriminator:
         propertyName: type
         mapping:
           web_search: '#/components/schemas/OpenAIResponseInputToolWebSearch'
           file_search: '#/components/schemas/OpenAIResponseInputToolFileSearch'
           function: '#/components/schemas/OpenAIResponseInputToolFunction'
+          mcp: '#/components/schemas/OpenAIResponseInputToolMCP'
     OpenAIResponseInputToolFileSearch:
       type: object
       properties:
@@ -4822,6 +4940,66 @@ components:
         - type
         - name
       title: OpenAIResponseInputToolFunction
+    OpenAIResponseInputToolMCP:
+      type: object
+      properties:
+        type:
+          type: string
+          const: mcp
+          default: mcp
+        server_label:
+          type: string
+        server_url:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        require_approval:
+          oneOf:
+            - type: string
+              const: always
+            - type: string
+              const: never
+            - type: object
+              properties:
+                always:
+                  type: array
+                  items:
+                    type: string
+                never:
+                  type: array
+                  items:
+                    type: string
+              additionalProperties: false
+              title: ApprovalFilter
+          default: never
+        allowed_tools:
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: object
+              properties:
+                tool_names:
+                  type: array
+                  items:
+                    type: string
+              additionalProperties: false
+              title: AllowedToolsFilter
+      additionalProperties: false
+      required:
+        - type
+        - server_label
+        - server_url
+        - require_approval
+      title: OpenAIResponseInputToolMCP
     OpenAIResponseInputToolWebSearch:
       type: object
       properties:
@@ -4897,11 +5075,11 @@ components:
     "OpenAIResponseOutputMessageFunctionToolCall":
       type: object
       properties:
-        arguments:
-          type: string
         call_id:
           type: string
         name:
+          type: string
+        arguments:
           type: string
         type:
           type: string
@@ -4913,12 +5091,10 @@ components:
           type: string
       additionalProperties: false
       required:
-        - arguments
         - call_id
         - name
+        - arguments
         - type
-        - id
-        - status
       title: >-
         OpenAIResponseOutputMessageFunctionToolCall
     "OpenAIResponseOutputMessageWebSearchToolCall":
@@ -4952,6 +5128,8 @@ components:
         model:
           type: string
           description: The underlying LLM used for completions.
+        instructions:
+          type: string
         previous_response_id:
           type: string
           description: >-
@@ -5034,20 +5212,95 @@ components:
         - $ref: '#/components/schemas/OpenAIResponseMessage'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
       discriminator:
         propertyName: type
         mapping:
           message: '#/components/schemas/OpenAIResponseMessage'
           web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
           function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
+          mcp_call: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
+          mcp_list_tools: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
+    OpenAIResponseOutputMessageMCPCall:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: mcp_call
+          default: mcp_call
+        arguments:
+          type: string
+        name:
+          type: string
+        server_label:
+          type: string
+        error:
+          type: string
+        output:
+          type: string
+      additionalProperties: false
+      required:
+        - id
+        - type
+        - arguments
+        - name
+        - server_label
+      title: OpenAIResponseOutputMessageMCPCall
+    OpenAIResponseOutputMessageMCPListTools:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          const: mcp_list_tools
+          default: mcp_list_tools
+        server_label:
+          type: string
+        tools:
+          type: array
+          items:
+            type: object
+            properties:
+              input_schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
+              name:
+                type: string
+              description:
+                type: string
+            additionalProperties: false
+            required:
+              - input_schema
+              - name
+            title: MCPListToolsTool
+      additionalProperties: false
+      required:
+        - id
+        - type
+        - server_label
+        - tools
+      title: OpenAIResponseOutputMessageMCPListTools
     OpenAIResponseObjectStream:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta'
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCompleted'
       discriminator:
         propertyName: type
         mapping:
           response.created: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'
+          response.output_text.delta: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta'
           response.completed: '#/components/schemas/OpenAIResponseObjectStreamResponseCompleted'
     "OpenAIResponseObjectStreamResponseCompleted":
       type: object
@@ -5079,6 +5332,33 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseCreated
+    "OpenAIResponseObjectStreamResponseOutputTextDelta":
+      type: object
+      properties:
+        content_index:
+          type: integer
+        delta:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.output_text.delta
+          default: response.output_text.delta
+      additionalProperties: false
+      required:
+        - content_index
+        - delta
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseOutputTextDelta
     CreateUploadSessionRequest:
       type: object
       properties:
@@ -6462,8 +6742,6 @@ components:
           default: tool
         toolgroup_id:
           type: string
-        tool_host:
-          $ref: '#/components/schemas/ToolHost'
         description:
           type: string
         parameters:
@@ -6486,17 +6764,9 @@ components:
         - provider_id
         - type
         - toolgroup_id
-        - tool_host
         - description
         - parameters
       title: Tool
-    ToolHost:
-      type: string
-      enum:
-        - distribution
-        - client
-        - model_context_protocol
-      title: ToolHost
     ToolGroup:
       type: object
       properties:
@@ -7042,6 +7312,96 @@ components:
       required:
         - data
       title: ListModelsResponse
+    ListOpenAIResponseInputItem:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIResponseInput'
+        object:
+          type: string
+          const: list
+          default: list
+      additionalProperties: false
+      required:
+        - data
+        - object
+      title: ListOpenAIResponseInputItem
+    ListOpenAIResponseObject:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIResponseObjectWithInput'
+        has_more:
+          type: boolean
+        first_id:
+          type: string
+        last_id:
+          type: string
+        object:
+          type: string
+          const: list
+          default: list
+      additionalProperties: false
+      required:
+        - data
+        - has_more
+        - first_id
+        - last_id
+        - object
+      title: ListOpenAIResponseObject
+    OpenAIResponseObjectWithInput:
+      type: object
+      properties:
+        created_at:
+          type: integer
+        error:
+          $ref: '#/components/schemas/OpenAIResponseError'
+        id:
+          type: string
+        model:
+          type: string
+        object:
+          type: string
+          const: response
+          default: response
+        output:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIResponseOutput'
+        parallel_tool_calls:
+          type: boolean
+          default: false
+        previous_response_id:
+          type: string
+        status:
+          type: string
+        temperature:
+          type: number
+        top_p:
+          type: number
+        truncation:
+          type: string
+        user:
+          type: string
+        input:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIResponseInput'
+      additionalProperties: false
+      required:
+        - created_at
+        - id
+        - model
+        - object
+        - output
+        - parallel_tool_calls
+        - status
+        - input
+      title: OpenAIResponseObjectWithInput
     ListProvidersResponse:
       type: object
       properties:
@@ -8084,6 +8444,10 @@ components:
             placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk
             content string), {metadata} (chunk metadata dict). Default: "Result {index}\nContent:
             {chunk.content}\nMetadata: {metadata}\n"
+        mode:
+          type: string
+          description: >-
+            Search mode for retrieval—either "vector" or "keyword". Default "vector".
       additionalProperties: false
       required:
         - query_generator_config

@@ -76,6 +76,7 @@ class RAGQueryConfig(BaseModel):
     :param chunk_template: Template for formatting each retrieved chunk in the context.
         Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
         Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
+    :param mode: Search mode for retrieval—either "vector" or "keyword". Default "vector".
     """
 
     # This config defines how a query is generated using the messages
@@ -84,6 +85,7 @@ class RAGQueryConfig(BaseModel):
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
+    mode: str | None = None
 
     @field_validator("chunk_template")
     def validate_chunk_template(cls, v: str) -> str:

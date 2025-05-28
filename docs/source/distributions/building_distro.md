@@ -338,6 +338,48 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit)
 INFO:     2401:db00:35c:2d2b:face:0:c9:0:54678 - "GET /models/list HTTP/1.1" 200 OK
 ```
+### Listing Distributions
+Using the list command, you can view all existing Llama Stack distributions, including stacks built from templates, from scratch, or using custom configuration files.
+
+```
+llama stack list -h
+usage: llama stack list [-h]
+
+list the build stacks
+
+options:
+  -h, --help  show this help message and exit
+```
+
+Example Usage
+
+```
+llama stack list
+```
+
+### Removing a Distribution
+Use the remove command to delete a distribution you've previously built.
+
+```
+llama stack rm -h
+usage: llama stack rm [-h] [--all] [name]
+
+Remove the build stack
+
+positional arguments:
+  name        Name of the stack to delete (default: None)
+
+options:
+  -h, --help  show this help message and exit
+  --all, -a   Delete all stacks (use with caution) (default: False)
+```
+
+Example
+```
+llama stack rm llamastack-test
+```
+
+To keep your environment organized and avoid clutter, consider using `llama stack list` to review old or unused distributions and `llama stack rm <name>` to delete them when they’re no longer needed.
 
 ### Troubleshooting
 

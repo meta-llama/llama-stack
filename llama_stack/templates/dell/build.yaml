@@ -30,3 +30,6 @@ distribution_spec:
     - remote::tavily-search
     - inline::rag-runtime
 image_type: conda
+additional_pip_packages:
+- sqlalchemy[asyncio]
+- sqlalchemy[asyncio]

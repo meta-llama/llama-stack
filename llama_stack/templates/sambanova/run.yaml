@@ -38,10 +38,11 @@ providers:
       user: ${env.PGVECTOR_USER:}
       password: ${env.PGVECTOR_PASSWORD:}
   safety:
-  - provider_id: llama-guard
-    provider_type: inline::llama-guard
+  - provider_id: sambanova
+    provider_type: remote::sambanova
     config:
-      excluded_categories: []
+      url: https://api.sambanova.ai/v1
+      api_key: ${env.SAMBANOVA_API_KEY}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -50,6 +51,9 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -81,6 +85,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/inference_store.db
 models:
 - metadata: {}
   model_id: sambanova/Meta-Llama-3.1-8B-Instruct
@@ -189,6 +196,9 @@ models:
   model_type: embedding
 shields:
 - shield_id: meta-llama/Llama-Guard-3-8B
+  provider_shield_id: sambanova/Meta-Llama-Guard-3-8B
+- shield_id: sambanova/Meta-Llama-Guard-3-8B
+  provider_shield_id: sambanova/Meta-Llama-Guard-3-8B
 vector_dbs: []
 datasets: []
 scoring_fns: []

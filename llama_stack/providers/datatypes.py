@@ -16,7 +16,7 @@ from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import Model
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.apis.shields import Shield
-from llama_stack.apis.tools import Tool
+from llama_stack.apis.tools import ToolGroup
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.schema_utils import json_schema_type
 
@@ -74,10 +74,10 @@ class BenchmarksProtocolPrivate(Protocol):
     async def register_benchmark(self, benchmark: Benchmark) -> None: ...
 
 
-class ToolsProtocolPrivate(Protocol):
-    async def register_tool(self, tool: Tool) -> None: ...
+class ToolGroupsProtocolPrivate(Protocol):
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None: ...
 
-    async def unregister_tool(self, tool_id: str) -> None: ...
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None: ...
 
 
 @json_schema_type

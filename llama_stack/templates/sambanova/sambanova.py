@@ -34,7 +34,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ["remote::sambanova", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::sambanova"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "tool_runtime": [
@@ -110,7 +110,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Use SambaNova for running LLM inference",
+        description="Use SambaNova for running LLM inference and safety",
         container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
@@ -122,7 +122,15 @@ def get_distribution_template() -> DistributionTemplate:
                     "vector_io": vector_io_providers,
                 },
                 default_models=default_models + [embedding_model],
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_shields=[
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-8B", provider_shield_id="sambanova/Meta-Llama-Guard-3-8B"
+                    ),
+                    ShieldInput(
+                        shield_id="sambanova/Meta-Llama-Guard-3-8B",
+                        provider_shield_id="sambanova/Meta-Llama-Guard-3-8B",
+                    ),
+                ],
                 default_tool_groups=default_tool_groups,
             ),
         },

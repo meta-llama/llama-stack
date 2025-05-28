@@ -22,7 +22,11 @@ from docutils import nodes
 # Read version from pyproject.toml
 with Path(__file__).parent.parent.parent.joinpath("pyproject.toml").open("rb") as f:
     pypi_url = "https://pypi.org/pypi/llama-stack/json"
-    version_tag = json.loads(requests.get(pypi_url).text)["info"]["version"]
+    headers = {
+        'User-Agent': 'pip/23.0.1 (python 3.11)',  # Mimic pip's user agent
+        'Accept': 'application/json'
+    }
+    version_tag = json.loads(requests.get(pypi_url, headers=headers).text)["info"]["version"]
     print(f"{version_tag=}")
 
     # generate the full link including text and url here
@@ -53,14 +57,6 @@ myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"
 html_use_relative_paths = True
-
-# html_theme = "sphinx_pdj_theme"
-# html_theme_path = [sphinx_pdj_theme.get_html_theme_path()]
-
-# html_theme = "pytorch_sphinx_theme"
-# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
-
-
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

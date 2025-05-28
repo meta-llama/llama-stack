@@ -1,5 +1,26 @@
 # Changelog
 
+# v0.2.7
+Published on: 2025-05-16T20:38:10Z
+
+## Highlights
+
+This is a small update. But a couple highlights:
+
+* feat: function tools in OpenAI Responses by @bbrowning in https://github.com/meta-llama/llama-stack/pull/2094, getting closer to ready. Streaming is the next missing piece.
+* feat: Adding support for customizing chunk context in RAG insertion and querying by @franciscojavierarceo in https://github.com/meta-llama/llama-stack/pull/2134
+* feat: scaffolding for Llama Stack UI by @ehhuang in https://github.com/meta-llama/llama-stack/pull/2149, more to come in the coming releases.
+
+
+---
+
+# v0.2.6
+Published on: 2025-05-12T18:06:52Z
+
+
+
+---
+
 # v0.2.5
 Published on: 2025-05-04T20:16:49Z
 

@@ -13,7 +13,7 @@ from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.common.content_types import URL, ContentDelta, InterleavedContent
-from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.apis.common.responses import Order, PaginatedResponse
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
@@ -31,6 +31,8 @@ from llama_stack.apis.tools import ToolDef
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 from .openai_responses import (
+    ListOpenAIResponseInputItem,
+    ListOpenAIResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
@@ -579,14 +581,14 @@ class Agents(Protocol):
     #
     # Both of these APIs are inherently stateful.
 
-    @webmethod(route="/openai/v1/responses/{id}", method="GET")
+    @webmethod(route="/openai/v1/responses/{response_id}", method="GET")
     async def get_openai_response(
         self,
-        id: str,
+        response_id: str,
     ) -> OpenAIResponseObject:
         """Retrieve an OpenAI response by its ID.
 
-        :param id: The ID of the OpenAI response to retrieve.
+        :param response_id: The ID of the OpenAI response to retrieve.
         :returns: An OpenAIResponseObject.
         """
         ...
@@ -596,6 +598,7 @@ class Agents(Protocol):
         self,
         input: str | list[OpenAIResponseInput],
         model: str,
+        instructions: str | None = None,
         previous_response_id: str | None = None,
         store: bool | None = True,
         stream: bool | None = False,
@@ -608,5 +611,45 @@ class Agents(Protocol):
         :param model: The underlying LLM used for completions.
         :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
         :returns: An OpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses", method="GET")
+    async def list_openai_responses(
+        self,
+        after: str | None = None,
+        limit: int | None = 50,
+        model: str | None = None,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseObject:
+        """List all OpenAI responses.
+
+        :param after: The ID of the last response to return.
+        :param limit: The number of responses to return.
+        :param model: The model to filter responses by.
+        :param order: The order to sort responses by when sorted by created_at ('asc' or 'desc').
+        :returns: A ListOpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses/{response_id}/input_items", method="GET")
+    async def list_openai_response_input_items(
+        self,
+        response_id: str,
+        after: str | None = None,
+        before: str | None = None,
+        include: list[str] | None = None,
+        limit: int | None = 20,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseInputItem:
+        """List input items for a given OpenAI response.
+
+        :param response_id: The ID of the response to retrieve input items for.
+        :param after: An item ID to list items after, used for pagination.
+        :param before: An item ID to list items before, used for pagination.
+        :param include: Additional fields to include in the response.
+        :param limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
+        :param order: The order to return the input items in. Default is desc.
+        :returns: An ListOpenAIResponseInputItem.
         """
         ...

@@ -99,9 +99,13 @@ class FaissIndex(EmbeddingIndex):
         # Save updated index
         await self._save_index()
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(
+        self,
+        embedding: NDArray,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
         distances, indices = await asyncio.to_thread(self.index.search, embedding.reshape(1, -1).astype(np.float32), k)
-
         chunks = []
         scores = []
         for d, i in zip(distances[0], indices[0], strict=False):
@@ -111,6 +115,14 @@ class FaissIndex(EmbeddingIndex):
             scores.append(1.0 / float(d))
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in FAISS")
 
 
 class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):

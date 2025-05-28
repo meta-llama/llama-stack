@@ -6,6 +6,7 @@
 
 import importlib.resources
 import logging
+import sys
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -43,8 +44,20 @@ def get_provider_dependencies(
     # Extract providers based on config type
     if isinstance(config, DistributionTemplate):
         providers = config.providers
+
+        # TODO: This is a hack to get the dependencies for internal APIs into build
+        # We should have a better way to do this by formalizing the concept of "internal" APIs
+        # and providers, with a way to specify dependencies for them.
+        run_configs = config.run_configs
+        additional_pip_packages: list[str] = []
+        if run_configs:
+            for run_config in run_configs.values():
+                run_config_ = run_config.run_config(name="", providers={}, container_image=None)
+                if run_config_.inference_store:
+                    additional_pip_packages.extend(run_config_.inference_store.pip_packages)
     elif isinstance(config, BuildConfig):
         providers = config.distribution_spec.providers
+        additional_pip_packages = config.additional_pip_packages
     deps = []
     registry = get_provider_registry(config)
     for api_str, provider_or_providers in providers.items():
@@ -72,6 +85,9 @@ def get_provider_dependencies(
         else:
             normal_deps.append(package)
 
+    if additional_pip_packages:
+        normal_deps.extend(additional_pip_packages)
+
     return list(set(normal_deps)), list(set(special_deps))
 
 
@@ -80,10 +96,11 @@ def print_pip_install_help(config: BuildConfig):
 
     cprint(
         f"Please install needed dependencies using the following commands:\n\nuv pip install {' '.join(normal_deps)}",
-        "yellow",
+        color="yellow",
+        file=sys.stderr,
     )
     for special_dep in special_deps:
-        cprint(f"uv pip install {special_dep}", "yellow")
+        cprint(f"uv pip install {special_dep}", color="yellow", file=sys.stderr)
     print()
 
 

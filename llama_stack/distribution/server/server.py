@@ -23,11 +23,12 @@ import yaml
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
-from llama_stack.distribution.datatypes import LoggingConfig, StackRunConfig
+from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
@@ -60,6 +61,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
 
 from .auth import AuthenticationMiddleware
 from .endpoints import get_all_api_endpoints
+from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
@@ -120,6 +122,8 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
         return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
     elif isinstance(exc, NotImplementedError):
         return HTTPException(status_code=501, detail=f"Not implemented: {str(exc)}")
+    elif isinstance(exc, AuthenticationRequiredError):
+        return HTTPException(status_code=401, detail=f"Authentication required: {str(exc)}")
     else:
         return HTTPException(
             status_code=500,
@@ -280,7 +284,18 @@ class TracingMiddleware:
             logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
             return await self.app(scope, receive, send)
 
-        trace_context = await start_trace(trace_path, {"__location__": "server", "raw_path": path})
+        trace_attributes = {"__location__": "server", "raw_path": path}
+
+        # Extract W3C trace context headers and store as trace attributes
+        headers = dict(scope.get("headers", []))
+        traceparent = headers.get(b"traceparent", b"").decode()
+        if traceparent:
+            trace_attributes["traceparent"] = traceparent
+        tracestate = headers.get(b"tracestate", b"").decode()
+        if tracestate:
+            trace_attributes["tracestate"] = tracestate
+
+        trace_context = await start_trace(trace_path, trace_attributes)
 
         async def send_with_trace_id(message):
             if message["type"] == "http.response.start":
@@ -370,14 +385,6 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    # Check for deprecated argument usage
-    if "--config" in sys.argv:
-        warnings.warn(
-            "The '--config' argument is deprecated and will be removed in a future version. Use '--config' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
     log_line = ""
     if args.config:
         # if the user provided a config file, use it, even if template was specified
@@ -431,6 +438,46 @@ def main(args: argparse.Namespace | None = None):
     if config.server.auth:
         logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
+    else:
+        if config.server.quota:
+            quota = config.server.quota
+            logger.warning(
+                "Configured authenticated_max_requests (%d) but no auth is enabled; "
+                "falling back to anonymous_max_requests (%d) for all the requests",
+                quota.authenticated_max_requests,
+                quota.anonymous_max_requests,
+            )
+
+    if config.server.quota:
+        logger.info("Enabling quota middleware for authenticated and anonymous clients")
+
+        quota = config.server.quota
+        anonymous_max_requests = quota.anonymous_max_requests
+        # if auth is disabled, use the anonymous max requests
+        authenticated_max_requests = quota.authenticated_max_requests if config.server.auth else anonymous_max_requests
+
+        kv_config = quota.kvstore
+        window_map = {"day": 86400}
+        window_seconds = window_map[quota.period.value]
+
+        app.add_middleware(
+            QuotaMiddleware,
+            kv_config=kv_config,
+            anonymous_max_requests=anonymous_max_requests,
+            authenticated_max_requests=authenticated_max_requests,
+            window_seconds=window_seconds,
+        )
+
+    # --- CORS middleware for local development ---
+    # TODO: move to reverse proxy
+    ui_port = os.environ.get("LLAMA_STACK_UI_PORT", 8322)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[f"http://localhost:{ui_port}"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     try:
         impls = asyncio.run(construct_stack(config))

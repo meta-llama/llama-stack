@@ -43,6 +43,10 @@ def config(tmp_path):
             "type": "sqlite",
             "db_path": str(tmp_path / "test.db"),
         },
+        responses_store={
+            "type": "sqlite",
+            "db_path": str(tmp_path / "test.db"),
+        },
     )
 
 

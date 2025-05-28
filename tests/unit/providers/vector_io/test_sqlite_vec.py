@@ -57,12 +57,44 @@ async def test_add_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
 
 
 @pytest.mark.asyncio
-async def test_query_chunks(sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension):
+async def test_query_chunks_vector(sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension):
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
     query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
-    response = await sqlite_vec_index.query(query_embedding, k=2, score_threshold=0.0)
+    response = await sqlite_vec_index.query_vector(query_embedding, k=2, score_threshold=0.0)
     assert isinstance(response, QueryChunksResponse)
     assert len(response.chunks) == 2
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sample_embeddings):
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    query_string = "Sentence 5"
+    response = await sqlite_vec_index.query_keyword(k=3, score_threshold=0.0, query_string=query_string)
+
+    assert isinstance(response, QueryChunksResponse)
+    assert len(response.chunks) == 3, f"Expected three chunks, but got {len(response.chunks)}"
+
+    non_existent_query_str = "blablabla"
+    response_no_results = await sqlite_vec_index.query_keyword(
+        query_string=non_existent_query_str, k=1, score_threshold=0.0
+    )
+
+    assert isinstance(response_no_results, QueryChunksResponse)
+    assert len(response_no_results.chunks) == 0, f"Expected 0 results, but got {len(response_no_results.chunks)}"
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_full_text_search_k_greater_than_results(sqlite_vec_index, sample_chunks, sample_embeddings):
+    # Re-initialize with a clean index
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    query_str = "Sentence 1 from document 0"  # Should match only one chunk
+    response = await sqlite_vec_index.query_keyword(k=5, score_threshold=0.0, query_string=query_str)
+
+    assert isinstance(response, QueryChunksResponse)
+    assert 0 < len(response.chunks) < 5, f"Expected results between [1, 4], got {len(response.chunks)}"
+    assert any("Sentence 1 from document 0" in chunk.content for chunk in response.chunks), "Expected chunk not found"
 
 
 @pytest.mark.asyncio
