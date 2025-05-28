@@ -75,7 +75,7 @@ describe("ChatCompletionDetailView", () => {
       />,
     );
     expect(
-      screen.getByText("No details found for completion ID: notfound-id."),
+      screen.getByText("No details found for ID: notfound-id."),
     ).toBeInTheDocument();
   });
 

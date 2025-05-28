@@ -18,20 +18,20 @@ export interface ImageUrlContentBlock {
 export type ChatMessageContentPart =
   | TextContentBlock
   | ImageUrlContentBlock
-  | { type: string; [key: string]: any }; // Fallback for other potential types
+  | { type: string; [key: string]: unknown }; // Fallback for other potential types
 
 export interface ChatMessage {
   role: string;
   content: string | ChatMessageContentPart[]; // Updated content type
   name?: string | null;
-  tool_calls?: any | null; // This could also be refined to a more specific ToolCall[] type
+  tool_calls?: unknown | null; // This could also be refined to a more specific ToolCall[] type
 }
 
 export interface Choice {
   message: ChatMessage;
   finish_reason: string;
   index: number;
-  logprobs?: any | null;
+  logprobs?: unknown | null;
 }
 
 export interface ChatCompletion {
@@ -41,4 +41,63 @@ export interface ChatCompletion {
   created: number;
   model: string;
   input_messages: ChatMessage[];
+}
+
+// Response types for OpenAI Responses API
+export interface ResponseInputMessageContent {
+  text?: string;
+  type: "input_text" | "input_image" | "output_text";
+  image_url?: string;
+  detail?: "low" | "high" | "auto";
+}
+
+export interface ResponseMessage {
+  content: string | ResponseInputMessageContent[];
+  role: "system" | "developer" | "user" | "assistant";
+  type: "message";
+  id?: string;
+  status?: string;
+}
+
+export interface ResponseToolCall {
+  id: string;
+  status: string;
+  type: "web_search_call" | "function_call";
+  arguments?: string;
+  call_id?: string;
+  name?: string;
+}
+
+export type ResponseOutput = ResponseMessage | ResponseToolCall;
+
+export interface ResponseInput {
+  type: string;
+  content?: string | ResponseInputMessageContent[];
+  role?: string;
+  [key: string]: unknown; // Flexible for various input types
+}
+
+export interface OpenAIResponse {
+  id: string;
+  created_at: number;
+  model: string;
+  object: "response";
+  status: string;
+  output: ResponseOutput[];
+  input: ResponseInput[];
+  error?: {
+    code: string;
+    message: string;
+  };
+  parallel_tool_calls?: boolean;
+  previous_response_id?: string;
+  temperature?: number;
+  top_p?: number;
+  truncation?: string;
+  user?: string;
+}
+
+export interface InputItemListResponse {
+  data: ResponseInput[];
+  object: "list";
 }

@@ -1,12 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChatCompletion } from "@/lib/types";
 import { truncateText } from "@/lib/truncate-text";
-import {
-  extractTextFromContentPart,
-  extractDisplayableText,
-} from "@/lib/format-message-content";
 import {
   Table,
   TableBody,
@@ -18,17 +13,31 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ChatCompletionsTableProps {
-  completions: ChatCompletion[];
-  isLoading: boolean;
-  error: Error | null;
+// Generic table row data interface
+export interface LogTableRow {
+  id: string;
+  input: string;
+  output: string;
+  model: string;
+  createdTime: string;
+  detailPath: string;
 }
 
-export function ChatCompletionsTable({
-  completions,
+interface LogsTableProps {
+  data: LogTableRow[];
+  isLoading: boolean;
+  error: Error | null;
+  caption: string;
+  emptyMessage: string;
+}
+
+export function LogsTable({
+  data,
   isLoading,
   error,
-}: ChatCompletionsTableProps) {
+  caption,
+  emptyMessage,
+}: LogsTableProps) {
   const router = useRouter();
 
   const tableHeader = (
@@ -77,41 +86,25 @@ export function ChatCompletionsTable({
     );
   }
 
-  if (completions.length === 0) {
-    return <p>No chat completions found.</p>;
+  if (data.length === 0) {
+    return <p>{emptyMessage}</p>;
   }
 
   return (
     <Table>
-      <TableCaption>A list of your recent chat completions.</TableCaption>
+      <TableCaption>{caption}</TableCaption>
       {tableHeader}
       <TableBody>
-        {completions.map((completion) => (
+        {data.map((row) => (
           <TableRow
-            key={completion.id}
-            onClick={() =>
-              router.push(`/logs/chat-completions/${completion.id}`)
-            }
+            key={row.id}
+            onClick={() => router.push(row.detailPath)}
             className="cursor-pointer hover:bg-muted/50"
           >
-            <TableCell>
-              {truncateText(
-                extractTextFromContentPart(
-                  completion.input_messages?.[0]?.content,
-                ),
-              )}
-            </TableCell>
-            <TableCell>
-              {(() => {
-                const message = completion.choices?.[0]?.message;
-                const outputText = extractDisplayableText(message);
-                return truncateText(outputText);
-              })()}
-            </TableCell>
-            <TableCell>{completion.model}</TableCell>
-            <TableCell className="text-right">
-              {new Date(completion.created * 1000).toLocaleString()}
-            </TableCell>
+            <TableCell>{truncateText(row.input)}</TableCell>
+            <TableCell>{truncateText(row.output)}</TableCell>
+            <TableCell>{row.model}</TableCell>
+            <TableCell className="text-right">{row.createdTime}</TableCell>
           </TableRow>
         ))}
       </TableBody>
