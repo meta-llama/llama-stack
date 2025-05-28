@@ -292,12 +292,12 @@ class OpenAIResponsesImpl:
     async def _store_response(
         self,
         response: OpenAIResponseObject,
-        original_input: str | list[OpenAIResponseInput],
+        input: str | list[OpenAIResponseInput],
     ) -> None:
         new_input_id = f"msg_{uuid.uuid4()}"
-        if isinstance(original_input, str):
+        if isinstance(input, str):
             # synthesize a message from the input string
-            input_content = OpenAIResponseInputMessageContentText(text=original_input)
+            input_content = OpenAIResponseInputMessageContentText(text=input)
             input_content_item = OpenAIResponseMessage(
                 role="user",
                 content=[input_content],
@@ -307,7 +307,7 @@ class OpenAIResponsesImpl:
         else:
             # we already have a list of messages
             input_items_data = []
-            for input_item in original_input:
+            for input_item in input:
                 if isinstance(input_item, OpenAIResponseMessage):
                     # These may or may not already have an id, so dump to dict, check for id, and add if missing
                     input_item_dict = input_item.model_dump()
@@ -334,7 +334,6 @@ class OpenAIResponsesImpl:
         tools: list[OpenAIResponseInputTool] | None = None,
     ):
         stream = False if stream is None else stream
-        original_input = input  # Keep reference for storage
 
         output_messages: list[OpenAIResponseOutput] = []
 
@@ -372,7 +371,7 @@ class OpenAIResponsesImpl:
                 inference_result=inference_result,
                 ctx=ctx,
                 output_messages=output_messages,
-                original_input=original_input,
+                input=input,
                 model=model,
                 store=store,
                 tools=tools,
@@ -382,7 +381,7 @@ class OpenAIResponsesImpl:
                 inference_result=inference_result,
                 ctx=ctx,
                 output_messages=output_messages,
-                original_input=original_input,
+                input=input,
                 model=model,
                 store=store,
                 tools=tools,
@@ -393,7 +392,7 @@ class OpenAIResponsesImpl:
         inference_result: Any,
         ctx: ChatCompletionContext,
         output_messages: list[OpenAIResponseOutput],
-        original_input: str | list[OpenAIResponseInput],
+        input: str | list[OpenAIResponseInput],
         model: str,
         store: bool | None,
         tools: list[OpenAIResponseInputTool] | None,
@@ -423,7 +422,7 @@ class OpenAIResponsesImpl:
         if store:
             await self._store_response(
                 response=response,
-                original_input=original_input,
+                input=input,
             )
 
         return response
@@ -433,7 +432,7 @@ class OpenAIResponsesImpl:
         inference_result: Any,
         ctx: ChatCompletionContext,
         output_messages: list[OpenAIResponseOutput],
-        original_input: str | list[OpenAIResponseInput],
+        input: str | list[OpenAIResponseInput],
         model: str,
         store: bool | None,
         tools: list[OpenAIResponseInputTool] | None,
@@ -544,7 +543,7 @@ class OpenAIResponsesImpl:
         if store:
             await self._store_response(
                 response=final_response,
-                original_input=original_input,
+                input=input,
             )
 
         # Emit response.completed
