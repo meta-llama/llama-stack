@@ -150,13 +150,25 @@ class OpenAIResponseObjectStreamResponseCreated(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseObjectStreamResponseOutputTextDelta(BaseModel):
+    content_index: int
+    delta: str
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.output_text.delta"] = "response.output_text.delta"
+
+
+@json_schema_type
 class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
     response: OpenAIResponseObject
     type: Literal["response.completed"] = "response.completed"
 
 
 OpenAIResponseObjectStream = Annotated[
-    OpenAIResponseObjectStreamResponseCreated | OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseCreated
+    | OpenAIResponseObjectStreamResponseOutputTextDelta
+    | OpenAIResponseObjectStreamResponseCompleted,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIResponseObjectStream, name="OpenAIResponseObjectStream")

@@ -41,7 +41,6 @@ def openai_client(client_with_models):
         ],
     ],
 )
-@pytest.mark.skip(reason="Very flaky, sometimes there is a message not a function call, standard tool calling issues")
 def test_responses_store(openai_client, client_with_models, text_model_id, stream, tools):
     if isinstance(client_with_models, LlamaStackAsLibraryClient):
         pytest.skip("OpenAI responses are not supported when testing with library client yet.")
@@ -68,13 +67,15 @@ def test_responses_store(openai_client, client_with_models, text_model_id, strea
         for chunk in response:
             if response_id is None:
                 response_id = chunk.response.id
-            if not tools:
-                if chunk.type == "response.completed":
-                    response_id = chunk.response.id
+            if chunk.type == "response.completed":
+                response_id = chunk.response.id
+                output_type = chunk.response.output[0].type
+                if output_type == "message":
                     content = chunk.response.output[0].content[0].text
     else:
         response_id = response.id
-        if not tools:
+        output_type = response.output[0].type
+        if output_type == "message":
             content = response.output[0].content[0].text
 
     # list responses - use the underlying HTTP client for endpoints not in SDK
@@ -87,9 +88,8 @@ def test_responses_store(openai_client, client_with_models, text_model_id, strea
     retrieved_response = client.responses.retrieve(response_id)
     assert retrieved_response.id == response_id
     assert retrieved_response.model == text_model_id
-    if tools:
-        assert retrieved_response.output[0].type == "function_call"
-    else:
+    assert retrieved_response.output[0].type == output_type, retrieved_response
+    if output_type == "message":
         assert retrieved_response.output[0].content[0].text == content
 
 
