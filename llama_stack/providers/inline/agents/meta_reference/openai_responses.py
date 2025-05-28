@@ -549,6 +549,9 @@ class OpenAIResponsesImpl:
         # Emit response.completed
         yield OpenAIResponseObjectStreamResponseCompleted(response=final_response)
 
+    async def delete_openai_response(self, response_id: str) -> None:
+        return await self.responses_store.delete_response_object(response_id)
+
     async def _convert_response_tools_to_chat_tools(
         self, tools: list[OpenAIResponseInputTool]
     ) -> tuple[
