@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -38,6 +39,10 @@ from llama_stack.apis.inference.inference import (
     OpenAIResponseFormatParam,
     TopKSamplingStrategy,
     TopPSamplingStrategy,
+)
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
 )
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -74,6 +79,26 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
 
     async def shutdown(self) -> None:
         pass
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the Watsonx server.
+        This method is used by initialize() and the Provider API to verify
+        that the service is running correctly.
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            model = self._get_client(self._config.model_id)
+            model.generate("test")
+            return HealthResponse(
+                status=HealthStatus.OK
+            )
+        except Exception as ex:
+            return HealthResponse(
+                status=HealthStatus.ERROR,
+                message=f"Health check failed: {str(ex)}"
+            )
 
     async def completion(
         self,
