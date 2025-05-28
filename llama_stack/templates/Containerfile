@@ -1,0 +1,15 @@
+# Usage:
+# podman build --build-arg TEMPLATE={TEMPLATE_NAME} -f llama_stack/templates/Containerfile -t TEMPLATE_NAME .
+FROM registry.access.redhat.com/ubi9
+WORKDIR /app
+ARG TEMPLATE
+
+RUN dnf -y update \
+    && dnf install -y python3.11 python3.11-pip python3.11-wheel python3.11-setuptools python3.11-devel gcc make \
+    && ln -s /bin/pip3.11 /bin/pip \
+    && ln -s /bin/python3.11 /bin/python \
+    && dnf clean all
+RUN mkdir -p /.llama/providers.d /.cache
+RUN pip install --no-cache llama-stack[${TEMPLATE}]
+RUN chmod -R g+rw /app /.llama /.cache
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--config", "/app/llama-stack/templates/${TEMPLATE}/run.yaml"]

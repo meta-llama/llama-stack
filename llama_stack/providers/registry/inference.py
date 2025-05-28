@@ -41,7 +41,7 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.inference,
             provider_type="inline::vllm",
             pip_packages=[
-                "vllm",
+                "vllm; platform_system != 'Darwin'",
             ],
             module="llama_stack.providers.inline.inference.vllm",
             config_class="llama_stack.providers.inline.inference.vllm.VLLMConfig",
@@ -51,8 +51,12 @@ def available_providers() -> list[ProviderSpec]:
             provider_type="inline::sentence-transformers",
             pip_packages=[
                 "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
-                "sentence-transformers --no-deps",
+                "sentence-transformers",
             ],
+            # pip_packages=[
+            #     "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
+            #     "sentence-transformers --no-deps",
+            # ],
             module="llama_stack.providers.inline.inference.sentence_transformers",
             config_class="llama_stack.providers.inline.inference.sentence_transformers.config.SentenceTransformersInferenceConfig",
         ),

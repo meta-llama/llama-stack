@@ -1,14 +1,6 @@
-# [build-system]
-# requires = ["setuptools>=61.0"]
-# build-backend = "setuptools.build_meta"
-
-
 [build-system]
-requires = ["uv_build>=0.7.5,<0.8.0"]
-build-backend = "uv_build"
-
-[tool.uv.build-backend]
-module-root = ""
+requires = ["setuptools>=80.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
@@ -54,6 +46,40 @@ dependencies = [
     "sqlalchemy",                # for inference store
     "greenlet",                  # for inference store
 ]
+dynamic = ["optional-dependencies"]
+
+[tool.setuptools.dynamic.optional-dependencies]
+bedrock = { file = ["llama_stack/templates/bedrock/requirements.txt"] }
+cerebras = { file = ["llama_stack/templates/cerebras/requirements.txt"] }
+ci-tests = { file = ["llama_stack/templates/ci-tests/requirements.txt"] }
+dell = { file = ["llama_stack/templates/dell/requirements.txt"] }
+fireworks = { file = ["llama_stack/templates/fireworks/requirements.txt"] }
+groq = { file = ["llama_stack/templates/groq/requirements.txt"] }
+hf-endpoint = { file = ["llama_stack/templates/hf-endpoint/requirements.txt"] }
+hf-serverless = { file = [
+    "llama_stack/templates/hf-serverless/requirements.txt",
+] }
+llama-api = { file = ["llama_stack/templates/llama-api/requirements.txt"] }
+meta-reference-gpu = { file = [
+    "llama_stack/templates/meta-reference-gpu/requirements.txt",
+] }
+nvidia = { file = ["llama_stack/templates/nvidia/requirements.txt"] }
+ollama = { file = ["llama_stack/templates/ollama/requirements.txt"] }
+open-benchmark = { file = [
+    "llama_stack/templates/open-benchmark/requirements.txt",
+] }
+passthrough = { file = ["llama_stack/templates/passthrough/requirements.txt"] }
+remote-vllm = { file = ["llama_stack/templates/remote-vllm/requirements.txt"] }
+sambanova = { file = ["llama_stack/templates/sambanova/requirements.txt"] }
+starter = { file = ["llama_stack/templates/starter/requirements.txt"] }
+tgi = { file = ["llama_stack/templates/tgi/requirements.txt"] }
+together = { file = ["llama_stack/templates/together/requirements.txt"] }
+verification = { file = [
+    "llama_stack/templates/verification/requirements.txt",
+] }
+vllm-gpu = { file = ["llama_stack/templates/vllm-gpu/requirements.txt"] }
+watsonx = { file = ["llama_stack/templates/watsonx/requirements.txt"] }
+
 
 [dependency-groups]
 dev = [
@@ -126,113 +152,6 @@ docs = [
     "sphinxcontrib.openapi",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
-
-[project.optional-dependencies]
-ui = [
-    "streamlit",
-    "pandas",
-    "llama-stack-client>=0.2.8",
-    "streamlit-option-menu",
-]
-
-# Provider-specific optional dependencies
-# These can be used for common provider combinations
-# To install the "ollama" distro just run:
-#  uv venv --python 3.10 ollama-distro
-#  source ollama-distro/bin/activate
-#  uv sync --active --extra ollama
-
-#######################
-# INFERENCE PROVIDERS #
-#######################
-inference-remote-ollama = ["ollama", "aiohttp", "h11>=0.16.0"]
-
-#######################
-# VECTOR IO PROVIDERS #
-#######################
-vector-io-inline-faiss = ["faiss-cpu"]
-vector-io-remote-chroma = ["chromadb-client"]
-vector-io-remote-pgvector = ["psycopg2-binary"]
-
-####################
-# AGENTS PROVIDERS #
-####################
-agents-inline-meta-reference = [
-    "matplotlib",
-    "pillow",
-    "pandas",
-    "scikit-learn",
-]
-
-#######################
-# TELEMETRY PROVIDERS #
-#######################
-telemetry-inline-opentelemetry = [
-    "opentelemetry-sdk",
-    "opentelemetry-exporter-otlp-proto-http",
-]
-
-########################
-# EVALUATION PROVIDERS #
-########################
-eval-inline-meta-reference = [
-    "tree_sitter",
-    "pythainlp",
-    "langdetect",
-    "emoji",
-    "nltk",
-]
-
-#######################
-# DATASETIO PROVIDERS #
-#######################
-datasetio-inline-local-fs = ["pandas"]
-datasetio-remote-huggingface = ["datasets"]
-
-#####################
-# SCORING PROVIDERS #
-#####################
-scoring-inline-braintrust = ["autoevals", "openai"]
-
-###########################
-# POST-TRAINING PROVIDERS #
-###########################
-post-training-inline-huggingface = [
-    "torch",
-    "trl",
-    "transformers",
-    "peft",
-    "datasets",
-]
-
-##########################
-# TOOL RUNTIME PROVIDERS #
-##########################
-tool-runtime-inline-bing-search = ["requests"]
-tool-runtime-inline-brave-search = ["requests"]
-tool-runtime-inline-tavily-search = ["requests"]
-tool-runtime-inline-wolfram-alpha = ["requests"]
-tool-runtime-inline-model-context-protocol = ["mcp"]
-tool-runtime-inline-rag-runtime = [
-    "blobfile",
-    "chardet",
-    "pypdf",
-    "tqdm",
-    "numpy",
-    "scikit-learn",
-    "scipy",
-    "nltk",
-    "sentencepiece",
-    "transformers",
-]
-
-####################################
-# COMMON DISTRIBUTION COMBINATIONS #
-####################################
-# All declarations must be a single line to comply with pep508...
-ollama = [
-    "llama_stack[inference-remote-ollama,vector-io-inline-faiss,vector-io-remote-chroma,vector-io-remote-pgvector,safety-inline-llama-guard,agents-inline-meta-reference,eval-inline-meta-reference,datasetio-inline-local-fs,scoring-inline-braintrust,post-training-inline-huggingface,tool-runtime-inline-bing-search,tool-inline-brave-search,tool-runtime-inline-tavily-search,tool-runtime-inline-wolfram-alpha,tool-runtime-inline-model-context-protocol,tool-runtime-inline-rag-runtime,telemetry-inline-opentelemetry]",
-]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"

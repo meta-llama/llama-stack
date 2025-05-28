@@ -107,6 +107,23 @@ def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[
     return None, []
 
 
+def generate_dependencies_files(change_tracker: ChangedPathTracker):
+    templates_dir = REPO_ROOT / "llama_stack" / "templates"
+    distribution_deps = {}
+
+    for template_dir in find_template_dirs(templates_dir):
+        name, deps = collect_template_dependencies(template_dir)
+        if name:
+            distribution_deps[name] = deps
+
+    # Create a requirements.txt file for each distribution
+    for name, deps in distribution_deps.items():
+        deps_file = REPO_ROOT / "llama_stack" / "templates" / name / "requirements.txt"
+        change_tracker.add_paths(deps_file)
+        with open(deps_file, "w") as f:
+            f.write("\n".join(deps) + "\n")
+
+
 def main():
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
     change_tracker = ChangedPathTracker()
@@ -126,6 +143,9 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
+
+    # TODO: generate a Containerfile for each distribution as well?
+    generate_dependencies_files(change_tracker)
 
     if check_for_changes(change_tracker):
         print(
