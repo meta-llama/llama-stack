@@ -6,7 +6,7 @@ Here's a collection of comprehensive guides, examples, and resources for buildin
 
 From the llama-stack root directory, run the following command to render the docs locally:
 ```bash
-uv run --with ".[docs]" sphinx-autobuild docs/source docs/build/html --write-all
+uv run --group docs sphinx-autobuild docs/source docs/build/html --write-all
 ```
 You can open up the docs in your browser at http://localhost:8000
 

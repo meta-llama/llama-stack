@@ -27,7 +27,7 @@ export TOGETHER_API_KEY=<your_together_api_key>
 ```
 then run
 ```bash
-uv run --with-editable ".[dev]" python tests/verifications/generate_report.py --run-tests
+uv run python tests/verifications/generate_report.py --run-tests
 ```
 
 ## Running Tests
