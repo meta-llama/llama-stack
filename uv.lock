@@ -1456,6 +1456,7 @@ name = "llama-stack"
 version = "0.2.8"
 source = { editable = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "fire" },
     { name = "h11" },
     { name = "httpx" },
@@ -1472,6 +1473,7 @@ dependencies = [
     { name = "requests" },
     { name = "rich" },
     { name = "setuptools" },
+    { name = "starlette" },
     { name = "termcolor" },
     { name = "tiktoken" },
 ]
@@ -1557,6 +1559,7 @@ unit = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp" },
     { name = "fire" },
     { name = "h11", specifier = ">=0.16.0" },
     { name = "httpx" },
@@ -1575,6 +1578,7 @@ requires-dist = [
     { name = "requests" },
     { name = "rich" },
     { name = "setuptools" },
+    { name = "starlette" },
     { name = "streamlit", marker = "extra == 'ui'" },
     { name = "streamlit-option-menu", marker = "extra == 'ui'" },
     { name = "termcolor" },

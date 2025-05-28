@@ -6,6 +6,7 @@
 
 import argparse
 import asyncio
+import functools
 import inspect
 import json
 import os
@@ -13,6 +14,7 @@ import ssl
 import sys
 import traceback
 import warnings
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
@@ -20,6 +22,7 @@ from typing import Annotated, Any
 
 import rich.pretty
 import yaml
+from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
@@ -35,9 +38,10 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.server.endpoints import (
-    find_matching_endpoint,
-    initialize_endpoint_impls,
+from llama_stack.distribution.server.routes import (
+    find_matching_route,
+    get_all_api_routes,
+    initialize_route_impls,
 )
 from llama_stack.distribution.stack import (
     construct_stack,
@@ -60,7 +64,6 @@ from llama_stack.providers.utils.telemetry.tracing import (
 )
 
 from .auth import AuthenticationMiddleware
-from .endpoints import get_all_api_endpoints
 from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
@@ -209,8 +212,9 @@ async def log_request_pre_validation(request: Request):
             logger.warning(f"Could not read or log request body for {request.method} {request.url.path}: {e}")
 
 
-def create_dynamic_typed_route(func: Any, method: str, route: str):
-    async def endpoint(request: Request, **kwargs):
+def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
+    @functools.wraps(func)
+    async def route_handler(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
 
@@ -250,9 +254,9 @@ def create_dynamic_typed_route(func: Any, method: str, route: str):
             for param in new_params[1:]
         ]
 
-    endpoint.__signature__ = sig.replace(parameters=new_params)
+    route_handler.__signature__ = sig.replace(parameters=new_params)
 
-    return endpoint
+    return route_handler
 
 
 class TracingMiddleware:
@@ -274,14 +278,14 @@ class TracingMiddleware:
             logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
             return await self.app(scope, receive, send)
 
-        if not hasattr(self, "endpoint_impls"):
-            self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        if not hasattr(self, "route_impls"):
+            self.route_impls = initialize_route_impls(self.impls)
 
         try:
-            _, _, trace_path = find_matching_endpoint(scope.get("method", "GET"), path, self.endpoint_impls)
+            _, _, trace_path = find_matching_route(scope.get("method", hdrs.METH_GET), path, self.route_impls)
         except ValueError:
             # If no matching endpoint is found, pass through to FastAPI
-            logger.debug(f"No matching endpoint found for path: {path}, falling back to FastAPI")
+            logger.debug(f"No matching route found for path: {path}, falling back to FastAPI")
             return await self.app(scope, receive, send)
 
         trace_attributes = {"__location__": "server", "raw_path": path}
@@ -490,7 +494,7 @@ def main(args: argparse.Namespace | None = None):
     else:
         setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
 
-    all_endpoints = get_all_api_endpoints()
+    all_routes = get_all_api_routes()
 
     if config.apis:
         apis_to_serve = set(config.apis)
@@ -508,24 +512,29 @@ def main(args: argparse.Namespace | None = None):
     for api_str in apis_to_serve:
         api = Api(api_str)
 
-        endpoints = all_endpoints[api]
+        routes = all_routes[api]
         impl = impls[api]
 
-        for endpoint in endpoints:
-            if not hasattr(impl, endpoint.name):
+        for route in routes:
+            if not hasattr(impl, route.name):
                 # ideally this should be a typing violation already
-                raise ValueError(f"Could not find method {endpoint.name} on {impl}!!")
+                raise ValueError(f"Could not find method {route.name} on {impl}!")
 
-            impl_method = getattr(impl, endpoint.name)
-            logger.debug(f"{endpoint.method.upper()} {endpoint.route}")
+            impl_method = getattr(impl, route.name)
+            # Filter out HEAD method since it's automatically handled by FastAPI for GET routes
+            available_methods = [m for m in route.methods if m != "HEAD"]
+            if not available_methods:
+                raise ValueError(f"No methods found for {route.name} on {impl}")
+            method = available_methods[0]
+            logger.debug(f"{method} {route.path}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
-                getattr(app, endpoint.method)(endpoint.route, response_model=None)(
+                getattr(app, method.lower())(route.path, response_model=None)(
                     create_dynamic_typed_route(
                         impl_method,
-                        endpoint.method,
-                        endpoint.route,
+                        method.lower(),
+                        route.path,
                     )
                 )
 

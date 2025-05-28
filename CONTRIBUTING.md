@@ -168,10 +168,10 @@ If you are making changes to the documentation at [https://llama-stack.readthedo
 
 ```bash
 # This rebuilds the documentation pages.
-uv run --with ".[docs]" make -C docs/ html
+uv run --group docs make -C docs/ html
 
 # This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and refreshes when you make changes to the documentation.
-uv run --with ".[docs]" sphinx-autobuild docs/source docs/build/html --write-all
+uv run --group docs sphinx-autobuild docs/source docs/build/html --write-all
 ```
 
 ### Update API Documentation
@@ -179,7 +179,7 @@ uv run --with ".[docs]" sphinx-autobuild docs/source docs/build/html --write-all
 If you modify or add new API endpoints, update the API documentation accordingly. You can do this by running the following command:
 
 ```bash
-uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh
+uv run ./docs/openapi_generator/run_openapi_generator.sh
 ```
 
 The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.

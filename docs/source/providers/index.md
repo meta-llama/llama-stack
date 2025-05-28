@@ -30,6 +30,18 @@ Runs inference with an LLM.
 ## Post Training
 Fine-tunes a model.
 
+#### Post Training Providers
+The following providers are available for Post Training:
+
+```{toctree}
+:maxdepth: 1
+
+external
+post_training/huggingface
+post_training/torchtune
+post_training/nvidia_nemo
+```
+
 ## Safety
 Applies safety policies to the output at a Systems (not only model) level.
 

@@ -43,10 +43,14 @@ export function extractDisplayableText(
     return "";
   }
 
-  let textPart = extractTextFromContentPart(message.content);
+  const textPart = extractTextFromContentPart(message.content);
   let toolCallPart = "";
 
-  if (message.tool_calls && message.tool_calls.length > 0) {
+  if (
+    message.tool_calls &&
+    Array.isArray(message.tool_calls) &&
+    message.tool_calls.length > 0
+  ) {
     // For summary, usually the first tool call is sufficient
     toolCallPart = formatToolCallToString(message.tool_calls[0]);
   }
