@@ -628,3 +628,69 @@ async def test_responses_store_list_input_items_logic():
     result = await responses_store.list_response_input_items("resp_123", limit=0, order=Order.asc)
     assert result.object == "list"
     assert len(result.data) == 0  # Should return no items
+
+
+@pytest.mark.asyncio
+async def test_store_response_uses_rehydrated_input_with_previous_response(
+    openai_responses_impl, mock_responses_store, mock_inference_api
+):
+    """Test that _store_response uses the full re-hydrated input (including previous responses)
+    rather than just the original input when previous_response_id is provided."""
+
+    # Setup - Create a previous response that should be included in the stored input
+    previous_response = OpenAIResponseObjectWithInput(
+        id="resp-previous-123",
+        object="response",
+        created_at=1234567890,
+        model="meta-llama/Llama-3.1-8B-Instruct",
+        status="completed",
+        input=[
+            OpenAIResponseMessage(
+                id="msg-prev-user", role="user", content=[OpenAIResponseInputMessageContentText(text="What is 2+2?")]
+            )
+        ],
+        output=[
+            OpenAIResponseMessage(
+                id="msg-prev-assistant",
+                role="assistant",
+                content=[OpenAIResponseOutputMessageContentOutputText(text="2+2 equals 4.")],
+            )
+        ],
+    )
+
+    mock_responses_store.get_response_object.return_value = previous_response
+
+    current_input = "Now what is 3+3?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
+    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+
+    # Execute - Create response with previous_response_id
+    result = await openai_responses_impl.create_openai_response(
+        input=current_input,
+        model=model,
+        previous_response_id="resp-previous-123",
+        store=True,
+    )
+
+    store_call_args = mock_responses_store.store_response_object.call_args
+    stored_input = store_call_args.kwargs["input"]
+
+    # Verify that the stored input contains the full re-hydrated conversation:
+    # 1. Previous user message
+    # 2. Previous assistant response
+    # 3. Current user message
+    assert len(stored_input) == 3
+
+    assert stored_input[0].role == "user"
+    assert stored_input[0].content[0].text == "What is 2+2?"
+
+    assert stored_input[1].role == "assistant"
+    assert stored_input[1].content[0].text == "2+2 equals 4."
+
+    assert stored_input[2].role == "user"
+    assert stored_input[2].content == "Now what is 3+3?"
+
+    # Verify the response itself is correct
+    assert result.model == model
+    assert result.status == "completed"
