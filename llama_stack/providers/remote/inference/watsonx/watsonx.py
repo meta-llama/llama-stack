@@ -82,7 +82,7 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
     async def health(self) -> HealthResponse:
         """
         Performs a health check by verifying connectivity to the Watsonx server.
-        This method is used by initialize() and the Provider API to verify
+        This method is used by the Provider API to verify
         that the service is running correctly.
         Returns:
             HealthResponse: A dictionary containing the health status.
