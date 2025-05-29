@@ -316,7 +316,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             client = self._create_client() if self.client is None else self.client
             if client.api_key:
                 headers["Authorization"] = f"Bearer {client.api_key}"
-            models_url = f"{client.base_url}/v1/models"
+            models_url = f"{client.base_url}models"
             requests.get(models_url, headers=headers, timeout=10)
             return HealthResponse(
                 status=HealthStatus.OK
