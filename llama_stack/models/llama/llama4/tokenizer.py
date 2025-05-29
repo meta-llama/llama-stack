@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import os
 from collections.abc import Collection, Iterator, Sequence, Set
 from logging import getLogger
 from pathlib import Path
@@ -14,7 +13,8 @@ from typing import (
 )
 
 import tiktoken
-from tiktoken.load import load_tiktoken_bpe
+
+from llama_stack.models.llama.tokenizer_utils import load_bpe_file
 
 logger = getLogger(__name__)
 
@@ -118,19 +118,20 @@ class Tokenizer:
         global _INSTANCE
 
         if _INSTANCE is None:
-            _INSTANCE = Tokenizer(os.path.join(os.path.dirname(__file__), "tokenizer.model"))
+            _INSTANCE = Tokenizer(Path(__file__).parent / "tokenizer.model")
         return _INSTANCE
 
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: Path):
         """
         Initializes the Tokenizer with a Tiktoken model.
 
         Args:
-            model_path (str): The path to the Tiktoken model file.
+            model_path (Path): The path to the Tiktoken model file.
         """
-        assert os.path.isfile(model_path), model_path
+        if not model_path.exists():
+            raise FileNotFoundError(f"Tokenizer model file not found: {model_path}")
 
-        mergeable_ranks = load_tiktoken_bpe(model_path)
+        mergeable_ranks = load_bpe_file(model_path)
         num_base_tokens = len(mergeable_ranks)
 
         special_tokens = BASIC_SPECIAL_TOKENS + LLAMA4_SPECIAL_TOKENS
@@ -144,7 +145,7 @@ class Tokenizer:
 
         self.special_tokens = {token: num_base_tokens + i for i, token in enumerate(special_tokens)}
         self.model = tiktoken.Encoding(
-            name=Path(model_path).name,
+            name=model_path.name,
             pat_str=self.O200K_PATTERN,
             mergeable_ranks=mergeable_ranks,
             special_tokens=self.special_tokens,
