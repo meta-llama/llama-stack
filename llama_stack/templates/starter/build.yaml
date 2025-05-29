@@ -36,4 +36,5 @@ distribution_spec:
     - remote::model-context-protocol
 image_type: conda
 additional_pip_packages:
+- aiosqlite
 - sqlalchemy[asyncio]

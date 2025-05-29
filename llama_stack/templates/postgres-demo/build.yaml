@@ -1,16 +1,14 @@
 version: '2'
 distribution_spec:
-  description: Use SambaNova for running LLM inference and safety
+  description: Quick start template for running Llama Stack with several popular providers
   providers:
     inference:
-    - remote::sambanova
-    - inline::sentence-transformers
+    - remote::fireworks
+    - remote::vllm
     vector_io:
-    - inline::faiss
     - remote::chromadb
-    - remote::pgvector
     safety:
-    - remote::sambanova
+    - inline::llama-guard
     agents:
     - inline::meta-reference
     telemetry:
@@ -20,8 +18,7 @@ distribution_spec:
     - remote::tavily-search
     - inline::rag-runtime
     - remote::model-context-protocol
-    - remote::wolfram-alpha
 image_type: conda
 additional_pip_packages:
-- aiosqlite
+- asyncpg
 - sqlalchemy[asyncio]

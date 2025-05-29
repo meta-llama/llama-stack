@@ -65,7 +65,7 @@ class SqliteKVStoreConfig(CommonConfig):
 class PostgresKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.postgres.value] = KVStoreType.postgres.value
     host: str = "localhost"
-    port: int = 5432
+    port: str = "5432"
     db: str = "llamastack"
     user: str
     password: str | None = None

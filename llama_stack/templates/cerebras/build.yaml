@@ -30,4 +30,5 @@ distribution_spec:
     - inline::rag-runtime
 image_type: conda
 additional_pip_packages:
+- aiosqlite
 - sqlalchemy[asyncio]

@@ -1,0 +1,224 @@
+version: '2'
+image_name: postgres-demo
+apis:
+- agents
+- inference
+- safety
+- telemetry
+- tool_runtime
+- vector_io
+providers:
+  inference:
+  - provider_id: fireworks
+    provider_type: remote::fireworks
+    config:
+      url: https://api.fireworks.ai/inference/v1
+      api_key: ${env.FIREWORKS_API_KEY:}
+  - provider_id: vllm-inference
+    provider_type: remote::vllm
+    config:
+      url: ${env.VLLM_URL:http://localhost:8000/v1}
+      max_tokens: ${env.VLLM_MAX_TOKENS:4096}
+      api_token: ${env.VLLM_API_TOKEN:fake}
+      tls_verify: ${env.VLLM_TLS_VERIFY:true}
+  vector_io:
+  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+    provider_type: remote::chromadb
+    config:
+      url: ${env.CHROMADB_URL:}
+  safety:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config:
+      excluded_categories: []
+  agents:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      persistence_store:
+        type: postgres
+        host: ${env.POSTGRES_HOST:localhost}
+        port: ${env.POSTGRES_PORT:5432}
+        db: ${env.POSTGRES_DB:llamastack}
+        user: ${env.POSTGRES_USER:llamastack}
+        password: ${env.POSTGRES_PASSWORD:llamastack}
+      responses_store:
+        type: postgres
+        host: ${env.POSTGRES_HOST:localhost}
+        port: ${env.POSTGRES_PORT:5432}
+        db: ${env.POSTGRES_DB:llamastack}
+        user: ${env.POSTGRES_USER:llamastack}
+        password: ${env.POSTGRES_PASSWORD:llamastack}
+  telemetry:
+  - provider_id: meta-reference
+    provider_type: inline::meta-reference
+    config:
+      service_name: ${env.OTEL_SERVICE_NAME:}
+      sinks: ${env.TELEMETRY_SINKS:console}
+  tool_runtime:
+  - provider_id: brave-search
+    provider_type: remote::brave-search
+    config:
+      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: tavily-search
+    provider_type: remote::tavily-search
+    config:
+      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      max_results: 3
+  - provider_id: rag-runtime
+    provider_type: inline::rag-runtime
+    config: {}
+  - provider_id: model-context-protocol
+    provider_type: remote::model-context-protocol
+    config: {}
+metadata_store:
+  type: postgres
+  host: ${env.POSTGRES_HOST:localhost}
+  port: ${env.POSTGRES_PORT:5432}
+  db: ${env.POSTGRES_DB:llamastack}
+  user: ${env.POSTGRES_USER:llamastack}
+  password: ${env.POSTGRES_PASSWORD:llamastack}
+  table_name: llamastack_kvstore
+inference_store:
+  type: postgres
+  host: ${env.POSTGRES_HOST:localhost}
+  port: ${env.POSTGRES_PORT:5432}
+  db: ${env.POSTGRES_DB:llamastack}
+  user: ${env.POSTGRES_USER:llamastack}
+  password: ${env.POSTGRES_PASSWORD:llamastack}
+models:
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-8B-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-70B-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-3B-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-11B-Vision-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-11b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.2-90B-Vision-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-3.3-70B-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-guard-3-8b
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-Guard-3-8B
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-scout-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  model_type: llm
+- metadata: {}
+  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  provider_id: fireworks
+  provider_model_id: accounts/fireworks/models/llama4-maverick-instruct-basic
+  model_type: llm
+- metadata:
+    embedding_dimension: 768
+    context_length: 8192
+  model_id: nomic-ai/nomic-embed-text-v1.5
+  provider_id: fireworks
+  provider_model_id: nomic-ai/nomic-embed-text-v1.5
+  model_type: embedding
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: vllm-inference
+  model_type: llm
+shields:
+- shield_id: meta-llama/Llama-Guard-3-8B
+vector_dbs: []
+datasets: []
+scoring_fns: []
+benchmarks: []
+tool_groups:
+- toolgroup_id: builtin::websearch
+  provider_id: tavily-search
+- toolgroup_id: builtin::rag
+  provider_id: rag-runtime
+server:
+  port: 8321
