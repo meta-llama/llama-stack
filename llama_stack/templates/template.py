@@ -28,8 +28,8 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
-from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
+from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig, SqlStoreConfig
 
 
 def get_model_registry(
@@ -64,6 +64,8 @@ class RunConfigSettings(BaseModel):
     default_tool_groups: list[ToolGroupInput] | None = None
     default_datasets: list[DatasetInput] | None = None
     default_benchmarks: list[BenchmarkInput] | None = None
+    metadata_store: KVStoreConfig | None = None
+    inference_store: SqlStoreConfig | None = None
 
     def run_config(
         self,
@@ -114,11 +116,13 @@ class RunConfigSettings(BaseModel):
             container_image=container_image,
             apis=apis,
             providers=provider_configs,
-            metadata_store=SqliteKVStoreConfig.sample_run_config(
+            metadata_store=self.metadata_store
+            or SqliteKVStoreConfig.sample_run_config(
                 __distro_dir__=f"~/.llama/distributions/{name}",
                 db_name="registry.db",
             ),
-            inference_store=SqliteSqlStoreConfig.sample_run_config(
+            inference_store=self.inference_store
+            or SqliteSqlStoreConfig.sample_run_config(
                 __distro_dir__=f"~/.llama/distributions/{name}",
                 db_name="inference_store.db",
             ),
@@ -164,7 +168,7 @@ class DistributionTemplate(BaseModel):
                 providers=self.providers,
             ),
             image_type="conda",  # default to conda, can be overridden
-            additional_pip_packages=additional_pip_packages,
+            additional_pip_packages=sorted(set(additional_pip_packages)),
         )
 
     def generate_markdown_docs(self) -> str:
