@@ -22,6 +22,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -197,3 +198,13 @@ class BedrockInferenceAdapter(
             response_body = json.loads(response.get("body").read())
             embeddings.append(response_body.get("embedding"))
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()

@@ -19,6 +19,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -209,6 +210,16 @@ class PassthroughInferenceAdapter(Inference):
             output_dimension=output_dimension,
             task_type=task_type,
         )
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def openai_completion(
         self,

@@ -23,6 +23,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     ResponseFormatType,
     SamplingParams,
@@ -266,6 +267,16 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
         )
         embeddings = [item.embedding for item in r.data]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def openai_completion(
         self,
