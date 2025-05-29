@@ -28,7 +28,7 @@ def get_distribution_template() -> DistributionTemplate:
         "telemetry": ["inline::meta-reference"],
         "eval": ["inline::meta-reference"],
         "datasetio": ["inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge"],
+        "scoring": ["inline::llm-as-judge"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
@@ -42,11 +42,6 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::ollama",
         config=OllamaImplConfig.sample_run_config(),
     )
-    #vector_io_provider_faiss = Provider(
-    #    provider_id="faiss",
-    #    provider_type="inline::faiss",
-    #    config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
-    #)
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="ollama",
@@ -86,7 +81,6 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_faiss],
                 },
                 default_models=[inference_model, embedding_model],
                 default_tool_groups=default_tool_groups,
@@ -94,7 +88,6 @@ def get_distribution_template() -> DistributionTemplate:
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": [inference_provider],
-                    "vector_io": [vector_io_provider_faiss]
                     "safety": [
                         Provider(
                             provider_id="llama-guard",
