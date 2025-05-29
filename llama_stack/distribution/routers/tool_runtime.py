@@ -11,7 +11,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
 )
 from llama_stack.apis.tools import (
-    ListToolDefsResponse,
+    ListToolsResponse,
     RAGDocument,
     RAGQueryConfig,
     RAGQueryResult,
@@ -19,7 +19,8 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import RoutingTable
+
+from ..routing_tables.toolgroups import ToolGroupsRoutingTable
 
 logger = get_logger(name=__name__, category="core")
 
@@ -28,7 +29,7 @@ class ToolRuntimeRouter(ToolRuntime):
     class RagToolImpl(RAGToolRuntime):
         def __init__(
             self,
-            routing_table: RoutingTable,
+            routing_table: ToolGroupsRoutingTable,
         ) -> None:
             logger.debug("Initializing ToolRuntimeRouter.RagToolImpl")
             self.routing_table = routing_table
@@ -59,7 +60,7 @@ class ToolRuntimeRouter(ToolRuntime):
 
     def __init__(
         self,
-        routing_table: RoutingTable,
+        routing_table: ToolGroupsRoutingTable,
     ) -> None:
         logger.debug("Initializing ToolRuntimeRouter")
         self.routing_table = routing_table
@@ -86,6 +87,6 @@ class ToolRuntimeRouter(ToolRuntime):
 
     async def list_runtime_tools(
         self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
-    ) -> ListToolDefsResponse:
+    ) -> ListToolsResponse:
         logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
-        return await self.routing_table.get_provider_impl(tool_group_id).list_tools(tool_group_id, mcp_endpoint)
+        return await self.routing_table.list_tools(tool_group_id)

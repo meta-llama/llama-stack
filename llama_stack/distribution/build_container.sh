@@ -125,7 +125,6 @@ RUN apt-get update && apt-get install -y \
        curl wget telnet git\
        procps psmisc lsof \
        traceroute \
-       bubblewrap \
        gcc \
        && rm -rf /var/lib/apt/lists/*
 

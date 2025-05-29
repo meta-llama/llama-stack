@@ -1402,9 +1402,8 @@ class OpenAIChatCompletionToLlamaStackMixin:
         outstanding_responses: list[Awaitable[AsyncIterator[ChatCompletionResponseStreamChunk]]],
     ):
         id = f"chatcmpl-{uuid.uuid4()}"
-        for outstanding_response in outstanding_responses:
+        for i, outstanding_response in enumerate(outstanding_responses):
             response = await outstanding_response
-            i = 0
             async for chunk in response:
                 event = chunk.event
                 finish_reason = _convert_stop_reason_to_openai_finish_reason(event.stop_reason)
@@ -1459,7 +1458,6 @@ class OpenAIChatCompletionToLlamaStackMixin:
                             model=model,
                             object="chat.completion.chunk",
                         )
-                i = i + 1
 
     async def _process_non_stream_response(
         self, model: str, outstanding_responses: list[Awaitable[ChatCompletionResponse]]

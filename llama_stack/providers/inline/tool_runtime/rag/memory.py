@@ -25,14 +25,14 @@ from llama_stack.apis.tools import (
     RAGQueryConfig,
     RAGQueryResult,
     RAGToolRuntime,
-    Tool,
     ToolDef,
+    ToolGroup,
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
-from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import interleaved_content_as_str
 from llama_stack.providers.utils.memory.vector_store import (
     content_from_doc,
@@ -49,7 +49,7 @@ def make_random_string(length: int = 8):
     return "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
-class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
+class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     def __init__(
         self,
         config: RagToolRuntimeConfig,
@@ -66,10 +66,10 @@ class MemoryToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, RAGToolRuntime):
     async def shutdown(self):
         pass
 
-    async def register_tool(self, tool: Tool) -> None:
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None:
         pass
 
-    async def unregister_tool(self, tool_id: str) -> None:
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         return
 
     async def insert(

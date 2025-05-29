@@ -11,25 +11,32 @@ from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
+    ToolGroup,
     ToolInvocationResult,
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import ToolsProtocolPrivate
-from llama_stack.providers.utils.tools.mcp import convert_header_list_to_dict, invoke_mcp_tool, list_mcp_tools
+from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
+from llama_stack.providers.utils.tools.mcp import invoke_mcp_tool, list_mcp_tools
 
 from .config import MCPProviderConfig
 
 logger = get_logger(__name__, category="tools")
 
 
-class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
+class ModelContextProtocolToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: MCPProviderConfig, _deps: dict[Api, Any]):
         self.config = config
 
     async def initialize(self):
         pass
+
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None:
+        pass
+
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None:
+        return
 
     async def list_runtime_tools(
         self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
@@ -62,5 +69,5 @@ class ModelContextProtocolToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, Nee
             for uri, values in provider_data.mcp_headers.items():
                 if canonicalize_uri(uri) != canonicalize_uri(mcp_endpoint_uri):
                     continue
-                headers.update(convert_header_list_to_dict(values))
+                headers.update(values)
         return headers

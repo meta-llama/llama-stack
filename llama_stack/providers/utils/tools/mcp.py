@@ -51,16 +51,6 @@ async def sse_client_wrapper(endpoint: str, headers: dict[str, str]):
         raise
 
 
-def convert_header_list_to_dict(header_list: list[str]) -> dict[str, str]:
-    headers = {}
-    for header in header_list:
-        parts = header.split(":")
-        if len(parts) == 2:
-            k, v = parts
-            headers[k.strip()] = v.strip()
-    return headers
-
-
 async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefsResponse:
     tools = []
     async with sse_client_wrapper(endpoint, headers) as session:

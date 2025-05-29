@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import LlamaStackClient from "llama-stack-client";
 import { ChatCompletion } from "@/lib/types";
 import { ChatCompletionDetailView } from "@/components/chat-completions/chat-completion-detail";
+import { client } from "@/lib/client";
 
 export default function ChatCompletionDetailPage() {
   const params = useParams();
@@ -21,10 +21,6 @@ export default function ChatCompletionDetailPage() {
       setIsLoading(false);
       return;
     }
-
-    const client = new LlamaStackClient({
-      baseURL: process.env.NEXT_PUBLIC_LLAMA_STACK_BASE_URL,
-    });
 
     const fetchCompletionDetail = async () => {
       setIsLoading(true);

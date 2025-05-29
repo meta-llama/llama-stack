@@ -19,10 +19,10 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.agents,
             provider_type="inline::meta-reference",
             pip_packages=[
-                "matplotlib",
-                "pillow",
-                "pandas",
-                "scikit-learn",
+                # "matplotlib",
+                # "pillow",
+                # "pandas",
+                # "scikit-learn",
             ]
             + kvstore_dependencies(),
             module="llama_stack.providers.inline.agents.meta_reference",

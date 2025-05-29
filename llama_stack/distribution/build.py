@@ -131,7 +131,7 @@ def build_image(
         # build arguments
         if run_config is not None:
             args.append(run_config)
-            
+
         # Add exit_after_containerfile flag if specified
         if exit_after_containerfile:
             args.append("--exit-after-containerfile")

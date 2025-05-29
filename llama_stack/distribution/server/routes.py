@@ -6,20 +6,23 @@
 
 import inspect
 import re
+from collections.abc import Callable
+from typing import Any
 
-from pydantic import BaseModel
+from aiohttp import hdrs
+from starlette.routing import Route
 
 from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 from llama_stack.distribution.resolver import api_protocol_map
 from llama_stack.providers.datatypes import Api
 
-
-class ApiEndpoint(BaseModel):
-    route: str
-    method: str
-    name: str
-    descriptive_name: str | None = None
+EndpointFunc = Callable[..., Any]
+PathParams = dict[str, str]
+RouteInfo = tuple[EndpointFunc, str]
+PathImpl = dict[str, RouteInfo]
+RouteImpls = dict[str, PathImpl]
+RouteMatch = tuple[EndpointFunc, PathParams, str]
 
 
 def toolgroup_protocol_map():
@@ -28,13 +31,13 @@ def toolgroup_protocol_map():
     }
 
 
-def get_all_api_endpoints() -> dict[Api, list[ApiEndpoint]]:
+def get_all_api_routes() -> dict[Api, list[Route]]:
     apis = {}
 
     protocols = api_protocol_map()
     toolgroup_protocols = toolgroup_protocol_map()
     for api, protocol in protocols.items():
-        endpoints = []
+        routes = []
         protocol_methods = inspect.getmembers(protocol, predicate=inspect.isfunction)
 
         # HACK ALERT
@@ -51,26 +54,28 @@ def get_all_api_endpoints() -> dict[Api, list[ApiEndpoint]]:
             if not hasattr(method, "__webmethod__"):
                 continue
 
-            webmethod = method.__webmethod__
-            route = f"/{LLAMA_STACK_API_VERSION}/{webmethod.route.lstrip('/')}"
-            if webmethod.method == "GET":
-                method = "get"
-            elif webmethod.method == "DELETE":
-                method = "delete"
+            # The __webmethod__ attribute is dynamically added by the @webmethod decorator
+            # mypy doesn't know about this dynamic attribute, so we ignore the attr-defined error
+            webmethod = method.__webmethod__  # type: ignore[attr-defined]
+            path = f"/{LLAMA_STACK_API_VERSION}/{webmethod.route.lstrip('/')}"
+            if webmethod.method == hdrs.METH_GET:
+                http_method = hdrs.METH_GET
+            elif webmethod.method == hdrs.METH_DELETE:
+                http_method = hdrs.METH_DELETE
             else:
-                method = "post"
-            endpoints.append(
-                ApiEndpoint(route=route, method=method, name=name, descriptive_name=webmethod.descriptive_name)
-            )
+                http_method = hdrs.METH_POST
+            routes.append(
+                Route(path=path, methods=[http_method], name=name, endpoint=None)
+            )  # setting endpoint to None since don't use a Router object
 
-        apis[api] = endpoints
+        apis[api] = routes
 
     return apis
 
 
-def initialize_endpoint_impls(impls):
-    endpoints = get_all_api_endpoints()
-    endpoint_impls = {}
+def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
+    routes = get_all_api_routes()
+    route_impls: RouteImpls = {}
 
     def _convert_path_to_regex(path: str) -> str:
         # Convert {param} to named capture groups
@@ -83,29 +88,34 @@ def initialize_endpoint_impls(impls):
 
         return f"^{pattern}$"
 
-    for api, api_endpoints in endpoints.items():
+    for api, api_routes in routes.items():
         if api not in impls:
             continue
-        for endpoint in api_endpoints:
+        for route in api_routes:
             impl = impls[api]
-            func = getattr(impl, endpoint.name)
-            if endpoint.method not in endpoint_impls:
-                endpoint_impls[endpoint.method] = {}
-            endpoint_impls[endpoint.method][_convert_path_to_regex(endpoint.route)] = (
+            func = getattr(impl, route.name)
+            # Get the first (and typically only) method from the set, filtering out HEAD
+            available_methods = [m for m in route.methods if m != "HEAD"]
+            if not available_methods:
+                continue  # Skip if only HEAD method is available
+            method = available_methods[0].lower()
+            if method not in route_impls:
+                route_impls[method] = {}
+            route_impls[method][_convert_path_to_regex(route.path)] = (
                 func,
-                endpoint.descriptive_name or endpoint.route,
+                route.path,
             )
 
-    return endpoint_impls
+    return route_impls
 
 
-def find_matching_endpoint(method, path, endpoint_impls):
+def find_matching_route(method: str, path: str, route_impls: RouteImpls) -> RouteMatch:
     """Find the matching endpoint implementation for a given method and path.
 
     Args:
         method: HTTP method (GET, POST, etc.)
         path: URL path to match against
-        endpoint_impls: A dictionary of endpoint implementations
+        route_impls: A dictionary of endpoint implementations
 
     Returns:
         A tuple of (endpoint_function, path_params, descriptive_name)
@@ -113,7 +123,7 @@ def find_matching_endpoint(method, path, endpoint_impls):
     Raises:
         ValueError: If no matching endpoint is found
     """
-    impls = endpoint_impls.get(method.lower())
+    impls = route_impls.get(method.lower())
     if not impls:
         raise ValueError(f"No endpoint found for {path}")
 

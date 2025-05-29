@@ -24,6 +24,10 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+  - provider_id: chromadb
+    provider_type: remote::chromadb
+    config:
+      url: ${env.CHROMADB_URL:http://host.docker.internal:8000}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard

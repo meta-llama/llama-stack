@@ -13,7 +13,7 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        uv sync --all-extras
+        uv sync --all-groups
         uv pip install ollama faiss-cpu
         # always test against the latest version of the client
         # TODO: this is not necessarily a good idea. we need to test against both published and latest

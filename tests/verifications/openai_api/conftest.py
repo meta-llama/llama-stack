@@ -10,15 +10,15 @@ from tests.verifications.openai_api.fixtures.fixtures import _load_all_verificat
 def pytest_generate_tests(metafunc):
     """Dynamically parametrize tests based on the selected provider and config."""
     if "model" in metafunc.fixturenames:
+        model = metafunc.config.getoption("model")
+        if model:
+            metafunc.parametrize("model", [model])
+            return
+
         provider = metafunc.config.getoption("provider")
         if not provider:
             print("Warning: --provider not specified. Skipping model parametrization.")
             metafunc.parametrize("model", [])
-            return
-
-        model = metafunc.config.getoption("model")
-        if model:
-            metafunc.parametrize("model", [model])
             return
 
         try:

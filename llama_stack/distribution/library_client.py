@@ -37,10 +37,7 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import ProviderRegistry
-from llama_stack.distribution.server.endpoints import (
-    find_matching_endpoint,
-    initialize_endpoint_impls,
-)
+from llama_stack.distribution.server.routes import find_matching_route, initialize_route_impls
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
@@ -208,7 +205,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
     async def initialize(self) -> bool:
         try:
-            self.endpoint_impls = None
+            self.route_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)
         except ModuleNotFoundError as _e:
             cprint(_e.msg, color="red", file=sys.stderr)
@@ -254,7 +251,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             safe_config = redact_sensitive_fields(self.config.model_dump())
             console.print(yaml.dump(safe_config, indent=2))
 
-        self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        self.route_impls = initialize_route_impls(self.impls)
         return True
 
     async def request(
@@ -265,7 +262,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         stream=False,
         stream_cls=None,
     ):
-        if not self.endpoint_impls:
+        if not self.route_impls:
             raise ValueError("Client not initialized")
 
         # Create headers with provider data if available
@@ -296,11 +293,14 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         cast_to: Any,
         options: Any,
     ):
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
+        matched_func, path_params, route = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
         body = self._convert_body(path, options.method, body)
         await start_trace(route, {"__location__": "library_client"})
@@ -342,10 +342,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         options: Any,
         stream_cls: Any,
     ):
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
+        func, path_params, route = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
@@ -397,7 +400,10 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not body:
             return {}
 
-        func, _, _ = find_matching_endpoint(method, path, self.endpoint_impls)
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
+        func, _, _ = find_matching_route(method, path, self.route_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature

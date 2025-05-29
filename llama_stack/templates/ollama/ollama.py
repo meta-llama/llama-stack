@@ -13,8 +13,8 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.inline.post_training.huggingface import HuggingFacePostTrainingConfig
-from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
+#from llama_stack.providers.inline.post_training.huggingface import HuggingFacePostTrainingConfig
+#from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.ollama import OllamaImplConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
@@ -32,7 +32,6 @@ def get_distribution_template() -> DistributionTemplate:
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
-            "inline::rag-runtime",
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
@@ -43,11 +42,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::ollama",
         config=OllamaImplConfig.sample_run_config(),
     )
-    vector_io_provider_faiss = Provider(
-        provider_id="faiss",
-        provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
-    )
+    #vector_io_provider_faiss = Provider(
+    #    provider_id="faiss",
+    #    provider_type="inline::faiss",
+    #    config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+    #)
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
         provider_id="ollama",
@@ -69,10 +68,6 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::websearch",
             provider_id="tavily-search",
-        ),
-        ToolGroupInput(
-            toolgroup_id="builtin::rag",
-            provider_id="rag-runtime",
         ),
         ToolGroupInput(
             toolgroup_id="builtin::wolfram_alpha",

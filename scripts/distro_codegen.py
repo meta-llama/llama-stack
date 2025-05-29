@@ -7,7 +7,6 @@
 
 import concurrent.futures
 import importlib
-import json
 import subprocess
 import sys
 from collections.abc import Iterable
@@ -108,21 +107,6 @@ def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[
     return None, []
 
 
-def generate_dependencies_file(change_tracker: ChangedPathTracker):
-    templates_dir = REPO_ROOT / "llama_stack" / "templates"
-    distribution_deps = {}
-
-    for template_dir in find_template_dirs(templates_dir):
-        name, deps = collect_template_dependencies(template_dir)
-        if name:
-            distribution_deps[name] = deps
-
-    deps_file = REPO_ROOT / "llama_stack" / "templates" / "dependencies.json"
-    change_tracker.add_paths(deps_file)
-    with open(deps_file, "w") as f:
-        f.write(json.dumps(distribution_deps, indent=2) + "\n")
-
-
 def main():
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
     change_tracker = ChangedPathTracker()
@@ -142,8 +126,6 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
-
-    generate_dependencies_file(change_tracker)
 
     if check_for_changes(change_tracker):
         print(
