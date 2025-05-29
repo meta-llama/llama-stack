@@ -8,7 +8,7 @@ from typing import Any
 
 from llama_stack.apis.benchmarks import Benchmark, Benchmarks, ListBenchmarksResponse
 from llama_stack.distribution.datatypes import (
-    BenchmarkWithACL,
+    BenchmarkWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -47,7 +47,7 @@ class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
                 )
         if provider_benchmark_id is None:
             provider_benchmark_id = benchmark_id
-        benchmark = BenchmarkWithACL(
+        benchmark = BenchmarkWithOwner(
             identifier=benchmark_id,
             dataset_id=dataset_id,
             scoring_functions=scoring_functions,

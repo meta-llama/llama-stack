@@ -19,7 +19,7 @@ from llama_stack.apis.datasets import (
 )
 from llama_stack.apis.resource import ResourceType
 from llama_stack.distribution.datatypes import (
-    DatasetWithACL,
+    DatasetWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -74,7 +74,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
         if metadata is None:
             metadata = {}
 
-        dataset = DatasetWithACL(
+        dataset = DatasetWithOwner(
             identifier=dataset_id,
             provider_resource_id=provider_dataset_id,
             provider_id=provider_id,

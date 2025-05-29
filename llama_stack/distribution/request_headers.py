@@ -10,22 +10,14 @@ import logging
 from contextlib import AbstractContextManager
 from typing import Any
 
+from llama_stack.distribution.datatypes import User
+
 from .utils.dynamic import instantiate_class_type
 
 log = logging.getLogger(__name__)
 
 # Context variable for request provider data and auth attributes
 PROVIDER_DATA_VAR = contextvars.ContextVar("provider_data", default=None)
-
-
-class User:
-    principal: str
-    # further attributes that may be used for access control decisions
-    attributes: dict[str, list[str]]
-
-    def __init__(self, principal: str, attributes: dict[str, list[str]]):
-        self.principal = principal
-        self.attributes = attributes
 
 
 class RequestProviderDataContext(AbstractContextManager):

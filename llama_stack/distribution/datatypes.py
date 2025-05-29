@@ -24,7 +24,7 @@ from llama_stack.apis.shields import Shield, ShieldInput
 from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.distribution.access_control.datatypes import AccessAttributes, AccessRule
+from llama_stack.distribution.access_control.datatypes import AccessRule
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import SqlStoreConfig
@@ -36,97 +36,66 @@ LLAMA_STACK_RUN_CONFIG_VERSION = "2"
 RoutingKey = str | list[str]
 
 
-class ResourceWithACL(Resource):
-    """Extension of Resource that adds attribute-based access control capabilities.
+class User(BaseModel):
+    principal: str
+    # further attributes that may be used for access control decisions
+    attributes: dict[str, list[str]] | None = None
 
-    This class adds an optional access_attributes field that allows fine-grained control
-    over which users can access each resource. When attributes are defined, a user must have
-    matching attributes to access the resource.
+    def __init__(self, principal: str, attributes: dict[str, list[str]] | None):
+        super().__init__(principal=principal, attributes=attributes)
 
-    Attribute Matching Algorithm:
-    1. If a resource has no access_attributes (None or empty dict), it's visible to all authenticated users
-    2. Each key in access_attributes represents an attribute category (e.g., "roles", "teams", "projects")
-    3. The matching algorithm requires ALL categories to match (AND relationship between categories)
-    4. Within each category, ANY value match is sufficient (OR relationship within a category)
 
-    Examples:
-        # Resource visible to everyone (no access control)
-        model = Model(identifier="llama-2", ...)
+class ResourceWithOwner(Resource):
+    """Extension of Resource that adds an optional owner, i.e. the user that created the
+    resource. This can be used to constrain access to the resource."""
 
-        # Resource visible only to admins
-        model = Model(
-            identifier="gpt-4",
-            access_attributes=AccessAttributes(roles=["admin"])
-        )
-
-        # Resource visible to data scientists on the ML team
-        model = Model(
-            identifier="private-model",
-            access_attributes=AccessAttributes(
-                roles=["data-scientist", "researcher"],
-                teams=["ml-team"]
-            )
-        )
-        # ^ User must have at least one of the roles AND be on the ml-team
-
-        # Resource visible to users with specific project access
-        vector_db = VectorDB(
-            identifier="customer-embeddings",
-            access_attributes=AccessAttributes(
-                projects=["customer-insights"],
-                namespaces=["confidential"]
-            )
-        )
-        # ^ User must have access to the customer-insights project AND have confidential namespace
-    """
-
-    access_attributes: AccessAttributes | None = None
+    owner: User | None = None
 
 
 # Use the extended Resource for all routable objects
-class ModelWithACL(Model, ResourceWithACL):
+class ModelWithOwner(Model, ResourceWithOwner):
     pass
 
 
-class ShieldWithACL(Shield, ResourceWithACL):
+class ShieldWithOwner(Shield, ResourceWithOwner):
     pass
 
 
-class VectorDBWithACL(VectorDB, ResourceWithACL):
+class VectorDBWithOwner(VectorDB, ResourceWithOwner):
     pass
 
 
-class DatasetWithACL(Dataset, ResourceWithACL):
+class DatasetWithOwner(Dataset, ResourceWithOwner):
     pass
 
 
-class ScoringFnWithACL(ScoringFn, ResourceWithACL):
+class ScoringFnWithOwner(ScoringFn, ResourceWithOwner):
     pass
 
 
-class BenchmarkWithACL(Benchmark, ResourceWithACL):
+class BenchmarkWithOwner(Benchmark, ResourceWithOwner):
     pass
 
 
-class ToolWithACL(Tool, ResourceWithACL):
+class ToolWithOwner(Tool, ResourceWithOwner):
     pass
 
 
-class ToolGroupWithACL(ToolGroup, ResourceWithACL):
+class ToolGroupWithOwner(ToolGroup, ResourceWithOwner):
     pass
 
 
 RoutableObject = Model | Shield | VectorDB | Dataset | ScoringFn | Benchmark | Tool | ToolGroup
 
 RoutableObjectWithProvider = Annotated[
-    ModelWithACL
-    | ShieldWithACL
-    | VectorDBWithACL
-    | DatasetWithACL
-    | ScoringFnWithACL
-    | BenchmarkWithACL
-    | ToolWithACL
-    | ToolGroupWithACL,
+    ModelWithOwner
+    | ShieldWithOwner
+    | VectorDBWithOwner
+    | DatasetWithOwner
+    | ScoringFnWithOwner
+    | BenchmarkWithOwner
+    | ToolWithOwner
+    | ToolGroupWithOwner,
     Field(discriminator="type"),
 ]
 
