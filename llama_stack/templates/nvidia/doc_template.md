@@ -144,3 +144,6 @@ llama stack run ./run.yaml \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY \
   --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
+
+## Example Notebooks
+For examples of how to use the NVIDIA Distribution to run inference, fine-tune, evaluate, and run safety checks on your LLMs, you can reference the example notebooks in `docs/notebooks/nvidia`.
