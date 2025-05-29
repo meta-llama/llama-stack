@@ -47,7 +47,7 @@ class RedisKVStoreConfig(CommonConfig):
 
 
 class SqliteKVStoreConfig(CommonConfig):
-    type: Literal[KVStoreType.sqlite.value] = KVStoreType.sqlite.value
+    type: Literal[KVStoreType.sqlite] = KVStoreType.sqlite.value
     db_path: str = Field(
         default=(RUNTIME_BASE_DIR / "kvstore.db").as_posix(),
         description="File path for the sqlite database",
@@ -63,7 +63,7 @@ class SqliteKVStoreConfig(CommonConfig):
 
 
 class PostgresKVStoreConfig(CommonConfig):
-    type: Literal[KVStoreType.postgres.value] = KVStoreType.postgres.value
+    type: Literal[KVStoreType.postgres] = KVStoreType.postgres.value
     host: str = "localhost"
     port: int = 5432
     db: str = "llamastack"
@@ -102,7 +102,7 @@ class PostgresKVStoreConfig(CommonConfig):
 
 
 class MongoDBKVStoreConfig(CommonConfig):
-    type: Literal[KVStoreType.mongodb.value] = KVStoreType.mongodb.value
+    type: Literal[KVStoreType.mongodb] = KVStoreType.mongodb.value
     host: str = "localhost"
     port: int = 27017
     db: str = "llamastack"
@@ -125,6 +125,6 @@ class MongoDBKVStoreConfig(CommonConfig):
 
 
 KVStoreConfig = Annotated[
-    RedisKVStoreConfig | SqliteKVStoreConfig | PostgresKVStoreConfig | MongoDBKVStoreConfig,
-    Field(discriminator="type", default=KVStoreType.sqlite.value),
+    PostgresKVStoreConfig,
+    Field(discriminator="type", default=KVStoreType.postgres.value),
 ]

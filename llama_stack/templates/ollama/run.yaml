@@ -5,7 +5,6 @@ apis:
 - datasetio
 - eval
 - inference
-- post_training
 - safety
 - scoring
 - telemetry
@@ -82,13 +81,6 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
-  post_training:
-  - provider_id: huggingface
-    provider_type: inline::huggingface
-    config:
-      checkpoint_format: huggingface
-      distributed_backend: null
-      device: cpu
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search

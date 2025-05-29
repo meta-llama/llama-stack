@@ -43,6 +43,7 @@ shift
 # Handle optional arguments
 run_config=""
 special_pip_deps=""
+exit_after_containerfile=false
 
 # Check if there are more arguments
 # The logics is becoming cumbersom, we should refactor it if we can do better
@@ -53,11 +54,19 @@ if [ $# -gt 0 ]; then
     shift
     # If there's another argument after .yaml, it must be special_pip_deps
     if [ $# -gt 0 ]; then
-      special_pip_deps="$1"
+      if [[ "$1" == "--exit-after-containerfile" ]]; then
+        exit_after_containerfile=true
+      else
+        special_pip_deps="$1"
+      fi
     fi
   else
-    # If it's not .yaml, it must be special_pip_deps
-    special_pip_deps="$1"
+    # If it's not .yaml, check if it's the exit flag
+    if [[ "$1" == "--exit-after-containerfile" ]]; then
+      exit_after_containerfile=true
+    else
+      special_pip_deps="$1"
+    fi
   fi
 fi
 
@@ -269,6 +278,15 @@ EOF
 printf "Containerfile created successfully in %s/Containerfile\n\n" "$TEMP_DIR"
 cat "$TEMP_DIR"/Containerfile
 printf "\n"
+
+# Exit after creating Containerfile if requested
+if [ "$exit_after_containerfile" = true ]; then
+  # Copy Containerfile to current directory
+  cp "$TEMP_DIR/Containerfile" "$BUILD_CONTEXT_DIR/Containerfile"
+  echo "Containerfile has been copied to $(pwd)/Containerfile"
+  echo "Exiting after Containerfile creation as requested"
+  exit 0
+fi
 
 # Start building the CLI arguments
 CLI_ARGS=()

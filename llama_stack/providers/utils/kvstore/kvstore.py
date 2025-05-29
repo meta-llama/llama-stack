@@ -10,7 +10,7 @@ from .config import KVStoreConfig, KVStoreType
 
 
 def kvstore_dependencies():
-    return ["aiosqlite", "psycopg2-binary", "redis", "pymongo"]
+    return ["aiosqlite", "psycopg2-binary"]
 
 
 class InmemoryKVStoreImpl(KVStore):

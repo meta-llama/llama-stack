@@ -110,6 +110,7 @@ def build_image(
     image_name: str,
     template_or_config: str,
     run_config: str | None = None,
+    exit_after_containerfile: bool = False,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.10-slim"
 
@@ -130,6 +131,10 @@ def build_image(
         # build arguments
         if run_config is not None:
             args.append(run_config)
+            
+        # Add exit_after_containerfile flag if specified
+        if exit_after_containerfile:
+            args.append("--exit-after-containerfile")
     elif build_config.image_type == LlamaStackImageType.CONDA.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
         args = [
