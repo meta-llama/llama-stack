@@ -138,6 +138,7 @@ explicit = true
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu" }]
 torchvision = [{ index = "pytorch-cpu" }]
+llama-stack = { workspace = true }
 
 [tool.ruff]
 line-length = 120
@@ -330,6 +331,11 @@ ignore_missing_imports = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[dependency-groups]
+dev = [
+    "llama-stack",
+]
 
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]

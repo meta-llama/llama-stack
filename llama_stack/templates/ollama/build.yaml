@@ -5,9 +5,7 @@ distribution_spec:
     inference:
     - remote::ollama
     vector_io:
-    - inline::faiss
     - remote::chromadb
-    - remote::pgvector
     safety:
     - inline::llama-guard
     agents:
@@ -17,21 +15,33 @@ distribution_spec:
     eval:
     - inline::meta-reference
     datasetio:
-    - remote::huggingface
     - inline::localfs
     scoring:
     - inline::basic
     - inline::llm-as-judge
-    - inline::braintrust
-    post_training:
-    - inline::huggingface
     tool_runtime:
     - remote::brave-search
     - remote::tavily-search
     - inline::rag-runtime
     - remote::model-context-protocol
     - remote::wolfram-alpha
-image_type: conda
+  metadata_store:
+    type: sqlite
+    db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
+  inference_store:
+    type: sqlite
+    db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/inference_store.db
+  models:
+  - metadata: {}
+    model_id: ${env.INFERENCE_MODEL}
+    provider_id: remote::ollama
+    model_type: llm
+  - metadata:
+      embedding_dimension: 384
+    model_id: all-MiniLM-L6-v2
+    provider_id: remote::ollama
+    provider_model_id: all-minilm:latest
+    model_type: embedding
+image_type: container
 additional_pip_packages:
-- sqlalchemy[asyncio]
 - sqlalchemy[asyncio]

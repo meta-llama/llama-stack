@@ -1553,6 +1553,11 @@ unit = [
     { name = "sqlite-vec" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "llama-stack" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", marker = "extra == 'test'" },
@@ -1638,6 +1643,9 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev", "unit", "test", "docs", "codegen", "ui"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "llama-stack", editable = "." }]
 
 [[package]]
 name = "llama-stack-client"
