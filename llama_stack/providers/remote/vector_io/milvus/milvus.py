@@ -103,6 +103,15 @@ class MilvusIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Milvus")
 
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in Milvus")
+
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(

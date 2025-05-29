@@ -85,6 +85,23 @@ async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sa
 
 
 @pytest.mark.asyncio
+async def test_query_chunks_hybrid(sqlite_vec_index, sample_chunks, sample_embeddings):
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a query embedding that's similar to the first chunk
+    query_embedding = sample_embeddings[0]
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    assert len(response.chunks) == 3, f"Expected 3 results, got {len(response.chunks)}"
+    # Verify scores are in descending order (higher is better)
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+
+
+@pytest.mark.asyncio
 async def test_query_chunks_full_text_search_k_greater_than_results(sqlite_vec_index, sample_chunks, sample_embeddings):
     # Re-initialize with a clean index
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
@@ -141,3 +158,144 @@ def test_generate_chunk_id():
         "bc744db3-1b25-0a9c-cdff-b6ba3df73c36",
         "f68df25d-d9aa-ab4d-5684-64a233add20d",
     ]
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_no_keyword_matches(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test hybrid search when keyword search returns no matches - should still return vector results."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Use a non-existent keyword but a valid vector query
+    query_embedding = sample_embeddings[0]
+    query_string = "Sentence 499"
+
+    # First verify keyword search returns no results
+    keyword_response = await sqlite_vec_index.query_keyword(query_string, k=5, score_threshold=0.0)
+    assert len(keyword_response.chunks) == 0, "Keyword search should return no results"
+
+    # Get hybrid results
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    # Should still get results from vector search
+    assert len(response.chunks) > 0, "Should get results from vector search even with no keyword matches"
+    # Verify scores are in descending order
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_score_threshold(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test hybrid search with a high score threshold."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Use a very high score threshold that no results will meet
+    query_embedding = sample_embeddings[0]
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding,
+        query_string=query_string,
+        k=3,
+        score_threshold=1000.0,  # Very high threshold
+    )
+
+    # Should return no results due to high threshold
+    assert len(response.chunks) == 0
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_different_embedding(
+    sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension
+):
+    """Test hybrid search with a different embedding than the stored ones."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a random embedding that's different from stored ones
+    query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    # Should still get results if keyword matches exist
+    assert len(response.chunks) > 0
+    # Verify scores are in descending order
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_rrf_ranking(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test that RRF properly combines rankings when documents appear in both search methods."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a query embedding that's similar to the first chunk
+    query_embedding = sample_embeddings[0]
+    # Use a keyword that appears in multiple documents
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=5, score_threshold=0.0
+    )
+
+    # Verify we get results from both search methods
+    assert len(response.chunks) > 0
+    # Verify scores are in descending order (RRF should maintain this)
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_score_selection(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test that we correctly rank documents that appear in both search methods."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a query embedding that's similar to the first chunk
+    query_embedding = sample_embeddings[0]
+    # Use a keyword that appears in the first document
+    query_string = "Sentence 0 from document 0"
+
+    # First get individual results to verify ranks
+    vector_response = await sqlite_vec_index.query_vector(query_embedding, k=5, score_threshold=0.0)
+    keyword_response = await sqlite_vec_index.query_keyword(query_string, k=5, score_threshold=0.0)
+
+    # Verify document-0 appears in both results
+    assert any(chunk.metadata["document_id"] == "document-0" for chunk in vector_response.chunks), (
+        "document-0 not found in vector search results"
+    )
+    assert any(chunk.metadata["document_id"] == "document-0" for chunk in keyword_response.chunks), (
+        "document-0 not found in keyword search results"
+    )
+
+    # Now get hybrid results
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=1, score_threshold=0.0
+    )
+
+    # Verify document-0 is ranked first in hybrid results
+    assert len(response.chunks) == 1
+    assert response.chunks[0].metadata["document_id"] == "document-0", "document-0 not ranked first in hybrid results"
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_mixed_results(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test hybrid search with documents that appear in only one search method."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a query embedding that's similar to the first chunk
+    query_embedding = sample_embeddings[0]
+    # Use a keyword that appears in a different document
+    query_string = "Sentence 9 from document 2"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    # Should get results from both search methods
+    assert len(response.chunks) > 0
+    # Verify scores are in descending order
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+    # Verify we get results from both the vector-similar document and keyword-matched document
+    doc_ids = {chunk.metadata["document_id"] for chunk in response.chunks}
+    assert "document-0" in doc_ids  # From vector search
+    assert "document-2" in doc_ids  # From keyword search

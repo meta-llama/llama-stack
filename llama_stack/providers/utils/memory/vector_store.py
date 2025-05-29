@@ -203,6 +203,12 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def query_hybrid(
+        self, embedding: NDArray, query_string: str, k: int, score_threshold: float
+    ) -> QueryChunksResponse:
+        raise NotImplementedError()
+
+    @abstractmethod
     async def delete(self):
         raise NotImplementedError()
 
@@ -246,9 +252,14 @@ class VectorDBWithIndex:
         mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
         query_string = interleaved_content_as_str(query)
+
+        # Calculate embeddings for both vector and hybrid modes
+        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
+        query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
+
         if mode == "keyword":
             return await self.index.query_keyword(query_string, k, score_threshold)
+        elif mode == "hybrid":
+            return await self.index.query_hybrid(query_vector, query_string, k, score_threshold)
         else:
-            embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
-            query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
             return await self.index.query_vector(query_vector, k, score_threshold)
