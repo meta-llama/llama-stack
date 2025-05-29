@@ -12,8 +12,7 @@ import pytest
 
 from llama_stack.apis.agents import Turn
 from llama_stack.apis.inference import CompletionMessage, StopReason
-from llama_stack.distribution.datatypes import AccessAttributes
-from llama_stack.distribution.request_headers import User
+from llama_stack.distribution.datatypes import User
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentPersistence, AgentSessionInfo
 
 
@@ -38,9 +37,10 @@ async def test_session_creation_with_access_attributes(mock_get_authenticated_us
     # Get the session and verify access attributes were set
     session_info = await agent_persistence.get_session_info(session_id)
     assert session_info is not None
-    assert session_info.access_attributes is not None
-    assert session_info.access_attributes.roles == ["researcher"]
-    assert session_info.access_attributes.teams == ["ai-team"]
+    assert session_info.owner is not None
+    assert session_info.owner.attributes is not None
+    assert session_info.owner.attributes["roles"] == ["researcher"]
+    assert session_info.owner.attributes["teams"] == ["ai-team"]
 
 
 @pytest.mark.asyncio
@@ -54,7 +54,7 @@ async def test_session_access_control(mock_get_authenticated_user, test_setup):
         session_id=session_id,
         session_name="Restricted Session",
         started_at=datetime.now(),
-        access_attributes=AccessAttributes(roles=["admin"], teams=["security-team"]),
+        owner=User("someone", {"roles": ["admin"], "teams": ["security-team"]}),
         turns=[],
         identifier="Restricted Session",
     )
@@ -89,7 +89,7 @@ async def test_turn_access_control(mock_get_authenticated_user, test_setup):
         session_id=session_id,
         session_name="Restricted Session",
         started_at=datetime.now(),
-        access_attributes=AccessAttributes(roles=["admin"]),
+        owner=User("someone", {"roles": ["admin"]}),
         turns=[],
         identifier="Restricted Session",
     )
@@ -143,7 +143,7 @@ async def test_tool_call_and_infer_iters_access_control(mock_get_authenticated_u
         session_id=session_id,
         session_name="Restricted Session",
         started_at=datetime.now(),
-        access_attributes=AccessAttributes(roles=["admin"]),
+        owner=User("someone", {"roles": ["admin"]}),
         turns=[],
         identifier="Restricted Session",
     )

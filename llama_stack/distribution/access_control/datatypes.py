@@ -6,37 +6,10 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 from typing_extensions import Self
 
-
-class AccessAttributes(BaseModel):
-    """Structured representation of user attributes for access control.
-
-    This model defines a structured approach to representing user attributes
-    with common standard categories for access control.
-
-    Standard attribute categories include:
-    - roles: Role-based attributes (e.g., admin, data-scientist)
-    - teams: Team-based attributes (e.g., ml-team, infra-team)
-    - projects: Project access attributes (e.g., llama-3, customer-insights)
-    - namespaces: Namespace-based access control for resource isolation
-    """
-
-    # Standard attribute categories - the minimal set we need now
-    roles: list[str] | None = Field(
-        default=None, description="Role-based attributes (e.g., 'admin', 'data-scientist', 'user')"
-    )
-
-    teams: list[str] | None = Field(default=None, description="Team-based attributes (e.g., 'ml-team', 'nlp-team')")
-
-    projects: list[str] | None = Field(
-        default=None, description="Project-based access attributes (e.g., 'llama-3', 'customer-insights')"
-    )
-
-    namespaces: list[str] | None = Field(
-        default=None, description="Namespace-based access control for resource isolation"
-    )
+from .conditions import parse_conditions
 
 
 class Action(str, Enum):
@@ -62,18 +35,6 @@ def _require_one_of(obj, a: str, b: str):
         raise ValueError(f"on of {a} or {b} is required")
 
 
-class AttributeReference(str, Enum):
-    RESOURCE_ROLES = "resource.roles"
-    RESOURCE_TEAMS = "resource.teams"
-    RESOURCE_PROJECTS = "resource.projects"
-    RESOURCE_NAMESPACES = "resource.namespaces"
-
-
-class Condition(BaseModel):
-    user_in: AttributeReference | list[AttributeReference] | str | None = None
-    user_not_in: AttributeReference | list[AttributeReference] | str | None = None
-
-
 class AccessRule(BaseModel):
     """Access rule based loosely on cedar policy language
 
@@ -85,10 +46,14 @@ class AccessRule(BaseModel):
     requests.
 
     A rule may also specify a condition, either a 'when' or an 'unless', with additional
-    constraints as to where the rule applies. The constraints at present are whether the
-    user requesting access is in or not in some set. This set can either be a particular
-    set of attributes on the resource e.g. resource.roles or a literal value of some
-    notion of group, e.g. role::admin or namespace::foo.
+    constraints as to where the rule applies. The constraints supported at present are:
+
+    - 'user with <attr-value> in <attr-name>'
+    - 'user with <attr-value> not in <attr-name>'
+    - 'user is owner'
+    - 'user is not owner'
+    - 'user in owners <attr-name>'
+    - 'user not in owners <attr-name>'
 
     Rules are tested in order to find a match. If a match is found, the request is
     permitted or forbidden depending on the type of rule. If no match is found, the
@@ -99,33 +64,31 @@ class AccessRule(BaseModel):
     Some examples in yaml:
 
     - permit:
-      principal: user-1
-      actions: [create, read, delete]
-      resource: model::*
+        principal: user-1
+        actions: [create, read, delete]
+        resource: model::*
       description: user-1 has full access to all models
     - permit:
-      principal: user-2
-      actions: [read]
-      resource: model::model-1
+        principal: user-2
+        actions: [read]
+        resource: model::model-1
       description: user-2 has read access to model-1 only
     - permit:
-      actions: [read]
-      when:
-        user_in: resource.namespaces
-      description: any user has read access to any resource with matching attributes
+        actions: [read]
+      when: user in owner teams
+      description: any user has read access to any resource created by a member of their team
     - forbid:
-      actions: [create, read, delete]
-      resource: vector_db::*
-      unless:
-        user_in: role::admin
+        actions: [create, read, delete]
+        resource: vector_db::*
+      unless: user with admin in roles
       description: only user with admin role can use vector_db resources
 
     """
 
     permit: Scope | None = None
     forbid: Scope | None = None
-    when: Condition | list[Condition] | None = None
-    unless: Condition | list[Condition] | None = None
+    when: str | list[str] | None = None
+    unless: str | list[str] | None = None
     description: str | None = None
 
     @model_validator(mode="after")
@@ -133,4 +96,12 @@ class AccessRule(BaseModel):
         _require_one_of(self, "permit", "forbid")
         _mutually_exclusive(self, "permit", "forbid")
         _mutually_exclusive(self, "when", "unless")
+        if isinstance(self.when, list):
+            parse_conditions(self.when)
+        elif self.when:
+            parse_conditions([self.when])
+        if isinstance(self.unless, list):
+            parse_conditions(self.unless)
+        elif self.unless:
+            parse_conditions([self.unless])
         return self

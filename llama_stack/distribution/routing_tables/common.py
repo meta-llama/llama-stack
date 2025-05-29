@@ -10,7 +10,6 @@ from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
 from llama_stack.distribution.datatypes import (
-    AccessAttributes,
     AccessRule,
     RoutableObject,
     RoutableObjectWithProvider,
@@ -195,9 +194,9 @@ class CommonRoutingTableImpl(RoutingTable):
         creator = get_authenticated_user()
         if not is_action_allowed(self.policy, "create", obj, creator):
             raise AccessDeniedError()
-        if creator and creator.attributes:
-            obj.access_attributes = AccessAttributes(**creator.attributes)
-            logger.info(f"Setting access attributes for {obj.type} '{obj.identifier}' based on creator's identity")
+        if creator:
+            obj.owner = creator
+            logger.info(f"Setting owner for {obj.type} '{obj.identifier}' to {obj.owner.principal}")
 
         registered_obj = await register_object_with_provider(obj, p)
         # TODO: This needs to be fixed for all APIs once they return the registered object

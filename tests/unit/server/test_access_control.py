@@ -8,13 +8,12 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import yaml
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from llama_stack.apis.datatypes import Api
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
-from llama_stack.distribution.datatypes import AccessAttributes, AccessRule, ModelWithACL
-from llama_stack.distribution.request_headers import User
+from llama_stack.distribution.datatypes import AccessRule, ModelWithOwner, User
 from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
 
 
@@ -45,25 +44,25 @@ async def test_setup(cached_disk_dist_registry):
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_with_cache(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
-    model_public = ModelWithACL(
+    model_public = ModelWithOwner(
         identifier="model-public",
         provider_id="test_provider",
         provider_resource_id="model-public",
         model_type=ModelType.llm,
     )
-    model_admin_only = ModelWithACL(
+    model_admin_only = ModelWithOwner(
         identifier="model-admin",
         provider_id="test_provider",
         provider_resource_id="model-admin",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(roles=["admin"]),
+        owner=User("testuser", {"roles": ["admin"]}),
     )
-    model_data_scientist = ModelWithACL(
+    model_data_scientist = ModelWithOwner(
         identifier="model-data-scientist",
         provider_id="test_provider",
         provider_resource_id="model-data-scientist",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(roles=["data-scientist", "researcher"], teams=["ml-team"]),
+        owner=User("testuser", {"roles": ["data-scientist", "researcher"], "teams": ["ml-team"]}),
     )
     await registry.register(model_public)
     await registry.register(model_admin_only)
@@ -110,7 +109,7 @@ async def test_access_control_with_cache(mock_get_authenticated_user, test_setup
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_and_updates(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
-    model_public = ModelWithACL(
+    model_public = ModelWithOwner(
         identifier="model-updates",
         provider_id="test_provider",
         provider_resource_id="model-updates",
@@ -125,7 +124,7 @@ async def test_access_control_and_updates(mock_get_authenticated_user, test_setu
     )
     model = await routing_table.get_model("model-updates")
     assert model.identifier == "model-updates"
-    model_public.access_attributes = AccessAttributes(roles=["admin"])
+    model_public.owner = User("testuser", {"roles": ["admin"]})
     await registry.update(model_public)
     mock_get_authenticated_user.return_value = User(
         "test-user",
@@ -149,12 +148,12 @@ async def test_access_control_and_updates(mock_get_authenticated_user, test_setu
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_empty_attributes(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="model-empty-attrs",
         provider_id="test_provider",
         provider_resource_id="model-empty-attrs",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(),
+        owner=User("testuser", {}),
     )
     await registry.register(model)
     mock_get_authenticated_user.return_value = User(
@@ -174,18 +173,18 @@ async def test_access_control_empty_attributes(mock_get_authenticated_user, test
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_no_user_attributes(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
-    model_public = ModelWithACL(
+    model_public = ModelWithOwner(
         identifier="model-public-2",
         provider_id="test_provider",
         provider_resource_id="model-public-2",
         model_type=ModelType.llm,
     )
-    model_restricted = ModelWithACL(
+    model_restricted = ModelWithOwner(
         identifier="model-restricted",
         provider_id="test_provider",
         provider_resource_id="model-restricted",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(roles=["admin"]),
+        owner=User("testuser", {"roles": ["admin"]}),
     )
     await registry.register(model_public)
     await registry.register(model_restricted)
@@ -212,7 +211,7 @@ async def test_automatic_access_attributes(mock_get_authenticated_user, test_set
     mock_get_authenticated_user.return_value = User("test-user", creator_attributes)
 
     # Create model without explicit access attributes
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="auto-access-model",
         provider_id="test_provider",
         provider_resource_id="auto-access-model",
@@ -222,10 +221,11 @@ async def test_automatic_access_attributes(mock_get_authenticated_user, test_set
 
     # Verify the model got creator's attributes
     registered_model = await routing_table.get_model("auto-access-model")
-    assert registered_model.access_attributes is not None
-    assert registered_model.access_attributes.roles == ["data-scientist"]
-    assert registered_model.access_attributes.teams == ["ml-team"]
-    assert registered_model.access_attributes.projects == ["llama-3"]
+    assert registered_model.owner is not None
+    assert registered_model.owner.attributes is not None
+    assert registered_model.owner.attributes["roles"] == ["data-scientist"]
+    assert registered_model.owner.attributes["teams"] == ["ml-team"]
+    assert registered_model.owner.attributes["projects"] == ["llama-3"]
 
     # Verify another user without matching attributes can't access it
     mock_get_authenticated_user.return_value = User("test-user", {"roles": ["engineer"], "teams": ["infra-team"]})
@@ -354,15 +354,14 @@ def test_permit_when():
     - permit:
         principal: user-1
         actions: [read]
-      when:
-        user_in: resource.namespaces
+      when: user in owners namespaces
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
+        owner=User("testuser", {"namespaces": ["foo"]}),
     )
     assert is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["foo"]}))
     assert not is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["bar"]}))
@@ -376,15 +375,15 @@ def test_permit_unless():
         actions: [read]
         resource: model::*
       unless:
-        - user_not_in: resource.namespaces
-        - user_in: resource.teams
+        - user not in owners namespaces
+        - user in owners teams
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
+        owner=User("testuser", {"namespaces": ["foo"]}),
     )
     assert is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["foo"]}))
     assert not is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["bar"]}))
@@ -397,16 +396,16 @@ def test_forbid_when():
         principal: user-1
         actions: [read]
       when:
-        user_in: resource.namespaces
+        user in owners namespaces
     - permit:
         actions: [read]
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
+        owner=User("testuser", {"namespaces": ["foo"]}),
     )
     assert not is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["foo"]}))
     assert is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["bar"]}))
@@ -419,35 +418,33 @@ def test_forbid_unless():
         principal: user-1
         actions: [read]
       unless:
-        user_in: resource.namespaces
+        user in owners namespaces
     - permit:
         actions: [read]
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
+        owner=User("testuser", {"namespaces": ["foo"]}),
     )
     assert is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["foo"]}))
     assert not is_action_allowed(policy, "read", model, User("user-1", {"namespaces": ["bar"]}))
     assert is_action_allowed(policy, "read", model, User("user-2", {"namespaces": ["foo"]}))
 
 
-def test_condition_with_literal():
+def test_user_has_attribute():
     config = """
     - permit:
         actions: [read]
-      when:
-        user_in: role::admin
+      when: user with admin in roles
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
     )
     assert not is_action_allowed(policy, "read", model, User("user-1", {"roles": ["basic"]}))
     assert is_action_allowed(policy, "read", model, User("user-2", {"roles": ["admin"]}))
@@ -455,35 +452,115 @@ def test_condition_with_literal():
     assert not is_action_allowed(policy, "read", model, User("user-4", None))
 
 
-def test_condition_with_unrecognised_literal():
+def test_user_does_not_have_attribute():
     config = """
     - permit:
         actions: [read]
-      when:
-        user_in: whatever
+      unless: user with admin not in roles
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(namespaces=["foo"]),
     )
     assert not is_action_allowed(policy, "read", model, User("user-1", {"roles": ["basic"]}))
-    assert not is_action_allowed(policy, "read", model, User("user-2", None))
+    assert is_action_allowed(policy, "read", model, User("user-2", {"roles": ["admin"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-3", {"namespaces": ["foo"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-4", None))
 
 
-def test_empty_condition():
+def test_is_owner():
     config = """
     - permit:
         actions: [read]
-      when: {}
+      when: user is owner
     """
     policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="mymodel",
         provider_id="myprovider",
         model_type=ModelType.llm,
+        owner=User("user-2", {"namespaces": ["foo"]}),
     )
-    assert is_action_allowed(policy, "read", model, User("user-1", {"roles": ["basic"]}))
-    assert is_action_allowed(policy, "read", model, User("user-2", None))
+    assert not is_action_allowed(policy, "read", model, User("user-1", {"roles": ["basic"]}))
+    assert is_action_allowed(policy, "read", model, User("user-2", {"roles": ["admin"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-3", {"namespaces": ["foo"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-4", None))
+
+
+def test_is_not_owner():
+    config = """
+    - permit:
+        actions: [read]
+      unless: user is not owner
+    """
+    policy = TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
+    model = ModelWithOwner(
+        identifier="mymodel",
+        provider_id="myprovider",
+        model_type=ModelType.llm,
+        owner=User("user-2", {"namespaces": ["foo"]}),
+    )
+    assert not is_action_allowed(policy, "read", model, User("user-1", {"roles": ["basic"]}))
+    assert is_action_allowed(policy, "read", model, User("user-2", {"roles": ["admin"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-3", {"namespaces": ["foo"]}))
+    assert not is_action_allowed(policy, "read", model, User("user-4", None))
+
+
+def test_invalid_rule_permit_and_forbid_both_specified():
+    config = """
+    - permit:
+        actions: [read]
+      forbid:
+        actions: [create]
+    """
+    with pytest.raises(ValidationError):
+        TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
+
+
+def test_invalid_rule_neither_permit_or_forbid_specified():
+    config = """
+    - when: user is owner
+      unless: user with admin in roles
+    """
+    with pytest.raises(ValidationError):
+        TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
+
+
+def test_invalid_rule_when_and_unless_both_specified():
+    config = """
+    - permit:
+        actions: [read]
+      when: user is owner
+      unless: user with admin in roles
+    """
+    with pytest.raises(ValidationError):
+        TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
+
+
+def test_invalid_condition():
+    config = """
+    - permit:
+        actions: [read]
+      when: random words that are not valid
+    """
+    with pytest.raises(ValidationError):
+        TypeAdapter(list[AccessRule]).validate_python(yaml.safe_load(config))
+
+
+@pytest.mark.parametrize(
+    "condition",
+    [
+        "user is owner",
+        "user is not owner",
+        "user with dev in teams",
+        "user with default not in namespaces",
+        "user in owners roles",
+        "user not in owners projects",
+    ],
+)
+def test_condition_reprs(condition):
+    from llama_stack.distribution.access_control.conditions import parse_condition
+
+    assert condition == str(parse_condition(condition))

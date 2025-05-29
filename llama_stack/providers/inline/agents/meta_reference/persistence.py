@@ -11,7 +11,8 @@ from datetime import datetime, timezone
 
 from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
-from llama_stack.distribution.access_control.datatypes import AccessAttributes, AccessRule
+from llama_stack.distribution.access_control.datatypes import AccessRule
+from llama_stack.distribution.datatypes import User
 from llama_stack.distribution.request_headers import get_authenticated_user
 from llama_stack.providers.utils.kvstore import KVStore
 
@@ -22,7 +23,7 @@ class AgentSessionInfo(Session):
     # TODO: is this used anywhere?
     vector_db_id: str | None = None
     started_at: datetime
-    access_attributes: AccessAttributes | None = None
+    owner: User | None = None
     identifier: str | None = None
     type: str = "session"
 
@@ -42,14 +43,12 @@ class AgentPersistence:
 
         # Get current user's auth attributes for new sessions
         user = get_authenticated_user()
-        auth_attributes = user and user.attributes
-        access_attributes = AccessAttributes(**auth_attributes) if auth_attributes else None
 
         session_info = AgentSessionInfo(
             session_id=session_id,
             session_name=name,
             started_at=datetime.now(timezone.utc),
-            access_attributes=access_attributes,
+            owner=user,
             turns=[],
             identifier=name,  # should this be qualified in any way?
         )
@@ -80,7 +79,7 @@ class AgentPersistence:
     def _check_session_access(self, session_info: AgentSessionInfo) -> bool:
         """Check if current user has access to the session."""
         # Handle backward compatibility for old sessions without access control
-        if not hasattr(session_info, "access_attributes"):
+        if not hasattr(session_info, "access_attributes") and not hasattr(session_info, "owner"):
             return True
 
         return is_action_allowed(self.policy, "read", session_info, get_authenticated_user())
