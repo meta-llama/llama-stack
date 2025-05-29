@@ -27,7 +27,8 @@ logger = logging.getLogger(__name__)
 # Specifying search mode is dependent on the VectorIO provider.
 VECTOR_SEARCH = "vector"
 KEYWORD_SEARCH = "keyword"
-SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH}
+HYBRID_SEARCH = "hybrid"
+SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH, HYBRID_SEARCH}
 
 
 def serialize_vector(vector: list[float]) -> bytes:
@@ -248,8 +249,6 @@ class SQLiteVecIndex(EmbeddingIndex):
         """
         Performs keyword-based search using SQLite FTS5 for relevance-ranked full-text search.
         """
-        if query_string is None:
-            raise ValueError("query_string is required for keyword search.")
 
         def _execute_query():
             connection = _create_sqlite_connection(self.db_path)
@@ -277,6 +276,80 @@ class SQLiteVecIndex(EmbeddingIndex):
             # This design is intentional to simplify sorting by ascending score.
             # Reference: https://alexgarcia.xyz/blog/2024/sqlite-vec-hybrid-search/index.html
             if score > -score_threshold:
+                continue
+            try:
+                chunk = Chunk.model_validate_json(chunk_json)
+            except Exception as e:
+                logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
+                continue
+            chunks.append(chunk)
+            scores.append(score)
+        return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        """
+        Hybrid search: run keyword (FTS5) search first to get candidate IDs,
+        then run vector similarity search limited to those candidates.
+
+        Args:
+            embedding: The query embedding vector
+            query_string: The text query for keyword search
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+        """
+
+        def _execute_hybrid_query():
+            connection = _create_sqlite_connection(self.db_path)
+            cur = connection.cursor()
+            try:
+                emb_list = embedding.tolist() if isinstance(embedding, np.ndarray) else list(embedding)
+                emb_blob = serialize_vector(emb_list)
+
+                # Step 1: Get top candidate IDs from FTS5
+                # This can be made configurable in the future.
+                num_candidates = k * 10
+                cur.execute(
+                    f"""
+                    SELECT id FROM {self.fts_table}
+                    WHERE content MATCH ?
+                    ORDER BY bm25({self.fts_table}) ASC
+                    LIMIT ?;
+                    """,
+                    (query_string, num_candidates),
+                )
+                candidate_ids = [row[0] for row in cur.fetchall()]
+                if not candidate_ids:
+                    return []
+
+                # Step 2: Run vector search only on those candidate IDs
+                placeholder = ",".join("?" for _ in candidate_ids)
+                query_sql = f"""
+                    SELECT m.id, m.chunk, v.distance
+                    FROM {self.vector_table} AS v
+                    JOIN {self.metadata_table} AS m ON m.id = v.id
+                    WHERE v.embedding MATCH ? AND k = ? AND v.id IN ({placeholder})
+                    ORDER BY v.distance
+                    LIMIT ?;
+                """
+                cur.execute(query_sql, (emb_blob, k, *candidate_ids, k))
+                return cur.fetchall()
+
+            finally:
+                cur.close()
+                connection.close()
+
+        rows = await asyncio.to_thread(_execute_hybrid_query)
+        chunks, scores = [], []
+        for row in rows:
+            _id, chunk_json, distance = row
+            score = 1.0 / distance if distance != 0 else float("inf")
+            if score < score_threshold:
                 continue
             try:
                 chunk = Chunk.model_validate_json(chunk_json)

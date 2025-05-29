@@ -85,6 +85,27 @@ async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sa
 
 
 @pytest.mark.asyncio
+async def test_query_chunks_hybrid(sqlite_vec_index, sample_chunks, sample_embeddings):
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a query embedding that's similar to the first chunk
+    query_embedding = sample_embeddings[0]
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    assert len(response.chunks) > 0
+    assert len(response.scores) > 0
+    assert len(response.chunks) == len(response.scores)
+    assert len(response.chunks) == 3, f"Expected 3 results, got {len(response.chunks)}"
+
+    # Verify scores are in descending order (higher is better)
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
+
+
+@pytest.mark.asyncio
 async def test_query_chunks_full_text_search_k_greater_than_results(sqlite_vec_index, sample_chunks, sample_embeddings):
     # Re-initialize with a clean index
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
@@ -141,3 +162,65 @@ def test_generate_chunk_id():
         "bc744db3-1b25-0a9c-cdff-b6ba3df73c36",
         "f68df25d-d9aa-ab4d-5684-64a233add20d",
     ]
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_no_keyword_matches(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test hybrid search when keyword search returns no matches."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Use a non-existent keyword
+    query_embedding = sample_embeddings[0]
+    query_string = "nonexistentkeyword123"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    # Should return no results since keyword search found no matches
+    assert len(response.chunks) == 0
+    assert len(response.scores) == 0
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_score_threshold(sqlite_vec_index, sample_chunks, sample_embeddings):
+    """Test hybrid search with a high score threshold."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Use a very high score threshold that no results will meet
+    query_embedding = sample_embeddings[0]
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding,
+        query_string=query_string,
+        k=3,
+        score_threshold=1000.0,  # Very high threshold
+    )
+
+    # Should return no results due to high threshold
+    assert len(response.chunks) == 0
+    assert len(response.scores) == 0
+
+
+@pytest.mark.asyncio
+async def test_query_chunks_hybrid_different_embedding(
+    sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension
+):
+    """Test hybrid search with a different embedding than the stored ones."""
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+
+    # Create a random embedding that's different from stored ones
+    query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
+    query_string = "Sentence 5"
+
+    response = await sqlite_vec_index.query_hybrid(
+        embedding=query_embedding, query_string=query_string, k=3, score_threshold=0.0
+    )
+
+    # Should still get results if keyword matches exist
+    assert len(response.chunks) > 0
+    assert len(response.scores) > 0
+    assert len(response.chunks) == len(response.scores)
+    # Verify scores are in descending order
+    assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
