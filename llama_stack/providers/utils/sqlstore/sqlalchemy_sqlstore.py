@@ -19,10 +19,10 @@ from sqlalchemy import (
     Text,
     select,
 )
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from ..api import ColumnDefinition, ColumnType, SqlStore
-from ..sqlstore import SqliteSqlStoreConfig
+from .api import ColumnDefinition, ColumnType, SqlStore
+from .sqlstore import SqlAlchemySqlStoreConfig
 
 TYPE_MAPPING: dict[ColumnType, Any] = {
     ColumnType.INTEGER: Integer,
@@ -35,9 +35,10 @@ TYPE_MAPPING: dict[ColumnType, Any] = {
 }
 
 
-class SqliteSqlStoreImpl(SqlStore):
-    def __init__(self, config: SqliteSqlStoreConfig):
-        self.engine = create_async_engine(config.engine_str)
+class SqlAlchemySqlStoreImpl(SqlStore):
+    def __init__(self, config: SqlAlchemySqlStoreConfig):
+        self.config = config
+        self.async_session = async_sessionmaker(create_async_engine(config.engine_str))
         self.metadata = MetaData()
 
     async def create_table(
@@ -78,13 +79,14 @@ class SqliteSqlStoreImpl(SqlStore):
 
         # Create the table in the database if it doesn't exist
         # checkfirst=True ensures it doesn't try to recreate if it's already there
-        async with self.engine.begin() as conn:
+        engine = create_async_engine(self.config.engine_str)
+        async with engine.begin() as conn:
             await conn.run_sync(self.metadata.create_all, tables=[sqlalchemy_table], checkfirst=True)
 
     async def insert(self, table: str, data: Mapping[str, Any]) -> None:
-        async with self.engine.begin() as conn:
-            await conn.execute(self.metadata.tables[table].insert(), data)
-            await conn.commit()
+        async with self.async_session() as session:
+            await session.execute(self.metadata.tables[table].insert(), data)
+            await session.commit()
 
     async def fetch_all(
         self,
@@ -93,7 +95,7 @@ class SqliteSqlStoreImpl(SqlStore):
         limit: int | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
     ) -> list[dict[str, Any]]:
-        async with self.engine.begin() as conn:
+        async with self.async_session() as session:
             query = select(self.metadata.tables[table])
             if where:
                 for key, value in where.items():
@@ -117,7 +119,7 @@ class SqliteSqlStoreImpl(SqlStore):
                         query = query.order_by(self.metadata.tables[table].c[name].desc())
                     else:
                         raise ValueError(f"Invalid order '{order_type}' for column '{name}'")
-            result = await conn.execute(query)
+            result = await session.execute(query)
             if result.rowcount == 0:
                 return []
             return [dict(row._mapping) for row in result]
@@ -142,20 +144,20 @@ class SqliteSqlStoreImpl(SqlStore):
         if not where:
             raise ValueError("where is required for update")
 
-        async with self.engine.begin() as conn:
+        async with self.async_session() as session:
             stmt = self.metadata.tables[table].update()
             for key, value in where.items():
                 stmt = stmt.where(self.metadata.tables[table].c[key] == value)
-            await conn.execute(stmt, data)
-            await conn.commit()
+            await session.execute(stmt, data)
+            await session.commit()
 
     async def delete(self, table: str, where: Mapping[str, Any]) -> None:
         if not where:
             raise ValueError("where is required for delete")
 
-        async with self.engine.begin() as conn:
+        async with self.async_session() as session:
             stmt = self.metadata.tables[table].delete()
             for key, value in where.items():
                 stmt = stmt.where(self.metadata.tables[table].c[key] == value)
-            await conn.execute(stmt)
-            await conn.commit()
+            await session.execute(stmt)
+            await session.commit()

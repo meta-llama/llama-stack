@@ -33,5 +33,5 @@ distribution_spec:
     - remote::wolfram-alpha
 image_type: conda
 additional_pip_packages:
-- sqlalchemy[asyncio]
+- aiosqlite
 - sqlalchemy[asyncio]

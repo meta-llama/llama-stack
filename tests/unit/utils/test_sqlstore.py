@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from llama_stack.providers.utils.sqlstore.api import ColumnType
-from llama_stack.providers.utils.sqlstore.sqlite.sqlite import SqliteSqlStoreImpl
+from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemySqlStoreImpl
 from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 
 
@@ -17,7 +17,7 @@ from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 async def test_sqlite_sqlstore():
     with TemporaryDirectory() as tmp_dir:
         db_name = "test.db"
-        sqlstore = SqliteSqlStoreImpl(
+        sqlstore = SqlAlchemySqlStoreImpl(
             SqliteSqlStoreConfig(
                 db_path=tmp_dir + "/" + db_name,
             )

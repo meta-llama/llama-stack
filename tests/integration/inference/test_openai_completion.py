@@ -268,9 +268,9 @@ def test_openai_chat_completion_streaming_with_n(compat_client, client_with_mode
         False,
     ],
 )
-def test_inference_store(openai_client, client_with_models, text_model_id, stream):
+def test_inference_store(compat_client, client_with_models, text_model_id, stream):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
-    client = openai_client
+    client = compat_client
     # make a chat completion
     message = "Hello, world!"
     response = client.chat.completions.create(
@@ -301,8 +301,13 @@ def test_inference_store(openai_client, client_with_models, text_model_id, strea
 
     retrieved_response = client.chat.completions.retrieve(response_id)
     assert retrieved_response.id == response_id
-    assert retrieved_response.input_messages[0]["content"] == message, retrieved_response
     assert retrieved_response.choices[0].message.content == content, retrieved_response
+
+    input_content = (
+        getattr(retrieved_response.input_messages[0], "content", None)
+        or retrieved_response.input_messages[0]["content"]
+    )
+    assert input_content == message, retrieved_response
 
 
 @pytest.mark.parametrize(
@@ -312,9 +317,9 @@ def test_inference_store(openai_client, client_with_models, text_model_id, strea
         False,
     ],
 )
-def test_inference_store_tool_calls(openai_client, client_with_models, text_model_id, stream):
+def test_inference_store_tool_calls(compat_client, client_with_models, text_model_id, stream):
     skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
-    client = openai_client
+    client = compat_client
     # make a chat completion
     message = "What's the weather in Tokyo? Use the get_weather function to get the weather."
     response = client.chat.completions.create(
@@ -361,7 +366,11 @@ def test_inference_store_tool_calls(openai_client, client_with_models, text_mode
 
     retrieved_response = client.chat.completions.retrieve(response_id)
     assert retrieved_response.id == response_id
-    assert retrieved_response.input_messages[0]["content"] == message
+    input_content = (
+        getattr(retrieved_response.input_messages[0], "content", None)
+        or retrieved_response.input_messages[0]["content"]
+    )
+    assert input_content == message, retrieved_response
     tool_calls = retrieved_response.choices[0].message.tool_calls
     # sometimes model doesn't ouptut tool calls, but we still want to test that the tool was called
     if tool_calls:
