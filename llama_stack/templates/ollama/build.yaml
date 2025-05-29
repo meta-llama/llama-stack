@@ -17,7 +17,6 @@ distribution_spec:
     datasetio:
     - inline::localfs
     scoring:
-    - inline::basic
     - inline::llm-as-judge
     tool_runtime:
     - remote::brave-search
