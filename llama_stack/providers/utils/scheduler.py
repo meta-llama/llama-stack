@@ -157,10 +157,14 @@ class _NaiveSchedulerBackend(_SchedulerBackend):
         asyncio.set_event_loop(self._loop)
         self._loop.run_forever()
 
-        # When stopping the loop, give tasks a chance to finish
+        # TODO: When stopping the loop, give tasks a chance to finish
         # TODO: should we explicitly inform jobs of pending stoppage?
+
+        # cancel all tasks
         for task in asyncio.all_tasks(self._loop):
-            self._loop.run_until_complete(task)
+            if not task.done():
+                task.cancel()
+
         self._loop.close()
 
     async def shutdown(self) -> None:
