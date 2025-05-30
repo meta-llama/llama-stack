@@ -107,6 +107,13 @@ def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[
     return None, []
 
 
+def pre_import_templates(template_dirs: list[Path]) -> None:
+    # Pre-import all template modules to avoid deadlocks.
+    for template_dir in template_dirs:
+        module_name = f"llama_stack.templates.{template_dir.name}"
+        importlib.import_module(module_name)
+
+
 def main():
     templates_dir = REPO_ROOT / "llama_stack" / "templates"
     change_tracker = ChangedPathTracker()
@@ -117,6 +124,8 @@ def main():
     ) as progress:
         template_dirs = list(find_template_dirs(templates_dir))
         task = progress.add_task("Processing distribution templates...", total=len(template_dirs))
+
+        pre_import_templates(template_dirs)
 
         # Create a partial function with the progress bar
         process_func = partial(process_template, progress=progress, change_tracker=change_tracker)
