@@ -8,11 +8,19 @@ import base64
 import mimetypes
 import os
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
+import numpy as np
 import pytest
 
 from llama_stack.apis.tools import RAGDocument
-from llama_stack.providers.utils.memory.vector_store import URL, content_from_doc, make_overlapped_chunks
+from llama_stack.apis.vector_io import Chunk
+from llama_stack.providers.utils.memory.vector_store import (
+    URL,
+    VectorDBWithIndex,
+    content_from_doc,
+    make_overlapped_chunks,
+)
 
 DUMMY_PDF_PATH = Path(os.path.abspath(__file__)).parent / "fixtures" / "dummy.pdf"
 # Depending on the machine, this can get parsed a couple of ways
@@ -34,6 +42,25 @@ def data_url_from_file(file_path: str) -> str:
     data_url = f"data:{mime_type};base64,{base64_content}"
 
     return data_url
+
+
+class TestChunk:
+    def test_chunk(self):
+        chunk = Chunk(
+            content="Example chunk content",
+            metadata={"key": "value"},
+            embedding=[0.1, 0.2, 0.3],
+        )
+
+        assert chunk.content == "Example chunk content"
+        assert chunk.metadata == {"key": "value"}
+        assert chunk.embedding == [0.1, 0.2, 0.3]
+
+        chunk_no_embedding = Chunk(
+            content="Example chunk content",
+            metadata={"key": "value"},
+        )
+        assert chunk_no_embedding.embedding is None
 
 
 class TestVectorStore:
@@ -126,3 +153,55 @@ class TestVectorStore:
         assert str(excinfo.value) == "Failed to serialize metadata to string"
         assert isinstance(excinfo.value.__cause__, TypeError)
         assert str(excinfo.value.__cause__) == "Cannot convert to string"
+
+
+class TestVectorDBWithIndex:
+    @pytest.mark.asyncio
+    async def test_insert_chunks_without_embeddings(self):
+        mock_vector_db = MagicMock()
+        mock_vector_db.embedding_model = "test-model without embeddings"
+        mock_index = AsyncMock()
+        mock_inference_api = AsyncMock()
+
+        vector_db_with_index = VectorDBWithIndex(
+            vector_db=mock_vector_db, index=mock_index, inference_api=mock_inference_api
+        )
+
+        chunks = [
+            Chunk(content="Test 1", embedding=None, metadata={}),
+            Chunk(content="Test 2", embedding=None, metadata={}),
+        ]
+
+        mock_inference_api.embeddings.return_value.embeddings = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
+
+        await vector_db_with_index.insert_chunks(chunks)
+
+        mock_inference_api.embeddings.assert_called_once_with("test-model without embeddings", ["Test 1", "Test 2"])
+        mock_index.add_chunks.assert_called_once()
+        args = mock_index.add_chunks.call_args[0]
+        assert args[0] == chunks
+        assert np.array_equal(args[1], np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], dtype=np.float32))
+
+    @pytest.mark.asyncio
+    async def test_insert_chunks_with_embeddings(self):
+        mock_vector_db = MagicMock()
+        mock_vector_db.embedding_model = "test-model with embeddings"
+        mock_index = AsyncMock()
+        mock_inference_api = AsyncMock()
+
+        vector_db_with_index = VectorDBWithIndex(
+            vector_db=mock_vector_db, index=mock_index, inference_api=mock_inference_api
+        )
+
+        chunks = [
+            Chunk(content="Test 1", embedding=[0.1, 0.2, 0.3], metadata={}),
+            Chunk(content="Test 2", embedding=[0.4, 0.5, 0.6], metadata={}),
+        ]
+
+        await vector_db_with_index.insert_chunks(chunks)
+
+        mock_inference_api.embeddings.assert_not_called()
+        mock_index.add_chunks.assert_called_once()
+        args = mock_index.add_chunks.call_args[0]
+        assert args[0] == chunks
+        assert np.array_equal(args[1], np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], dtype=np.float32))

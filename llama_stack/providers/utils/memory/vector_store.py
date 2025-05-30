@@ -199,11 +199,16 @@ class VectorDBWithIndex:
         self,
         chunks: list[Chunk],
     ) -> None:
-        embeddings_response = await self.inference_api.embeddings(
-            self.vector_db.embedding_model, [x.content for x in chunks]
-        )
-        embeddings = np.array(embeddings_response.embeddings)
+        chunks_to_embed = [c for c in chunks if c.embedding is None]
+        if chunks_to_embed:
+            resp = await self.inference_api.embeddings(
+                self.vector_db.embedding_model,
+                [c.content for c in chunks_to_embed],
+            )
+            for c, embedding in zip(chunks_to_embed, resp.embeddings, strict=False):
+                c.embedding = embedding
 
+        embeddings = np.array([c.embedding for c in chunks], dtype=np.float32)
         await self.index.add_chunks(chunks, embeddings)
 
     async def query_chunks(
