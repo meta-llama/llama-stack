@@ -40,6 +40,10 @@ def builtin_automatically_routed_apis() -> list[AutoRoutedApiInfo]:
             router_api=Api.inference,
         ),
         AutoRoutedApiInfo(
+            routing_table_api=Api.post_training_models,
+            router_api=Api.post_training,
+        ),
+        AutoRoutedApiInfo(
             routing_table_api=Api.shields,
             router_api=Api.safety,
         ),
