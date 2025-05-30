@@ -14,6 +14,7 @@ When using the Llama Stack client, set the `base_url` to the root of your Llama 
 
 ```python
 from llama_stack_client import LlamaStackClient
+
 client = LlamaStackClient(base_url="http://localhost:8321")
 ```
 
@@ -23,6 +24,7 @@ When using an OpenAI client, set the `base_url` to the `/v1/openai/v1` path on y
 
 ```python
 from openai import OpenAI
+
 client = OpenAI(base_url="http://localhost:8321/v1/openai/v1", api_key="none")
 ```
 
@@ -70,12 +72,12 @@ response = client.responses.create(
     input=[
         {
             "role": "system",
-            "content": "Extract the participants from the event information."
+            "content": "Extract the participants from the event information.",
         },
         {
             "role": "user",
-            "content": "Alice and Bob are going to a science fair on Friday."
-        }
+            "content": "Alice and Bob are going to a science fair on Friday.",
+        },
     ],
     text={
         "format": {
@@ -84,19 +86,12 @@ response = client.responses.create(
             "schema": {
                 "type": "object",
                 "properties": {
-                    "participants": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                    "participants": {"type": "array", "items": {"type": "string"}}
                 },
-                "required": [
-                    "participants"
-                ],
-            }
+                "required": ["participants"],
+            },
         }
-    }
+    },
 )
 print(response.output_text)
 ```
@@ -114,12 +109,7 @@ Request:
 ```python
 chat_completion = client.chat.completions.create(
     model="meta-llama/Llama-3.2-3B-Instruct",
-    messages=[
-        {
-            "role": "user",
-            "content": "Write a haiku about coding."
-        }
-    ]
+    messages=[{"role": "user", "content": "Write a haiku about coding."}],
 )
 
 print(chat_completion.choices[0].message.content)
@@ -143,12 +133,12 @@ chat_completion = client.chat.completions.create(
     messages=[
         {
             "role": "system",
-            "content": "Extract the participants from the event information."
+            "content": "Extract the participants from the event information.",
         },
         {
             "role": "user",
-            "content": "Alice and Bob are going to a science fair on Friday."
-        }
+            "content": "Alice and Bob are going to a science fair on Friday.",
+        },
     ],
     response_format={
         "type": "json_schema",
@@ -157,19 +147,12 @@ chat_completion = client.chat.completions.create(
             "schema": {
                 "type": "object",
                 "properties": {
-                    "participants": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                    "participants": {"type": "array", "items": {"type": "string"}}
                 },
-                "required": [
-                    "participants"
-                ],
-            }
-        }
-    }
+                "required": ["participants"],
+            },
+        },
+    },
 )
 
 print(chat_completion.choices[0].message.content)
@@ -189,8 +172,7 @@ Request:
 
 ```python
 completion = client.completions.create(
-    model="meta-llama/Llama-3.2-3B-Instruct",
-    prompt="Write a haiku about coding."
+    model="meta-llama/Llama-3.2-3B-Instruct", prompt="Write a haiku about coding."
 )
 
 print(completion.choices[0].text)
