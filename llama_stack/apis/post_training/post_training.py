@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.common.job_types import JobStatus
 from llama_stack.apis.common.training_types import Checkpoint
+from llama_stack.apis.models import Model
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
@@ -168,7 +169,13 @@ class PostTrainingJobArtifactsResponse(BaseModel):
     # TODO(ashwin): metrics, evals
 
 
+class ModelStore(Protocol):
+    async def get_model(self, identifier: str) -> Model: ...
+
+
 class PostTraining(Protocol):
+    model_store: ModelStore | None = None
+
     @webmethod(route="/post-training/supervised-fine-tune", method="POST")
     async def supervised_fine_tune(
         self,
