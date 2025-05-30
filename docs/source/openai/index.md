@@ -2,7 +2,7 @@
 
 ## Server path
 
-Llama Stack exposes an OpenAI-compatible API endpoint at `/v1/openai/v1`. So, for a Llama Stack server running on locally on port 8321, the full url to the OpenAI-compatible API endpoint is `http://localhost:8321/v1/openai/v1`.
+Llama Stack exposes an OpenAI-compatible API endpoint at `/v1/openai/v1`. So, for a Llama Stack server running locally on port `8321`, the full url to the OpenAI-compatible API endpoint is `http://localhost:8321/v1/openai/v1`.
 
 ## Clients
 
@@ -119,7 +119,7 @@ Example output:
 
 ```text
 Lines of code unfold
- Logic flows like a river
+Logic flows like a river
 Code's gentle beauty
 ```
 
