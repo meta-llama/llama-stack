@@ -10,8 +10,7 @@ import faiss
 from llama_stack.distribution.providers import ProviderImpl
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus
 
-# Set up logging
-logger = logging.getLogger("faiss_provider_patch")
+logger = logging.getLogger(__name__)
 
 # Store the original methods
 original_list_providers = ProviderImpl.list_providers
