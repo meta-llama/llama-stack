@@ -98,6 +98,12 @@ class ResponsesStore:
             raise ValueError(f"Response with id {response_id} not found") from None
         return OpenAIResponseObjectWithInput(**row["response_object"])
 
+    async def delete_response_object(self, response_id: str) -> None:
+        row = await self.sql_store.fetch_one("openai_responses", where={"id": response_id})
+        if not row:
+            raise ValueError(f"Response with id {response_id} not found")
+        await self.sql_store.delete("openai_responses", where={"id": response_id})
+
     async def list_response_input_items(
         self,
         response_id: str,
