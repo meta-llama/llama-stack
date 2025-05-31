@@ -2520,6 +2520,171 @@ paths:
             schema:
               $ref: '#/components/schemas/OpenaiCompletionRequest'
         required: true
+  /v1/openai/v1/files/{file_id}:
+    get:
+      responses:
+        '200':
+          description: >-
+            An OpenAIFileObject containing file information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Files
+      description: >-
+        Returns information about a specific file.
+      parameters:
+        - name: file_id
+          in: path
+          description: >-
+            The ID of the file to use for this request.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: >-
+            An OpenAIFileDeleteResponse indicating successful deletion.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIFileDeleteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Files
+      description: Delete a file.
+      parameters:
+        - name: file_id
+          in: path
+          description: >-
+            The ID of the file to use for this request.
+          required: true
+          schema:
+            type: string
+  /v1/openai/v1/files:
+    get:
+      responses:
+        '200':
+          description: >-
+            An ListOpenAIFileResponse containing the list of files.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOpenAIFileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Files
+      description: >-
+        Returns a list of files that belong to the user's organization.
+      parameters:
+        - name: after
+          in: query
+          description: >-
+            A cursor for use in pagination. `after` is an object ID that defines your
+            place in the list. For instance, if you make a list request and receive
+            100 objects, ending with obj_foo, your subsequent call can include after=obj_foo
+            in order to fetch the next page of the list.
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            A limit on the number of objects to be returned. Limit can range between
+            1 and 10,000, and the default is 10,000.
+          required: true
+          schema:
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            Sort order by the `created_at` timestamp of the objects. `asc` for ascending
+            order and `desc` for descending order.
+          required: true
+          schema:
+            $ref: '#/components/schemas/Order'
+        - name: purpose
+          in: query
+          description: >-
+            Only return files with the given purpose.
+          required: false
+          schema:
+            $ref: '#/components/schemas/OpenAIFilePurpose'
+    post:
+      responses:
+        '200':
+          description: >-
+            An OpenAIFileObject representing the uploaded file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Files
+      description: >-
+        Upload a file that can be used across various endpoints.
+
+        The file upload should be a multipart form request with:
+
+        - file: The File object (not file name) to be uploaded.
+
+        - purpose: The intended purpose of the uploaded file.
+      parameters: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                purpose:
+                  type: string
+              required:
+                - file
+                - purpose
+        required: true
   /v1/openai/v1/models:
     get:
       responses:
@@ -2543,6 +2708,37 @@ paths:
         - Models
       description: List models using the OpenAI API.
       parameters: []
+  /v1/openai/v1/files/{file_id}/content:
+    get:
+      responses:
+        '200':
+          description: The raw file content as bytes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bytes'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Files
+      description: >-
+        Returns the contents of the specified file.
+      parameters:
+        - name: file_id
+          in: path
+          description: >-
+            The ID of the file to use for this request.
+          required: true
+          schema:
+            type: string
   /v1/post-training/preference-optimize:
     post:
       responses:
@@ -8177,6 +8373,108 @@ components:
       title: OpenAICompletionChoice
       description: >-
         A choice from an OpenAI-compatible completion response.
+    OpenAIFileDeleteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The file identifier that was deleted
+        object:
+          type: string
+          const: file
+          default: file
+          description: The object type, which is always "file"
+        deleted:
+          type: boolean
+          description: >-
+            Whether the file was successfully deleted
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - deleted
+      title: OpenAIFileDeleteResponse
+      description: >-
+        Response for deleting a file in OpenAI Files API.
+    OpenAIFilePurpose:
+      type: string
+      enum:
+        - assistants
+      title: OpenAIFilePurpose
+      description: >-
+        Valid purpose values for OpenAI Files API.
+    ListOpenAIFileResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIFileObject'
+          description: List of file objects
+        has_more:
+          type: boolean
+        first_id:
+          type: string
+        last_id:
+          type: string
+        object:
+          type: string
+          const: list
+          default: list
+          description: The object type, which is always "list"
+      additionalProperties: false
+      required:
+        - data
+        - has_more
+        - first_id
+        - last_id
+        - object
+      title: ListOpenAIFileResponse
+      description: >-
+        Response for listing files in OpenAI Files API.
+    OpenAIFileObject:
+      type: object
+      properties:
+        object:
+          type: string
+          const: file
+          default: file
+          description: The object type, which is always "file"
+        id:
+          type: string
+          description: >-
+            The file identifier, which can be referenced in the API endpoints
+        bytes:
+          type: integer
+          description: The size of the file, in bytes
+        created_at:
+          type: integer
+          description: >-
+            The Unix timestamp (in seconds) for when the file was created
+        expires_at:
+          type: integer
+          description: >-
+            The Unix timestamp (in seconds) for when the file expires
+        filename:
+          type: string
+          description: The name of the file
+        purpose:
+          type: string
+          enum:
+            - assistants
+          description: The intended purpose of the file
+      additionalProperties: false
+      required:
+        - object
+        - id
+        - bytes
+        - created_at
+        - expires_at
+        - filename
+        - purpose
+      title: OpenAIFileObject
+      description: >-
+        OpenAI File object as defined in the OpenAI Files API.
     OpenAIModel:
       type: object
       properties:
@@ -8209,6 +8507,9 @@ components:
       required:
         - data
       title: OpenAIListModelsResponse
+    bytes:
+      type: string
+      contentEncoding: base64
     DPOAlignmentConfig:
       type: object
       properties:
