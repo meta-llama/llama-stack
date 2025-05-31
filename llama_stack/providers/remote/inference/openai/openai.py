@@ -14,6 +14,9 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
+    OpenAIEmbeddingData,
+    OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
@@ -38,6 +41,7 @@ logger = logging.getLogger(__name__)
 # | batch_chat_completion      | LiteLLMOpenAIMixin       |
 # | openai_completion          | AsyncOpenAI              |
 # | openai_chat_completion     | AsyncOpenAI              |
+# | openai_embeddings          | AsyncOpenAI              |
 #
 class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
     def __init__(self, config: OpenAIConfig) -> None:
@@ -171,3 +175,51 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
             user=user,
         )
         return await self._openai_client.chat.completions.create(**params)
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        model_id = (await self.model_store.get_model(model)).provider_resource_id
+        if model_id.startswith("openai/"):
+            model_id = model_id[len("openai/") :]
+
+        # Prepare parameters for OpenAI embeddings API
+        params = {
+            "model": model_id,
+            "input": input,
+        }
+
+        if encoding_format is not None:
+            params["encoding_format"] = encoding_format
+        if dimensions is not None:
+            params["dimensions"] = dimensions
+        if user is not None:
+            params["user"] = user
+
+        # Call OpenAI embeddings API
+        response = await self._openai_client.embeddings.create(**params)
+
+        data = []
+        for i, embedding_data in enumerate(response.data):
+            data.append(
+                OpenAIEmbeddingData(
+                    embedding=embedding_data.embedding,
+                    index=i,
+                )
+            )
+
+        usage = OpenAIEmbeddingUsage(
+            prompt_tokens=response.usage.prompt_tokens,
+            total_tokens=response.usage.total_tokens,
+        )
+
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=response.model,
+            usage=usage,
+        )

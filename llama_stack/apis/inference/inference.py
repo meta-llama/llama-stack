@@ -783,6 +783,48 @@ class OpenAICompletion(BaseModel):
     object: Literal["text_completion"] = "text_completion"
 
 
+@json_schema_type
+class OpenAIEmbeddingData(BaseModel):
+    """A single embedding data object from an OpenAI-compatible embeddings response.
+
+    :param object: The object type, which will be "embedding"
+    :param embedding: The embedding vector as a list of floats (when encoding_format="float") or as a base64-encoded string (when encoding_format="base64")
+    :param index: The index of the embedding in the input list
+    """
+
+    object: Literal["embedding"] = "embedding"
+    embedding: list[float] | str
+    index: int
+
+
+@json_schema_type
+class OpenAIEmbeddingUsage(BaseModel):
+    """Usage information for an OpenAI-compatible embeddings response.
+
+    :param prompt_tokens: The number of tokens in the input
+    :param total_tokens: The total number of tokens used
+    """
+
+    prompt_tokens: int
+    total_tokens: int
+
+
+@json_schema_type
+class OpenAIEmbeddingsResponse(BaseModel):
+    """Response from an OpenAI-compatible embeddings request.
+
+    :param object: The object type, which will be "list"
+    :param data: List of embedding data objects
+    :param model: The model that was used to generate the embeddings
+    :param usage: Usage information
+    """
+
+    object: Literal["list"] = "list"
+    data: list[OpenAIEmbeddingData]
+    model: str
+    usage: OpenAIEmbeddingUsage
+
+
 class ModelStore(Protocol):
     async def get_model(self, identifier: str) -> Model: ...
 
@@ -1073,6 +1115,26 @@ class InferenceProvider(Protocol):
         :param top_p: (Optional) The top p to use.
         :param user: (Optional) The user to use.
         :returns: An OpenAIChatCompletion.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/embeddings", method="POST")
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        """Generate OpenAI-compatible embeddings for the given input using the specified model.
+
+        :param model: The identifier of the model to use. The model must be an embedding model registered with Llama Stack and available via the /models endpoint.
+        :param input: Input text to embed, encoded as a string or array of strings. To embed multiple inputs in a single request, pass an array of strings.
+        :param encoding_format: (Optional) The format to return the embeddings in. Can be either "float" or "base64". Defaults to "float".
+        :param dimensions: (Optional) The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models.
+        :param user: (Optional) A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
+        :returns: An OpenAIEmbeddingsResponse containing the embeddings.
         """
         ...
 

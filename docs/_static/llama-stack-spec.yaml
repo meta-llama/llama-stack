@@ -2520,6 +2520,38 @@ paths:
             schema:
               $ref: '#/components/schemas/OpenaiCompletionRequest'
         required: true
+  /v1/openai/v1/embeddings:
+    post:
+      responses:
+        '200':
+          description: >-
+            An OpenAIEmbeddingsResponse containing the embeddings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIEmbeddingsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Inference
+      description: >-
+        Generate OpenAI-compatible embeddings for the given input using the specified
+        model.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiEmbeddingsRequest'
+        required: true
   /v1/openai/v1/models:
     get:
       responses:
@@ -8197,6 +8229,118 @@ components:
       title: OpenAICompletionChoice
       description: >-
         A choice from an OpenAI-compatible completion response.
+    OpenaiEmbeddingsRequest:
+      type: object
+      properties:
+        model:
+          type: string
+          description: >-
+            The identifier of the model to use. The model must be an embedding model
+            registered with Llama Stack and available via the /models endpoint.
+        input:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: >-
+            Input text to embed, encoded as a string or array of strings. To embed
+            multiple inputs in a single request, pass an array of strings.
+        encoding_format:
+          type: string
+          description: >-
+            (Optional) The format to return the embeddings in. Can be either "float"
+            or "base64". Defaults to "float".
+        dimensions:
+          type: integer
+          description: >-
+            (Optional) The number of dimensions the resulting output embeddings should
+            have. Only supported in text-embedding-3 and later models.
+        user:
+          type: string
+          description: >-
+            (Optional) A unique identifier representing your end-user, which can help
+            OpenAI to monitor and detect abuse.
+      additionalProperties: false
+      required:
+        - model
+        - input
+      title: OpenaiEmbeddingsRequest
+    OpenAIEmbeddingData:
+      type: object
+      properties:
+        object:
+          type: string
+          const: embedding
+          default: embedding
+          description: >-
+            The object type, which will be "embedding"
+        embedding:
+          oneOf:
+            - type: array
+              items:
+                type: number
+            - type: string
+          description: >-
+            The embedding vector as a list of floats (when encoding_format="float")
+            or as a base64-encoded string (when encoding_format="base64")
+        index:
+          type: integer
+          description: >-
+            The index of the embedding in the input list
+      additionalProperties: false
+      required:
+        - object
+        - embedding
+        - index
+      title: OpenAIEmbeddingData
+      description: >-
+        A single embedding data object from an OpenAI-compatible embeddings response.
+    OpenAIEmbeddingUsage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+          description: The number of tokens in the input
+        total_tokens:
+          type: integer
+          description: The total number of tokens used
+      additionalProperties: false
+      required:
+        - prompt_tokens
+        - total_tokens
+      title: OpenAIEmbeddingUsage
+      description: >-
+        Usage information for an OpenAI-compatible embeddings response.
+    OpenAIEmbeddingsResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          const: list
+          default: list
+          description: The object type, which will be "list"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIEmbeddingData'
+          description: List of embedding data objects
+        model:
+          type: string
+          description: >-
+            The model that was used to generate the embeddings
+        usage:
+          $ref: '#/components/schemas/OpenAIEmbeddingUsage'
+          description: Usage information
+      additionalProperties: false
+      required:
+        - object
+        - data
+        - model
+        - usage
+      title: OpenAIEmbeddingsResponse
+      description: >-
+        Response from an OpenAI-compatible embeddings request.
     OpenAIModel:
       type: object
       properties:

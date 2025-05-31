@@ -23,6 +23,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     ResponseFormatType,
     SamplingParams,
@@ -289,6 +290,16 @@ class _HfAdapter(
         output_dimension: int | None = None,
         task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
+        raise NotImplementedError()
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
         raise NotImplementedError()
 
 
