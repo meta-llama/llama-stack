@@ -66,6 +66,39 @@ To use sqlite-vec in your Llama Stack project, follow these steps:
 2. Configure your Llama Stack project to use SQLite-Vec.
 3. Start storing and querying vectors.
 
+The SQLite-vec provider supports three search modes:
+
+1. **Vector Search** (`mode="vector"`): Performs pure vector similarity search using the embeddings.
+2. **Keyword Search** (`mode="keyword"`): Performs full-text search using SQLite's FTS5.
+3. **Hybrid Search** (`mode="hybrid"`): Combines both vector and keyword search for better results. First performs keyword search to get candidate matches, then applies vector similarity search on those candidates.
+
+Example with hybrid search:
+```python
+response = await vector_io.query_chunks(
+    vector_db_id="my_db",
+    query="your query here",
+    params={"mode": "hybrid", "max_chunks": 3, "score_threshold": 0.7},
+)
+```
+
+Example with explicit vector search:
+```python
+response = await vector_io.query_chunks(
+    vector_db_id="my_db",
+    query="your query here",
+    params={"mode": "vector", "max_chunks": 3, "score_threshold": 0.7},
+)
+```
+
+Example with keyword search:
+```python
+response = await vector_io.query_chunks(
+    vector_db_id="my_db",
+    query="your query here",
+    params={"mode": "keyword", "max_chunks": 3, "score_threshold": 0.7},
+)
+```
+
 ## Supported Search Modes
 
 The sqlite-vec provider supports both vector-based and keyword-based (full-text) search modes.

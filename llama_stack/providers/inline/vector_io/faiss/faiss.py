@@ -124,6 +124,15 @@ class FaissIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in FAISS")
 
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in FAISS")
+
 
 class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(self, config: FaissVectorIOConfig, inference_api: Inference) -> None:
