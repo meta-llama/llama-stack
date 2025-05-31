@@ -47,6 +47,7 @@ def skip_if_model_doesnt_support_openai_embeddings(client_with_models, model_id)
         "remote::runpod",
         "remote::sambanova",
         "remote::tgi",
+        "remote::ollama",
     ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support OpenAI embeddings.")
 
