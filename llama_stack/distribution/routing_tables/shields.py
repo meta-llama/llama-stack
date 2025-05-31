@@ -9,7 +9,7 @@ from typing import Any
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.shields import ListShieldsResponse, Shield, Shields
 from llama_stack.distribution.datatypes import (
-    ShieldWithACL,
+    ShieldWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -47,7 +47,7 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
                 )
         if params is None:
             params = {}
-        shield = ShieldWithACL(
+        shield = ShieldWithOwner(
             identifier=shield_id,
             provider_resource_id=provider_shield_id,
             provider_id=provider_id,

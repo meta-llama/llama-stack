@@ -8,7 +8,7 @@ from typing import Any
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import ListToolGroupsResponse, ListToolsResponse, Tool, ToolGroup, ToolGroups
-from llama_stack.distribution.datatypes import ToolGroupWithACL
+from llama_stack.distribution.datatypes import ToolGroupWithOwner
 from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl
@@ -106,7 +106,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         mcp_endpoint: URL | None = None,
         args: dict[str, Any] | None = None,
     ) -> None:
-        toolgroup = ToolGroupWithACL(
+        toolgroup = ToolGroupWithOwner(
             identifier=toolgroup_id,
             provider_id=provider_id,
             provider_resource_id=toolgroup_id,

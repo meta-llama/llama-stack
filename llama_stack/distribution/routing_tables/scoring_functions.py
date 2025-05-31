@@ -13,7 +13,7 @@ from llama_stack.apis.scoring_functions import (
     ScoringFunctions,
 )
 from llama_stack.distribution.datatypes import (
-    ScoringFnWithACL,
+    ScoringFnWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -50,7 +50,7 @@ class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
                 raise ValueError(
                     "No provider specified and multiple providers available. Please specify a provider_id."
                 )
-        scoring_fn = ScoringFnWithACL(
+        scoring_fn = ScoringFnWithOwner(
             identifier=scoring_fn_id,
             description=description,
             return_type=return_type,

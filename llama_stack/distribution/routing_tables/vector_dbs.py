@@ -10,7 +10,7 @@ from llama_stack.apis.models import ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
 from llama_stack.distribution.datatypes import (
-    VectorDBWithACL,
+    VectorDBWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -63,7 +63,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             "embedding_model": embedding_model,
             "embedding_dimension": model.metadata["embedding_dimension"],
         }
-        vector_db = TypeAdapter(VectorDBWithACL).validate_python(vector_db_data)
+        vector_db = TypeAdapter(VectorDBWithOwner).validate_python(vector_db_data)
         await self.register_object(vector_db)
         return vector_db
 

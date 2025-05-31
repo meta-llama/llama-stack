@@ -105,24 +105,16 @@ class AuthenticationMiddleware:
                 logger.exception("Error during authentication")
                 return await self._send_auth_error(send, "Authentication service error")
 
-            # Store attributes in request scope for access control
-            if validation_result.access_attributes:
-                user_attributes = validation_result.access_attributes.model_dump(exclude_none=True)
-            else:
-                logger.warning("No access attributes, setting namespace to token by default")
-                user_attributes = {
-                    "roles": [token],
-                }
-
             # Store the client ID in the request scope so that downstream middleware (like QuotaMiddleware)
             # can identify the requester and enforce per-client rate limits.
             scope["authenticated_client_id"] = token
 
             # Store attributes in request scope
-            scope["user_attributes"] = user_attributes
             scope["principal"] = validation_result.principal
+            if validation_result.attributes:
+                scope["user_attributes"] = validation_result.attributes
             logger.debug(
-                f"Authentication successful: {validation_result.principal} with {len(scope['user_attributes'])} attributes"
+                f"Authentication successful: {validation_result.principal} with {len(validation_result.attributes)} attributes"
             )
 
         return await self.app(scope, receive, send)
