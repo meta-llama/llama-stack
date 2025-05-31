@@ -224,15 +224,15 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
         ],
     )
 
-    # Verify
+    # Check that we got the content from our mocked tool execution result
+    chunks = [chunk async for chunk in result]
+    assert len(chunks) == 2  # Should have response.created and response.completed
+
+    # Verify inference API was called correctly (after iterating over result)
     first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
     assert first_call.kwargs["messages"][0].content == input_text
     assert first_call.kwargs["tools"] is not None
     assert first_call.kwargs["temperature"] == 0.1
-
-    # Check that we got the content from our mocked tool execution result
-    chunks = [chunk async for chunk in result]
-    assert len(chunks) == 2  # Should have response.created and response.completed
 
     # Check response.created event (should have empty output)
     assert chunks[0].type == "response.created"
