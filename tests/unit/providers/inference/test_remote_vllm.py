@@ -653,7 +653,7 @@ async def test_health_status_success(vllm_inference_adapter):
     # Mock the client.models.list method to return successfully
     # Set vllm_inference_adapter.client to None to ensure _create_client is called
     vllm_inference_adapter.client = None
-    with patch.object(vllm_inference_adapter, '_create_client') as mock_create_client:
+    with patch.object(vllm_inference_adapter, "_create_client") as mock_create_client:
         # Create mock client and models
         mock_client = MagicMock()
         mock_models = MagicMock()
@@ -678,7 +678,7 @@ async def test_health_status_failure(vllm_inference_adapter):
     """
     vllm_inference_adapter.client = None
     # Mock the client.models.list method to raise an exception
-    with patch.object(vllm_inference_adapter, '_create_client') as mock_create_client:
+    with patch.object(vllm_inference_adapter, "_create_client") as mock_create_client:
         # Create mock client and models
         mock_client = MagicMock()
         mock_models = MagicMock()

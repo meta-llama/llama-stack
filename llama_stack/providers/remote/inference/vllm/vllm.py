@@ -9,7 +9,6 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
 import httpx
-import requests
 from openai import AsyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
@@ -314,14 +313,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         try:
             client = self._create_client() if self.client is None else self.client
             client.models.list()  # Ensure the client is initialized
-            return HealthResponse(
-                status=HealthStatus.OK
-            )
+            return HealthResponse(status=HealthStatus.OK)
         except Exception as ex:
-            return HealthResponse(
-                status=HealthStatus.ERROR,
-                message=f"Health check failed: {str(ex)}"
-            )
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(ex)}")
 
     async def _get_model(self, model_id: str) -> Model:
         if not self.model_store:
