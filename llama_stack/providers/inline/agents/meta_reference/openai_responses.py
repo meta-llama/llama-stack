@@ -492,7 +492,12 @@ class OpenAIResponsesImpl:
                     for tool_call in chunk_choice.delta.tool_calls:
                         response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
                         if response_tool_call:
-                            response_tool_call.function.arguments += tool_call.function.arguments
+                            # Don't attempt to concatenate arguments if we don't have any new arguments
+                            if tool_call.function.arguments:
+                                # Guard against an initial None argument before we concatenate
+                                response_tool_call.function.arguments = (
+                                    response_tool_call.function.arguments or ""
+                                ) + tool_call.function.arguments
                         else:
                             tool_call_dict: dict[str, Any] = tool_call.model_dump()
                             tool_call_dict.pop("type", None)
