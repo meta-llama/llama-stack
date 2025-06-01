@@ -91,14 +91,9 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
         try:
             model = self._get_client(self._config.model_id)
             model.generate("test")
-            return HealthResponse(
-                status=HealthStatus.OK
-            )
+            return HealthResponse(status=HealthStatus.OK)
         except Exception as ex:
-            return HealthResponse(
-                status=HealthStatus.ERROR,
-                message=f"Health check failed: {str(ex)}"
-            )
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(ex)}")
 
     async def completion(
         self,
