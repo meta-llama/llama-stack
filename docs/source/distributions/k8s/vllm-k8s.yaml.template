@@ -32,7 +32,7 @@ spec:
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args:
-        - "vllm serve ${INFERENCE_MODEL} --dtype float16 --enforce-eager --max-model-len 8192 --gpu-memory-utilization 0.5"
+        - "vllm serve ${INFERENCE_MODEL} --dtype float16 --enforce-eager --max-model-len 6144 --gpu-memory-utilization 0.55"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
@@ -81,7 +81,7 @@ spec:
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args: [
-          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 8192 --gpu-memory-utilization 0.3"
+          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 6144 --gpu-memory-utilization 0.28"
         ]
         env:
         - name: HUGGING_FACE_HUB_TOKEN

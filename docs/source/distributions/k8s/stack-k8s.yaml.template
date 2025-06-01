@@ -27,7 +27,7 @@ spec:
       containers:
       - name: llama-stack
         image: llamastack/distribution-remote-vllm:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always # since we have specified latest instead of a version
         env:
         - name: VLLM_URL
           value: http://vllm-server.default.svc.cluster.local:8000/v1
