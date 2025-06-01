@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
 export POSTGRES_USER=${POSTGRES_USER:-llamastack}
 export POSTGRES_DB=${POSTGRES_DB:-llamastack}
 export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-llamastack}
@@ -11,6 +17,7 @@ set -euo pipefail
 set -x
 
 envsubst < ./vllm-k8s.yaml.template | kubectl apply -f -
+envsubst < ./vllm-safety-k8s.yaml.template | kubectl apply -f -
 envsubst < ./postgres-k8s.yaml.template | kubectl apply -f -
 envsubst < ./chroma-k8s.yaml.template | kubectl apply -f -
 

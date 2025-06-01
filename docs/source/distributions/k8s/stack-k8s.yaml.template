@@ -29,8 +29,12 @@ spec:
         image: llamastack/distribution-remote-vllm:latest
         imagePullPolicy: Always # since we have specified latest instead of a version
         env:
+        - name: ENABLE_CHROMADB
+          value: "true"
         - name: VLLM_URL
           value: http://vllm-server.default.svc.cluster.local:8000/v1
+        - name: VLLM_MAX_TOKENS
+          value: "3072"
         - name: VLLM_SAFETY_URL
           value: http://vllm-server-safety.default.svc.cluster.local:8001/v1
         - name: POSTGRES_HOST
