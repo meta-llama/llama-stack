@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import base64
+import struct
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -35,6 +37,9 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
+    OpenAIEmbeddingData,
+    OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
@@ -263,6 +268,52 @@ class LiteLLMOpenAIMixin(
 
         embeddings = [data["embedding"] for data in response["data"]]
         return EmbeddingsResponse(embeddings=embeddings)
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        model_obj = await self.model_store.get_model(model)
+
+        # Convert input to list if it's a string
+        input_list = [input] if isinstance(input, str) else input
+
+        # Call litellm embedding function
+        # litellm.drop_params = True
+        response = litellm.embedding(
+            model=self.get_litellm_model_name(model_obj.provider_resource_id),
+            input=input_list,
+            api_key=self.get_api_key(),
+            api_base=self.api_base,
+            dimensions=dimensions,
+        )
+
+        # Convert response to OpenAI format
+        data = []
+        for i, embedding_data in enumerate(response["data"]):
+            # we encode to base64 if the encoding format is base64 in the request
+            if encoding_format == "base64":
+                byte_data = b"".join(struct.pack("f", f) for f in embedding_data["embedding"])
+                embedding = base64.b64encode(byte_data).decode("utf-8")
+            else:
+                embedding = embedding_data["embedding"]
+
+            data.append(OpenAIEmbeddingData(embedding=embedding, index=i))
+
+        usage = OpenAIEmbeddingUsage(
+            prompt_tokens=response["usage"]["prompt_tokens"],
+            total_tokens=response["usage"]["total_tokens"],
+        )
+
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=model_obj.provider_resource_id,
+            usage=usage,
+        )
 
     async def openai_completion(
         self,

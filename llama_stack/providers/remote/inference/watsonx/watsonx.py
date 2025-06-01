@@ -21,6 +21,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -283,6 +284,16 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
         task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         raise NotImplementedError("embedding is not supported for watsonx")
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def openai_completion(
         self,
