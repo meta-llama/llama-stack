@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vllm-models-safety
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: gp2
+  resources:
+    requests:
+      storage: 30Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -11,13 +24,24 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: vllm-safety
+        workload-type: inference
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: workload-type
+                operator: In
+                values:
+                - inference
+            topologyKey: kubernetes.io/hostname  # Ensures no two inference pods on same node
       containers:
       - name: vllm-safety
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args: [
-          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.28"
+          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.3"
         ]
         env:
         - name: HUGGING_FACE_HUB_TOKEN
@@ -33,7 +57,7 @@ spec:
       volumes:
       - name: llama-storage
         persistentVolumeClaim:
-          claimName: vllm-models
+          claimName: vllm-models-safety
 ---
 apiVersion: v1
 kind: Service

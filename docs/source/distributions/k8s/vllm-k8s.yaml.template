@@ -1,5 +1,3 @@
-# NOTE: this template does not really do any fancy node mapping or affinity declarations
-# so the inference and safety models may land on the same GPU node
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -26,13 +24,24 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: vllm
+        workload-type: inference
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: workload-type
+                operator: In
+                values:
+                - inference
+            topologyKey: kubernetes.io/hostname  # Ensures no two inference pods on same node
       containers:
       - name: vllm
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args:
-        - "vllm serve ${INFERENCE_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.5"
+        - "vllm serve ${INFERENCE_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.6"
         env:
         - name: HUGGING_FACE_HUB_TOKEN
           valueFrom:
