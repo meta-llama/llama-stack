@@ -41,6 +41,7 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]

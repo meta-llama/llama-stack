@@ -18,7 +18,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, get_origin
 
 import rich.pretty
 import yaml
@@ -244,15 +244,23 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
 
     path_params = extract_path_params(route)
     if method == "post":
-        # Annotate parameters that are in the path with Path(...) and others with Body(...)
-        new_params = [new_params[0]] + [
-            (
-                param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
-                if param.name in path_params
-                else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
-            )
-            for param in new_params[1:]
-        ]
+        # Annotate parameters that are in the path with Path(...) and others with Body(...),
+        # but preserve existing File() and Form() annotations for multipart form data
+        new_params = (
+            [new_params[0]]
+            + [
+                (
+                    param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
+                    if param.name in path_params
+                    else (
+                        param  # Keep original annotation if it's already an Annotated type
+                        if get_origin(param.annotation) is Annotated
+                        else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
+                    )
+                )
+                for param in new_params[1:]
+            ]
+        )
 
     route_handler.__signature__ = sig.replace(parameters=new_params)
 

@@ -130,6 +130,8 @@ python-dotenv==1.0.1
     # via llama-stack
 python-jose==3.4.0
     # via llama-stack
+python-multipart==0.0.20
+    # via llama-stack
 pytz==2025.1
     # via pandas
 pyyaml==6.0.2

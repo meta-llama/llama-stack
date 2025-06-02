@@ -16,6 +16,8 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 from .api import SqlStore
 
+sql_store_pip_packages = ["sqlalchemy[asyncio]", "aiosqlite", "asyncpg"]
+
 
 class SqlStoreType(Enum):
     sqlite = "sqlite"
