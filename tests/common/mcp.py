@@ -24,16 +24,16 @@ def default_tools():
     ) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
         return [types.TextContent(type="text", text="Hello, world!")]
 
-    async def get_boiling_point(liquid_name: str, celcius: bool = True) -> int:
+    async def get_boiling_point(liquid_name: str, celsius: bool = True) -> int:
         """
-        Returns the boiling point of a liquid in Celcius or Fahrenheit.
+        Returns the boiling point of a liquid in Celsius or Fahrenheit.
 
         :param liquid_name: The name of the liquid
-        :param celcius: Whether to return the boiling point in Celcius
+        :param celsius: Whether to return the boiling point in Celsius
         :return: The boiling point of the liquid in Celcius or Fahrenheit
         """
-        if liquid_name.lower() == "polyjuice":
-            if celcius:
+        if liquid_name.lower() == "myawesomeliquid":
+            if celsius:
                 return -100
             else:
                 return -212

@@ -899,5 +899,8 @@ class OpenAIResponsesImpl:
             else:
                 raise ValueError(f"Unknown result content type: {type(result.content)}")
             input_message = OpenAIToolMessageParam(content=content, tool_call_id=tool_call_id)
+        else:
+            text = str(error_exc)
+            input_message = OpenAIToolMessageParam(content=text, tool_call_id=tool_call_id)
 
         return message, input_message

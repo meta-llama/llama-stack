@@ -291,13 +291,9 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
         call = response.output[1]
         assert call.type == "mcp_call"
         assert call.name == "get_boiling_point"
-        assert json.loads(call.arguments) == {"liquid_name": "polyjuice", "celcius": True}
+        assert json.loads(call.arguments) == {"liquid_name": "myawesomeliquid", "celsius": True}
         assert call.error is None
         assert "-100" in call.output
-
-        from rich.pretty import pprint
-
-        pprint(response)
 
         # sometimes the model will call the tool again, so we need to get the last message
         message = response.output[-1]

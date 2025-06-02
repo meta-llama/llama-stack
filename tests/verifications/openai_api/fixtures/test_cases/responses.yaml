@@ -36,7 +36,7 @@ test_response_mcp_tool:
   test_params:
     case:
     - case_id: "boiling_point_tool"
-      input: "What is the boiling point of polyjuice?"
+      input: "What is the boiling point of myawesomeliquid in Celsius?"
       tools:
       - type: mcp
         server_label: "localmcp"
@@ -100,7 +100,7 @@ test_response_multi_turn_tool_execution:
   test_params:
     case:
     - case_id: "user_file_access_check"
-      input: "I need to check if user 'alice' can access the file 'document.txt'. First, get alice's user ID, then check if that user ID can access the file 'document.txt'. Tell me the final result."
+      input: "I need to check if user 'alice' can access the file 'document.txt'. First, get alice's user ID, then check if that user ID can access the file 'document.txt'. Do this as a series of steps, where each step is a separate message. Return only one tool call per step. Summarize the final result with a single 'yes' or 'no' response."
       tools:
       - type: mcp
         server_label: "localmcp"
