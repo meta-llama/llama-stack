@@ -20,7 +20,7 @@ spec:
         command: ["/bin/sh"]
         env:
         - name: NEXT_PUBLIC_LLAMA_STACK_BASE_URL
-          value: http://a9b23cf49859a4404a995d8de9be196c-1309033458.us-west-2.elb.amazonaws.com:8321
+          value: ${NEXT_PUBLIC_LLAMA_STACK_BASE_URL}
         args:
           - -c
           - |
