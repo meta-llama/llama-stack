@@ -3,6 +3,8 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
+
 import pytest
 from openai import OpenAI
 
@@ -91,6 +93,69 @@ def test_responses_store(openai_client, client_with_models, text_model_id, strea
     assert retrieved_response.output[0].type == output_type, retrieved_response
     if output_type == "message":
         assert retrieved_response.output[0].content[0].text == content
+
+
+def test_responses_store_with_tools(openai_client, client_with_models, text_model_id):
+    """Tests that previous response id is used to continue the conversation with tools."""
+    if isinstance(client_with_models, LlamaStackAsLibraryClient):
+        pytest.skip("OpenAI responses are not supported when testing with library client yet.")
+
+    client = openai_client
+    message = "What's the weather in Tokyo?" + " YOU MUST USE THE get_weather function to get the weather."
+    response = client.responses.create(
+        model=text_model_id,
+        input=[
+            {
+                "role": "user",
+                "content": message,
+            }
+        ],
+        stream=False,
+        tools=[
+            {
+                "type": "function",
+                "name": "get_weather",
+                "description": "Get the weather in a given city",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "city": {"type": "string", "description": "The city to get the weather for"},
+                    },
+                },
+            }
+        ],
+    )
+    assert response.output[0].type == "function_call"
+    assert response.output[0].name == "get_weather"
+    assert json.loads(response.output[0].arguments) == {"city": "Tokyo"}
+
+    response = client.responses.create(
+        model=text_model_id,
+        input=[
+            {
+                "type": "function_call_output",
+                "call_id": response.output[0].call_id,
+                "output": "sunny and warm",
+            }
+        ],
+        stream=False,
+        tools=[
+            {
+                "type": "function",
+                "name": "get_weather",
+                "description": "Get the weather in a given city",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "city": {"type": "string", "description": "The city to get the weather for"},
+                    },
+                },
+            }
+        ],
+        previous_response_id=response.id,
+    )
+    assert response.output[0].type == "message"
+    assert "sunny and warm" in response.output[0].content[0].text
 
 
 def test_list_response_input_items(openai_client, client_with_models, text_model_id):
