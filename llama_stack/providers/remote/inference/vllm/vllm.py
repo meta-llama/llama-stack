@@ -313,10 +313,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         """
         try:
             client = self._create_client() if self.client is None else self.client
-            client.models.list()  # Ensure the client is initialized
+            _ = [m async for m in client.models.list()]  # Ensure the client is initialized
             return HealthResponse(status=HealthStatus.OK)
-        except Exception as ex:
-            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(ex)}")
+        except Exception as e:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def _get_model(self, model_id: str) -> Model:
         if not self.model_store:
