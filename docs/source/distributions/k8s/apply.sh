@@ -28,3 +28,5 @@ kubectl apply -f stack-configmap.yaml
 
 envsubst < ./stack-k8s.yaml.template | kubectl apply -f -
 envsubst < ./ingress-k8s.yaml.template | kubectl apply -f -
+
+envsubst < ./ui-k8s.yaml.template | kubectl apply -f -

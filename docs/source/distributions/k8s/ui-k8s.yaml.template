@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llama-stack-ui
+  labels:
+    app: llama-stack-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llama-stack-ui
+  template:
+    metadata:
+      labels:
+        app: llama-stack-ui
+    spec:
+      containers:
+      - name: llama-stack-ui
+        image: node:18-alpine
+        command: ["/bin/sh"]
+        env:
+        - name: NEXT_PUBLIC_LLAMA_STACK_BASE_URL
+          value: http://a9b23cf49859a4404a995d8de9be196c-1309033458.us-west-2.elb.amazonaws.com:8321
+        args:
+          - -c
+          - |
+            # Install git (not included in alpine by default)
+            apk add --no-cache git
+            
+            # Clone the repository
+            echo "Cloning repository..."
+            git clone https://github.com/meta-llama/llama-stack.git /app
+            
+            # Navigate to the UI directory
+            echo "Navigating to UI directory..."
+            cd /app/llama_stack/ui
+            
+            # Check if package.json exists
+            if [ ! -f "package.json" ]; then
+              echo "ERROR: package.json not found in $(pwd)"
+              ls -la
+              exit 1
+            fi
+            
+            # Install dependencies with verbose output
+            echo "Installing dependencies..."
+            npm install --verbose
+            
+            # Verify next is installed
+            echo "Checking if next is installed..."
+            npx next --version || echo "Next.js not found, checking node_modules..."
+            ls -la node_modules/.bin/ | grep next || echo "No next binary found"
+
+            npm run dev --port 8322
+        ports:
+        - containerPort: 8322
+        workingDir: /app
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-stack-ui-service
+  labels:
+    app: llama-stack-ui
+spec:
+  selector:
+    app: llama-stack-ui
+  ports:
+  - port: 8322
+    targetPort: 8322
+    protocol: TCP
+  type: ClusterIP
