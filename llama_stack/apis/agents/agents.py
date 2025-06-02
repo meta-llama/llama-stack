@@ -604,6 +604,7 @@ class Agents(Protocol):
         stream: bool | None = False,
         temperature: float | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        max_infer_iters: int | None = 10,  # this is an extension to the OpenAI API
     ) -> OpenAIResponseObject | AsyncIterator[OpenAIResponseObjectStream]:
         """Create a new OpenAI response.
 
