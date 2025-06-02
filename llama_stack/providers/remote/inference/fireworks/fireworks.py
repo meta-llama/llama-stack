@@ -255,7 +255,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
         params = {
             "model": request.model,
             **input_dict,
-            "stream": request.stream,
+            "stream": bool(request.stream),
             **self._build_options(request.sampling_params, request.response_format, request.logprobs),
         }
         logger.debug(f"params to fireworks: {params}")
