@@ -261,15 +261,14 @@ class OpenAIResponsesImpl:
     def _is_function_tool_call(
         self,
         tool_call: OpenAIChatCompletionToolCall,
-        tools: list[OpenAIResponseInputTool] | None,
+        tools: list[OpenAIResponseInputTool],
     ) -> bool:
-        """Check if a tool call is a function tool call (client-side) vs non-function (server-side)."""
-        if not tools:
+        if not tool_call.function:
             return False
-
-        # If the first tool is a function, assume all tools are functions
-        # This matches the logic in _process_response_choices
-        return tools[0].type == "function"
+        for t in tools:
+            if t.type == "function" and t.name == tool_call.function.name:
+                return True
+        return False
 
     async def _process_response_choices(
         self,
