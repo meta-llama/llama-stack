@@ -27,3 +27,4 @@ kubectl create configmap llama-stack-config --from-file=stack_run_config.yaml \
 kubectl apply -f stack-configmap.yaml
 
 envsubst < ./stack-k8s.yaml.template | kubectl apply -f -
+envsubst < ./ingress-k8s.yaml.template | kubectl apply -f -
