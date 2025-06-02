@@ -3,16 +3,19 @@ kind: Deployment
 metadata:
   name: llama-stack-ui
   labels:
-    app: llama-stack-ui
+    app.kubernetes.io/name: llama-stack
+    app.kubernetes.io/component: ui
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: llama-stack-ui
+      app.kubernetes.io/name: llama-stack
+      app.kubernetes.io/component: ui
   template:
     metadata:
       labels:
-        app: llama-stack-ui
+        app.kubernetes.io/name: llama-stack
+        app.kubernetes.io/component: ui
     spec:
       containers:
       - name: llama-stack-ui
@@ -21,6 +24,8 @@ spec:
         env:
         - name: NEXT_PUBLIC_LLAMA_STACK_BASE_URL
           value: ${NEXT_PUBLIC_LLAMA_STACK_BASE_URL}
+        - name: LLAMA_STACK_UI_PORT
+          value: "8322"
         args:
           - -c
           - |
@@ -51,23 +56,7 @@ spec:
             npx next --version || echo "Next.js not found, checking node_modules..."
             ls -la node_modules/.bin/ | grep next || echo "No next binary found"
 
-            npm run dev --port 8322
+            npm run dev
         ports:
         - containerPort: 8322
         workingDir: /app
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: llama-stack-ui-service
-  labels:
-    app: llama-stack-ui
-spec:
-  selector:
-    app: llama-stack-ui
-  ports:
-  - port: 8322
-    targetPort: 8322
-    protocol: TCP
-  type: ClusterIP
