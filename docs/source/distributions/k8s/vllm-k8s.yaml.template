@@ -57,3 +57,16 @@ spec:
       - name: llama-storage
         persistentVolumeClaim:
           claimName: vllm-models
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-server
+spec:
+  selector:
+    app.kubernetes.io/name: vllm
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

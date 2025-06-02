@@ -41,7 +41,7 @@ spec:
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args: [
-          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.3"
+          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --port 8001 --gpu-memory-utilization 0.3"
         ]
         env:
         - name: HUGGING_FACE_HUB_TOKEN

@@ -31,6 +31,8 @@ spec:
         env:
         - name: ENABLE_CHROMADB
           value: "true"
+        - name: CHROMADB_URL
+          value: http://chromadb.default.svc.cluster.local:6000
         - name: VLLM_URL
           value: http://vllm-server.default.svc.cluster.local:8000/v1
         - name: VLLM_MAX_TOKENS
