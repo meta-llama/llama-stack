@@ -15,7 +15,6 @@ from llama_stack.providers.datatypes import (
 
 META_REFERENCE_DEPS = [
     "accelerate",
-    "blobfile",
     "fairscale",
     "torch",
     "torchvision",
