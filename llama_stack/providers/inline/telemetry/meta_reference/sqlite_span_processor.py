@@ -161,7 +161,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                 """,
                     (
                         span_id,
-                        event.name,
+                        str(event.name),
                         datetime.fromtimestamp(event.timestamp / 1e9, timezone.utc).isoformat(),
                         json.dumps(dict(event.attributes)),
                     ),
