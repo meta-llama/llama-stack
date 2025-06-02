@@ -27,6 +27,7 @@ class Api(Enum):
     telemetry = "telemetry"
 
     models = "models"
+    post_training_models = "post_training_models"
     shields = "shields"
     vector_dbs = "vector_dbs"
     datasets = "datasets"
