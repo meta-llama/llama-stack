@@ -6,7 +6,6 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
-  storageClassName: gp2
   resources:
     requests:
       storage: 50Gi
