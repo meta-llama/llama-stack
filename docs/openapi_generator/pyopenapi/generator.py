@@ -30,6 +30,9 @@ from llama_stack.strong_typing.schema import (
     Schema,
     SchemaOptions,
 )
+from typing import get_origin, get_args
+from typing import Annotated
+from fastapi import UploadFile
 from llama_stack.strong_typing.serialization import json_dump_string, object_to_json
 
 from .operations import (
@@ -614,6 +617,45 @@ class Generator:
                             "type": "string",
                             "format": "binary",
                         }
+                    }
+                },
+                required=True,
+            )
+        # data passed in request body as multipart/form-data
+        elif op.multipart_params:
+            builder = ContentBuilder(self.schema_builder)
+            
+            # Create schema properties for multipart form fields
+            properties = {}
+            required_fields = []
+            
+            for name, param_type in op.multipart_params:
+                if get_origin(param_type) is Annotated:
+                    base_type = get_args(param_type)[0]
+                else:
+                    base_type = param_type
+                if base_type is UploadFile:
+                    # File upload
+                    properties[name] = {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                else:
+                    # Form field
+                    properties[name] = self.schema_builder.classdef_to_ref(base_type)
+                
+                required_fields.append(name)
+            
+            multipart_schema = {
+                "type": "object",
+                "properties": properties,
+                "required": required_fields
+            }
+            
+            requestBody = RequestBody(
+                content={
+                    "multipart/form-data": {
+                        "schema": multipart_schema
                     }
                 },
                 required=True,
