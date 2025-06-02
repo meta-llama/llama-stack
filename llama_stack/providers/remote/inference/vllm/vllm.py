@@ -304,10 +304,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def health(self) -> HealthResponse:
         """
-        Performs a health check by verifying connectivity to the remote VLLM server.
-        This method is used by initialize() and the Provider API to verify
+        Performs a health check by verifying connectivity to the remote vLLM server.
+        This method is used by the Provider API to verify
         that the service is running correctly.
         Returns:
+
             HealthResponse: A dictionary containing the health status.
         """
         try:
