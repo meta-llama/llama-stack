@@ -60,6 +60,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.datatypes import AccessRule
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
@@ -96,13 +97,14 @@ class ChatAgent(ShieldRunnerMixin):
         vector_io_api: VectorIO,
         persistence_store: KVStore,
         created_at: str,
+        policy: list[AccessRule],
     ):
         self.agent_id = agent_id
         self.agent_config = agent_config
         self.inference_api = inference_api
         self.safety_api = safety_api
         self.vector_io_api = vector_io_api
-        self.storage = AgentPersistence(agent_id, persistence_store)
+        self.storage = AgentPersistence(agent_id, persistence_store, policy)
         self.tool_runtime_api = tool_runtime_api
         self.tool_groups_api = tool_groups_api
         self.created_at = created_at

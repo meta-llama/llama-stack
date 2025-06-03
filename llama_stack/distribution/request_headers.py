@@ -10,6 +10,8 @@ import logging
 from contextlib import AbstractContextManager
 from typing import Any
 
+from llama_stack.distribution.datatypes import User
+
 from .utils.dynamic import instantiate_class_type
 
 log = logging.getLogger(__name__)
@@ -21,12 +23,10 @@ PROVIDER_DATA_VAR = contextvars.ContextVar("provider_data", default=None)
 class RequestProviderDataContext(AbstractContextManager):
     """Context manager for request provider data"""
 
-    def __init__(
-        self, provider_data: dict[str, Any] | None = None, auth_attributes: dict[str, list[str]] | None = None
-    ):
+    def __init__(self, provider_data: dict[str, Any] | None = None, user: User | None = None):
         self.provider_data = provider_data or {}
-        if auth_attributes:
-            self.provider_data["__auth_attributes"] = auth_attributes
+        if user:
+            self.provider_data["__authenticated_user"] = user
 
         self.token = None
 
@@ -95,9 +95,9 @@ def request_provider_data_context(
     return RequestProviderDataContext(provider_data, auth_attributes)
 
 
-def get_auth_attributes() -> dict[str, list[str]] | None:
+def get_authenticated_user() -> User | None:
     """Helper to retrieve auth attributes from the provider data context"""
     provider_data = PROVIDER_DATA_VAR.get()
     if not provider_data:
         return None
-    return provider_data.get("__auth_attributes")
+    return provider_data.get("__authenticated_user")

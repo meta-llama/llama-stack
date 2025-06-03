@@ -41,6 +41,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
+from llama_stack.distribution.datatypes import AccessRule
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
@@ -62,6 +63,7 @@ class MetaReferenceAgentsImpl(Agents):
         safety_api: Safety,
         tool_runtime_api: ToolRuntime,
         tool_groups_api: ToolGroups,
+        policy: list[AccessRule],
     ):
         self.config = config
         self.inference_api = inference_api
@@ -72,6 +74,7 @@ class MetaReferenceAgentsImpl(Agents):
 
         self.in_memory_store = InmemoryKVStoreImpl()
         self.openai_responses_impl: OpenAIResponsesImpl | None = None
+        self.policy = policy
 
     async def initialize(self) -> None:
         self.persistence_store = await kvstore_impl(self.config.persistence_store)
@@ -130,6 +133,7 @@ class MetaReferenceAgentsImpl(Agents):
                 self.persistence_store if agent_info.enable_session_persistence else self.in_memory_store
             ),
             created_at=agent_info.created_at,
+            policy=self.policy,
         )
 
     async def create_agent_session(

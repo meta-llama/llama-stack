@@ -9,7 +9,7 @@ from typing import Any
 
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse, OpenAIModel
 from llama_stack.distribution.datatypes import (
-    ModelWithACL,
+    ModelWithOwner,
 )
 from llama_stack.log import get_logger
 
@@ -65,7 +65,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             model_type = ModelType.llm
         if "embedding_dimension" not in metadata and model_type == ModelType.embedding:
             raise ValueError("Embedding model must have an embedding dimension in its metadata")
-        model = ModelWithACL(
+        model = ModelWithOwner(
             identifier=model_id,
             provider_resource_id=provider_model_id,
             provider_id=provider_id,

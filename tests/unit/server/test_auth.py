@@ -139,7 +139,7 @@ async def mock_post_success(*args, **kwargs):
         {
             "message": "Authentication successful",
             "principal": "test-principal",
-            "access_attributes": {
+            "attributes": {
                 "roles": ["admin", "user"],
                 "teams": ["ml-team", "nlp-team"],
                 "projects": ["llama-3", "project-x"],
@@ -233,7 +233,7 @@ async def test_http_middleware_with_access_attributes(mock_http_middleware, mock
             {
                 "message": "Authentication successful",
                 "principal": "test-principal",
-                "access_attributes": {
+                "attributes": {
                     "roles": ["admin", "user"],
                     "teams": ["ml-team", "nlp-team"],
                     "projects": ["llama-3", "project-x"],
@@ -253,33 +253,6 @@ async def test_http_middleware_with_access_attributes(mock_http_middleware, mock
         assert attributes["namespaces"] == ["research", "production"]
 
         mock_app.assert_called_once_with(mock_scope, mock_receive, mock_send)
-
-
-@pytest.mark.asyncio
-async def test_http_middleware_no_attributes(mock_http_middleware, mock_scope):
-    """Test middleware behavior with no access attributes"""
-    middleware, mock_app = mock_http_middleware
-    mock_receive = AsyncMock()
-    mock_send = AsyncMock()
-
-    with patch("httpx.AsyncClient") as mock_client:
-        mock_client_instance = AsyncMock()
-        mock_client.return_value.__aenter__.return_value = mock_client_instance
-
-        mock_client_instance.post.return_value = MockResponse(
-            200,
-            {
-                "message": "Authentication successful"
-                # No access_attributes
-            },
-        )
-
-        await middleware(mock_scope, mock_receive, mock_send)
-
-        assert "user_attributes" in mock_scope
-        attributes = mock_scope["user_attributes"]
-        assert "roles" in attributes
-        assert attributes["roles"] == ["test.jwt.token"]
 
 
 # oauth2 token provider tests
@@ -380,16 +353,16 @@ def test_get_attributes_from_claims():
         "aud": "llama-stack",
     }
     attributes = get_attributes_from_claims(claims, {"sub": "roles", "groups": "teams"})
-    assert attributes.roles == ["my-user"]
-    assert attributes.teams == ["group1", "group2"]
+    assert attributes["roles"] == ["my-user"]
+    assert attributes["teams"] == ["group1", "group2"]
 
     claims = {
         "sub": "my-user",
         "tenant": "my-tenant",
     }
     attributes = get_attributes_from_claims(claims, {"sub": "roles", "tenant": "namespaces"})
-    assert attributes.roles == ["my-user"]
-    assert attributes.namespaces == ["my-tenant"]
+    assert attributes["roles"] == ["my-user"]
+    assert attributes["namespaces"] == ["my-tenant"]
 
     claims = {
         "sub": "my-user",
@@ -408,9 +381,9 @@ def test_get_attributes_from_claims():
             "groups": "teams",
         },
     )
-    assert set(attributes.roles) == {"my-user", "my-username"}
-    assert set(attributes.teams) == {"my-team", "group1", "group2"}
-    assert attributes.namespaces == ["my-tenant"]
+    assert set(attributes["roles"]) == {"my-user", "my-username"}
+    assert set(attributes["teams"]) == {"my-team", "group1", "group2"}
+    assert attributes["namespaces"] == ["my-tenant"]
 
 
 # TODO: add more tests for oauth2 token provider

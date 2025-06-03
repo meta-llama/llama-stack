@@ -223,7 +223,10 @@ async def construct_stack(
     run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
 ) -> dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
-    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
+    policy = run_config.server.auth.access_policy if run_config.server.auth else []
+    impls = await resolve_impls(
+        run_config, provider_registry or get_provider_registry(run_config), dist_registry, policy
+    )
 
     # Add internal implementations after all other providers are resolved
     add_internal_implementations(impls, run_config)
