@@ -53,6 +53,8 @@ def get_model_registry(
                     )
                     break
             all_ids.update(ids)
+            if ids_conflict:
+                break
         if ids_conflict:
             break
 
