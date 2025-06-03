@@ -19,9 +19,6 @@ providers:
       max_tokens: ${env.VLLM_MAX_TOKENS:4096}
       api_token: ${env.VLLM_API_TOKEN:fake}
       tls_verify: ${env.VLLM_TLS_VERIFY:true}
-  - provider_id: sentence-transformers
-    provider_type: inline::sentence-transformers
-    config: {}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -122,7 +119,7 @@ models:
 - metadata:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
-  provider_id: sentence-transformers
+  provider_id: vllm-inference
   model_type: embedding
 shields: []
 vector_dbs: []

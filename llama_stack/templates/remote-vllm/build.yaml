@@ -4,7 +4,6 @@ distribution_spec:
   providers:
     inference:
     - remote::vllm
-    - inline::sentence-transformers
     vector_io:
     - inline::faiss
     - remote::chromadb

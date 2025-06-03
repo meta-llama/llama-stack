@@ -13,9 +13,6 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.inline.inference.sentence_transformers import (
-    SentenceTransformersInferenceConfig,
-)
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
@@ -23,7 +20,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::vllm", "inline::sentence-transformers"],
+        "inference": ["remote::vllm"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -47,11 +44,6 @@ def get_distribution_template() -> DistributionTemplate:
             url="${env.VLLM_URL:http://localhost:8000/v1}",
         ),
     )
-    embedding_provider = Provider(
-        provider_id="sentence-transformers",
-        provider_type="inline::sentence-transformers",
-        config=SentenceTransformersInferenceConfig.sample_run_config(),
-    )
     vector_io_provider = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
@@ -68,7 +60,7 @@ def get_distribution_template() -> DistributionTemplate:
     )
     embedding_model = ModelInput(
         model_id="all-MiniLM-L6-v2",
-        provider_id="sentence-transformers",
+        provider_id="vllm-inference",
         model_type=ModelType.embedding,
         metadata={
             "embedding_dimension": 384,
@@ -98,7 +90,7 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider, embedding_provider],
+                    "inference": [inference_provider],
                     "vector_io": [vector_io_provider],
                 },
                 default_models=[inference_model, embedding_model],
@@ -115,7 +107,6 @@ def get_distribution_template() -> DistributionTemplate:
                                 url="${env.SAFETY_VLLM_URL}",
                             ),
                         ),
-                        embedding_provider,
                     ],
                     "vector_io": [vector_io_provider],
                 },
