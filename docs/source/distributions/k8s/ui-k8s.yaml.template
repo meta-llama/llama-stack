@@ -31,26 +31,26 @@ spec:
           - |
             # Install git (not included in alpine by default)
             apk add --no-cache git
-            
+
             # Clone the repository
             echo "Cloning repository..."
             git clone https://github.com/meta-llama/llama-stack.git /app
-            
+
             # Navigate to the UI directory
             echo "Navigating to UI directory..."
             cd /app/llama_stack/ui
-            
+
             # Check if package.json exists
             if [ ! -f "package.json" ]; then
               echo "ERROR: package.json not found in $(pwd)"
               ls -la
               exit 1
             fi
-            
+
             # Install dependencies with verbose output
             echo "Installing dependencies..."
             npm install --verbose
-            
+
             # Verify next is installed
             echo "Checking if next is installed..."
             npx next --version || echo "Next.js not found, checking node_modules..."
