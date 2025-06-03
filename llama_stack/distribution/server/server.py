@@ -26,7 +26,6 @@ from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
@@ -479,17 +478,6 @@ def main(args: argparse.Namespace | None = None):
             authenticated_max_requests=authenticated_max_requests,
             window_seconds=window_seconds,
         )
-
-    # --- CORS middleware for local development ---
-    # TODO: move to reverse proxy
-    ui_port = os.environ.get("LLAMA_STACK_UI_PORT", 8322)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[f"http://localhost:{ui_port}"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
     try:
         impls = asyncio.run(construct_stack(config))
