@@ -101,15 +101,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="vllm-inference",
         )
     )
-    postgres_config = {
-        "type": "postgres",
-        "host": "${env.POSTGRES_HOST:localhost}",
-        "port": "${env.POSTGRES_PORT:5432}",
-        "db": "${env.POSTGRES_DB:llamastack}",
-        "user": "${env.POSTGRES_USER:llamastack}",
-        "password": "${env.POSTGRES_PASSWORD:llamastack}",
-    }
-
+    postgres_config = PostgresSqlStoreConfig.sample_run_config()
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -147,8 +139,8 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=default_models,
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
-                metadata_store=PostgresKVStoreConfig.model_validate(postgres_config),
-                inference_store=PostgresSqlStoreConfig.model_validate(postgres_config),
+                metadata_store=PostgresKVStoreConfig.sample_run_config(),
+                inference_store=postgres_config,
             ),
         },
         run_config_env_vars={

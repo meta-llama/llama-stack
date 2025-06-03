@@ -154,12 +154,20 @@ class DistributionTemplate(BaseModel):
 
     available_models_by_provider: dict[str, list[ProviderModelEntry]] | None = None
 
+    # we may want to specify additional pip packages without necessarily indicating a
+    # specific "default" inference store (which is what typically used to dictate additional
+    # pip packages)
+    additional_pip_packages: list[str] | None = None
+
     def build_config(self) -> BuildConfig:
         additional_pip_packages: list[str] = []
         for run_config in self.run_configs.values():
             run_config_ = run_config.run_config(self.name, self.providers, self.container_image)
             if run_config_.inference_store:
                 additional_pip_packages.extend(run_config_.inference_store.pip_packages)
+
+        if self.additional_pip_packages:
+            additional_pip_packages.extend(self.additional_pip_packages)
 
         return BuildConfig(
             distribution_spec=DistributionSpec(

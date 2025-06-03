@@ -42,11 +42,13 @@ from llama_stack.providers.remote.inference.sambanova.config import SambaNovaImp
 from llama_stack.providers.remote.inference.sambanova.models import (
     MODEL_ENTRIES as SAMBANOVA_MODEL_ENTRIES,
 )
+from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector.config import (
     PGVectorVectorIOConfig,
 )
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
+from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig
 from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
@@ -86,6 +88,13 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
             "sambanova",
             SAMBANOVA_MODEL_ENTRIES,
             SambaNovaImplConfig.sample_run_config(api_key="${env.SAMBANOVA_API_KEY:}"),
+        ),
+        (
+            "remote-vllm",
+            [],
+            VLLMInferenceAdapterConfig.sample_run_config(
+                url="${env.VLLM_URL:http://localhost:8000/v1}",
+            ),
         ),
     ]
     inference_providers = []
@@ -169,6 +178,8 @@ def get_distribution_template() -> DistributionTemplate:
     )
 
     default_models = get_model_registry(available_models)
+
+    postgres_store = PostgresSqlStoreConfig.sample_run_config()
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -177,6 +188,7 @@ def get_distribution_template() -> DistributionTemplate:
         template_path=None,
         providers=providers,
         available_models_by_provider=available_models,
+        additional_pip_packages=postgres_store.pip_packages,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
@@ -200,6 +212,26 @@ def get_distribution_template() -> DistributionTemplate:
             "OPENAI_API_KEY": (
                 "",
                 "OpenAI API Key",
+            ),
+            "GROQ_API_KEY": (
+                "",
+                "Groq API Key",
+            ),
+            "ANTHROPIC_API_KEY": (
+                "",
+                "Anthropic API Key",
+            ),
+            "GEMINI_API_KEY": (
+                "",
+                "Gemini API Key",
+            ),
+            "SAMBANOVA_API_KEY": (
+                "",
+                "SambaNova API Key",
+            ),
+            "VLLM_URL": (
+                "http://localhost:8000/v1",
+                "VLLM URL",
             ),
         },
     )
