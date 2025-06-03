@@ -5355,13 +5355,45 @@ components:
     OpenAIResponseObjectStream:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemAdded'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemDone'
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDone'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallInProgress'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallSearching'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallCompleted'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsInProgress'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsFailed'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsCompleted'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDone'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallInProgress'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallFailed'
+        - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted'
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCompleted'
       discriminator:
         propertyName: type
         mapping:
           response.created: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'
+          response.output_item.added: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemAdded'
+          response.output_item.done: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemDone'
           response.output_text.delta: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta'
+          response.output_text.done: '#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDone'
+          response.function_call_arguments.delta: '#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta'
+          response.function_call_arguments.done: '#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone'
+          response.web_search_call.in_progress: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallInProgress'
+          response.web_search_call.searching: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallSearching'
+          response.web_search_call.completed: '#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallCompleted'
+          response.mcp_list_tools.in_progress: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsInProgress'
+          response.mcp_list_tools.failed: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsFailed'
+          response.mcp_list_tools.completed: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsCompleted'
+          response.mcp_call.arguments.delta: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta'
+          response.mcp_call.arguments.done: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDone'
+          response.mcp_call.in_progress: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallInProgress'
+          response.mcp_call.failed: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallFailed'
+          response.mcp_call.completed: '#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted'
           response.completed: '#/components/schemas/OpenAIResponseObjectStreamResponseCompleted'
     "OpenAIResponseObjectStreamResponseCompleted":
       type: object
@@ -5393,6 +5425,246 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseCreated
+    "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta":
+      type: object
+      properties:
+        delta:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.function_call_arguments.delta
+          default: response.function_call_arguments.delta
+      additionalProperties: false
+      required:
+        - delta
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta
+    "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone":
+      type: object
+      properties:
+        arguments:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.function_call_arguments.done
+          default: response.function_call_arguments.done
+      additionalProperties: false
+      required:
+        - arguments
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone
+    "OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta":
+      type: object
+      properties:
+        delta:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_call.arguments.delta
+          default: response.mcp_call.arguments.delta
+      additionalProperties: false
+      required:
+        - delta
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta
+    "OpenAIResponseObjectStreamResponseMcpCallArgumentsDone":
+      type: object
+      properties:
+        arguments:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_call.arguments.done
+          default: response.mcp_call.arguments.done
+      additionalProperties: false
+      required:
+        - arguments
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpCallArgumentsDone
+    "OpenAIResponseObjectStreamResponseMcpCallCompleted":
+      type: object
+      properties:
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_call.completed
+          default: response.mcp_call.completed
+      additionalProperties: false
+      required:
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpCallCompleted
+    "OpenAIResponseObjectStreamResponseMcpCallFailed":
+      type: object
+      properties:
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_call.failed
+          default: response.mcp_call.failed
+      additionalProperties: false
+      required:
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpCallFailed
+    "OpenAIResponseObjectStreamResponseMcpCallInProgress":
+      type: object
+      properties:
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_call.in_progress
+          default: response.mcp_call.in_progress
+      additionalProperties: false
+      required:
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpCallInProgress
+    "OpenAIResponseObjectStreamResponseMcpListToolsCompleted":
+      type: object
+      properties:
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_list_tools.completed
+          default: response.mcp_list_tools.completed
+      additionalProperties: false
+      required:
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpListToolsCompleted
+    "OpenAIResponseObjectStreamResponseMcpListToolsFailed":
+      type: object
+      properties:
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_list_tools.failed
+          default: response.mcp_list_tools.failed
+      additionalProperties: false
+      required:
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpListToolsFailed
+    "OpenAIResponseObjectStreamResponseMcpListToolsInProgress":
+      type: object
+      properties:
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.mcp_list_tools.in_progress
+          default: response.mcp_list_tools.in_progress
+      additionalProperties: false
+      required:
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseMcpListToolsInProgress
+    "OpenAIResponseObjectStreamResponseOutputItemAdded":
+      type: object
+      properties:
+        response_id:
+          type: string
+        item:
+          $ref: '#/components/schemas/OpenAIResponseOutput'
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.output_item.added
+          default: response.output_item.added
+      additionalProperties: false
+      required:
+        - response_id
+        - item
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseOutputItemAdded
+    "OpenAIResponseObjectStreamResponseOutputItemDone":
+      type: object
+      properties:
+        response_id:
+          type: string
+        item:
+          $ref: '#/components/schemas/OpenAIResponseOutput'
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.output_item.done
+          default: response.output_item.done
+      additionalProperties: false
+      required:
+        - response_id
+        - item
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseOutputItemDone
     "OpenAIResponseObjectStreamResponseOutputTextDelta":
       type: object
       properties:
@@ -5420,6 +5692,96 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseOutputTextDelta
+    "OpenAIResponseObjectStreamResponseOutputTextDone":
+      type: object
+      properties:
+        content_index:
+          type: integer
+        text:
+          type: string
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.output_text.done
+          default: response.output_text.done
+      additionalProperties: false
+      required:
+        - content_index
+        - text
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseOutputTextDone
+    "OpenAIResponseObjectStreamResponseWebSearchCallCompleted":
+      type: object
+      properties:
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.web_search_call.completed
+          default: response.web_search_call.completed
+      additionalProperties: false
+      required:
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseWebSearchCallCompleted
+    "OpenAIResponseObjectStreamResponseWebSearchCallInProgress":
+      type: object
+      properties:
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.web_search_call.in_progress
+          default: response.web_search_call.in_progress
+      additionalProperties: false
+      required:
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseWebSearchCallInProgress
+    "OpenAIResponseObjectStreamResponseWebSearchCallSearching":
+      type: object
+      properties:
+        item_id:
+          type: string
+        output_index:
+          type: integer
+        sequence_number:
+          type: integer
+        type:
+          type: string
+          const: response.web_search_call.searching
+          default: response.web_search_call.searching
+      additionalProperties: false
+      required:
+        - item_id
+        - output_index
+        - sequence_number
+        - type
+      title: >-
+        OpenAIResponseObjectStreamResponseWebSearchCallSearching
     EmbeddingsRequest:
       type: object
       properties:

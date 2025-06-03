@@ -180,6 +180,30 @@ class OpenAIResponseObjectStreamResponseCreated(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
+    response: OpenAIResponseObject
+    type: Literal["response.completed"] = "response.completed"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseOutputItemAdded(BaseModel):
+    response_id: str
+    item: OpenAIResponseOutput
+    output_index: int
+    sequence_number: int
+    type: Literal["response.output_item.added"] = "response.output_item.added"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseOutputItemDone(BaseModel):
+    response_id: str
+    item: OpenAIResponseOutput
+    output_index: int
+    sequence_number: int
+    type: Literal["response.output_item.done"] = "response.output_item.done"
+
+
+@json_schema_type
 class OpenAIResponseObjectStreamResponseOutputTextDelta(BaseModel):
     content_index: int
     delta: str
@@ -190,14 +214,132 @@ class OpenAIResponseObjectStreamResponseOutputTextDelta(BaseModel):
 
 
 @json_schema_type
-class OpenAIResponseObjectStreamResponseCompleted(BaseModel):
-    response: OpenAIResponseObject
-    type: Literal["response.completed"] = "response.completed"
+class OpenAIResponseObjectStreamResponseOutputTextDone(BaseModel):
+    content_index: int
+    text: str  # final text of the output item
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.output_text.done"] = "response.output_text.done"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta(BaseModel):
+    delta: str
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.function_call_arguments.delta"] = "response.function_call_arguments.delta"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(BaseModel):
+    arguments: str  # final arguments of the function call
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.function_call_arguments.done"] = "response.function_call_arguments.done"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseWebSearchCallInProgress(BaseModel):
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.web_search_call.in_progress"] = "response.web_search_call.in_progress"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseWebSearchCallSearching(BaseModel):
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.web_search_call.searching"] = "response.web_search_call.searching"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseWebSearchCallCompleted(BaseModel):
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.web_search_call.completed"] = "response.web_search_call.completed"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpListToolsInProgress(BaseModel):
+    sequence_number: int
+    type: Literal["response.mcp_list_tools.in_progress"] = "response.mcp_list_tools.in_progress"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpListToolsFailed(BaseModel):
+    sequence_number: int
+    type: Literal["response.mcp_list_tools.failed"] = "response.mcp_list_tools.failed"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpListToolsCompleted(BaseModel):
+    sequence_number: int
+    type: Literal["response.mcp_list_tools.completed"] = "response.mcp_list_tools.completed"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta(BaseModel):
+    delta: str
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.mcp_call.arguments.delta"] = "response.mcp_call.arguments.delta"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpCallArgumentsDone(BaseModel):
+    arguments: str  # final arguments of the MCP call
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.mcp_call.arguments.done"] = "response.mcp_call.arguments.done"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpCallInProgress(BaseModel):
+    item_id: str
+    output_index: int
+    sequence_number: int
+    type: Literal["response.mcp_call.in_progress"] = "response.mcp_call.in_progress"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpCallFailed(BaseModel):
+    sequence_number: int
+    type: Literal["response.mcp_call.failed"] = "response.mcp_call.failed"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseMcpCallCompleted(BaseModel):
+    sequence_number: int
+    type: Literal["response.mcp_call.completed"] = "response.mcp_call.completed"
 
 
 OpenAIResponseObjectStream = Annotated[
     OpenAIResponseObjectStreamResponseCreated
+    | OpenAIResponseObjectStreamResponseOutputItemAdded
+    | OpenAIResponseObjectStreamResponseOutputItemDone
     | OpenAIResponseObjectStreamResponseOutputTextDelta
+    | OpenAIResponseObjectStreamResponseOutputTextDone
+    | OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta
+    | OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone
+    | OpenAIResponseObjectStreamResponseWebSearchCallInProgress
+    | OpenAIResponseObjectStreamResponseWebSearchCallSearching
+    | OpenAIResponseObjectStreamResponseWebSearchCallCompleted
+    | OpenAIResponseObjectStreamResponseMcpListToolsInProgress
+    | OpenAIResponseObjectStreamResponseMcpListToolsFailed
+    | OpenAIResponseObjectStreamResponseMcpListToolsCompleted
+    | OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta
+    | OpenAIResponseObjectStreamResponseMcpCallArgumentsDone
+    | OpenAIResponseObjectStreamResponseMcpCallInProgress
+    | OpenAIResponseObjectStreamResponseMcpCallFailed
+    | OpenAIResponseObjectStreamResponseMcpCallCompleted
     | OpenAIResponseObjectStreamResponseCompleted,
     Field(discriminator="type"),
 ]

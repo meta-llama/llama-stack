@@ -433,12 +433,10 @@ class OpenAIResponsesImpl:
         store: bool | None,
         text: OpenAIResponseText,
         tools: list[OpenAIResponseInputTool] | None,
-        max_infer_iters: int | None,
+        max_infer_iters: int,
     ) -> OpenAIResponseObject:
-        # Implement tool execution loop - handle ALL inference rounds including the first
         n_iter = 0
         messages = ctx.messages.copy()
-        current_response = None
 
         while True:
             # Do inference (including the first one)
@@ -450,13 +448,13 @@ class OpenAIResponsesImpl:
                 temperature=ctx.temperature,
                 response_format=ctx.response_format,
             )
-            current_response = OpenAIChatCompletion(**inference_result.model_dump())
+            completion = OpenAIChatCompletion(**inference_result.model_dump())
 
             # Separate function vs non-function tool calls
             function_tool_calls = []
             non_function_tool_calls = []
 
-            for choice in current_response.choices:
+            for choice in completion.choices:
                 if choice.message.tool_calls and tools:
                     for tool_call in choice.message.tool_calls:
                         if self._is_function_tool_call(tool_call, tools):
@@ -468,7 +466,7 @@ class OpenAIResponsesImpl:
             if function_tool_calls:
                 # For function tool calls, use existing logic and return immediately
                 current_output_messages = await self._process_response_choices(
-                    chat_response=current_response,
+                    chat_response=completion,
                     ctx=ctx,
                     tools=tools,
                 )
@@ -476,7 +474,7 @@ class OpenAIResponsesImpl:
                 break
             elif non_function_tool_calls:
                 # For non-function tool calls, execute them and continue loop
-                for choice in current_response.choices:
+                for choice in completion.choices:
                     tool_outputs, tool_response_messages = await self._execute_tool_calls_only(choice, ctx)
                     output_messages.extend(tool_outputs)
 
@@ -485,19 +483,19 @@ class OpenAIResponsesImpl:
                     messages.extend(tool_response_messages)
 
                 n_iter += 1
-                if n_iter >= (max_infer_iters or 10):
+                if n_iter >= max_infer_iters:
                     break
 
                 # Continue with next iteration of the loop
                 continue
             else:
                 # No tool calls - convert response to message and we're done
-                for choice in current_response.choices:
+                for choice in completion.choices:
                     output_messages.append(await _convert_chat_choice_to_response_message(choice))
                 break
 
         response = OpenAIResponseObject(
-            created_at=current_response.created,
+            created_at=completion.created,
             id=f"resp-{uuid.uuid4()}",
             model=model,
             object="response",
@@ -549,7 +547,6 @@ class OpenAIResponsesImpl:
         messages = ctx.messages.copy()
 
         while True:
-            # Do inference (including the first one) - streaming
             current_inference_result = await self.inference_api.openai_chat_completion(
                 model=ctx.model,
                 messages=messages,
