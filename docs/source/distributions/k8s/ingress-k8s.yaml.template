@@ -7,6 +7,11 @@ spec:
   selector:
     app.kubernetes.io/name: llama-stack
   ports:
-    - port: 8321
+    - name: llama-stack-api
+      port: 8321
       targetPort: 8321
+      protocol: TCP
+    - name: llama-stack-ui
+      port: 8322
+      targetPort: 8322
       protocol: TCP

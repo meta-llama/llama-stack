@@ -18,10 +18,12 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: llama-stack
+      app.kubernetes.io/component: server
   template:
     metadata:
       labels:
         app.kubernetes.io/name: llama-stack
+        app.kubernetes.io/component: server
     spec:
       containers:
       - name: llama-stack
@@ -65,16 +67,3 @@ spec:
       - name: llama-config
         configMap:
           name: llama-stack-config
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: llama-stack-service
-spec:
-  selector:
-    app.kubernetes.io/name: llama-stack
-  ports:
-  - protocol: TCP
-    port: 8321
-    targetPort: 8321
-  type: ClusterIP
