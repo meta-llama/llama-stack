@@ -13,8 +13,6 @@ export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-llamastack}
 export INFERENCE_MODEL=${INFERENCE_MODEL:-meta-llama/Llama-3.2-3B-Instruct}
 export SAFETY_MODEL=${SAFETY_MODEL:-meta-llama/Llama-Guard-3-1B}
 
-export NEXT_PUBLIC_LLAMA_STACK_BASE_URL=${NEXT_PUBLIC_LLAMA_STACK_BASE_URL:-}
-
 set -euo pipefail
 set -x
 

@@ -22,8 +22,8 @@ spec:
         image: node:18-alpine
         command: ["/bin/sh"]
         env:
-        - name: NEXT_PUBLIC_LLAMA_STACK_BASE_URL
-          value: ${NEXT_PUBLIC_LLAMA_STACK_BASE_URL}
+        - name: LLAMA_STACK_BACKEND_URL
+          value: "http://llama-stack-service:8321"
         - name: LLAMA_STACK_UI_PORT
           value: "8322"
         args:
