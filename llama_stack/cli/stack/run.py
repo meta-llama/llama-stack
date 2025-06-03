@@ -35,7 +35,8 @@ class StackRun(Subcommand):
             "config",
             type=str,
             nargs="?",  # Make it optional
-            help="Path to config file to use for the run. Required for venv and conda environments.",
+            metavar="config | template",
+            help="Path to config file to use for the run or name of known template (`llama stack list` for a list).",
         )
         self.parser.add_argument(
             "--port",
@@ -154,7 +155,10 @@ class StackRun(Subcommand):
                 # func=<bound method StackRun._run_stack_run_cmd of <llama_stack.cli.stack.run.StackRun object at 0x10484b010>>
                 if callable(getattr(args, arg)):
                     continue
-                setattr(server_args, arg, getattr(args, arg))
+                if arg == "config" and template_name:
+                    server_args.config = str(config_file)
+                else:
+                    setattr(server_args, arg, getattr(args, arg))
 
             # Run the server
             server_main(server_args)
