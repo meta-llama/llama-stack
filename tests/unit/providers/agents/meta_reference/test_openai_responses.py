@@ -25,11 +25,17 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObjectWithInput,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponseText,
+    OpenAIResponseTextFormat,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIDeveloperMessageParam,
+    OpenAIJSONSchema,
+    OpenAIResponseFormatJSONObject,
+    OpenAIResponseFormatJSONSchema,
+    OpenAIResponseFormatText,
     OpenAIUserMessageParam,
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
@@ -96,6 +102,7 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
     mock_inference_api.openai_chat_completion.assert_called_once_with(
         model=model,
         messages=[OpenAIUserMessageParam(role="user", content="What is the capital of Ireland?", name=None)],
+        response_format=OpenAIResponseFormatText(),
         tools=None,
         stream=False,
         temperature=0.1,
@@ -320,6 +327,7 @@ async def test_prepend_previous_response_basic(openai_responses_impl, mock_respo
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = previous_response
@@ -362,6 +370,7 @@ async def test_prepend_previous_response_web_search(openai_responses_impl, mock_
         model="fake_model",
         output=[output_web_search, output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = response
@@ -483,6 +492,7 @@ async def test_create_openai_response_with_instructions_and_previous_response(
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = response
@@ -576,6 +586,7 @@ async def test_responses_store_list_input_items_logic():
         object="response",
         status="completed",
         output=[],
+        text=OpenAIResponseText(format=(OpenAIResponseTextFormat(type="text"))),
         input=input_items,
     )
 
@@ -644,6 +655,7 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
         created_at=1234567890,
         model="meta-llama/Llama-3.1-8B-Instruct",
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[
             OpenAIResponseMessage(
                 id="msg-prev-user", role="user", content=[OpenAIResponseInputMessageContentText(text="What is 2+2?")]
@@ -694,3 +706,61 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
     # Verify the response itself is correct
     assert result.model == model
     assert result.status == "completed"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "text_format, response_format",
+    [
+        (OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")), OpenAIResponseFormatText()),
+        (
+            OpenAIResponseText(format=OpenAIResponseTextFormat(name="Test", schema={"foo": "bar"}, type="json_schema")),
+            OpenAIResponseFormatJSONSchema(json_schema=OpenAIJSONSchema(name="Test", schema={"foo": "bar"})),
+        ),
+        (OpenAIResponseText(format=OpenAIResponseTextFormat(type="json_object")), OpenAIResponseFormatJSONObject()),
+        # ensure text param with no format specified defaults to text
+        (OpenAIResponseText(format=None), OpenAIResponseFormatText()),
+        # ensure text param of None defaults to text
+        (None, OpenAIResponseFormatText()),
+    ],
+)
+async def test_create_openai_response_with_text_format(
+    openai_responses_impl, mock_inference_api, text_format, response_format
+):
+    """Test creating Responses with text formats."""
+    # Setup
+    input_text = "How hot it is in San Francisco today?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    # Load the chat completion fixture
+    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
+    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+
+    # Execute
+    _result = await openai_responses_impl.create_openai_response(
+        input=input_text,
+        model=model,
+        text=text_format,
+    )
+
+    # Verify
+    first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
+    assert first_call.kwargs["messages"][0].content == input_text
+    assert first_call.kwargs["response_format"] is not None
+    assert first_call.kwargs["response_format"] == response_format
+
+
+@pytest.mark.asyncio
+async def test_create_openai_response_with_invalid_text_format(openai_responses_impl, mock_inference_api):
+    """Test creating an OpenAI response with an invalid text format."""
+    # Setup
+    input_text = "How hot it is in San Francisco today?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    # Execute
+    with pytest.raises(ValueError):
+        _result = await openai_responses_impl.create_openai_response(
+            input=input_text,
+            model=model,
+            text=OpenAIResponseText(format={"type": "invalid"}),
+        )

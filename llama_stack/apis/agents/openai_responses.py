@@ -7,6 +7,7 @@
 from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
@@ -126,6 +127,32 @@ OpenAIResponseOutput = Annotated[
 register_schema(OpenAIResponseOutput, name="OpenAIResponseOutput")
 
 
+# This has to be a TypedDict because we need a "schema" field and our strong
+# typing code in the schema generator doesn't support Pydantic aliases. That also
+# means we can't use a discriminator field here, because TypedDicts don't support
+# default values which the strong typing code requires for discriminators.
+class OpenAIResponseTextFormat(TypedDict, total=False):
+    """Configuration for Responses API text format.
+
+    :param type: Must be "text", "json_schema", or "json_object" to identify the format type
+    :param name: The name of the response format. Only used for json_schema.
+    :param schema: The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model. Only used for json_schema.
+    :param description: (Optional) A description of the response format. Only used for json_schema.
+    :param strict: (Optional) Whether to strictly enforce the JSON schema. If true, the response must match the schema exactly. Only used for json_schema.
+    """
+
+    type: Literal["text"] | Literal["json_schema"] | Literal["json_object"]
+    name: str | None
+    schema: dict[str, Any] | None
+    description: str | None
+    strict: bool | None
+
+
+@json_schema_type
+class OpenAIResponseText(BaseModel):
+    format: OpenAIResponseTextFormat | None = None
+
+
 @json_schema_type
 class OpenAIResponseObject(BaseModel):
     created_at: int
@@ -138,6 +165,9 @@ class OpenAIResponseObject(BaseModel):
     previous_response_id: str | None = None
     status: str
     temperature: float | None = None
+    # Default to text format to avoid breaking the loading of old responses
+    # before the field was added. New responses will have this set always.
+    text: OpenAIResponseText = OpenAIResponseText(format=OpenAIResponseTextFormat(type="text"))
     top_p: float | None = None
     truncation: str | None = None
     user: str | None = None

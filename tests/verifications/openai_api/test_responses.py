@@ -546,3 +546,39 @@ async def test_response_streaming_multi_turn_tool_execution(
             assert expected_output.lower() in final_response.output_text.lower(), (
                 f"Expected '{expected_output}' to appear in response: {final_response.output_text}"
             )
+
+
+@pytest.mark.parametrize(
+    "text_format",
+    # Not testing json_object because most providers don't actually support it.
+    [
+        {"type": "text"},
+        {
+            "type": "json_schema",
+            "name": "capitals",
+            "description": "A schema for the capital of each country",
+            "schema": {"type": "object", "properties": {"capital": {"type": "string"}}},
+            "strict": True,
+        },
+    ],
+)
+def test_response_text_format(request, openai_client, model, provider, verification_config, text_format):
+    if isinstance(openai_client, LlamaStackAsLibraryClient):
+        pytest.skip("Responses API text format is not yet supported in library client.")
+
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    stream = False
+    response = openai_client.responses.create(
+        model=model,
+        input="What is the capital of France?",
+        stream=stream,
+        text={"format": text_format},
+    )
+    # by_alias=True is needed because otherwise Pydantic renames our "schema" field
+    assert response.text.format.model_dump(exclude_none=True, by_alias=True) == text_format
+    assert "paris" in response.output_text.lower()
+    if text_format["type"] == "json_schema":
+        assert "paris" in json.loads(response.output_text)["capital"].lower()

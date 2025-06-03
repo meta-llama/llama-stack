@@ -5118,6 +5118,57 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageWebSearchToolCall
+    OpenAIResponseText:
+      type: object
+      properties:
+        format:
+          type: object
+          properties:
+            type:
+              oneOf:
+                - type: string
+                  const: text
+                - type: string
+                  const: json_schema
+                - type: string
+                  const: json_object
+              description: >-
+                Must be "text", "json_schema", or "json_object" to identify the format
+                type
+            name:
+              type: string
+              description: >-
+                The name of the response format. Only used for json_schema.
+            schema:
+              type: object
+              additionalProperties:
+                oneOf:
+                  - type: 'null'
+                  - type: boolean
+                  - type: number
+                  - type: string
+                  - type: array
+                  - type: object
+              description: >-
+                The JSON schema the response should conform to. In a Python SDK, this
+                is often a `pydantic` model. Only used for json_schema.
+            description:
+              type: string
+              description: >-
+                (Optional) A description of the response format. Only used for json_schema.
+            strict:
+              type: boolean
+              description: >-
+                (Optional) Whether to strictly enforce the JSON schema. If true, the
+                response must match the schema exactly. Only used for json_schema.
+          additionalProperties: false
+          required:
+            - type
+          title: OpenAIResponseTextFormat
+          description: >-
+            Configuration for Responses API text format.
+      additionalProperties: false
+      title: OpenAIResponseText
     CreateOpenaiResponseRequest:
       type: object
       properties:
@@ -5145,6 +5196,8 @@ components:
           type: boolean
         temperature:
           type: number
+        text:
+          $ref: '#/components/schemas/OpenAIResponseText'
         tools:
           type: array
           items:
@@ -5196,6 +5249,8 @@ components:
           type: string
         temperature:
           type: number
+        text:
+          $ref: '#/components/schemas/OpenAIResponseText'
         top_p:
           type: number
         truncation:
@@ -5211,6 +5266,7 @@ components:
         - output
         - parallel_tool_calls
         - status
+        - text
       title: OpenAIResponseObject
     OpenAIResponseOutput:
       oneOf:
@@ -7288,6 +7344,8 @@ components:
           type: string
         temperature:
           type: number
+        text:
+          $ref: '#/components/schemas/OpenAIResponseText'
         top_p:
           type: number
         truncation:
@@ -7307,6 +7365,7 @@ components:
         - output
         - parallel_tool_calls
         - status
+        - text
         - input
       title: OpenAIResponseObjectWithInput
     ListProvidersResponse:
