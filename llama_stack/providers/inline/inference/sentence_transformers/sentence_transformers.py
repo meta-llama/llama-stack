@@ -65,7 +65,7 @@ class SentenceTransformersInferenceImpl(
         stream: bool | None = False,
         logprobs: LogProbConfig | None = None,
     ) -> CompletionResponse | AsyncGenerator:
-        raise ValueError("Sentence transformers don't support completion")
+        raise NotImplementedError("Sentence transformers don't support completion")
 
     async def chat_completion(
         self,
@@ -80,7 +80,7 @@ class SentenceTransformersInferenceImpl(
         logprobs: LogProbConfig | None = None,
         tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
-        raise ValueError("Sentence transformers don't support chat completion")
+        raise NotImplementedError("Sentence transformers don't support chat completion")
 
     async def batch_completion(
         self,
