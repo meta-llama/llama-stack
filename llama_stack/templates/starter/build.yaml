@@ -5,6 +5,8 @@ distribution_spec:
     inference:
     - remote::openai
     - remote::fireworks
+    - remote::together
+    - remote::ollama
     - remote::anthropic
     - remote::gemini
     - remote::groq

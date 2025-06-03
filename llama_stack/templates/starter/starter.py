@@ -34,6 +34,10 @@ from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.remote.inference.groq.models import (
     MODEL_ENTRIES as GROQ_MODEL_ENTRIES,
 )
+from llama_stack.providers.remote.inference.ollama.config import OllamaImplConfig
+from llama_stack.providers.remote.inference.ollama.models import (
+    MODEL_ENTRIES as OLLAMA_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.models import (
     MODEL_ENTRIES as OPENAI_MODEL_ENTRIES,
@@ -41,6 +45,10 @@ from llama_stack.providers.remote.inference.openai.models import (
 from llama_stack.providers.remote.inference.sambanova.config import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.models import (
     MODEL_ENTRIES as SAMBANOVA_MODEL_ENTRIES,
+)
+from llama_stack.providers.remote.inference.together.config import TogetherImplConfig
+from llama_stack.providers.remote.inference.together.models import (
+    MODEL_ENTRIES as TOGETHER_MODEL_ENTRIES,
 )
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
@@ -68,6 +76,16 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
             "fireworks",
             FIREWORKS_MODEL_ENTRIES,
             FireworksImplConfig.sample_run_config(api_key="${env.FIREWORKS_API_KEY:}"),
+        ),
+        (
+            "together",
+            TOGETHER_MODEL_ENTRIES,
+            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:}"),
+        ),
+        (
+            "ollama",
+            OLLAMA_MODEL_ENTRIES,
+            OllamaImplConfig.sample_run_config(),
         ),
         (
             "anthropic",

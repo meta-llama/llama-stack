@@ -78,7 +78,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     request_has_media,
 )
 
-from .models import model_entries
+from .models import MODEL_ENTRIES
 
 logger = get_logger(name=__name__, category="inference")
 
@@ -88,7 +88,7 @@ class OllamaInferenceAdapter(
     ModelsProtocolPrivate,
 ):
     def __init__(self, url: str) -> None:
-        self.register_helper = ModelRegistryHelper(model_entries)
+        self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
         self.url = url
 
     @property
