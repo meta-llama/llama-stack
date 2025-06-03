@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 
+import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -480,7 +481,25 @@ class OllamaInferenceAdapter(
             top_p=top_p,
             user=user,
         )
-        return await self.openai_client.chat.completions.create(**params)  # type: ignore
+        response = await self.openai_client.chat.completions.create(**params)
+        return await self._adjust_ollama_chat_completion_response_ids(response)
+
+    async def _adjust_ollama_chat_completion_response_ids(
+        self,
+        response: OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk],
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
+        id = f"chatcmpl-{uuid.uuid4()}"
+        if isinstance(response, AsyncIterator):
+
+            async def stream_with_chunk_ids() -> AsyncIterator[OpenAIChatCompletionChunk]:
+                async for chunk in response:
+                    chunk.id = id
+                    yield chunk
+
+            return stream_with_chunk_ids()
+        else:
+            response.id = id
+            return response
 
     async def batch_completion(
         self,
