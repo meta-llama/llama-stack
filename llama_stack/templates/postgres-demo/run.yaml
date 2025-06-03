@@ -79,7 +79,7 @@ metadata_store:
   db: ${env.POSTGRES_DB:llamastack}
   user: ${env.POSTGRES_USER:llamastack}
   password: ${env.POSTGRES_PASSWORD:llamastack}
-  table_name: llamastack_kvstore
+  table_name: ${env.POSTGRES_TABLE_NAME:llamastack_kvstore}
 inference_store:
   type: postgres
   host: ${env.POSTGRES_HOST:localhost}
