@@ -85,6 +85,8 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
         Performs a health check by verifying connectivity to the Watsonx server.
         This method is used by the Provider API to verify
         that the service is running correctly.
+        Specify the model ID as WATSONX_HEALTH_CHECK_MODEL_ID under env. var.
+        to use for the health check, which defaults to "ibm/granite-3-8b-instruct".
         Returns:
             HealthResponse: A dictionary containing the health status.
         """
