@@ -108,7 +108,7 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
             SambaNovaImplConfig.sample_run_config(api_key="${env.SAMBANOVA_API_KEY:}"),
         ),
         (
-            "remote-vllm",
+            "vllm",
             [],
             VLLMInferenceAdapterConfig.sample_run_config(
                 url="${env.VLLM_URL:http://localhost:8000/v1}",
