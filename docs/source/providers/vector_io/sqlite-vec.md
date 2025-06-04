@@ -79,6 +79,30 @@ response = await vector_io.query_chunks(
     query="your query here",
     params={"mode": "hybrid", "max_chunks": 3, "score_threshold": 0.7},
 )
+
+# Using RRF ranker
+response = await vector_io.query_chunks(
+    vector_db_id="my_db",
+    query="your query here",
+    params={
+        "mode": "hybrid",
+        "max_chunks": 3,
+        "score_threshold": 0.7,
+        "ranker": {"type": "rrf", "impact_factor": 60.0},
+    },
+)
+
+# Using weighted ranker
+response = await vector_io.query_chunks(
+    vector_db_id="my_db",
+    query="your query here",
+    params={
+        "mode": "hybrid",
+        "max_chunks": 3,
+        "score_threshold": 0.7,
+        "ranker": {"type": "weighted", "alpha": 0.7},  # 70% vector, 30% keyword
+    },
+)
 ```
 
 Example with explicit vector search:
@@ -101,22 +125,66 @@ response = await vector_io.query_chunks(
 
 ## Supported Search Modes
 
-The sqlite-vec provider supports both vector-based and keyword-based (full-text) search modes.
+The SQLite vector store supports three search modes:
 
-When using the RAGTool interface, you can specify the desired search behavior via the `mode` parameter in
-`RAGQueryConfig`. For example:
+1. **Vector Search** (`mode="vector"`): Uses vector similarity to find relevant chunks
+2. **Keyword Search** (`mode="keyword"`): Uses keyword matching to find relevant chunks
+3. **Hybrid Search** (`mode="hybrid"`): Combines both vector and keyword scores using a ranker
+
+### Hybrid Search
+
+Hybrid search combines the strengths of both vector and keyword search by:
+- Computing vector similarity scores
+- Computing keyword match scores
+- Using a ranker to combine these scores
+
+Two ranker types are supported:
+
+1. **RRF (Reciprocal Rank Fusion)**:
+   - Combines ranks from both vector and keyword results
+   - Uses an impact factor (default: 60.0) to control the weight of higher-ranked results
+   - Good for balancing between vector and keyword results
+   - The default impact factor of 60.0 comes from the original RRF paper by Cormack et al. (2009) [^1], which found this value to provide optimal performance across various retrieval tasks
+
+2. **Weighted**:
+   - Linearly combines normalized vector and keyword scores
+   - Uses an alpha parameter (0-1) to control the blend:
+     - alpha=0: Only use keyword scores
+     - alpha=1: Only use vector scores
+     - alpha=0.5: Equal weight to both (default)
+
+Example using RAGQueryConfig with different search modes:
 
 ```python
-from llama_stack.apis.tool_runtime.rag import RAGQueryConfig
+from llama_stack.apis.tools import RAGQueryConfig, RRFRanker, WeightedRanker
 
-query_config = RAGQueryConfig(max_chunks=6, mode="vector")
+# Vector search
+config = RAGQueryConfig(mode="vector", max_chunks=5)
 
-results = client.tool_runtime.rag_tool.query(
-    vector_db_ids=[vector_db_id],
-    content="what is torchtune",
-    query_config=query_config,
+# Keyword search
+config = RAGQueryConfig(mode="keyword", max_chunks=5)
+
+# Hybrid search with custom RRF ranker
+config = RAGQueryConfig(
+    mode="hybrid",
+    max_chunks=5,
+    ranker=RRFRanker(impact_factor=50.0),  # Custom impact factor
 )
+
+# Hybrid search with weighted ranker
+config = RAGQueryConfig(
+    mode="hybrid",
+    max_chunks=5,
+    ranker=WeightedRanker(alpha=0.7),  # 70% vector, 30% keyword
+)
+
+# Hybrid search with default RRF ranker
+config = RAGQueryConfig(
+    mode="hybrid", max_chunks=5
+)  # Will use RRF with impact_factor=60.0
 ```
+
+Note: The ranker configuration is only used in hybrid mode. For vector or keyword modes, the ranker parameter is ignored.
 
 ## Installation
 
@@ -129,3 +197,5 @@ pip install sqlite-vec
 ## Documentation
 
 See [sqlite-vec's GitHub repo](https://github.com/asg017/sqlite-vec/tree/main) for more details about sqlite-vec in general.
+
+[^1]: Cormack, G. V., Clarke, C. L., & Buettcher, S. (2009). [Reciprocal rank fusion outperforms condorcet and individual rank learning methods](https://dl.acm.org/doi/10.1145/1571941.1572114). In Proceedings of the 32nd international ACM SIGIR conference on Research and development in information retrieval (pp. 758-759).

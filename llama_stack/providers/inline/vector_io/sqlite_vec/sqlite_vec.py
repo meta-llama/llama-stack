@@ -27,7 +27,12 @@ from llama_stack.apis.vector_io import (
 )
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
-from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
+from llama_stack.providers.utils.memory.vector_store import (
+    RERANKER_TYPE_RRF,
+    RERANKER_TYPE_WEIGHTED,
+    EmbeddingIndex,
+    VectorDBWithIndex,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +55,59 @@ def _create_sqlite_connection(db_path):
     sqlite_vec.load(connection)
     connection.enable_load_extension(False)
     return connection
+
+
+def _normalize_scores(scores: dict[str, float]) -> dict[str, float]:
+    """Normalize scores to [0,1] range using min-max normalization."""
+    if not scores:
+        return {}
+    min_score = min(scores.values())
+    max_score = max(scores.values())
+    score_range = max_score - min_score
+    if score_range > 0:
+        return {doc_id: (score - min_score) / score_range for doc_id, score in scores.items()}
+    return {doc_id: 1.0 for doc_id in scores}
+
+
+def _weighted_rerank(
+    vector_scores: dict[str, float],
+    keyword_scores: dict[str, float],
+    alpha: float = 0.5,
+) -> dict[str, float]:
+    """ReRanker that uses weighted average of scores."""
+    all_ids = set(vector_scores.keys()) | set(keyword_scores.keys())
+    normalized_vector_scores = _normalize_scores(vector_scores)
+    normalized_keyword_scores = _normalize_scores(keyword_scores)
+
+    return {
+        doc_id: (alpha * normalized_keyword_scores.get(doc_id, 0.0))
+        + ((1 - alpha) * normalized_vector_scores.get(doc_id, 0.0))
+        for doc_id in all_ids
+    }
+
+
+def _rrf_rerank(
+    vector_scores: dict[str, float],
+    keyword_scores: dict[str, float],
+    impact_factor: float = 60.0,
+) -> dict[str, float]:
+    """ReRanker that uses Reciprocal Rank Fusion."""
+    # Convert scores to ranks
+    vector_ranks = {
+        doc_id: i + 1 for i, (doc_id, _) in enumerate(sorted(vector_scores.items(), key=lambda x: x[1], reverse=True))
+    }
+    keyword_ranks = {
+        doc_id: i + 1 for i, (doc_id, _) in enumerate(sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True))
+    }
+
+    all_ids = set(vector_scores.keys()) | set(keyword_scores.keys())
+    rrf_scores = {}
+    for doc_id in all_ids:
+        vector_rank = vector_ranks.get(doc_id, float("inf"))
+        keyword_rank = keyword_ranks.get(doc_id, float("inf"))
+        # RRF formula: score = 1/(k + r) where k is impact_factor and r is the rank
+        rrf_scores[doc_id] = (1.0 / (impact_factor + vector_rank)) + (1.0 / (impact_factor + keyword_rank))
+    return rrf_scores
 
 
 class SQLiteVecIndex(EmbeddingIndex):
@@ -299,60 +357,72 @@ class SQLiteVecIndex(EmbeddingIndex):
         query_string: str,
         k: int,
         score_threshold: float,
+        reranker_type: str = RERANKER_TYPE_RRF,
+        reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         """
-        Hybrid search using Reciprocal Rank Fusion (RRF) to combine vector and keyword search results.
-        RRF assigns scores based on the reciprocal of the rank position in each search method,
-        then combines these scores to get a final ranking.
+        Hybrid search using a configurable re-ranking strategy.
 
         Args:
             embedding: The query embedding vector
             query_string: The text query for keyword search
             k: Number of results to return
             score_threshold: Minimum similarity score threshold
+            reranker_type: Type of reranker to use ("rrf" or "weighted")
+            reranker_params: Parameters for the reranker
 
         Returns:
             QueryChunksResponse with combined results
         """
+        if reranker_params is None:
+            reranker_params = {}
+
         # Get results from both search methods
-        vector_response = await self.query_vector(embedding, k * 2, score_threshold)
-        keyword_response = await self.query_keyword(query_string, k * 2, score_threshold)
+        vector_response = await self.query_vector(embedding, k, score_threshold)
+        keyword_response = await self.query_keyword(query_string, k, score_threshold)
 
-        # Create dictionaries to store ranks for each method
-        vector_ranks = {chunk.metadata["document_id"]: i + 1 for i, chunk in enumerate(vector_response.chunks)}
-        keyword_ranks = {chunk.metadata["document_id"]: i + 1 for i, chunk in enumerate(keyword_response.chunks)}
+        # Convert responses to score dictionaries using generate_chunk_id
+        vector_scores = {
+            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
+        }
+        keyword_scores = {
+            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
+        }
 
-        # Calculate RRF scores for all unique document IDs
-        all_ids = set(vector_ranks.keys()) | set(keyword_ranks.keys())
-        rrf_scores = {}
-        for doc_id in all_ids:
-            vector_rank = vector_ranks.get(doc_id, float("inf"))
-            keyword_rank = keyword_ranks.get(doc_id, float("inf"))
-            # RRF formula: score = 1/(k + r) where k is a constant and r is the rank
-            rrf_scores[doc_id] = (1.0 / (60 + vector_rank)) + (1.0 / (60 + keyword_rank))
+        # Combine scores using the specified reranker
+        if reranker_type == RERANKER_TYPE_WEIGHTED:
+            alpha = reranker_params.get("alpha", 0.5)
+            combined_scores = _weighted_rerank(vector_scores, keyword_scores, alpha)
+        else:
+            # Default to RRF for None, RRF, or any unknown types
+            impact_factor = reranker_params.get("impact_factor", 60.0)
+            combined_scores = _rrf_rerank(vector_scores, keyword_scores, impact_factor)
 
-        # Sort by RRF score and get top k results
-        sorted_ids = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)[:k]
+        # Sort by combined score and get top k results
+        sorted_items = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
+        top_k_items = sorted_items[:k]
 
-        # Combine results maintaining RRF scores
+        # Filter by score threshold
+        filtered_items = [(doc_id, score) for doc_id, score in top_k_items if score >= score_threshold]
+
+        # Create a map of chunk_id to chunk for both responses
+        chunk_map = {}
+        for c in vector_response.chunks:
+            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_map[chunk_id] = c
+        for c in keyword_response.chunks:
+            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_map[chunk_id] = c
+
+        # Use the map to look up chunks by their IDs
         chunks = []
         scores = []
-        for doc_id in sorted_ids:
-            score = rrf_scores[doc_id]
-            if score >= score_threshold:
-                # Try to get from vector results first
-                for chunk in vector_response.chunks:
-                    if chunk.metadata["document_id"] == doc_id:
-                        chunks.append(chunk)
-                        scores.append(score)
-                        break
-                else:
-                    # If not in vector results, get from keyword results
-                    for chunk in keyword_response.chunks:
-                        if chunk.metadata["document_id"] == doc_id:
-                            chunks.append(chunk)
-                            scores.append(score)
-                            break
+        for doc_id, score in filtered_items:
+            if doc_id in chunk_map:
+                chunks.append(chunk_map[doc_id])
+                scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
