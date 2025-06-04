@@ -37,6 +37,7 @@ def skip_if_model_doesnt_support_openai_completion(client_with_models, model_id)
         # support both completions and chat completions endpoint and all the Llama models are
         # just chat completions
         "remote::nvidia",
+        "remote::openai",
         "remote::runpod",
         "remote::sambanova",
         "remote::tgi",
