@@ -32,11 +32,19 @@ Regardless of the client you choose, the following code examples should all work
 
 ## APIs implemented
 
+### Models
+
+Many of the APIs require you to pass in a model parameter. To see the list of models available in your Llama Stack server:
+
+```python
+models = client.models.list()
+```
+
 ### Responses
 
-```{note}
+:::{note}
 The Responses API implementation is still in active development. While it is quite usable, there are still unimplemented parts of the API. We'd love feedback on any use-cases you try that do not work to help prioritize the pieces left to implement. Please open issues in the [meta-llama/llama-stack](https://github.com/meta-llama/llama-stack) GitHub repository with details of anything that does not work.
-```
+:::
 
 #### Simple inference
 
@@ -59,10 +67,6 @@ Code's gentle silence
 ```
 
 #### Structured Output
-
-```{warning}
-Structured outputs are not yet implemented for the Responses API as of Llama Stack 0.2.8. Below is an example of how this should work, once it is implemented.
-```
 
 Request:
 
@@ -98,7 +102,9 @@ print(response.output_text)
 
 Example output:
 
-Omitted - see warning above.
+```text
+{ "participants": ["Alice", "Bob"] }
+```
 
 ### Chat Completions
 
@@ -184,10 +190,4 @@ Example output:
 Lines of code unfurl
 Logic whispers in the dark
 Art in hidden form
-```
-
-### Models
-
-```python
-models = client.models.list()
 ```
