@@ -54,28 +54,6 @@ jobs:
           kubectl create serviceaccount llama-stack-auth -n llama-stack
           kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --serviceaccount=llama-stack:llama-stack-auth -n llama-stack
           kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
-          cat <<EOF | kubectl apply -f -
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: ClusterRole
-          metadata:
-            name: allow-anonymous-openid
-          rules:
-          - nonResourceURLs: ["/openid/v1/jwks"]
-            verbs: ["get"]
-          ---
-          apiVersion: rbac.authorization.k8s.io/v1
-          kind: ClusterRoleBinding
-          metadata:
-            name: allow-anonymous-openid
-          roleRef:
-            apiGroup: rbac.authorization.k8s.io
-            kind: ClusterRole
-            name: allow-anonymous-openid
-          subjects:
-          - kind: User
-            name: system:anonymous
-            apiGroup: rbac.authorization.k8s.io
-          EOF
 
       - name: Set Kubernetes Config
         if: ${{ matrix.auth-provider == 'oauth2_token' }}
@@ -84,6 +62,7 @@ jobs:
           echo "KUBERNETES_CA_CERT_PATH=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.certificate-authority}')" >> $GITHUB_ENV
           echo "KUBERNETES_ISSUER=$(kubectl get --raw /.well-known/openid-configuration| jq -r .issuer)" >> $GITHUB_ENV
           echo "KUBERNETES_AUDIENCE=$(kubectl create token llama-stack-auth -n llama-stack --duration=1h | cut -d. -f2 | base64 -d | jq -r '.aud[0]')" >> $GITHUB_ENV
+          echo "TOKEN=$(kubectl create token llama-stack-auth -n llama-stack --duration=1h)" >> $GITHUB_ENV
 
       - name: Set Kube Auth Config and run server
         env:
@@ -101,7 +80,7 @@ jobs:
           EOF
           yq eval '.server.auth = {"provider_type": "${{ matrix.auth-provider }}"}' -i $run_dir/run.yaml
           yq eval '.server.auth.config = {"tls_cafile": "${{ env.KUBERNETES_CA_CERT_PATH }}", "issuer": "${{ env.KUBERNETES_ISSUER }}", "audience": "${{ env.KUBERNETES_AUDIENCE }}"}' -i $run_dir/run.yaml
-          yq eval '.server.auth.config.jwks = {"uri": "${{ env.KUBERNETES_API_SERVER_URL }}"}' -i $run_dir/run.yaml
+          yq eval '.server.auth.config.jwks = {"uri": "${{ env.KUBERNETES_API_SERVER_URL }}", "token": "${{ env.TOKEN }}"}' -i $run_dir/run.yaml
           cat $run_dir/run.yaml
 
           nohup uv run llama stack run $run_dir/run.yaml --image-type venv > server.log 2>&1 &
