@@ -134,6 +134,8 @@ class PGVectorIndex(EmbeddingIndex):
         query_string: str,
         k: int,
         score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Hybrid search is not supported in PGVector")
 
