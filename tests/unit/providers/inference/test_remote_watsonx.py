@@ -42,13 +42,13 @@ async def test_health_success(watsonx_inference_adapter):
     """
     # Mock the _get_client method to return a mock model
     mock_model = MagicMock()
-    mock_model.generate.return_value = "test response"
+    mock_model.get_details.return_value = {}
 
     with patch.object(watsonx_inference_adapter, "_get_client", return_value=mock_model):
         health_response = await watsonx_inference_adapter.health()
         # Verify the response
         assert health_response["status"] == HealthStatus.OK
-        mock_model.generate.assert_called_once_with("test")
+        mock_model.get_details.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -59,8 +59,8 @@ async def test_health_failure(watsonx_inference_adapter):
     with the exception error message.
     """
     mock_model = MagicMock()
-    mock_model.generate.side_effect = Exception("Connection failed")
+    mock_model.get_details.side_effect = Exception("Connection failed")
     with patch.object(watsonx_inference_adapter, "_get_client", return_value=mock_model):
         health_response = await watsonx_inference_adapter.health()
         assert health_response["status"] == HealthStatus.ERROR
-        assert "Health check failed: Connection failed" in health_response["message"]
+        assert "Health check failure reason: Connection failed" in health_response["message"]
