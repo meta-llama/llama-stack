@@ -33,7 +33,7 @@ class WatsonXConfig(BaseModel):
         description="The Project ID key, only needed of using the hosted service",
     )
     model_id: str | None = Field(
-        default_factory=lambda: os.getenv("WATSONX_MODEL_ID", "ibm/granite-3-8b-instruct"),
+        default_factory=lambda: os.getenv("WATSONX_HEALTH_CHECK_MODEL_ID", "ibm/granite-3-8b-instruct"),
         description="The Model ID key, only needed of using the hosted service",
     )
     timeout: int = Field(
