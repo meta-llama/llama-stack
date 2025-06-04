@@ -91,7 +91,7 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
             HealthResponse: A dictionary containing the health status.
         """
         try:
-            client_model = self._get_client(self._config.model_id)
+            client_model = self._get_client(self._config.health_check_model_id)
             client_model.get_details()
             return HealthResponse(status=HealthStatus.OK)
         except Exception as ex:
