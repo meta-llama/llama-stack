@@ -633,90 +633,6 @@
                 }
             }
         },
-        "/v1/files": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "A ListBucketResponse.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ListBucketResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "List all buckets.",
-                "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "query",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "A FileUploadResponse.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FileUploadResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "Create a new upload session for a file identified by a bucket and key.",
-                "parameters": [],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CreateUploadSessionRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/agents/{agent_id}": {
             "get": {
                 "responses": {
@@ -893,101 +809,6 @@
                         "name": "agent_id",
                         "in": "path",
                         "description": "The ID of the agent to delete the session for.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
-        "/v1/files/{bucket}/{key}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "A FileResponse.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FileResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "Get a file info identified by a bucket and key.",
-                "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.).",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "delete": {
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "Delete a file identified by a bucket and key.",
-                "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "in": "path",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.).",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1979,108 +1800,6 @@
                 "parameters": []
             }
         },
-        "/v1/files/session:{upload_id}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "A FileUploadResponse.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FileUploadResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "Returns information about an existsing upload session.",
-                "parameters": [
-                    {
-                        "name": "upload_id",
-                        "in": "path",
-                        "description": "ID of the upload session.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            },
-            "post": {
-                "responses": {
-                    "200": {
-                        "description": "A FileResponse or None if the upload is not complete.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "oneOf": [
-                                        {
-                                            "$ref": "#/components/schemas/FileResponse"
-                                        },
-                                        {
-                                            "type": "null"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "Upload file content to an existing upload session. On the server, request body will have the raw bytes that are uploaded.",
-                "parameters": [
-                    {
-                        "name": "upload_id",
-                        "in": "path",
-                        "description": "ID of the upload session.",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/octet-stream": {
-                            "schema": {
-                                "type": "string",
-                                "format": "binary"
-                            }
-                        }
-                    },
-                    "required": true
-                }
-            }
-        },
         "/v1/vector-dbs/{vector_db_id}": {
             "get": {
                 "responses": {
@@ -2877,49 +2596,6 @@
                 }
             }
         },
-        "/v1/files/{bucket}": {
-            "get": {
-                "responses": {
-                    "200": {
-                        "description": "A ListFileResponse.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ListFileResponse"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "$ref": "#/components/responses/BadRequest400"
-                    },
-                    "429": {
-                        "$ref": "#/components/responses/TooManyRequests429"
-                    },
-                    "500": {
-                        "$ref": "#/components/responses/InternalServerError500"
-                    },
-                    "default": {
-                        "$ref": "#/components/responses/DefaultError"
-                    }
-                },
-                "tags": [
-                    "Files"
-                ],
-                "description": "List all files in a bucket.",
-                "parameters": [
-                    {
-                        "name": "bucket",
-                        "in": "path",
-                        "description": "Bucket name (valid chars: a-zA-Z0-9_-).",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ]
-            }
-        },
         "/v1/models": {
             "get": {
                 "responses": {
@@ -3607,6 +3283,90 @@
                 }
             }
         },
+        "/v1/openai/v1/files/{file_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "An OpenAIFileObject containing file information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIFileObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Returns information about a specific file.",
+                "parameters": [
+                    {
+                        "name": "file_id",
+                        "in": "path",
+                        "description": "The ID of the file to use for this request.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "An OpenAIFileDeleteResponse indicating successful deletion.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIFileDeleteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Delete a file.",
+                "parameters": [
+                    {
+                        "name": "file_id",
+                        "in": "path",
+                        "description": "The ID of the file to use for this request.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/openai/v1/embeddings": {
             "post": {
                 "responses": {
@@ -3650,6 +3410,130 @@
                 }
             }
         },
+        "/v1/openai/v1/files": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "An ListOpenAIFileResponse containing the list of files.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ListOpenAIFileResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Returns a list of files that belong to the user's organization.",
+                "parameters": [
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "A cursor for use in pagination. `after` is an object ID that defines your place in the list. For instance, if you make a list request and receive 100 objects, ending with obj_foo, your subsequent call can include after=obj_foo in order to fetch the next page of the list.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "A limit on the number of objects to be returned. Limit can range between 1 and 10,000, and the default is 10,000.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/Order"
+                        }
+                    },
+                    {
+                        "name": "purpose",
+                        "in": "query",
+                        "description": "Only return files with the given purpose.",
+                        "required": false,
+                        "schema": {
+                            "$ref": "#/components/schemas/OpenAIFilePurpose"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "An OpenAIFileObject representing the uploaded file.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/OpenAIFileObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Upload a file that can be used across various endpoints.\nThe file upload should be a multipart form request with:\n- file: The File object (not file name) to be uploaded.\n- purpose: The intended purpose of the uploaded file.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "purpose": {
+                                        "$ref": "#/components/schemas/OpenAIFilePurpose"
+                                    }
+                                },
+                                "required": [
+                                    "file",
+                                    "purpose"
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/openai/v1/models": {
             "get": {
                 "responses": {
@@ -3681,6 +3565,49 @@
                 ],
                 "description": "List models using the OpenAI API.",
                 "parameters": []
+            }
+        },
+        "/v1/openai/v1/files/{file_id}/content": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "The raw file content as a binary response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Files"
+                ],
+                "description": "Returns the contents of the specified file.",
+                "parameters": [
+                    {
+                        "name": "file_id",
+                        "in": "path",
+                        "description": "The ID of the file to use for this request.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
             }
         },
         "/v1/post-training/preference-optimize": {
@@ -7314,6 +7241,79 @@
                 ],
                 "title": "OpenAIResponseOutputMessageWebSearchToolCall"
             },
+            "OpenAIResponseText": {
+                "type": "object",
+                "properties": {
+                    "format": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "oneOf": [
+                                    {
+                                        "type": "string",
+                                        "const": "text"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "json_schema"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "const": "json_object"
+                                    }
+                                ],
+                                "description": "Must be \"text\", \"json_schema\", or \"json_object\" to identify the format type"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the response format. Only used for json_schema."
+                            },
+                            "schema": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                },
+                                "description": "The JSON schema the response should conform to. In a Python SDK, this is often a `pydantic` model. Only used for json_schema."
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "(Optional) A description of the response format. Only used for json_schema."
+                            },
+                            "strict": {
+                                "type": "boolean",
+                                "description": "(Optional) Whether to strictly enforce the JSON schema. If true, the response must match the schema exactly. Only used for json_schema."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "type"
+                        ],
+                        "title": "OpenAIResponseTextFormat",
+                        "description": "Configuration for Responses API text format."
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenAIResponseText"
+            },
             "CreateOpenaiResponseRequest": {
                 "type": "object",
                 "properties": {
@@ -7351,11 +7351,17 @@
                     "temperature": {
                         "type": "number"
                     },
+                    "text": {
+                        "$ref": "#/components/schemas/OpenAIResponseText"
+                    },
                     "tools": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/OpenAIResponseInputTool"
                         }
+                    },
+                    "max_infer_iters": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false,
@@ -7421,6 +7427,9 @@
                     "temperature": {
                         "type": "number"
                     },
+                    "text": {
+                        "$ref": "#/components/schemas/OpenAIResponseText"
+                    },
                     "top_p": {
                         "type": "number"
                     },
@@ -7439,7 +7448,8 @@
                     "object",
                     "output",
                     "parallel_tool_calls",
-                    "status"
+                    "status",
+                    "text"
                 ],
                 "title": "OpenAIResponseObject"
             },
@@ -7584,7 +7594,55 @@
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated"
                     },
                     {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemAdded"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemDone"
+                    },
+                    {
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDone"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallInProgress"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallSearching"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallCompleted"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsInProgress"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsFailed"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsCompleted"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDone"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallInProgress"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallFailed"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted"
                     },
                     {
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
@@ -7594,7 +7652,23 @@
                     "propertyName": "type",
                     "mapping": {
                         "response.created": "#/components/schemas/OpenAIResponseObjectStreamResponseCreated",
+                        "response.output_item.added": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemAdded",
+                        "response.output_item.done": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputItemDone",
                         "response.output_text.delta": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDelta",
+                        "response.output_text.done": "#/components/schemas/OpenAIResponseObjectStreamResponseOutputTextDone",
+                        "response.function_call_arguments.delta": "#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta",
+                        "response.function_call_arguments.done": "#/components/schemas/OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone",
+                        "response.web_search_call.in_progress": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallInProgress",
+                        "response.web_search_call.searching": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallSearching",
+                        "response.web_search_call.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseWebSearchCallCompleted",
+                        "response.mcp_list_tools.in_progress": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsInProgress",
+                        "response.mcp_list_tools.failed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsFailed",
+                        "response.mcp_list_tools.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpListToolsCompleted",
+                        "response.mcp_call.arguments.delta": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta",
+                        "response.mcp_call.arguments.done": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallArgumentsDone",
+                        "response.mcp_call.in_progress": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallInProgress",
+                        "response.mcp_call.failed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallFailed",
+                        "response.mcp_call.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted",
                         "response.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
                     }
                 }
@@ -7637,6 +7711,314 @@
                 ],
                 "title": "OpenAIResponseObjectStreamResponseCreated"
             },
+            "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta": {
+                "type": "object",
+                "properties": {
+                    "delta": {
+                        "type": "string"
+                    },
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.function_call_arguments.delta",
+                        "default": "response.function_call_arguments.delta"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "delta",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta"
+            },
+            "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone": {
+                "type": "object",
+                "properties": {
+                    "arguments": {
+                        "type": "string"
+                    },
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.function_call_arguments.done",
+                        "default": "response.function_call_arguments.done"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "arguments",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone"
+            },
+            "OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta": {
+                "type": "object",
+                "properties": {
+                    "delta": {
+                        "type": "string"
+                    },
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_call.arguments.delta",
+                        "default": "response.mcp_call.arguments.delta"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "delta",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta"
+            },
+            "OpenAIResponseObjectStreamResponseMcpCallArgumentsDone": {
+                "type": "object",
+                "properties": {
+                    "arguments": {
+                        "type": "string"
+                    },
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_call.arguments.done",
+                        "default": "response.mcp_call.arguments.done"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "arguments",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpCallArgumentsDone"
+            },
+            "OpenAIResponseObjectStreamResponseMcpCallCompleted": {
+                "type": "object",
+                "properties": {
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_call.completed",
+                        "default": "response.mcp_call.completed"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpCallCompleted"
+            },
+            "OpenAIResponseObjectStreamResponseMcpCallFailed": {
+                "type": "object",
+                "properties": {
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_call.failed",
+                        "default": "response.mcp_call.failed"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpCallFailed"
+            },
+            "OpenAIResponseObjectStreamResponseMcpCallInProgress": {
+                "type": "object",
+                "properties": {
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_call.in_progress",
+                        "default": "response.mcp_call.in_progress"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpCallInProgress"
+            },
+            "OpenAIResponseObjectStreamResponseMcpListToolsCompleted": {
+                "type": "object",
+                "properties": {
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_list_tools.completed",
+                        "default": "response.mcp_list_tools.completed"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpListToolsCompleted"
+            },
+            "OpenAIResponseObjectStreamResponseMcpListToolsFailed": {
+                "type": "object",
+                "properties": {
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_list_tools.failed",
+                        "default": "response.mcp_list_tools.failed"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpListToolsFailed"
+            },
+            "OpenAIResponseObjectStreamResponseMcpListToolsInProgress": {
+                "type": "object",
+                "properties": {
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.mcp_list_tools.in_progress",
+                        "default": "response.mcp_list_tools.in_progress"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseMcpListToolsInProgress"
+            },
+            "OpenAIResponseObjectStreamResponseOutputItemAdded": {
+                "type": "object",
+                "properties": {
+                    "response_id": {
+                        "type": "string"
+                    },
+                    "item": {
+                        "$ref": "#/components/schemas/OpenAIResponseOutput"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.output_item.added",
+                        "default": "response.output_item.added"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response_id",
+                    "item",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseOutputItemAdded"
+            },
+            "OpenAIResponseObjectStreamResponseOutputItemDone": {
+                "type": "object",
+                "properties": {
+                    "response_id": {
+                        "type": "string"
+                    },
+                    "item": {
+                        "$ref": "#/components/schemas/OpenAIResponseOutput"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.output_item.done",
+                        "default": "response.output_item.done"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response_id",
+                    "item",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseOutputItemDone"
+            },
             "OpenAIResponseObjectStreamResponseOutputTextDelta": {
                 "type": "object",
                 "properties": {
@@ -7672,64 +8054,121 @@
                 ],
                 "title": "OpenAIResponseObjectStreamResponseOutputTextDelta"
             },
-            "CreateUploadSessionRequest": {
+            "OpenAIResponseObjectStreamResponseOutputTextDone": {
                 "type": "object",
                 "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)."
+                    "content_index": {
+                        "type": "integer"
                     },
-                    "key": {
-                        "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)."
+                    "text": {
+                        "type": "string"
                     },
-                    "mime_type": {
-                        "type": "string",
-                        "description": "MIME type of the file."
+                    "item_id": {
+                        "type": "string"
                     },
-                    "size": {
-                        "type": "integer",
-                        "description": "File size in bytes."
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.output_text.done",
+                        "default": "response.output_text.done"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "bucket",
-                    "key",
-                    "mime_type",
-                    "size"
+                    "content_index",
+                    "text",
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
                 ],
-                "title": "CreateUploadSessionRequest"
+                "title": "OpenAIResponseObjectStreamResponseOutputTextDone"
             },
-            "FileUploadResponse": {
+            "OpenAIResponseObjectStreamResponseWebSearchCallCompleted": {
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
                         "type": "string",
-                        "description": "ID of the upload session"
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "Upload URL for the file or file parts"
-                    },
-                    "offset": {
-                        "type": "integer",
-                        "description": "Upload content offset"
-                    },
-                    "size": {
-                        "type": "integer",
-                        "description": "Upload content size"
+                        "const": "response.web_search_call.completed",
+                        "default": "response.web_search_call.completed"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "id",
-                    "url",
-                    "offset",
-                    "size"
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
                 ],
-                "title": "FileUploadResponse",
-                "description": "Response after initiating a file upload session."
+                "title": "OpenAIResponseObjectStreamResponseWebSearchCallCompleted"
+            },
+            "OpenAIResponseObjectStreamResponseWebSearchCallInProgress": {
+                "type": "object",
+                "properties": {
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.web_search_call.in_progress",
+                        "default": "response.web_search_call.in_progress"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseWebSearchCallInProgress"
+            },
+            "OpenAIResponseObjectStreamResponseWebSearchCallSearching": {
+                "type": "object",
+                "properties": {
+                    "item_id": {
+                        "type": "string"
+                    },
+                    "output_index": {
+                        "type": "integer"
+                    },
+                    "sequence_number": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.web_search_call.searching",
+                        "default": "response.web_search_call.searching"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "item_id",
+                    "output_index",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseWebSearchCallSearching"
             },
             "EmbeddingsRequest": {
                 "type": "object",
@@ -8993,46 +9432,6 @@
                 ],
                 "title": "URIDataSource",
                 "description": "A dataset that can be obtained from a URI."
-            },
-            "FileResponse": {
-                "type": "object",
-                "properties": {
-                    "bucket": {
-                        "type": "string",
-                        "description": "Bucket under which the file is stored (valid chars: a-zA-Z0-9_-)"
-                    },
-                    "key": {
-                        "type": "string",
-                        "description": "Key under which the file is stored (valid chars: a-zA-Z0-9_-/.)"
-                    },
-                    "mime_type": {
-                        "type": "string",
-                        "description": "MIME type of the file"
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "Upload URL for the file contents"
-                    },
-                    "bytes": {
-                        "type": "integer",
-                        "description": "Size of the file in bytes"
-                    },
-                    "created_at": {
-                        "type": "integer",
-                        "description": "Timestamp of when the file was created"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "bucket",
-                    "key",
-                    "mime_type",
-                    "url",
-                    "bytes",
-                    "created_at"
-                ],
-                "title": "FileResponse",
-                "description": "Response representing a file entry."
             },
             "Model": {
                 "type": "object",
@@ -10347,37 +10746,6 @@
                 ],
                 "title": "Job"
             },
-            "BucketResponse": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
-                "title": "BucketResponse"
-            },
-            "ListBucketResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/BucketResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListBucketResponse",
-                "description": "Response representing a list of file entries."
-            },
             "ListBenchmarksResponse": {
                 "type": "object",
                 "properties": {
@@ -10495,24 +10863,6 @@
                 ],
                 "title": "ListDatasetsResponse"
             },
-            "ListFileResponse": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/FileResponse"
-                        },
-                        "description": "List of FileResponse entries"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "data"
-                ],
-                "title": "ListFileResponse",
-                "description": "Response representing a list of file entries."
-            },
             "ListModelsResponse": {
                 "type": "object",
                 "properties": {
@@ -10624,6 +10974,9 @@
                     "temperature": {
                         "type": "number"
                     },
+                    "text": {
+                        "$ref": "#/components/schemas/OpenAIResponseText"
+                    },
                     "top_p": {
                         "type": "number"
                     },
@@ -10649,6 +11002,7 @@
                     "output",
                     "parallel_tool_calls",
                     "status",
+                    "text",
                     "input"
                 ],
                 "title": "OpenAIResponseObjectWithInput"
@@ -11820,6 +12174,33 @@
                 "title": "OpenAICompletionChoice",
                 "description": "A choice from an OpenAI-compatible completion response."
             },
+            "OpenAIFileDeleteResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The file identifier that was deleted"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "file",
+                        "default": "file",
+                        "description": "The object type, which is always \"file\""
+                    },
+                    "deleted": {
+                        "type": "boolean",
+                        "description": "Whether the file was successfully deleted"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "object",
+                    "deleted"
+                ],
+                "title": "OpenAIFileDeleteResponse",
+                "description": "Response for deleting a file in OpenAI Files API."
+            },
             "OpenaiEmbeddingsRequest": {
                 "type": "object",
                 "properties": {
@@ -11953,6 +12334,101 @@
                 "title": "OpenAIEmbeddingsResponse",
                 "description": "Response from an OpenAI-compatible embeddings request."
             },
+            "OpenAIFilePurpose": {
+                "type": "string",
+                "enum": [
+                    "assistants"
+                ],
+                "title": "OpenAIFilePurpose",
+                "description": "Valid purpose values for OpenAI Files API."
+            },
+            "ListOpenAIFileResponse": {
+                "type": "object",
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIFileObject"
+                        },
+                        "description": "List of file objects"
+                    },
+                    "has_more": {
+                        "type": "boolean"
+                    },
+                    "first_id": {
+                        "type": "string"
+                    },
+                    "last_id": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "const": "list",
+                        "default": "list",
+                        "description": "The object type, which is always \"list\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "data",
+                    "has_more",
+                    "first_id",
+                    "last_id",
+                    "object"
+                ],
+                "title": "ListOpenAIFileResponse",
+                "description": "Response for listing files in OpenAI Files API."
+            },
+            "OpenAIFileObject": {
+                "type": "object",
+                "properties": {
+                    "object": {
+                        "type": "string",
+                        "const": "file",
+                        "default": "file",
+                        "description": "The object type, which is always \"file\""
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "The file identifier, which can be referenced in the API endpoints"
+                    },
+                    "bytes": {
+                        "type": "integer",
+                        "description": "The size of the file, in bytes"
+                    },
+                    "created_at": {
+                        "type": "integer",
+                        "description": "The Unix timestamp (in seconds) for when the file was created"
+                    },
+                    "expires_at": {
+                        "type": "integer",
+                        "description": "The Unix timestamp (in seconds) for when the file expires"
+                    },
+                    "filename": {
+                        "type": "string",
+                        "description": "The name of the file"
+                    },
+                    "purpose": {
+                        "type": "string",
+                        "enum": [
+                            "assistants"
+                        ],
+                        "description": "The intended purpose of the file"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "object",
+                    "id",
+                    "bytes",
+                    "created_at",
+                    "expires_at",
+                    "filename",
+                    "purpose"
+                ],
+                "title": "OpenAIFileObject",
+                "description": "OpenAI File object as defined in the OpenAI Files API."
+            },
             "OpenAIModel": {
                 "type": "object",
                 "properties": {
@@ -11996,6 +12472,10 @@
                     "data"
                 ],
                 "title": "OpenAIListModelsResponse"
+            },
+            "Response": {
+                "type": "object",
+                "title": "Response"
             },
             "DPOAlignmentConfig": {
                 "type": "object",

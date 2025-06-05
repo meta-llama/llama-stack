@@ -41,6 +41,7 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
@@ -130,9 +131,8 @@ Homepage = "https://github.com/meta-llama/llama-stack"
 llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
-[tool.setuptools]
-packages = { find = {} }
-license-files = []
+[tool.setuptools.packages.find]
+include = ["llama_stack"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

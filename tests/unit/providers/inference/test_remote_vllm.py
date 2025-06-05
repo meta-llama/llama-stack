@@ -70,9 +70,12 @@ class MockInferenceAdapterWithSleep:
             # ruff: noqa: N802
             def do_POST(self):
                 time.sleep(sleep_time)
+                response_body = json.dumps(response).encode("utf-8")
                 self.send_response(code=200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", len(response_body))
                 self.end_headers()
-                self.wfile.write(json.dumps(response).encode("utf-8"))
+                self.wfile.write(response_body)
 
         self.request_handler = DelayedRequestHandler
 

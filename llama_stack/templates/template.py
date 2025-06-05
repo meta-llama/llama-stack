@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Literal
 
 import jinja2
+import rich
 import yaml
 from pydantic import BaseModel, Field
 
@@ -36,13 +37,35 @@ def get_model_registry(
     available_models: dict[str, list[ProviderModelEntry]],
 ) -> list[ModelInput]:
     models = []
+
+    # check for conflicts in model ids
+    all_ids = set()
+    ids_conflict = False
+
+    for _, entries in available_models.items():
+        for entry in entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for model_id in ids:
+                if model_id in all_ids:
+                    ids_conflict = True
+                    rich.print(
+                        f"[yellow]Model id {model_id} conflicts; all model ids will be prefixed with provider id[/yellow]"
+                    )
+                    break
+            all_ids.update(ids)
+            if ids_conflict:
+                break
+        if ids_conflict:
+            break
+
     for provider_id, entries in available_models.items():
         for entry in entries:
             ids = [entry.provider_model_id] + entry.aliases
             for model_id in ids:
+                identifier = f"{provider_id}/{model_id}" if ids_conflict and provider_id not in model_id else model_id
                 models.append(
                     ModelInput(
-                        model_id=model_id,
+                        model_id=identifier,
                         provider_model_id=entry.provider_model_id,
                         provider_id=provider_id,
                         model_type=entry.model_type,
@@ -154,12 +177,20 @@ class DistributionTemplate(BaseModel):
 
     available_models_by_provider: dict[str, list[ProviderModelEntry]] | None = None
 
+    # we may want to specify additional pip packages without necessarily indicating a
+    # specific "default" inference store (which is what typically used to dictate additional
+    # pip packages)
+    additional_pip_packages: list[str] | None = None
+
     def build_config(self) -> BuildConfig:
         additional_pip_packages: list[str] = []
         for run_config in self.run_configs.values():
             run_config_ = run_config.run_config(self.name, self.providers, self.container_image)
             if run_config_.inference_store:
                 additional_pip_packages.extend(run_config_.inference_store.pip_packages)
+
+        if self.additional_pip_packages:
+            additional_pip_packages.extend(self.additional_pip_packages)
 
         return BuildConfig(
             distribution_spec=DistributionSpec(

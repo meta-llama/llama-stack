@@ -29,6 +29,8 @@ SERVER_DEPENDENCIES = [
     "fire",
     "httpx",
     "uvicorn",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
 ]
 
 
