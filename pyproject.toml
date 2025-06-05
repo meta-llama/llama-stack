@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "fastapi",
     "fire",
     "httpx",
     "huggingface-hub",
@@ -67,7 +68,6 @@ dev = [
     "types-setuptools",
     "pre-commit",
     "uvicorn",
-    "fastapi",
     "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
