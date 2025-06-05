@@ -103,6 +103,7 @@ getting_started/index
 getting_started/detailed_tutorial
 introduction/index
 concepts/index
+openai/index
 providers/index
 distributions/index
 building_applications/index

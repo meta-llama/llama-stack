@@ -10,6 +10,7 @@ on:
       - 'llama_stack/distribution/build.*'
       - 'llama_stack/distribution/*.sh'
       - '.github/workflows/providers-build.yml'
+      - 'llama_stack/templates/**'
   pull_request:
     paths:
       - 'llama_stack/cli/stack/build.py'
@@ -17,6 +18,7 @@ on:
       - 'llama_stack/distribution/build.*'
       - 'llama_stack/distribution/*.sh'
       - '.github/workflows/providers-build.yml'
+      - 'llama_stack/templates/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

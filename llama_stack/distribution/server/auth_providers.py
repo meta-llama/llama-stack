@@ -305,7 +305,6 @@ class CustomAuthProvider(AuthProvider):
                     json=auth_request.model_dump(),
                     timeout=10.0,  # Add a reasonable timeout
                 )
-                print("MADE CALL")
                 if response.status_code != 200:
                     logger.warning(f"Authentication failed with status code: {response.status_code}")
                     raise ValueError(f"Authentication failed: {response.status_code}")

@@ -5,64 +5,36 @@
 # the root directory of this source tree.
 
 
+from llama_stack.apis.models.models import ModelType
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.providers.remote.inference.fireworks.config import FireworksImplConfig
-from llama_stack.providers.remote.inference.fireworks.models import (
-    MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES,
-)
+from llama_stack.providers.inline.inference.sentence_transformers import SentenceTransformersInferenceConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
-from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.providers.utils.kvstore.config import PostgresKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig
 from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
-    get_model_registry,
 )
 
 
-def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderModelEntry]]]:
-    # in this template, we allow each API key to be optional
-    providers = [
-        (
-            "fireworks",
-            FIREWORKS_MODEL_ENTRIES,
-            FireworksImplConfig.sample_run_config(api_key="${env.FIREWORKS_API_KEY:}"),
-        ),
-    ]
-    inference_providers = []
-    available_models = {}
-    for provider_id, model_entries, config in providers:
-        inference_providers.append(
-            Provider(
-                provider_id=provider_id,
-                provider_type=f"remote::{provider_id}",
-                config=config,
-            )
-        )
-        available_models[provider_id] = model_entries
-    inference_providers.append(
+def get_distribution_template() -> DistributionTemplate:
+    inference_providers = [
         Provider(
             provider_id="vllm-inference",
             provider_type="remote::vllm",
             config=VLLMInferenceAdapterConfig.sample_run_config(
                 url="${env.VLLM_URL:http://localhost:8000/v1}",
             ),
-        )
-    )
-    return inference_providers, available_models
-
-
-def get_distribution_template() -> DistributionTemplate:
-    inference_providers, available_models = get_inference_providers()
+        ),
+    ]
     providers = {
-        "inference": ([p.provider_type for p in inference_providers]),
+        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
         "vector_io": ["remote::chromadb"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -94,12 +66,24 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models)
-    default_models.append(
+    default_models = [
         ModelInput(
             model_id="${env.INFERENCE_MODEL}",
             provider_id="vllm-inference",
         )
+    ]
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id=embedding_provider.provider_id,
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
     )
     postgres_config = PostgresSqlStoreConfig.sample_run_config()
     return DistributionTemplate(
@@ -109,11 +93,11 @@ def get_distribution_template() -> DistributionTemplate:
         container_image=None,
         template_path=None,
         providers=providers,
-        available_models_by_provider=available_models,
+        available_models_by_provider={},
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": inference_providers,
+                    "inference": inference_providers + [embedding_provider],
                     "vector_io": vector_io_providers,
                     "agents": [
                         Provider(
@@ -131,12 +115,13 @@ def get_distribution_template() -> DistributionTemplate:
                             provider_type="inline::meta-reference",
                             config=dict(
                                 service_name="${env.OTEL_SERVICE_NAME:}",
-                                sinks="${env.TELEMETRY_SINKS:console}",
+                                sinks="${env.TELEMETRY_SINKS:console,otel_trace}",
+                                otel_trace_endpoint="${env.OTEL_TRACE_ENDPOINT:http://localhost:4318/v1/traces}",
                             ),
                         )
                     ],
                 },
-                default_models=default_models,
+                default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
                 metadata_store=PostgresKVStoreConfig.sample_run_config(),
@@ -147,10 +132,6 @@ def get_distribution_template() -> DistributionTemplate:
             "LLAMA_STACK_PORT": (
                 "8321",
                 "Port for the Llama Stack distribution server",
-            ),
-            "FIREWORKS_API_KEY": (
-                "",
-                "Fireworks API Key",
             ),
         },
     )

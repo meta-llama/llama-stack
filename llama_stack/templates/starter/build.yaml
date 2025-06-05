@@ -11,7 +11,7 @@ distribution_spec:
     - remote::gemini
     - remote::groq
     - remote::sambanova
-    - remote::remote-vllm
+    - remote::vllm
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec
