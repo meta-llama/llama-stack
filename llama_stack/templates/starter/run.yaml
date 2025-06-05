@@ -80,6 +80,24 @@ providers:
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+  sql_store:
+  - provider_id: sqlite-store
+    provider_type: inline::sqlite-store
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/sqlite_store.db
+  - provider_id: postgres-store
+    provider_type: inline::postgres-store
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/postgres_store.db
+  kv_store:
+  - provider_id: sqlite-kv
+    provider_type: inline::sqlite-kv
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/sqlite_kv.db
+  - provider_id: postgres-kv
+    provider_type: inline::postgres-kv
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/postgres_kv.db
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -89,8 +107,7 @@ providers:
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/agents_store.db
       responses_store:
-        type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/responses_store.db
+        store_id: default_store
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -150,11 +167,23 @@ providers:
     provider_type: remote::model-context-protocol
     config: {}
 metadata_store:
-  type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/registry.db
+  store_id: default_kv_store
 inference_store:
-  type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/inference_store.db
+  store_id: default_store
+sql_stores:
+  - store_id: default_store
+    provider_id: postgres-store
+    config:
+      host: ${env.POSTGRES_HOST:localhost}
+      port: ${env.POSTGRES_PORT:5432}
+      db: ${env.POSTGRES_DB:llamastack}
+      user: ${env.POSTGRES_USER:llamastack}
+      password: ${env.POSTGRES_PASSWORD:llamastack}
+kv_stores:
+  - store_id: default_kv_store
+    provider_id: sqlite-kv
+    config:
+      db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/sqlite_kv.db
 models:
 - metadata: {}
   model_id: openai/gpt-4o
