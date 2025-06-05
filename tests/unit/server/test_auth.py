@@ -349,7 +349,7 @@ async def mock_auth_jwks_response(*args, **kwargs):
     if "headers" not in kwargs or "Authorization" not in kwargs["headers"]:
         return MockResponse(401, {})
     authz = kwargs["headers"]["Authorization"]
-    if authz != "Bearer abcdefg":
+    if authz != "Bearer my-jwks-token":
         return MockResponse(401, {})
     return await mock_jwks_response(args, kwargs)
 
@@ -363,7 +363,7 @@ def oauth2_app_with_jwks_token():
             "jwks": {
                 "uri": "http://mock-authz-service/token/introspect",
                 "key_recheck_period": "3600",
-                "token": "abcdefg",
+                "token": "my-jwks-token",
             },
             "audience": "llama-stack",
         },
