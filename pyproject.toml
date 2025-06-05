@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "fastapi",
     "fire",
     "httpx",
     "huggingface-hub",
@@ -67,7 +68,6 @@ dev = [
     "types-setuptools",
     "pre-commit",
     "uvicorn",
-    "fastapi",
     "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
@@ -132,7 +132,8 @@ llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
 [tool.setuptools.packages.find]
-include = ["llama_stack"]
+where = ["."]
+include = ["llama_stack", "llama_stack.*"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
