@@ -26,6 +26,7 @@ jobs:
         # TODO: generate matrix list from tests/integration when fixed
         test-type: [agents, inference, datasets, inspect, scoring, post_training, providers, tool_runtime]
         client-type: [library, http]
+        python-version: ["3.10", "3.11", "3.12"]
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:
@@ -34,13 +35,15 @@ jobs:
 
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Setup ollama
         uses: ./.github/actions/setup-ollama
 
       - name: Build Llama Stack
         run: |
-          llama stack build --template ollama --image-type venv
+          uv run llama stack build --template ollama --image-type venv
 
       - name: Start Llama Stack server in background
         if: matrix.client-type == 'http'
@@ -110,7 +113,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.client-type }}-${{ matrix.test-type }}
+          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}
           path: |
             *.log
           retention-days: 1
