@@ -1561,7 +1561,7 @@ unit = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp" },
-    { name = "fastapi" },
+    { name = "fastapi", specifier = ">=0.115.0,<1.0" },
     { name = "fire" },
     { name = "h11", specifier = ">=0.16.0" },
     { name = "httpx" },
