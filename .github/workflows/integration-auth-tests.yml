@@ -52,7 +52,6 @@ jobs:
         run: |
           kubectl create namespace llama-stack
           kubectl create serviceaccount llama-stack-auth -n llama-stack
-          kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --serviceaccount=llama-stack:llama-stack-auth -n llama-stack
           kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
 
       - name: Set Kubernetes Config
