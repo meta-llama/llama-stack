@@ -4,6 +4,7 @@ apis:
 - agents
 - datasetio
 - eval
+- files
 - inference
 - safety
 - scoring
@@ -48,7 +49,7 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:}
+      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/trace_store.db
   eval:
@@ -85,6 +86,14 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  files:
+  - provider_id: meta-reference-files
+    provider_type: inline::localfs
+    config:
+      storage_dir: ${env.FILES_STORAGE_DIR:~/.llama/distributions/fireworks/files}
+      metadata_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/files_metadata.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search

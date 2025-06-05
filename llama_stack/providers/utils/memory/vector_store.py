@@ -171,6 +171,22 @@ def make_overlapped_chunks(
     return chunks
 
 
+def _validate_embedding(embedding: NDArray, index: int, expected_dimension: int):
+    """Helper method to validate embedding format and dimensions"""
+    if not isinstance(embedding, (list | np.ndarray)):
+        raise ValueError(f"Embedding at index {index} must be a list or numpy array, got {type(embedding)}")
+
+    if isinstance(embedding, np.ndarray):
+        if not np.issubdtype(embedding.dtype, np.number):
+            raise ValueError(f"Embedding at index {index} contains non-numeric values")
+    else:
+        if not all(isinstance(e, (float | int | np.number)) for e in embedding):
+            raise ValueError(f"Embedding at index {index} contains non-numeric values")
+
+    if len(embedding) != expected_dimension:
+        raise ValueError(f"Embedding at index {index} has dimension {len(embedding)}, expected {expected_dimension}")
+
+
 class EmbeddingIndex(ABC):
     @abstractmethod
     async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
@@ -199,11 +215,22 @@ class VectorDBWithIndex:
         self,
         chunks: list[Chunk],
     ) -> None:
-        embeddings_response = await self.inference_api.embeddings(
-            self.vector_db.embedding_model, [x.content for x in chunks]
-        )
-        embeddings = np.array(embeddings_response.embeddings)
+        chunks_to_embed = []
+        for i, c in enumerate(chunks):
+            if c.embedding is None:
+                chunks_to_embed.append(c)
+            else:
+                _validate_embedding(c.embedding, i, self.vector_db.embedding_dimension)
 
+        if chunks_to_embed:
+            resp = await self.inference_api.embeddings(
+                self.vector_db.embedding_model,
+                [c.content for c in chunks_to_embed],
+            )
+            for c, embedding in zip(chunks_to_embed, resp.embeddings, strict=False):
+                c.embedding = embedding
+
+        embeddings = np.array([c.embedding for c in chunks], dtype=np.float32)
         await self.index.add_chunks(chunks, embeddings)
 
     async def query_chunks(

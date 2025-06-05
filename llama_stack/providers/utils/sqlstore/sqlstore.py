@@ -16,6 +16,8 @@ from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 from .api import SqlStore
 
+sql_store_pip_packages = ["sqlalchemy[asyncio]", "aiosqlite", "asyncpg"]
+
 
 class SqlStoreType(Enum):
     sqlite = "sqlite"
@@ -71,6 +73,17 @@ class PostgresSqlStoreConfig(SqlAlchemySqlStoreConfig):
     @property
     def pip_packages(self) -> list[str]:
         return super().pip_packages + ["asyncpg"]
+
+    @classmethod
+    def sample_run_config(cls, **kwargs):
+        return cls(
+            type="postgres",
+            host="${env.POSTGRES_HOST:localhost}",
+            port="${env.POSTGRES_PORT:5432}",
+            db="${env.POSTGRES_DB:llamastack}",
+            user="${env.POSTGRES_USER:llamastack}",
+            password="${env.POSTGRES_PASSWORD:llamastack}",
+        )
 
 
 SqlStoreConfig = Annotated[

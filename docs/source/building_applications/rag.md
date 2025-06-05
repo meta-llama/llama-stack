@@ -57,6 +57,31 @@ chunks = [
 ]
 client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks)
 ```
+
+#### Using Precomputed Embeddings
+If you decide to precompute embeddings for your documents, you can insert them directly into the vector database by
+including the embedding vectors in the chunk data. This is useful if you have a separate embedding service or if you
+want to customize the ingestion process.
+```python
+chunks_with_embeddings = [
+    {
+        "content": "First chunk of text",
+        "mime_type": "text/plain",
+        "embedding": [0.1, 0.2, 0.3, ...],  # Your precomputed embedding vector
+        "metadata": {"document_id": "doc1", "section": "introduction"},
+    },
+    {
+        "content": "Second chunk of text",
+        "mime_type": "text/plain",
+        "embedding": [0.2, 0.3, 0.4, ...],  # Your precomputed embedding vector
+        "metadata": {"document_id": "doc1", "section": "methodology"},
+    },
+]
+client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks_with_embeddings)
+```
+When providing precomputed embeddings, ensure the embedding dimension matches the embedding_dimension specified when
+registering the vector database.
+
 ### Retrieval
 You can query the vector database to retrieve documents based on their embeddings.
 ```python

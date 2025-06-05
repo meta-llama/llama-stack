@@ -30,7 +30,7 @@ class TelemetryConfig(BaseModel):
     )
     service_name: str = Field(
         # service name is always the same, use zero-width space to avoid clutter
-        default="",
+        default="\u200b",
         description="The service name to use for telemetry",
     )
     sinks: list[TelemetrySink] = Field(
@@ -52,7 +52,7 @@ class TelemetryConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "trace_store.db") -> dict[str, Any]:
         return {
-            "service_name": "${env.OTEL_SERVICE_NAME:}",
+            "service_name": "${env.OTEL_SERVICE_NAME:\u200b}",
             "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
             "sqlite_db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + db_name,
         }

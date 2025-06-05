@@ -45,6 +45,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
+    OpenAIEmbeddingsResponse,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
@@ -545,6 +546,34 @@ class InferenceRouter(Inference):
             if self.store:
                 await self.store.store_chat_completion(response, messages)
             return response
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        logger.debug(
+            f"InferenceRouter.openai_embeddings: {model=}, input_type={type(input)}, {encoding_format=}, {dimensions=}",
+        )
+        model_obj = await self.routing_table.get_model(model)
+        if model_obj is None:
+            raise ValueError(f"Model '{model}' not found")
+        if model_obj.model_type != ModelType.embedding:
+            raise ValueError(f"Model '{model}' is not an embedding model")
+
+        params = dict(
+            model=model_obj.identifier,
+            input=input,
+            encoding_format=encoding_format,
+            dimensions=dimensions,
+            user=user,
+        )
+
+        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        return await provider.openai_embeddings(**params)
 
     async def list_chat_completions(
         self,

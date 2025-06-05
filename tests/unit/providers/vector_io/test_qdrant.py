@@ -50,6 +50,7 @@ def mock_vector_db(vector_db_id) -> MagicMock:
     mock_vector_db = MagicMock(spec=VectorDB)
     mock_vector_db.embedding_model = "embedding_model"
     mock_vector_db.identifier = vector_db_id
+    mock_vector_db.embedding_dimension = 384
     return mock_vector_db
 
 

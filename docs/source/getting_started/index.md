@@ -82,7 +82,7 @@ for log in AgentEventLogger().log(response):
 ```
 We will use `uv` to run the script
 ```
-uv run --with llama-stack-client demo_script.py
+uv run --with llama-stack-client,fire,requests demo_script.py
 ```
 And you should see output like below.
 ```

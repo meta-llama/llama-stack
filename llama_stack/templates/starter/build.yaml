@@ -5,10 +5,13 @@ distribution_spec:
     inference:
     - remote::openai
     - remote::fireworks
+    - remote::together
+    - remote::ollama
     - remote::anthropic
     - remote::gemini
     - remote::groq
     - remote::sambanova
+    - remote::vllm
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec
@@ -37,4 +40,5 @@ distribution_spec:
 image_type: conda
 additional_pip_packages:
 - aiosqlite
+- asyncpg
 - sqlalchemy[asyncio]

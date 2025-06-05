@@ -20,7 +20,6 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.tool_runtime,
             provider_type="inline::rag-runtime",
             pip_packages=[
-                "blobfile",
                 "chardet",
                 "pypdf",
                 "tqdm",

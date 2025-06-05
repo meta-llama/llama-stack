@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.8"
+version = "0.2.9"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -27,7 +27,7 @@ dependencies = [
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.8",
+    "llama-stack-client>=0.2.9",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -41,13 +41,14 @@ dependencies = [
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.8",
+    "llama-stack-client>=0.2.9",
     "streamlit-option-menu",
 ]
 
@@ -130,9 +131,8 @@ Homepage = "https://github.com/meta-llama/llama-stack"
 llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
-[tool.setuptools]
-packages = { find = {} }
-license-files = []
+[tool.setuptools.packages.find]
+include = ["llama_stack"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"

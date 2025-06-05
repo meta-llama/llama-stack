@@ -8,14 +8,14 @@ from typing import Any
 
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import ScoringFn
-from llama_stack.distribution.access_control import check_access
+from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
 from llama_stack.distribution.datatypes import (
-    AccessAttributes,
+    AccessRule,
     RoutableObject,
     RoutableObjectWithProvider,
     RoutedProtocol,
 )
-from llama_stack.distribution.request_headers import get_auth_attributes
+from llama_stack.distribution.request_headers import get_authenticated_user
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, RoutingTable
@@ -73,9 +73,11 @@ class CommonRoutingTableImpl(RoutingTable):
         self,
         impls_by_provider_id: dict[str, RoutedProtocol],
         dist_registry: DistributionRegistry,
+        policy: list[AccessRule],
     ) -> None:
         self.impls_by_provider_id = impls_by_provider_id
         self.dist_registry = dist_registry
+        self.policy = policy
 
     async def initialize(self) -> None:
         async def add_objects(objs: list[RoutableObjectWithProvider], provider_id: str, cls) -> None:
@@ -166,13 +168,15 @@ class CommonRoutingTableImpl(RoutingTable):
             return None
 
         # Check if user has permission to access this object
-        if not check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes()):
-            logger.debug(f"Access denied to {type} '{identifier}' based on attribute mismatch")
+        if not is_action_allowed(self.policy, "read", obj, get_authenticated_user()):
+            logger.debug(f"Access denied to {type} '{identifier}'")
             return None
 
         return obj
 
     async def unregister_object(self, obj: RoutableObjectWithProvider) -> None:
+        if not is_action_allowed(self.policy, "delete", obj, get_authenticated_user()):
+            raise AccessDeniedError()
         await self.dist_registry.delete(obj.type, obj.identifier)
         await unregister_object_from_provider(obj, self.impls_by_provider_id[obj.provider_id])
 
@@ -187,11 +191,12 @@ class CommonRoutingTableImpl(RoutingTable):
         p = self.impls_by_provider_id[obj.provider_id]
 
         # If object supports access control but no attributes set, use creator's attributes
-        if not obj.access_attributes:
-            creator_attributes = get_auth_attributes()
-            if creator_attributes:
-                obj.access_attributes = AccessAttributes(**creator_attributes)
-                logger.info(f"Setting access attributes for {obj.type} '{obj.identifier}' based on creator's identity")
+        creator = get_authenticated_user()
+        if not is_action_allowed(self.policy, "create", obj, creator):
+            raise AccessDeniedError()
+        if creator:
+            obj.owner = creator
+            logger.info(f"Setting owner for {obj.type} '{obj.identifier}' to {obj.owner.principal}")
 
         registered_obj = await register_object_with_provider(obj, p)
         # TODO: This needs to be fixed for all APIs once they return the registered object
@@ -210,9 +215,7 @@ class CommonRoutingTableImpl(RoutingTable):
         # Apply attribute-based access control filtering
         if filtered_objs:
             filtered_objs = [
-                obj
-                for obj in filtered_objs
-                if check_access(obj.identifier, getattr(obj, "access_attributes", None), get_auth_attributes())
+                obj for obj in filtered_objs if is_action_allowed(self.policy, "read", obj, get_authenticated_user())
             ]
 
         return filtered_objs

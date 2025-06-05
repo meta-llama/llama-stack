@@ -100,9 +100,10 @@ async def test_resolve_impls_basic():
     add_protocol_methods(SampleImpl, Inference)
 
     mock_module.get_provider_impl = AsyncMock(return_value=impl)
+    mock_module.get_provider_impl.__text_signature__ = "()"
     sys.modules["test_module"] = mock_module
 
-    impls = await resolve_impls(run_config, provider_registry, dist_registry)
+    impls = await resolve_impls(run_config, provider_registry, dist_registry, policy={})
 
     assert Api.inference in impls
     assert isinstance(impls[Api.inference], InferenceRouter)

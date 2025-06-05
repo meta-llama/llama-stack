@@ -72,15 +72,15 @@ class PostgresKVStoreConfig(CommonConfig):
     table_name: str = "llamastack_kvstore"
 
     @classmethod
-    def sample_run_config(cls, table_name: str = "llamastack_kvstore"):
+    def sample_run_config(cls, table_name: str = "llamastack_kvstore", **kwargs):
         return {
             "type": "postgres",
             "namespace": None,
             "host": "${env.POSTGRES_HOST:localhost}",
             "port": "${env.POSTGRES_PORT:5432}",
-            "db": "${env.POSTGRES_DB}",
-            "user": "${env.POSTGRES_USER}",
-            "password": "${env.POSTGRES_PASSWORD}",
+            "db": "${env.POSTGRES_DB:llamastack}",
+            "user": "${env.POSTGRES_USER:llamastack}",
+            "password": "${env.POSTGRES_PASSWORD:llamastack}",
             "table_name": "${env.POSTGRES_TABLE_NAME:" + table_name + "}",
         }
 

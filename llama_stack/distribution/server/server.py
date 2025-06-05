@@ -18,7 +18,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from importlib.metadata import version as parse_version
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, get_origin
 
 import rich.pretty
 import yaml
@@ -26,17 +26,13 @@ from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import (
-    PROVIDER_DATA_VAR,
-    request_provider_data_context,
-)
+from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.server.routes import (
     find_matching_route,
@@ -217,11 +213,13 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
     async def route_handler(request: Request, **kwargs):
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
+        principal = request.scope.get("principal", "")
+        user = User(principal, user_attributes)
 
         await log_request_pre_validation(request)
 
         # Use context manager with both provider data and auth attributes
-        with request_provider_data_context(request.headers, user_attributes):
+        with request_provider_data_context(request.headers, user):
             is_streaming = is_streaming_request(func.__name__, request, **kwargs)
 
             try:
@@ -244,15 +242,23 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
 
     path_params = extract_path_params(route)
     if method == "post":
-        # Annotate parameters that are in the path with Path(...) and others with Body(...)
-        new_params = [new_params[0]] + [
-            (
-                param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
-                if param.name in path_params
-                else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
-            )
-            for param in new_params[1:]
-        ]
+        # Annotate parameters that are in the path with Path(...) and others with Body(...),
+        # but preserve existing File() and Form() annotations for multipart form data
+        new_params = (
+            [new_params[0]]
+            + [
+                (
+                    param.replace(annotation=Annotated[param.annotation, FastapiPath(..., title=param.name)])
+                    if param.name in path_params
+                    else (
+                        param  # Keep original annotation if it's already an Annotated type
+                        if get_origin(param.annotation) is Annotated
+                        else param.replace(annotation=Annotated[param.annotation, Body(..., embed=True)])
+                    )
+                )
+                for param in new_params[1:]
+            ]
+        )
 
     route_handler.__signature__ = sig.replace(parameters=new_params)
 
@@ -471,17 +477,6 @@ def main(args: argparse.Namespace | None = None):
             authenticated_max_requests=authenticated_max_requests,
             window_seconds=window_seconds,
         )
-
-    # --- CORS middleware for local development ---
-    # TODO: move to reverse proxy
-    ui_port = os.environ.get("LLAMA_STACK_UI_PORT", 8322)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[f"http://localhost:{ui_port}"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
 
     try:
         impls = asyncio.run(construct_stack(config))

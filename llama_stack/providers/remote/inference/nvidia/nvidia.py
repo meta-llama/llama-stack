@@ -29,6 +29,7 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -237,6 +238,16 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         # Llama Stack: EmbeddingsResponse(embeddings=list[list[float]])
         #
         return EmbeddingsResponse(embeddings=[embedding.embedding for embedding in response.data])
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def chat_completion(
         self,

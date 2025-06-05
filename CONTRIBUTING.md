@@ -72,7 +72,7 @@ source .venv/bin/activate
 ```
 
 > [!NOTE]
-> You can pin a specific version of Python to use for `uv` by adding a `.python-version` file in the root project directory.
+> You can use a specific version of Python with `uv` by adding the `--python <version>` flag (e.g. `--python 3.11`)
 > Otherwise, `uv` will automatically select a Python version according to the `requires-python` section of the `pyproject.toml`.
 > For more info, see the [uv docs around Python versions](https://docs.astral.sh/uv/concepts/python-versions/).
 
