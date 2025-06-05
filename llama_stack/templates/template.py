@@ -186,8 +186,14 @@ class DistributionTemplate(BaseModel):
         additional_pip_packages: list[str] = []
         for run_config in self.run_configs.values():
             run_config_ = run_config.run_config(self.name, self.providers, self.container_image)
+
+            # TODO: This is a hack to get the dependencies for internal APIs into build
+            # We should have a better way to do this by formalizing the concept of "internal" APIs
+            # and providers, with a way to specify dependencies for them.
             if run_config_.inference_store:
                 additional_pip_packages.extend(run_config_.inference_store.pip_packages)
+            if run_config_.metadata_store:
+                additional_pip_packages.extend(run_config_.metadata_store.pip_packages)
 
         if self.additional_pip_packages:
             additional_pip_packages.extend(self.additional_pip_packages)
