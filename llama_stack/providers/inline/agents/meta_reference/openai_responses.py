@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 from collections.abc import AsyncIterator
-from typing import Any, cast
+from typing import Any
 
 from openai.types.chat import ChatCompletionToolParam
 from pydantic import BaseModel
