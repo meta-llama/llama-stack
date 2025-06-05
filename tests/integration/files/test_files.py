@@ -6,9 +6,15 @@
 
 from io import BytesIO
 
+import pytest
 
-def test_openai_client_basic_operations(openai_client):
+from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+
+
+def test_openai_client_basic_operations(openai_client, client_with_models):
     """Test basic file operations through OpenAI client."""
+    if isinstance(client_with_models, LlamaStackAsLibraryClient):
+        pytest.skip("OpenAI files are not supported when testing with library client yet.")
     client = openai_client
 
     test_content = b"files test content"
