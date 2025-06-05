@@ -149,12 +149,13 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
+        # NOTE: We are using AsyncLlamaStackClient under the hood
+        # A new event loop is needed to convert the AsyncStream
+        # from async client into SyncStream return type for streaming
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         if kwargs.get("stream"):
-            # NOTE: We are using AsyncLlamaStackClient under the hood
-            # A new event loop is needed to convert the AsyncStream
-            # from async client into SyncStream return type for streaming
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
 
             def sync_generator():
                 try:
@@ -172,7 +173,14 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
             return sync_generator()
         else:
-            return asyncio.run(self.async_client.request(*args, **kwargs))
+            try:
+                result = loop.run_until_complete(self.async_client.request(*args, **kwargs))
+            finally:
+                pending = asyncio.all_tasks(loop)
+                if pending:
+                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                loop.close()
+            return result
 
 
 class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
