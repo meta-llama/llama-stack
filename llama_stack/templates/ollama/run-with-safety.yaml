@@ -91,6 +91,7 @@ providers:
       checkpoint_format: huggingface
       distributed_backend: null
       device: cpu
+      recipe: single
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search

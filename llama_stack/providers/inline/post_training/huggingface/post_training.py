@@ -22,6 +22,7 @@ from llama_stack.apis.post_training import (
 from llama_stack.providers.inline.post_training.huggingface.config import (
     HuggingFacePostTrainingConfig,
 )
+from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_multi_device import HFFinetuningMultiDevice
 from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device import (
     HFFinetuningSingleDevice,
 )
@@ -88,6 +89,14 @@ class HuggingFacePostTrainingImpl:
                 datasetio_api=self.datasetio_api,
                 datasets_api=self.datasets_api,
             )
+            if self.config.recipe == "multi":
+                recipe = HFFinetuningMultiDevice(
+                    job_uuid=job_uuid,
+                    datasetio_api=self.datasetio_api,
+                    datasets_api=self.datasets_api,
+                    enable_nccl_debug=self.config.enable_nccl_debug,
+                    nccl_debug_subsys=self.config.nccl_debug_subsys,
+                )
 
             resources_allocated, checkpoints = await recipe.train(
                 model=model,
