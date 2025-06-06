@@ -201,6 +201,18 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError()
+
+    @abstractmethod
     async def delete(self):
         raise NotImplementedError()
 
@@ -243,10 +255,22 @@ class VectorDBWithIndex:
         k = params.get("max_chunks", 3)
         mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
+
+        # Get reranker parameters
+        reranker_type = params.get("reranker_type")
+        reranker_params = params.get("reranker_params", {})
+
         query_string = interleaved_content_as_str(query)
+
+        # Calculate embeddings for both vector and hybrid modes
+        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
+        query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
+
         if mode == "keyword":
             return await self.index.query_keyword(query_string, k, score_threshold)
+        elif mode == "hybrid":
+            return await self.index.query_hybrid(
+                query_vector, query_string, k, score_threshold, reranker_type, reranker_params
+            )
         else:
-            embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
-            query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
             return await self.index.query_vector(query_vector, k, score_threshold)

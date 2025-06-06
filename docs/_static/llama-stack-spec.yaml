@@ -8992,13 +8992,35 @@ components:
         mode:
           type: string
           description: >-
-            Search mode for retrieval—either "vector" or "keyword". Default "vector".
+            Search mode for retrieval—either "vector", "keyword", or "hybrid". Default
+            "vector".
+        reranker_type:
+          type: string
+          default: rrf
+          description: >-
+            Type of reranker to use for hybrid search. One of "rrf" or "weighted".
+            Default "rrf".
+        reranker_params:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            Parameters for the reranker. For RRF: {"impact_factor": float}, for Weighted:
+            {"alpha": float}.
       additionalProperties: false
       required:
         - query_generator_config
         - max_tokens_in_context
         - max_chunks
         - chunk_template
+        - reranker_type
+        - reranker_params
       title: RAGQueryConfig
       description: >-
         Configuration for the RAG query generation.

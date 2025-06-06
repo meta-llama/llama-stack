@@ -76,7 +76,9 @@ class RAGQueryConfig(BaseModel):
     :param chunk_template: Template for formatting each retrieved chunk in the context.
         Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
         Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
-    :param mode: Search mode for retrieval—either "vector" or "keyword". Default "vector".
+    :param mode: Search mode for retrieval—either "vector", "keyword", or "hybrid". Default "vector".
+    :param reranker_type: Type of reranker to use for hybrid search. One of "rrf" or "weighted". Default "rrf".
+    :param reranker_params: Parameters for the reranker. For RRF: {"impact_factor": float}, for Weighted: {"alpha": float}.
     """
 
     # This config defines how a query is generated using the messages
@@ -86,6 +88,8 @@ class RAGQueryConfig(BaseModel):
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
     mode: str | None = None
+    reranker_type: str = "rrf"
+    reranker_params: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("chunk_template")
     def validate_chunk_template(cls, v: str) -> str:
@@ -96,6 +100,12 @@ class RAGQueryConfig(BaseModel):
         if len(v) == 0:
             raise ValueError("chunk_template must not be empty")
         return v
+
+    @field_validator("reranker_type")
+    def validate_reranker_type(cls, v: str) -> str:
+        if v not in ["rrf", "weighted"]:
+            raise ValueError("reranker_type must be one of: rrf, weighted")
+        return v  # default
 
 
 @runtime_checkable
