@@ -50,7 +50,7 @@ jobs:
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          LLAMA_STACK_LOG_FILE=server.log nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv &
+          LLAMA_STACK_LOG_FILE=server.log nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv --env OLLAMA_URL="http://0.0.0.0:11434" &
 
       - name: Wait for Llama Stack server to be ready
         if: matrix.client-type == 'http'
@@ -87,6 +87,7 @@ jobs:
       - name: Run Integration Tests
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          OLLAMA_URL: "http://0.0.0.0:11434"
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
             stack_config="ollama"
@@ -107,7 +108,7 @@ jobs:
       - name: Write ollama logs to file
         if: ${{ always() }}
         run: |
-          sudo journalctl -u ollama.service > ollama.log
+          sudo docker logs ollama > ollama.log
 
       - name: Upload all logs to artifacts
         if: ${{ always() }}
