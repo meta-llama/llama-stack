@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.9"
+version = "0.2.10"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -22,12 +22,13 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "fastapi>=0.115.0,<1.0",
     "fire",
     "httpx",
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.9",
+    "llama-stack-client>=0.2.10",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -48,7 +49,7 @@ dependencies = [
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.9",
+    "llama-stack-client>=0.2.10",
     "streamlit-option-menu",
 ]
 
@@ -67,7 +68,6 @@ dev = [
     "types-setuptools",
     "pre-commit",
     "uvicorn",
-    "fastapi",
     "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
@@ -133,7 +133,8 @@ llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
 [tool.setuptools.packages.find]
-include = ["llama_stack"]
+where = ["."]
+include = ["llama_stack", "llama_stack.*"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
