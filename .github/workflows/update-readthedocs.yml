@@ -43,7 +43,7 @@ jobs:
       - name: Build HTML
         run: |
           cd docs
-          uv run make html
+          uv run --group docs make html
 
       - name: Trigger ReadTheDocs build
         if: github.event_name != 'pull_request'
