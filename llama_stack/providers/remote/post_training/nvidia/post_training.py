@@ -170,7 +170,6 @@ class NvidiaPostTrainingAdapter(ModelRegistryHelper):
             - metrics: Optional[Dict] - Additional training metrics
             - status_logs: Optional[List] - Detailed logs of status changes
         """
-        print("Using local Llama Stack Customizer API")
         response = await self._make_request(
             "GET",
             f"/v1/customization/jobs/{job_uuid}/status",
