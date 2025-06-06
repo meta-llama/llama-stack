@@ -56,7 +56,11 @@ from llama_stack.apis.inference.inference import (
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+    ModelsProtocolPrivate,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_hf_repo_model_entry,
@@ -297,6 +301,22 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
 
     async def unregister_model(self, model_id: str) -> None:
         pass
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the remote vLLM server.
+        This method is used by the Provider API to verify
+        that the service is running correctly.
+        Returns:
+
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            client = self._create_client() if self.client is None else self.client
+            _ = [m async for m in client.models.list()]  # Ensure the client is initialized
+            return HealthResponse(status=HealthStatus.OK)
+        except Exception as e:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def _get_model(self, model_id: str) -> Model:
         if not self.model_store:
