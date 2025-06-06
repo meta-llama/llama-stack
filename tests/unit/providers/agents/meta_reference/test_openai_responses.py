@@ -39,6 +39,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIUserMessageParam,
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
+from llama_stack.distribution.access_control.access_control import default_policy
 from llama_stack.providers.inline.agents.meta_reference.openai_responses import (
     OpenAIResponsesImpl,
 )
@@ -590,7 +591,7 @@ async def test_responses_store_list_input_items_logic():
 
     # Create mock store and response store
     mock_sql_store = AsyncMock()
-    responses_store = ResponsesStore(sql_store_config=None)
+    responses_store = ResponsesStore(sql_store_config=None, policy=default_policy())
     responses_store.sql_store = mock_sql_store
 
     # Setup test data - multiple input items
