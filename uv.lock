@@ -1453,10 +1453,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/65/c6/246100fa3967074d9
 
 [[package]]
 name = "llama-stack"
-version = "0.2.8"
+version = "0.2.10"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
+    { name = "fastapi" },
     { name = "fire" },
     { name = "h11" },
     { name = "httpx" },
@@ -1470,6 +1471,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "python-jose" },
+    { name = "python-multipart" },
     { name = "requests" },
     { name = "rich" },
     { name = "setuptools" },
@@ -1494,7 +1496,6 @@ codegen = [
 ]
 dev = [
     { name = "black" },
-    { name = "fastapi" },
     { name = "nbval" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1560,14 +1561,15 @@ unit = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp" },
+    { name = "fastapi", specifier = ">=0.115.0,<1.0" },
     { name = "fire" },
     { name = "h11", specifier = ">=0.16.0" },
     { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.2.8" },
-    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.8" },
+    { name = "llama-stack-client", specifier = ">=0.2.10" },
+    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.10" },
     { name = "openai", specifier = ">=1.66" },
     { name = "pandas", marker = "extra == 'ui'" },
     { name = "pillow" },
@@ -1575,6 +1577,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2" },
     { name = "python-dotenv" },
     { name = "python-jose" },
+    { name = "python-multipart", specifier = ">=0.0.20" },
     { name = "requests" },
     { name = "rich" },
     { name = "setuptools" },
@@ -1594,7 +1597,6 @@ codegen = [
 ]
 dev = [
     { name = "black" },
-    { name = "fastapi" },
     { name = "nbval" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1659,7 +1661,7 @@ unit = [
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.8"
+version = "0.2.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1676,9 +1678,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/61/2e/c29ad9af892c0412b923b6fd5423fae7f1912444edb929c035b93f0540cd/llama_stack_client-0.2.8.tar.gz", hash = "sha256:40cc14ec9ad37969249d972abd681c925f3d4866fc4fa75a016ef1fe87cc7a40", size = 269661, upload-time = "2025-05-27T20:27:55.935Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/91/f3/d94c0c3d9d9af96daee4d70d79ad4f410a0873d0c0c65dd3f32c75a173ca/llama_stack_client-0.2.10.tar.gz", hash = "sha256:88f0941ab1a3e7600e02144e17ed0c99f2d5a206e197d7d5f46e6087451e13aa", size = 269672, upload-time = "2025-06-05T22:56:02.543Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/57/71ee1ad3a3e02dd1d52284a811c5b2caf72f4b704a9177bcf56e6114b56c/llama_stack_client-0.2.8-py3-none-any.whl", hash = "sha256:80b95d136b9a6e39a859578ad7d9536662c564d7f6483e45b010708608e4768d", size = 307589, upload-time = "2025-05-27T20:27:54.153Z" },
+    { url = "https://files.pythonhosted.org/packages/98/3e/9ac50c51459a9c2ee15eb665091e8a7c41609d44ae450cea472df60b6f9b/llama_stack_client-0.2.10-py3-none-any.whl", hash = "sha256:bf5f5fe7015073720a9499f8066f97fc85aa4d21ec24140fbd44d062ad4972cd", size = 307601, upload-time = "2025-06-05T22:56:00.553Z" },
 ]
 
 [[package]]
@@ -2978,6 +2980,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8e/a0/c49687cf40cb6128ea4e0559855aff92cd5ebd1a60a31c08526818c0e51e/python-jose-3.4.0.tar.gz", hash = "sha256:9a9a40f418ced8ecaf7e3b28d69887ceaa76adad3bcaa6dae0d9e596fec1d680", size = 92145, upload-time = "2025-02-18T17:26:41.985Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/63/b0/2586ea6b6fd57a994ece0b56418cbe93fff0efb85e2c9eb6b0caf24a4e37/python_jose-3.4.0-py2.py3-none-any.whl", hash = "sha256:9c9f616819652d109bd889ecd1e15e9a162b9b94d682534c9c2146092945b78f", size = 34616, upload-time = "2025-02-18T17:26:40.826Z" },
+]
+
+[[package]]
+name = "python-multipart"
+version = "0.0.20"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/87/f44d7c9f274c7ee665a29b885ec97089ec5dc034c7f3fafa03da9e39a09e/python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13", size = 37158, upload-time = "2024-12-16T19:45:46.972Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/58/38b5afbc1a800eeea951b9285d3912613f2603bdf897a4ab0f4bd7f405fc/python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104", size = 24546, upload-time = "2024-12-16T19:45:44.423Z" },
 ]
 
 [[package]]

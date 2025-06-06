@@ -7,10 +7,6 @@
 # the root directory of this source tree.
 
 
-CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
-LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 VIRTUAL_ENV=${VIRTUAL_ENV:-}
@@ -132,63 +128,7 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then
-    set -x
-
-    # Check if container command is available
-    if ! is_command_available $CONTAINER_BINARY; then
-      printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
-      exit 1
-    fi
-
-    if is_command_available selinuxenabled &> /dev/null && selinuxenabled; then
-        # Disable SELinux labels
-        CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
-    fi
-
-    mounts=""
-    if [ -n "$LLAMA_STACK_DIR" ]; then
-        mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):/app/llama-stack-source"
-    fi
-    if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
-        mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
-        CONTAINER_OPTS="$CONTAINER_OPTS --gpus=all"
-    fi
-
-    if [ -n "$PYPI_VERSION" ]; then
-        version_tag="$PYPI_VERSION"
-    elif [ -n "$LLAMA_STACK_DIR" ]; then
-        version_tag="dev"
-    elif [ -n "$TEST_PYPI_VERSION" ]; then
-        version_tag="test-$TEST_PYPI_VERSION"
-    else
-        if ! is_command_available jq; then
-            echo -e "${RED}Error: jq not found" >&2
-            exit 1
-        fi
-        URL="https://pypi.org/pypi/llama-stack/json"
-        version_tag=$(curl -s $URL | jq -r '.info.version')
-    fi
-
-    # Build the command with optional yaml config
-    cmd="$CONTAINER_BINARY run $CONTAINER_OPTS -it \
-    -p $port:$port \
-    $env_vars \
-    $mounts \
-    --env LLAMA_STACK_PORT=$port \
-    --entrypoint python \
-    $container_image:$version_tag \
-    -m llama_stack.distribution.server.server"
-
-    # Add yaml config if provided, otherwise use default
-    if [ -n "$yaml_config" ]; then
-        cmd="$cmd -v $yaml_config:/app/run.yaml --config /app/run.yaml"
-    else
-        cmd="$cmd --config /app/run.yaml"
-    fi
-
-    # Add any other args
-    cmd="$cmd $other_args"
-
-    # Execute the command
-    eval $cmd
+    echo -e "${RED}Warning: Llama Stack no longer supports running Containers via the 'llama stack run' command.${NC}"
+    echo -e "Please refer to the documentation for more information: https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html#llama-stack-build"
+    exit 1
 fi

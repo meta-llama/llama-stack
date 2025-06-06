@@ -8,19 +8,18 @@
 import pytest
 
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import ModelWithACL
-from llama_stack.distribution.server.auth_providers import AccessAttributes
+from llama_stack.distribution.datatypes import ModelWithOwner, User
 from llama_stack.distribution.store.registry import CachedDiskDistributionRegistry
 
 
 @pytest.mark.asyncio
 async def test_registry_cache_with_acl(cached_disk_dist_registry):
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="model-acl",
         provider_id="test-provider",
         provider_resource_id="model-acl-resource",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(roles=["admin"], teams=["ai-team"]),
+        owner=User("testuser", {"roles": ["admin"], "teams": ["ai-team"]}),
     )
 
     success = await cached_disk_dist_registry.register(model)
@@ -29,22 +28,14 @@ async def test_registry_cache_with_acl(cached_disk_dist_registry):
     cached_model = cached_disk_dist_registry.get_cached("model", "model-acl")
     assert cached_model is not None
     assert cached_model.identifier == "model-acl"
-    assert cached_model.access_attributes.roles == ["admin"]
-    assert cached_model.access_attributes.teams == ["ai-team"]
+    assert cached_model.owner.principal == "testuser"
+    assert cached_model.owner.attributes["roles"] == ["admin"]
+    assert cached_model.owner.attributes["teams"] == ["ai-team"]
 
     fetched_model = await cached_disk_dist_registry.get("model", "model-acl")
     assert fetched_model is not None
     assert fetched_model.identifier == "model-acl"
-    assert fetched_model.access_attributes.roles == ["admin"]
-
-    model.access_attributes = AccessAttributes(roles=["admin", "user"], projects=["project-x"])
-    await cached_disk_dist_registry.update(model)
-
-    updated_cached = cached_disk_dist_registry.get_cached("model", "model-acl")
-    assert updated_cached is not None
-    assert updated_cached.access_attributes.roles == ["admin", "user"]
-    assert updated_cached.access_attributes.projects == ["project-x"]
-    assert updated_cached.access_attributes.teams is None
+    assert fetched_model.owner.attributes["roles"] == ["admin"]
 
     new_registry = CachedDiskDistributionRegistry(cached_disk_dist_registry.kvstore)
     await new_registry.initialize()
@@ -52,35 +43,32 @@ async def test_registry_cache_with_acl(cached_disk_dist_registry):
     new_model = await new_registry.get("model", "model-acl")
     assert new_model is not None
     assert new_model.identifier == "model-acl"
-    assert new_model.access_attributes.roles == ["admin", "user"]
-    assert new_model.access_attributes.projects == ["project-x"]
-    assert new_model.access_attributes.teams is None
+    assert new_model.owner.principal == "testuser"
+    assert new_model.owner.attributes["roles"] == ["admin"]
+    assert new_model.owner.attributes["teams"] == ["ai-team"]
 
 
 @pytest.mark.asyncio
 async def test_registry_empty_acl(cached_disk_dist_registry):
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="model-empty-acl",
         provider_id="test-provider",
         provider_resource_id="model-resource",
         model_type=ModelType.llm,
-        access_attributes=AccessAttributes(),
+        owner=User("testuser", None),
     )
 
     await cached_disk_dist_registry.register(model)
 
     cached_model = cached_disk_dist_registry.get_cached("model", "model-empty-acl")
     assert cached_model is not None
-    assert cached_model.access_attributes is not None
-    assert cached_model.access_attributes.roles is None
-    assert cached_model.access_attributes.teams is None
-    assert cached_model.access_attributes.projects is None
-    assert cached_model.access_attributes.namespaces is None
+    assert cached_model.owner is not None
+    assert cached_model.owner.attributes is None
 
     all_models = await cached_disk_dist_registry.get_all()
     assert len(all_models) == 1
 
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="model-no-acl",
         provider_id="test-provider",
         provider_resource_id="model-resource-2",
@@ -91,7 +79,7 @@ async def test_registry_empty_acl(cached_disk_dist_registry):
 
     cached_model = cached_disk_dist_registry.get_cached("model", "model-no-acl")
     assert cached_model is not None
-    assert cached_model.access_attributes is None
+    assert cached_model.owner is None
 
     all_models = await cached_disk_dist_registry.get_all()
     assert len(all_models) == 2
@@ -99,19 +87,19 @@ async def test_registry_empty_acl(cached_disk_dist_registry):
 
 @pytest.mark.asyncio
 async def test_registry_serialization(cached_disk_dist_registry):
-    attributes = AccessAttributes(
-        roles=["admin", "researcher"],
-        teams=["ai-team", "ml-team"],
-        projects=["project-a", "project-b"],
-        namespaces=["prod", "staging"],
-    )
+    attributes = {
+        "roles": ["admin", "researcher"],
+        "teams": ["ai-team", "ml-team"],
+        "projects": ["project-a", "project-b"],
+        "namespaces": ["prod", "staging"],
+    }
 
-    model = ModelWithACL(
+    model = ModelWithOwner(
         identifier="model-serialize",
         provider_id="test-provider",
         provider_resource_id="model-resource",
         model_type=ModelType.llm,
-        access_attributes=attributes,
+        owner=User("bob", attributes),
     )
 
     await cached_disk_dist_registry.register(model)
@@ -122,7 +110,7 @@ async def test_registry_serialization(cached_disk_dist_registry):
     loaded_model = await new_registry.get("model", "model-serialize")
     assert loaded_model is not None
 
-    assert loaded_model.access_attributes.roles == ["admin", "researcher"]
-    assert loaded_model.access_attributes.teams == ["ai-team", "ml-team"]
-    assert loaded_model.access_attributes.projects == ["project-a", "project-b"]
-    assert loaded_model.access_attributes.namespaces == ["prod", "staging"]
+    assert loaded_model.owner.attributes["roles"] == ["admin", "researcher"]
+    assert loaded_model.owner.attributes["teams"] == ["ai-team", "ml-team"]
+    assert loaded_model.owner.attributes["projects"] == ["project-a", "project-b"]
+    assert loaded_model.owner.attributes["namespaces"] == ["prod", "staging"]

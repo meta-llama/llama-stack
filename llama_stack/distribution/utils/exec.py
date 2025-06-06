@@ -23,11 +23,8 @@ from llama_stack.distribution.utils.image_types import LlamaStackImageType
 
 def formulate_run_args(image_type, image_name, config, template_name) -> list:
     env_name = ""
-    if image_type == LlamaStackImageType.CONTAINER.value:
-        env_name = (
-            f"distribution-{template_name}" if template_name else (config.container_image if config else image_name)
-        )
-    elif image_type == LlamaStackImageType.CONDA.value:
+
+    if image_type == LlamaStackImageType.CONDA.value:
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
         env_name = image_name or current_conda_env
         if not env_name:

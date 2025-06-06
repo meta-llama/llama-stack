@@ -10,6 +10,13 @@ from .config import KVStoreConfig, KVStoreType
 
 
 def kvstore_dependencies():
+    """
+    Returns all possible kvstore dependencies for registry/provider specifications.
+
+    NOTE: For specific kvstore implementations, use config.pip_packages instead.
+    This function returns the union of all dependencies for cases where the specific
+    kvstore type is not known at declaration time (e.g., provider registries).
+    """
     return ["aiosqlite", "psycopg2-binary", "redis", "pymongo"]
 
 

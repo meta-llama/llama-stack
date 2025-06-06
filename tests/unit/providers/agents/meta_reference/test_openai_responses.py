@@ -25,11 +25,17 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObjectWithInput,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponseText,
+    OpenAIResponseTextFormat,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIDeveloperMessageParam,
+    OpenAIJSONSchema,
+    OpenAIResponseFormatJSONObject,
+    OpenAIResponseFormatJSONSchema,
+    OpenAIResponseFormatText,
     OpenAIUserMessageParam,
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
@@ -74,6 +80,37 @@ def openai_responses_impl(mock_inference_api, mock_tool_groups_api, mock_tool_ru
     )
 
 
+async def fake_stream(fixture: str = "simple_chat_completion.yaml"):
+    value = load_chat_completion_fixture(fixture)
+    yield ChatCompletionChunk(
+        id=value.id,
+        choices=[
+            Choice(
+                index=0,
+                delta=ChoiceDelta(
+                    content=c.message.content,
+                    role=c.message.role,
+                    tool_calls=[
+                        ChoiceDeltaToolCall(
+                            index=0,
+                            id=t.id,
+                            function=ChoiceDeltaToolCallFunction(
+                                name=t.function.name,
+                                arguments=t.function.arguments,
+                            ),
+                        )
+                        for t in (c.message.tool_calls or [])
+                    ],
+                ),
+            )
+            for c in value.choices
+        ],
+        created=1,
+        model=value.model,
+        object="chat.completion.chunk",
+    )
+
+
 @pytest.mark.asyncio
 async def test_create_openai_response_with_string_input(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with a simple string input."""
@@ -82,8 +119,7 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
     model = "meta-llama/Llama-3.1-8B-Instruct"
 
     # Load the chat completion fixture
-    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute
     result = await openai_responses_impl.create_openai_response(
@@ -96,8 +132,9 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
     mock_inference_api.openai_chat_completion.assert_called_once_with(
         model=model,
         messages=[OpenAIUserMessageParam(role="user", content="What is the capital of Ireland?", name=None)],
+        response_format=OpenAIResponseFormatText(),
         tools=None,
-        stream=False,
+        stream=True,
         temperature=0.1,
     )
     openai_responses_impl.responses_store.store_response_object.assert_called_once()
@@ -114,20 +151,15 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
     input_text = "What is the capital of Ireland?"
     model = "meta-llama/Llama-3.1-8B-Instruct"
 
-    # Load the chat completion fixtures
-    tool_call_completion = load_chat_completion_fixture("tool_call_completion.yaml")
-    tool_response_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-
     mock_inference_api.openai_chat_completion.side_effect = [
-        tool_call_completion,
-        tool_response_completion,
+        fake_stream("tool_call_completion.yaml"),
+        fake_stream(),
     ]
 
     openai_responses_impl.tool_groups_api.get_tool.return_value = Tool(
         identifier="web_search",
         provider_id="client",
         toolgroup_id="web_search",
-        tool_host="client",
         description="Search the web for information",
         parameters=[
             ToolParameter(name="query", parameter_type="string", description="The query to search for", required=True)
@@ -182,7 +214,7 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
     input_text = "How hot it is in San Francisco today?"
     model = "meta-llama/Llama-3.1-8B-Instruct"
 
-    async def fake_stream():
+    async def fake_stream_toolcall():
         yield ChatCompletionChunk(
             id="123",
             choices=[
@@ -205,7 +237,7 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
             object="chat.completion.chunk",
         )
 
-    mock_inference_api.openai_chat_completion.return_value = fake_stream()
+    mock_inference_api.openai_chat_completion.return_value = fake_stream_toolcall()
 
     # Execute
     result = await openai_responses_impl.create_openai_response(
@@ -224,15 +256,15 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
         ],
     )
 
-    # Verify
+    # Check that we got the content from our mocked tool execution result
+    chunks = [chunk async for chunk in result]
+    assert len(chunks) == 2  # Should have response.created and response.completed
+
+    # Verify inference API was called correctly (after iterating over result)
     first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
     assert first_call.kwargs["messages"][0].content == input_text
     assert first_call.kwargs["tools"] is not None
     assert first_call.kwargs["temperature"] == 0.1
-
-    # Check that we got the content from our mocked tool execution result
-    chunks = [chunk async for chunk in result]
-    assert len(chunks) == 2  # Should have response.created and response.completed
 
     # Check response.created event (should have empty output)
     assert chunks[0].type == "response.created"
@@ -264,7 +296,7 @@ async def test_create_openai_response_with_multiple_messages(openai_responses_im
     ]
     model = "meta-llama/Llama-3.1-8B-Instruct"
 
-    mock_inference_api.openai_chat_completion.return_value = load_chat_completion_fixture("simple_chat_completion.yaml")
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute
     await openai_responses_impl.create_openai_response(
@@ -320,6 +352,7 @@ async def test_prepend_previous_response_basic(openai_responses_impl, mock_respo
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = previous_response
@@ -362,6 +395,7 @@ async def test_prepend_previous_response_web_search(openai_responses_impl, mock_
         model="fake_model",
         output=[output_web_search, output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = response
@@ -390,9 +424,7 @@ async def test_create_openai_response_with_instructions(openai_responses_impl, m
     model = "meta-llama/Llama-3.1-8B-Instruct"
     instructions = "You are a geography expert. Provide concise answers."
 
-    # Load the chat completion fixture
-    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute
     await openai_responses_impl.create_openai_response(
@@ -431,8 +463,7 @@ async def test_create_openai_response_with_instructions_and_multiple_messages(
     model = "meta-llama/Llama-3.1-8B-Instruct"
     instructions = "You are a geography expert. Provide concise answers."
 
-    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute
     await openai_responses_impl.create_openai_response(
@@ -483,14 +514,15 @@ async def test_create_openai_response_with_instructions_and_previous_response(
         model="fake_model",
         output=[response_output_message],
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[input_item_message],
     )
     mock_responses_store.get_response_object.return_value = response
 
     model = "meta-llama/Llama-3.1-8B-Instruct"
     instructions = "You are a geography expert. Provide concise answers."
-    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute
     await openai_responses_impl.create_openai_response(
@@ -576,6 +608,7 @@ async def test_responses_store_list_input_items_logic():
         object="response",
         status="completed",
         output=[],
+        text=OpenAIResponseText(format=(OpenAIResponseTextFormat(type="text"))),
         input=input_items,
     )
 
@@ -644,6 +677,7 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
         created_at=1234567890,
         model="meta-llama/Llama-3.1-8B-Instruct",
         status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
         input=[
             OpenAIResponseMessage(
                 id="msg-prev-user", role="user", content=[OpenAIResponseInputMessageContentText(text="What is 2+2?")]
@@ -662,8 +696,8 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
 
     current_input = "Now what is 3+3?"
     model = "meta-llama/Llama-3.1-8B-Instruct"
-    mock_chat_completion = load_chat_completion_fixture("simple_chat_completion.yaml")
-    mock_inference_api.openai_chat_completion.return_value = mock_chat_completion
+
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
 
     # Execute - Create response with previous_response_id
     result = await openai_responses_impl.create_openai_response(
@@ -694,3 +728,59 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
     # Verify the response itself is correct
     assert result.model == model
     assert result.status == "completed"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "text_format, response_format",
+    [
+        (OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")), OpenAIResponseFormatText()),
+        (
+            OpenAIResponseText(format=OpenAIResponseTextFormat(name="Test", schema={"foo": "bar"}, type="json_schema")),
+            OpenAIResponseFormatJSONSchema(json_schema=OpenAIJSONSchema(name="Test", schema={"foo": "bar"})),
+        ),
+        (OpenAIResponseText(format=OpenAIResponseTextFormat(type="json_object")), OpenAIResponseFormatJSONObject()),
+        # ensure text param with no format specified defaults to text
+        (OpenAIResponseText(format=None), OpenAIResponseFormatText()),
+        # ensure text param of None defaults to text
+        (None, OpenAIResponseFormatText()),
+    ],
+)
+async def test_create_openai_response_with_text_format(
+    openai_responses_impl, mock_inference_api, text_format, response_format
+):
+    """Test creating Responses with text formats."""
+    # Setup
+    input_text = "How hot it is in San Francisco today?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    mock_inference_api.openai_chat_completion.return_value = fake_stream()
+
+    # Execute
+    _result = await openai_responses_impl.create_openai_response(
+        input=input_text,
+        model=model,
+        text=text_format,
+    )
+
+    # Verify
+    first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
+    assert first_call.kwargs["messages"][0].content == input_text
+    assert first_call.kwargs["response_format"] is not None
+    assert first_call.kwargs["response_format"] == response_format
+
+
+@pytest.mark.asyncio
+async def test_create_openai_response_with_invalid_text_format(openai_responses_impl, mock_inference_api):
+    """Test creating an OpenAI response with an invalid text format."""
+    # Setup
+    input_text = "How hot it is in San Francisco today?"
+    model = "meta-llama/Llama-3.1-8B-Instruct"
+
+    # Execute
+    with pytest.raises(ValueError):
+        _result = await openai_responses_impl.create_openai_response(
+            input=input_text,
+            model=model,
+            text=OpenAIResponseText(format={"type": "invalid"}),
+        )

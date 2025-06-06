@@ -36,6 +36,10 @@ class RedisKVStoreConfig(CommonConfig):
     def url(self) -> str:
         return f"redis://{self.host}:{self.port}"
 
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["redis"]
+
     @classmethod
     def sample_run_config(cls):
         return {
@@ -53,6 +57,10 @@ class SqliteKVStoreConfig(CommonConfig):
         description="File path for the sqlite database",
     )
 
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["aiosqlite"]
+
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "kvstore.db"):
         return {
@@ -65,22 +73,22 @@ class SqliteKVStoreConfig(CommonConfig):
 class PostgresKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.postgres.value] = KVStoreType.postgres.value
     host: str = "localhost"
-    port: int = 5432
+    port: str = "5432"
     db: str = "llamastack"
     user: str
     password: str | None = None
     table_name: str = "llamastack_kvstore"
 
     @classmethod
-    def sample_run_config(cls, table_name: str = "llamastack_kvstore"):
+    def sample_run_config(cls, table_name: str = "llamastack_kvstore", **kwargs):
         return {
             "type": "postgres",
             "namespace": None,
             "host": "${env.POSTGRES_HOST:localhost}",
             "port": "${env.POSTGRES_PORT:5432}",
-            "db": "${env.POSTGRES_DB}",
-            "user": "${env.POSTGRES_USER}",
-            "password": "${env.POSTGRES_PASSWORD}",
+            "db": "${env.POSTGRES_DB:llamastack}",
+            "user": "${env.POSTGRES_USER:llamastack}",
+            "password": "${env.POSTGRES_PASSWORD:llamastack}",
             "table_name": "${env.POSTGRES_TABLE_NAME:" + table_name + "}",
         }
 
@@ -100,6 +108,10 @@ class PostgresKVStoreConfig(CommonConfig):
             raise ValueError("Table name must be less than 63 characters")
         return v
 
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["psycopg2-binary"]
+
 
 class MongoDBKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.mongodb.value] = KVStoreType.mongodb.value
@@ -109,6 +121,10 @@ class MongoDBKVStoreConfig(CommonConfig):
     user: str = None
     password: str | None = None
     collection_name: str = "llamastack_kvstore"
+
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["pymongo"]
 
     @classmethod
     def sample_run_config(cls, collection_name: str = "llamastack_kvstore"):

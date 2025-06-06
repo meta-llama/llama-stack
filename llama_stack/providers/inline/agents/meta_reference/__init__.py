@@ -6,12 +6,12 @@
 
 from typing import Any
 
-from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.datatypes import AccessRule, Api
 
 from .config import MetaReferenceAgentsImplConfig
 
 
-async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: dict[Api, Any]):
+async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: dict[Api, Any], policy: list[AccessRule]):
     from .agents import MetaReferenceAgentsImpl
 
     impl = MetaReferenceAgentsImpl(
@@ -21,6 +21,7 @@ async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: dict[Ap
         deps[Api.safety],
         deps[Api.tool_runtime],
         deps[Api.tool_groups],
+        policy,
     )
     await impl.initialize()
     return impl

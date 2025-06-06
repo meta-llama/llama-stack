@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 
+import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -32,6 +33,7 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -76,7 +78,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     request_has_media,
 )
 
-from .models import model_entries
+from .models import MODEL_ENTRIES
 
 logger = get_logger(name=__name__, category="inference")
 
@@ -86,7 +88,7 @@ class OllamaInferenceAdapter(
     ModelsProtocolPrivate,
 ):
     def __init__(self, url: str) -> None:
-        self.register_helper = ModelRegistryHelper(model_entries)
+        self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
         self.url = url
 
     @property
@@ -343,21 +345,27 @@ class OllamaInferenceAdapter(
             model = await self.register_helper.register_model(model)
         except ValueError:
             pass  # Ignore statically unknown model, will check live listing
+
+        if model.provider_resource_id is None:
+            raise ValueError("Model provider_resource_id cannot be None")
+
         if model.model_type == ModelType.embedding:
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
-            await self.client.pull(model.provider_resource_id)
+            # TODO: you should pull here only if the model is not found in a list
+            response = await self.client.list()
+            if model.provider_resource_id not in [m.model for m in response.models]:
+                await self.client.pull(model.provider_resource_id)
+
         # we use list() here instead of ps() -
         #  - ps() only lists running models, not available models
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
-        available_models = [m["model"] for m in response["models"]]
-        if model.provider_resource_id is None:
-            raise ValueError("Model provider_resource_id cannot be None")
+        available_models = [m.model for m in response.models]
         provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
         if provider_resource_id is None:
             provider_resource_id = model.provider_resource_id
         if provider_resource_id not in available_models:
-            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            available_models_latest = [m.model.split(":latest")[0] for m in response.models]
             if provider_resource_id in available_models_latest:
                 logger.warning(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
@@ -369,6 +377,16 @@ class OllamaInferenceAdapter(
         model.provider_resource_id = provider_resource_id
 
         return model
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def openai_completion(
         self,
@@ -469,7 +487,25 @@ class OllamaInferenceAdapter(
             top_p=top_p,
             user=user,
         )
-        return await self.openai_client.chat.completions.create(**params)  # type: ignore
+        response = await self.openai_client.chat.completions.create(**params)
+        return await self._adjust_ollama_chat_completion_response_ids(response)
+
+    async def _adjust_ollama_chat_completion_response_ids(
+        self,
+        response: OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk],
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
+        id = f"chatcmpl-{uuid.uuid4()}"
+        if isinstance(response, AsyncIterator):
+
+            async def stream_with_chunk_ids() -> AsyncIterator[OpenAIChatCompletionChunk]:
+                async for chunk in response:
+                    chunk.id = id
+                    yield chunk
+
+            return stream_with_chunk_ids()
+        else:
+            response.id = id
+            return response
 
     async def batch_completion(
         self,

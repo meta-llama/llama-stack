@@ -37,6 +37,7 @@ from .openai_responses import (
     OpenAIResponseInputTool,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
+    OpenAIResponseText,
 )
 
 # TODO: use enum.StrEnum when we drop support for python 3.10
@@ -603,7 +604,9 @@ class Agents(Protocol):
         store: bool | None = True,
         stream: bool | None = False,
         temperature: float | None = None,
+        text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        max_infer_iters: int | None = 10,  # this is an extension to the OpenAI API
     ) -> OpenAIResponseObject | AsyncIterator[OpenAIResponseObjectStream]:
         """Create a new OpenAI response.
 

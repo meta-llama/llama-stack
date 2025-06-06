@@ -260,7 +260,41 @@ Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM pyth
 You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml`
 ```
 
-After this step is successful, you should be able to find the built container image and test it with `llama stack run <path/to/run.yaml>`.
+Now set some environment variables for the inference model ID and Llama Stack Port and create a local directory to mount into the container's file system.
+```
+export INFERENCE_MODEL="llama3.2:3b"
+export LLAMA_STACK_PORT=8321
+mkdir -p ~/.llama
+```
+
+After this step is successful, you should be able to find the built container image and test it with the below Docker command:
+
+```
+docker run -d \
+  -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
+  -v ~/.llama:/root/.llama \
+  localhost/distribution-ollama:dev \
+  --port $LLAMA_STACK_PORT \
+  --env INFERENCE_MODEL=$INFERENCE_MODEL \
+  --env OLLAMA_URL=http://host.docker.internal:11434
+```
+
+Here are the docker flags and their uses:
+
+* `-d`: Runs the container in the detached mode as a background process
+
+* `-p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT`: Maps the container port to the host port for accessing the server
+
+* `-v ~/.llama:/root/.llama`: Mounts the local .llama directory to persist configurations and data
+
+* `localhost/distribution-ollama:dev`: The name and tag of the container image to run
+
+* `--port $LLAMA_STACK_PORT`: Port number for the server to listen on
+
+* `--env INFERENCE_MODEL=$INFERENCE_MODEL`: Sets the model to use for inference
+
+* `--env OLLAMA_URL=http://host.docker.internal:11434`: Configures the URL for the Ollama service
+
 :::
 
 ::::

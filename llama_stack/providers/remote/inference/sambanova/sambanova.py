@@ -218,7 +218,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
                 "json_schema": {
                     "name": name,
                     "schema": fmt,
-                    "strict": True,
+                    "strict": False,
                 },
             }
         if request.tools:

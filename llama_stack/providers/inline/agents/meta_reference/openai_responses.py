@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 from collections.abc import AsyncIterator
-from typing import Any, cast
+from typing import Any
 
 from openai.types.chat import ChatCompletionToolParam
 from pydantic import BaseModel
@@ -37,6 +37,8 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseOutputMessageWebSearchToolCall,
+    OpenAIResponseText,
+    OpenAIResponseTextFormat,
 )
 from llama_stack.apis.inference.inference import (
     Inference,
@@ -50,7 +52,12 @@ from llama_stack.apis.inference.inference import (
     OpenAIChoice,
     OpenAIDeveloperMessageParam,
     OpenAIImageURL,
+    OpenAIJSONSchema,
     OpenAIMessageParam,
+    OpenAIResponseFormatJSONObject,
+    OpenAIResponseFormatJSONSchema,
+    OpenAIResponseFormatParam,
+    OpenAIResponseFormatText,
     OpenAISystemMessageParam,
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
@@ -158,6 +165,21 @@ async def _convert_chat_choice_to_response_message(choice: OpenAIChoice) -> Open
     )
 
 
+async def _convert_response_text_to_chat_response_format(text: OpenAIResponseText) -> OpenAIResponseFormatParam:
+    """
+    Convert an OpenAI Response text parameter into an OpenAI Chat Completion response format.
+    """
+    if not text.format or text.format["type"] == "text":
+        return OpenAIResponseFormatText(type="text")
+    if text.format["type"] == "json_object":
+        return OpenAIResponseFormatJSONObject()
+    if text.format["type"] == "json_schema":
+        return OpenAIResponseFormatJSONSchema(
+            json_schema=OpenAIJSONSchema(name=text.format["name"], schema=text.format["schema"])
+        )
+    raise ValueError(f"Unsupported text format: {text.format}")
+
+
 async def _get_message_type_by_role(role: str):
     role_to_type = {
         "user": OpenAIUserMessageParam,
@@ -178,8 +200,8 @@ class ChatCompletionContext(BaseModel):
     messages: list[OpenAIMessageParam]
     tools: list[ChatCompletionToolParam] | None = None
     mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP]
-    stream: bool
     temperature: float | None
+    response_format: OpenAIResponseFormatParam
 
 
 class OpenAIResponsesImpl:
@@ -258,37 +280,6 @@ class OpenAIResponsesImpl:
         """
         return await self.responses_store.list_response_input_items(response_id, after, before, include, limit, order)
 
-    async def _process_response_choices(
-        self,
-        chat_response: OpenAIChatCompletion,
-        ctx: ChatCompletionContext,
-        tools: list[OpenAIResponseInputTool] | None,
-    ) -> list[OpenAIResponseOutput]:
-        """Handle tool execution and response message creation."""
-        output_messages: list[OpenAIResponseOutput] = []
-        # Execute tool calls if any
-        for choice in chat_response.choices:
-            if choice.message.tool_calls and tools:
-                # Assume if the first tool is a function, all tools are functions
-                if tools[0].type == "function":
-                    for tool_call in choice.message.tool_calls:
-                        output_messages.append(
-                            OpenAIResponseOutputMessageFunctionToolCall(
-                                arguments=tool_call.function.arguments or "",
-                                call_id=tool_call.id,
-                                name=tool_call.function.name or "",
-                                id=f"fc_{uuid.uuid4()}",
-                                status="completed",
-                            )
-                        )
-                else:
-                    tool_messages = await self._execute_tool_and_return_final_output(choice, ctx)
-                    output_messages.extend(tool_messages)
-            else:
-                output_messages.append(await _convert_chat_choice_to_response_message(choice))
-
-        return output_messages
-
     async def _store_response(
         self,
         response: OpenAIResponseObject,
@@ -331,10 +322,52 @@ class OpenAIResponsesImpl:
         store: bool | None = True,
         stream: bool | None = False,
         temperature: float | None = None,
+        text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        max_infer_iters: int | None = 10,
     ):
-        stream = False if stream is None else stream
+        stream = bool(stream)
+        text = OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")) if text is None else text
 
+        stream_gen = self._create_streaming_response(
+            input=input,
+            model=model,
+            instructions=instructions,
+            previous_response_id=previous_response_id,
+            store=store,
+            temperature=temperature,
+            text=text,
+            tools=tools,
+            max_infer_iters=max_infer_iters,
+        )
+
+        if stream:
+            return stream_gen
+        else:
+            response = None
+            async for stream_chunk in stream_gen:
+                if stream_chunk.type == "response.completed":
+                    if response is not None:
+                        raise ValueError("The response stream completed multiple times! Earlier response: {response}")
+                    response = stream_chunk.response
+                    # don't leave the generator half complete!
+
+            if response is None:
+                raise ValueError("The response stream never completed")
+            return response
+
+    async def _create_streaming_response(
+        self,
+        input: str | list[OpenAIResponseInput],
+        model: str,
+        instructions: str | None = None,
+        previous_response_id: str | None = None,
+        store: bool | None = True,
+        temperature: float | None = None,
+        text: OpenAIResponseText | None = None,
+        tools: list[OpenAIResponseInputTool] | None = None,
+        max_infer_iters: int | None = 10,
+    ) -> AsyncIterator[OpenAIResponseObjectStream]:
         output_messages: list[OpenAIResponseOutput] = []
 
         # Input preprocessing
@@ -342,7 +375,10 @@ class OpenAIResponsesImpl:
         messages = await _convert_response_input_to_chat_messages(input)
         await self._prepend_instructions(messages, instructions)
 
-        # Tool setup
+        # Structured outputs
+        response_format = await _convert_response_text_to_chat_response_format(text)
+
+        # Tool setup, TODO: refactor this slightly since this can also yield events
         chat_tools, mcp_tool_to_server, mcp_list_message = (
             await self._convert_response_tools_to_chat_tools(tools) if tools else (None, {}, None)
         )
@@ -354,89 +390,10 @@ class OpenAIResponsesImpl:
             messages=messages,
             tools=chat_tools,
             mcp_tool_to_server=mcp_tool_to_server,
-            stream=stream,
             temperature=temperature,
+            response_format=response_format,
         )
 
-        inference_result = await self.inference_api.openai_chat_completion(
-            model=model,
-            messages=messages,
-            tools=chat_tools,
-            stream=stream,
-            temperature=temperature,
-        )
-
-        if stream:
-            return self._create_streaming_response(
-                inference_result=inference_result,
-                ctx=ctx,
-                output_messages=output_messages,
-                input=input,
-                model=model,
-                store=store,
-                tools=tools,
-            )
-        else:
-            return await self._create_non_streaming_response(
-                inference_result=inference_result,
-                ctx=ctx,
-                output_messages=output_messages,
-                input=input,
-                model=model,
-                store=store,
-                tools=tools,
-            )
-
-    async def _create_non_streaming_response(
-        self,
-        inference_result: Any,
-        ctx: ChatCompletionContext,
-        output_messages: list[OpenAIResponseOutput],
-        input: str | list[OpenAIResponseInput],
-        model: str,
-        store: bool | None,
-        tools: list[OpenAIResponseInputTool] | None,
-    ) -> OpenAIResponseObject:
-        chat_response = OpenAIChatCompletion(**inference_result.model_dump())
-
-        # Process response choices (tool execution and message creation)
-        output_messages.extend(
-            await self._process_response_choices(
-                chat_response=chat_response,
-                ctx=ctx,
-                tools=tools,
-            )
-        )
-
-        response = OpenAIResponseObject(
-            created_at=chat_response.created,
-            id=f"resp-{uuid.uuid4()}",
-            model=model,
-            object="response",
-            status="completed",
-            output=output_messages,
-        )
-        logger.debug(f"OpenAI Responses response: {response}")
-
-        # Store response if requested
-        if store:
-            await self._store_response(
-                response=response,
-                input=input,
-            )
-
-        return response
-
-    async def _create_streaming_response(
-        self,
-        inference_result: Any,
-        ctx: ChatCompletionContext,
-        output_messages: list[OpenAIResponseOutput],
-        input: str | list[OpenAIResponseInput],
-        model: str,
-        store: bool | None,
-        tools: list[OpenAIResponseInputTool] | None,
-    ) -> AsyncIterator[OpenAIResponseObjectStream]:
         # Create initial response and emit response.created immediately
         response_id = f"resp-{uuid.uuid4()}"
         created_at = int(time.time())
@@ -448,87 +405,144 @@ class OpenAIResponsesImpl:
             object="response",
             status="in_progress",
             output=output_messages.copy(),
+            text=text,
         )
 
-        # Emit response.created immediately
         yield OpenAIResponseObjectStreamResponseCreated(response=initial_response)
 
-        # For streaming, inference_result is an async iterator of chunks
-        # Stream chunks and emit delta events as they arrive
-        chat_response_id = ""
-        chat_response_content = []
-        chat_response_tool_calls: dict[int, OpenAIChatCompletionToolCall] = {}
-        chunk_created = 0
-        chunk_model = ""
-        chunk_finish_reason = ""
-        sequence_number = 0
+        n_iter = 0
+        messages = ctx.messages.copy()
 
-        # Create a placeholder message item for delta events
-        message_item_id = f"msg_{uuid.uuid4()}"
-
-        async for chunk in inference_result:
-            chat_response_id = chunk.id
-            chunk_created = chunk.created
-            chunk_model = chunk.model
-            for chunk_choice in chunk.choices:
-                # Emit incremental text content as delta events
-                if chunk_choice.delta.content:
-                    sequence_number += 1
-                    yield OpenAIResponseObjectStreamResponseOutputTextDelta(
-                        content_index=0,
-                        delta=chunk_choice.delta.content,
-                        item_id=message_item_id,
-                        output_index=0,
-                        sequence_number=sequence_number,
-                    )
-
-                # Collect content for final response
-                chat_response_content.append(chunk_choice.delta.content or "")
-                if chunk_choice.finish_reason:
-                    chunk_finish_reason = chunk_choice.finish_reason
-
-                # Aggregate tool call arguments across chunks, using their index as the aggregation key
-                if chunk_choice.delta.tool_calls:
-                    for tool_call in chunk_choice.delta.tool_calls:
-                        response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
-                        if response_tool_call:
-                            response_tool_call.function.arguments += tool_call.function.arguments
-                        else:
-                            tool_call_dict: dict[str, Any] = tool_call.model_dump()
-                            tool_call_dict.pop("type", None)
-                            response_tool_call = OpenAIChatCompletionToolCall(**tool_call_dict)
-                        chat_response_tool_calls[tool_call.index] = response_tool_call
-
-        # Convert collected chunks to complete response
-        if chat_response_tool_calls:
-            tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
-        else:
-            tool_calls = None
-        assistant_message = OpenAIAssistantMessageParam(
-            content="".join(chat_response_content),
-            tool_calls=tool_calls,
-        )
-        chat_response_obj = OpenAIChatCompletion(
-            id=chat_response_id,
-            choices=[
-                OpenAIChoice(
-                    message=assistant_message,
-                    finish_reason=chunk_finish_reason,
-                    index=0,
-                )
-            ],
-            created=chunk_created,
-            model=chunk_model,
-        )
-
-        # Process response choices (tool execution and message creation)
-        output_messages.extend(
-            await self._process_response_choices(
-                chat_response=chat_response_obj,
-                ctx=ctx,
-                tools=tools,
+        while True:
+            completion_result = await self.inference_api.openai_chat_completion(
+                model=ctx.model,
+                messages=messages,
+                tools=ctx.tools,
+                stream=True,
+                temperature=ctx.temperature,
+                response_format=ctx.response_format,
             )
-        )
+
+            # Process streaming chunks and build complete response
+            chat_response_id = ""
+            chat_response_content = []
+            chat_response_tool_calls: dict[int, OpenAIChatCompletionToolCall] = {}
+            chunk_created = 0
+            chunk_model = ""
+            chunk_finish_reason = ""
+            sequence_number = 0
+
+            # Create a placeholder message item for delta events
+            message_item_id = f"msg_{uuid.uuid4()}"
+
+            async for chunk in completion_result:
+                chat_response_id = chunk.id
+                chunk_created = chunk.created
+                chunk_model = chunk.model
+                for chunk_choice in chunk.choices:
+                    # Emit incremental text content as delta events
+                    if chunk_choice.delta.content:
+                        sequence_number += 1
+                        yield OpenAIResponseObjectStreamResponseOutputTextDelta(
+                            content_index=0,
+                            delta=chunk_choice.delta.content,
+                            item_id=message_item_id,
+                            output_index=0,
+                            sequence_number=sequence_number,
+                        )
+
+                    # Collect content for final response
+                    chat_response_content.append(chunk_choice.delta.content or "")
+                    if chunk_choice.finish_reason:
+                        chunk_finish_reason = chunk_choice.finish_reason
+
+                    # Aggregate tool call arguments across chunks
+                    if chunk_choice.delta.tool_calls:
+                        for tool_call in chunk_choice.delta.tool_calls:
+                            response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
+                            if response_tool_call:
+                                # Don't attempt to concatenate arguments if we don't have any new argumentsAdd commentMore actions
+                                if tool_call.function.arguments:
+                                    # Guard against an initial None argument before we concatenate
+                                    response_tool_call.function.arguments = (
+                                        response_tool_call.function.arguments or ""
+                                    ) + tool_call.function.arguments
+                            else:
+                                tool_call_dict: dict[str, Any] = tool_call.model_dump()
+                                tool_call_dict.pop("type", None)
+                                response_tool_call = OpenAIChatCompletionToolCall(**tool_call_dict)
+                            chat_response_tool_calls[tool_call.index] = response_tool_call
+
+            # Convert collected chunks to complete response
+            if chat_response_tool_calls:
+                tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
+            else:
+                tool_calls = None
+            assistant_message = OpenAIAssistantMessageParam(
+                content="".join(chat_response_content),
+                tool_calls=tool_calls,
+            )
+            current_response = OpenAIChatCompletion(
+                id=chat_response_id,
+                choices=[
+                    OpenAIChoice(
+                        message=assistant_message,
+                        finish_reason=chunk_finish_reason,
+                        index=0,
+                    )
+                ],
+                created=chunk_created,
+                model=chunk_model,
+            )
+
+            function_tool_calls = []
+            non_function_tool_calls = []
+
+            next_turn_messages = messages.copy()
+            for choice in current_response.choices:
+                next_turn_messages.append(choice.message)
+
+                if choice.message.tool_calls and tools:
+                    for tool_call in choice.message.tool_calls:
+                        if _is_function_tool_call(tool_call, tools):
+                            function_tool_calls.append(tool_call)
+                        else:
+                            non_function_tool_calls.append(tool_call)
+                else:
+                    output_messages.append(await _convert_chat_choice_to_response_message(choice))
+
+            # execute non-function tool calls
+            for tool_call in non_function_tool_calls:
+                tool_call_log, tool_response_message = await self._execute_tool_call(tool_call, ctx)
+                if tool_call_log:
+                    output_messages.append(tool_call_log)
+                if tool_response_message:
+                    next_turn_messages.append(tool_response_message)
+
+            for tool_call in function_tool_calls:
+                output_messages.append(
+                    OpenAIResponseOutputMessageFunctionToolCall(
+                        arguments=tool_call.function.arguments or "",
+                        call_id=tool_call.id,
+                        name=tool_call.function.name or "",
+                        id=f"fc_{uuid.uuid4()}",
+                        status="completed",
+                    )
+                )
+
+            if not function_tool_calls and not non_function_tool_calls:
+                break
+
+            if function_tool_calls:
+                logger.info("Exiting inference loop since there is a function (client-side) tool call")
+                break
+
+            n_iter += 1
+            if n_iter >= max_infer_iters:
+                logger.info(f"Exiting inference loop since iteration count({n_iter}) exceeds {max_infer_iters=}")
+                break
+
+            messages = next_turn_messages
 
         # Create final response
         final_response = OpenAIResponseObject(
@@ -537,17 +551,18 @@ class OpenAIResponsesImpl:
             model=model,
             object="response",
             status="completed",
+            text=text,
             output=output_messages,
         )
+
+        # Emit response.completed
+        yield OpenAIResponseObjectStreamResponseCompleted(response=final_response)
 
         if store:
             await self._store_response(
                 response=final_response,
                 input=input,
             )
-
-        # Emit response.completed
-        yield OpenAIResponseObjectStreamResponseCompleted(response=final_response)
 
     async def _convert_response_tools_to_chat_tools(
         self, tools: list[OpenAIResponseInputTool]
@@ -641,49 +656,6 @@ class OpenAIResponsesImpl:
                 raise ValueError(f"Llama Stack OpenAI Responses does not yet support tool type: {input_tool.type}")
         return chat_tools, mcp_tool_to_server, mcp_list_message
 
-    async def _execute_tool_and_return_final_output(
-        self,
-        choice: OpenAIChoice,
-        ctx: ChatCompletionContext,
-    ) -> list[OpenAIResponseOutput]:
-        output_messages: list[OpenAIResponseOutput] = []
-
-        if not isinstance(choice.message, OpenAIAssistantMessageParam):
-            return output_messages
-
-        if not choice.message.tool_calls:
-            return output_messages
-
-        next_turn_messages = ctx.messages.copy()
-
-        # Add the assistant message with tool_calls response to the messages list
-        next_turn_messages.append(choice.message)
-
-        for tool_call in choice.message.tool_calls:
-            # TODO: telemetry spans for tool calls
-            tool_call_log, further_input = await self._execute_tool_call(tool_call, ctx)
-            if tool_call_log:
-                output_messages.append(tool_call_log)
-            if further_input:
-                next_turn_messages.append(further_input)
-
-        tool_results_chat_response = await self.inference_api.openai_chat_completion(
-            model=ctx.model,
-            messages=next_turn_messages,
-            stream=ctx.stream,
-            temperature=ctx.temperature,
-        )
-        # type cast to appease mypy: this is needed because we don't handle streaming properly :)
-        tool_results_chat_response = cast(OpenAIChatCompletion, tool_results_chat_response)
-
-        # Huge TODO: these are NOT the final outputs, we must keep the loop going
-        tool_final_outputs = [
-            await _convert_chat_choice_to_response_message(choice) for choice in tool_results_chat_response.choices
-        ]
-        # TODO: Wire in annotations with URLs, titles, etc to these output messages
-        output_messages.extend(tool_final_outputs)
-        return output_messages
-
     async def _execute_tool_call(
         self,
         tool_call: OpenAIChatCompletionToolCall,
@@ -767,5 +739,20 @@ class OpenAIResponsesImpl:
             else:
                 raise ValueError(f"Unknown result content type: {type(result.content)}")
             input_message = OpenAIToolMessageParam(content=content, tool_call_id=tool_call_id)
+        else:
+            text = str(error_exc)
+            input_message = OpenAIToolMessageParam(content=text, tool_call_id=tool_call_id)
 
         return message, input_message
+
+
+def _is_function_tool_call(
+    tool_call: OpenAIChatCompletionToolCall,
+    tools: list[OpenAIResponseInputTool],
+) -> bool:
+    if not tool_call.function:
+        return False
+    for t in tools:
+        if t.type == "function" and t.name == tool_call.function.name:
+            return True
+    return False
