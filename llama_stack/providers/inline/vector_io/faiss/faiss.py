@@ -20,6 +20,7 @@ from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
+from llama_stack.providers.inline.vector_io.faiss.provider_patch import *  # noqa: F403
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.vector_store import (
