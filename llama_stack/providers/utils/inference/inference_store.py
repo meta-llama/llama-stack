@@ -76,16 +76,18 @@ class InferenceStore:
         if not self.sql_store:
             raise ValueError("Inference store is not initialized")
 
-        # TODO: support after
-        if after:
-            raise NotImplementedError("After is not supported for SQLite")
         if not order:
             order = Order.desc
 
-        rows = await self.sql_store.fetch_all(
-            "chat_completions",
-            where={"model": model} if model else None,
+        where_conditions = {}
+        if model:
+            where_conditions["model"] = model
+
+        paginated_result = await self.sql_store.fetch_all(
+            table="chat_completions",
+            where=where_conditions if where_conditions else None,
             order_by=[("created", order.value)],
+            cursor=("id", after) if after else None,
             limit=limit,
         )
 
@@ -97,12 +99,11 @@ class InferenceStore:
                 choices=row["choices"],
                 input_messages=row["input_messages"],
             )
-            for row in rows
+            for row in paginated_result.data
         ]
         return ListOpenAIChatCompletionResponse(
             data=data,
-            # TODO: implement has_more
-            has_more=False,
+            has_more=paginated_result.has_more,
             first_id=data[0].id if data else "",
             last_id=data[-1].id if data else "",
         )
