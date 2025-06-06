@@ -14,12 +14,11 @@ import pytest_asyncio
 from llama_stack.apis.inference import EmbeddingsResponse, Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
-
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.faiss.faiss import (
     FaissIndex,
     FaissVectorIOAdapter,
 )
-from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 
 # This test is a unit test for the FaissVectorIOAdapter class. This should only contain
 # tests which are specific to this class. More general (API-level) tests should be placed in
@@ -51,16 +50,8 @@ def vector_db_id():
 @pytest.fixture
 def sample_chunks():
     return [
-        Chunk(
-            content="MOCK text content 1",
-            mime_type="text/plain",
-            metadata={"document_id": "mock-doc-1"}
-        ),
-        Chunk(
-            content="MOCK text content 1",
-            mime_type="text/plain",
-            metadata={"document_id": "mock-doc-2"}
-        )
+        Chunk(content="MOCK text content 1", mime_type="text/plain", metadata={"document_id": "mock-doc-1"}),
+        Chunk(content="MOCK text content 1", mime_type="text/plain", metadata={"document_id": "mock-doc-2"}),
     ]
 
 
@@ -107,28 +98,23 @@ async def faiss_adapter(faiss_config, mock_inference_api) -> FaissVectorIOAdapte
 
 
 @pytest.mark.asyncio
-async def test_faiss_query_vector_returns_infinity_when_query_and_embedding_are_identical(faiss_index, sample_chunks, sample_embeddings, embedding_dimension):
+async def test_faiss_query_vector_returns_infinity_when_query_and_embedding_are_identical(
+    faiss_index, sample_chunks, sample_embeddings, embedding_dimension
+):
     await faiss_index.add_chunks(sample_chunks, sample_embeddings)
     query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
 
-    with patch.object(faiss_index.index, 'search') as mock_search:
-        mock_search.return_value = (
-            np.array([[0.0, 0.1]]),
-            np.array([[0, 1]])
-        )
+    with patch.object(faiss_index.index, "search") as mock_search:
+        mock_search.return_value = (np.array([[0.0, 0.1]]), np.array([[0, 1]]))
 
-        response = await faiss_index.query_vector(
-            embedding=query_embedding,
-            k=2,
-            score_threshold=0.0
-        )
+        response = await faiss_index.query_vector(embedding=query_embedding, k=2, score_threshold=0.0)
 
         assert isinstance(response, QueryChunksResponse)
         assert len(response.chunks) == 2
         assert len(response.scores) == 2
 
-        assert response.scores[0] == float("inf") # infinity (1.0 / 0.0)
-        assert response.scores[1] == 10.0 # (1.0 / 0.1 = 10.0)
+        assert response.scores[0] == float("inf")  # infinity (1.0 / 0.0)
+        assert response.scores[1] == 10.0  # (1.0 / 0.1 = 10.0)
 
         assert response.chunks[0] == sample_chunks[0]
         assert response.chunks[1] == sample_chunks[1]
