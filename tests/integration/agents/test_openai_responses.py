@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import pytest
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
@@ -91,6 +91,13 @@ def test_responses_store(openai_client, client_with_models, text_model_id, strea
     assert retrieved_response.output[0].type == output_type, retrieved_response
     if output_type == "message":
         assert retrieved_response.output[0].content[0].text == content
+
+    # Delete the response
+    delete_response = client.responses.delete(response_id)
+    assert delete_response is None
+
+    with pytest.raises(BadRequestError):
+        client.responses.retrieve(response_id)
 
 
 def test_list_response_input_items(openai_client, client_with_models, text_model_id):
