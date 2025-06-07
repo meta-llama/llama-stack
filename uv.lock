@@ -1485,10 +1485,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/65/c6/246100fa3967074d9
 
 [[package]]
 name = "llama-stack"
-version = "0.2.9"
+version = "0.2.10"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
+    { name = "fastapi" },
     { name = "fire" },
     { name = "h11" },
     { name = "httpx" },
@@ -1527,7 +1528,6 @@ codegen = [
 ]
 dev = [
     { name = "black" },
-    { name = "fastapi" },
     { name = "nbval" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1594,14 +1594,15 @@ unit = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp" },
+    { name = "fastapi", specifier = ">=0.115.0,<1.0" },
     { name = "fire" },
     { name = "h11", specifier = ">=0.16.0" },
     { name = "httpx" },
     { name = "huggingface-hub" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.2.9" },
-    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.9" },
+    { name = "llama-stack-client", specifier = ">=0.2.10" },
+    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.10" },
     { name = "openai", specifier = ">=1.66" },
     { name = "pandas", marker = "extra == 'ui'" },
     { name = "pillow" },
@@ -1629,7 +1630,6 @@ codegen = [
 ]
 dev = [
     { name = "black" },
-    { name = "fastapi" },
     { name = "nbval" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1695,7 +1695,7 @@ unit = [
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.9"
+version = "0.2.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1712,9 +1712,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/86/80c2d87db0c4320c4e1cfb616d92c823e67d04b7cff41b32a14f188c0e43/llama_stack_client-0.2.9.tar.gz", hash = "sha256:529c24e17d3f2d57abc619c88b9989bf2a96dc1c90c3a80c5361e25a798e7729", size = 269660, upload-time = "2025-05-30T19:42:43.175Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/91/f3/d94c0c3d9d9af96daee4d70d79ad4f410a0873d0c0c65dd3f32c75a173ca/llama_stack_client-0.2.10.tar.gz", hash = "sha256:88f0941ab1a3e7600e02144e17ed0c99f2d5a206e197d7d5f46e6087451e13aa", size = 269672, upload-time = "2025-06-05T22:56:02.543Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/ca/f251a9c4e81cabc3f8f8c737db81cce0d9785b2d547627ddbb3563c02c26/llama_stack_client-0.2.9-py3-none-any.whl", hash = "sha256:20eca8fc6f6c2e3f7a20fa2cf45782a3c5dc20d430746d563de4966af6cd42e9", size = 307590, upload-time = "2025-05-30T19:42:41.855Z" },
+    { url = "https://files.pythonhosted.org/packages/98/3e/9ac50c51459a9c2ee15eb665091e8a7c41609d44ae450cea472df60b6f9b/llama_stack_client-0.2.10-py3-none-any.whl", hash = "sha256:bf5f5fe7015073720a9499f8066f97fc85aa4d21ec24140fbd44d062ad4972cd", size = 307601, upload-time = "2025-06-05T22:56:00.553Z" },
 ]
 
 [[package]]
