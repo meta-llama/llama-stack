@@ -1,12 +1,17 @@
 name: Setup runner
 description: Prepare a runner for the tests (install uv, python, project dependencies, etc.)
+inputs:
+  python-version:
+    description: The Python version to use
+    required: false
+    default: "3.10"
 runs:
   using: "composite"
   steps:
     - name: Install uv
       uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
       with:
-        python-version: "3.10"
+        python-version: ${{ inputs.python-version }}
         activate-environment: true
         version: 0.7.6
 

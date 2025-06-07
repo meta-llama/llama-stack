@@ -21,4 +21,5 @@ distribution_spec:
 image_type: conda
 additional_pip_packages:
 - asyncpg
+- psycopg2-binary
 - sqlalchemy[asyncio]

@@ -15,11 +15,6 @@ from pathlib import Path
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from llama_stack.distribution.build import (
-    SERVER_DEPENDENCIES,
-    get_provider_dependencies,
-)
-
 REPO_ROOT = Path(__file__).parent.parent
 
 
@@ -88,23 +83,6 @@ def check_for_changes(change_tracker: ChangedPathTracker) -> bool:
             print(f"Change detected in '{path}'.", file=sys.stderr)
             has_changes = True
     return has_changes
-
-
-def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[str]]:
-    try:
-        module_name = f"llama_stack.templates.{template_dir.name}"
-        module = importlib.import_module(module_name)
-
-        if template_func := getattr(module, "get_distribution_template", None):
-            template = template_func()
-            normal_deps, special_deps = get_provider_dependencies(template)
-            # Combine all dependencies in order: normal deps, special deps, server deps
-            all_deps = sorted(set(normal_deps + SERVER_DEPENDENCIES)) + sorted(set(special_deps))
-
-            return template.name, all_deps
-    except Exception:
-        return None, []
-    return None, []
 
 
 def pre_import_templates(template_dirs: list[Path]) -> None:

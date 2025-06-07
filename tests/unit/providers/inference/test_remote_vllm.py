@@ -11,7 +11,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import pytest_asyncio
@@ -44,6 +44,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.models import Model
 from llama_stack.models.llama.datatypes import StopReason, ToolCall
+from llama_stack.providers.datatypes import HealthStatus
 from llama_stack.providers.remote.inference.vllm.config import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.inference.vllm.vllm import (
     VLLMInferenceAdapter,
@@ -642,3 +643,70 @@ async def test_process_vllm_chat_completion_stream_response_tool_without_args():
     assert chunks[-2].event.delta.type == "tool_call"
     assert chunks[-2].event.delta.tool_call.tool_name == mock_tool_name
     assert chunks[-2].event.delta.tool_call.arguments == {}
+
+
+@pytest.mark.asyncio
+async def test_health_status_success(vllm_inference_adapter):
+    """
+    Test the health method of VLLM InferenceAdapter when the connection is successful.
+
+    This test verifies that the health method returns a HealthResponse with status OK, only
+    when the connection to the vLLM server is successful.
+    """
+    # Set vllm_inference_adapter.client to None to ensure _create_client is called
+    vllm_inference_adapter.client = None
+    with patch.object(vllm_inference_adapter, "_create_client") as mock_create_client:
+        # Create mock client and models
+        mock_client = MagicMock()
+        mock_models = MagicMock()
+
+        # Create a mock async iterator that yields a model when iterated
+        async def mock_list():
+            for model in [MagicMock()]:
+                yield model
+
+        # Set up the models.list to return our mock async iterator
+        mock_models.list.return_value = mock_list()
+        mock_client.models = mock_models
+        mock_create_client.return_value = mock_client
+
+        # Call the health method
+        health_response = await vllm_inference_adapter.health()
+        # Verify the response
+        assert health_response["status"] == HealthStatus.OK
+
+        # Verify that models.list was called
+        mock_models.list.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_health_status_failure(vllm_inference_adapter):
+    """
+    Test the health method of VLLM InferenceAdapter when the connection fails.
+
+    This test verifies that the health method returns a HealthResponse with status ERROR
+    and an appropriate error message when the connection to the vLLM server fails.
+    """
+    vllm_inference_adapter.client = None
+    with patch.object(vllm_inference_adapter, "_create_client") as mock_create_client:
+        # Create mock client and models
+        mock_client = MagicMock()
+        mock_models = MagicMock()
+
+        # Create a mock async iterator that raises an exception when iterated
+        async def mock_list():
+            raise Exception("Connection failed")
+            yield  # Unreachable code
+
+        # Set up the models.list to return our mock async iterator
+        mock_models.list.return_value = mock_list()
+        mock_client.models = mock_models
+        mock_create_client.return_value = mock_client
+
+        # Call the health method
+        health_response = await vllm_inference_adapter.health()
+        # Verify the response
+        assert health_response["status"] == HealthStatus.ERROR
+        assert "Health check failed: Connection failed" in health_response["message"]
+
+        mock_models.list.assert_called_once()

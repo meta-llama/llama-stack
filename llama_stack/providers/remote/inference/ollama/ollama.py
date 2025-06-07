@@ -345,21 +345,27 @@ class OllamaInferenceAdapter(
             model = await self.register_helper.register_model(model)
         except ValueError:
             pass  # Ignore statically unknown model, will check live listing
+
+        if model.provider_resource_id is None:
+            raise ValueError("Model provider_resource_id cannot be None")
+
         if model.model_type == ModelType.embedding:
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
-            await self.client.pull(model.provider_resource_id)
+            # TODO: you should pull here only if the model is not found in a list
+            response = await self.client.list()
+            if model.provider_resource_id not in [m.model for m in response.models]:
+                await self.client.pull(model.provider_resource_id)
+
         # we use list() here instead of ps() -
         #  - ps() only lists running models, not available models
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
-        available_models = [m["model"] for m in response["models"]]
-        if model.provider_resource_id is None:
-            raise ValueError("Model provider_resource_id cannot be None")
+        available_models = [m.model for m in response.models]
         provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
         if provider_resource_id is None:
             provider_resource_id = model.provider_resource_id
         if provider_resource_id not in available_models:
-            available_models_latest = [m["model"].split(":latest")[0] for m in response["models"]]
+            available_models_latest = [m.model.split(":latest")[0] for m in response.models]
             if provider_resource_id in available_models_latest:
                 logger.warning(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"

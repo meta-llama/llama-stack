@@ -24,7 +24,7 @@ def available_providers() -> list[ProviderSpec]:
                 "pandas",
                 "scikit-learn",
             ]
-            + kvstore_dependencies(),
+            + kvstore_dependencies(),  # TODO make this dynamic based on the kvstore config
             module="llama_stack.providers.inline.agents.meta_reference",
             config_class="llama_stack.providers.inline.agents.meta_reference.MetaReferenceAgentsImplConfig",
             api_dependencies=[

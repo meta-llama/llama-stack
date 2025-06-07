@@ -36,6 +36,10 @@ class RedisKVStoreConfig(CommonConfig):
     def url(self) -> str:
         return f"redis://{self.host}:{self.port}"
 
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["redis"]
+
     @classmethod
     def sample_run_config(cls):
         return {
@@ -52,6 +56,10 @@ class SqliteKVStoreConfig(CommonConfig):
         default=(RUNTIME_BASE_DIR / "kvstore.db").as_posix(),
         description="File path for the sqlite database",
     )
+
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["aiosqlite"]
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "kvstore.db"):
@@ -100,6 +108,10 @@ class PostgresKVStoreConfig(CommonConfig):
             raise ValueError("Table name must be less than 63 characters")
         return v
 
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["psycopg2-binary"]
+
 
 class MongoDBKVStoreConfig(CommonConfig):
     type: Literal[KVStoreType.mongodb.value] = KVStoreType.mongodb.value
@@ -109,6 +121,10 @@ class MongoDBKVStoreConfig(CommonConfig):
     user: str = None
     password: str | None = None
     collection_name: str = "llamastack_kvstore"
+
+    @property
+    def pip_packages(self) -> list[str]:
+        return ["pymongo"]
 
     @classmethod
     def sample_run_config(cls, collection_name: str = "llamastack_kvstore"):
