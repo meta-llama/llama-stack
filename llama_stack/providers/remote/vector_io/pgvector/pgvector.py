@@ -116,7 +116,7 @@ class PGVectorIndex(EmbeddingIndex):
             scores = []
             for doc, dist in results:
                 chunks.append(Chunk(**doc))
-                scores.append(1.0 / float(dist))
+                scores.append(1.0 / float(dist) if dist != 0 else float("inf"))
 
             return QueryChunksResponse(chunks=chunks, scores=scores)
 
