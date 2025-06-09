@@ -10,7 +10,7 @@ import logging
 import sqlite3
 import struct
 import uuid
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import sqlite_vec
@@ -18,7 +18,15 @@ from numpy.typing import NDArray
 
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.apis.vector_io import (
+    Chunk,
+    QueryChunksResponse,
+    VectorIO,
+    VectorStoreDeleteResponse,
+    VectorStoreListResponse,
+    VectorStoreObject,
+    VectorStoreSearchResponse,
+)
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
 
@@ -388,6 +396,62 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
+
+    async def openai_create_vector_store(
+        self,
+        name: str | None = None,
+        file_ids: list[str] | None = None,
+        expires_after: dict[str, Any] | None = None,
+        chunking_strategy: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        embedding_model: str | None = None,
+        embedding_dimension: int | None = 384,
+        provider_id: str | None = None,
+        provider_vector_db_id: str | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
+
+    async def openai_list_vector_stores(
+        self,
+        limit: int = 20,
+        order: str = "desc",
+        after: str | None = None,
+        before: str | None = None,
+    ) -> VectorStoreListResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
+
+    async def openai_retrieve_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
+
+    async def openai_update_vector_store(
+        self,
+        vector_store_id: str,
+        name: str | None = None,
+        expires_after: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
+
+    async def openai_delete_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreDeleteResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
+
+    async def openai_search_vector_store(
+        self,
+        vector_store_id: str,
+        query: str | list[str],
+        filters: dict[str, Any] | None = None,
+        max_num_results: int = 10,
+        ranking_options: dict[str, Any] | None = None,
+        rewrite_query: bool = False,
+        search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
+    ) -> VectorStoreSearchResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in SQLiteVec")
 
 
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:
