@@ -22,8 +22,10 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
 
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
-        if p.provider_type not in ["inline::faiss"]:
-            pytest.skip(f"OpenAI vector stores are not supported by {p.provider_type}")
+        if p.provider_type in ["inline::faiss", "inline::sqlite-vec"]:
+            return
+
+    pytest.skip("OpenAI vector stores are not supported by any provider")
 
 
 @pytest.fixture
