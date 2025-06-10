@@ -15,8 +15,8 @@ import json
 import os
 import sys
 import time
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Generator, List, Optional
 
 import torch
 import torch.nn.functional as F
@@ -41,8 +41,8 @@ class Llama3:
         ckpt_dir: str,
         max_seq_len: int,
         max_batch_size: int,
-        world_size: Optional[int] = None,
-        quantization_mode: Optional[QuantizationMode] = None,
+        world_size: int | None = None,
+        quantization_mode: QuantizationMode | None = None,
         seed: int = 1,
         device: str = "cuda",
     ):
@@ -82,7 +82,7 @@ class Llama3:
         ckpt_paths = sorted(Path(ckpt_dir).glob("*.pth"))
         assert len(ckpt_paths) > 0, f"no checkpoint files found in {ckpt_dir}"
         print(f"Loading a checkpoint (shards={len(ckpt_paths)}, current-mp-size={world_size})")
-        with open(Path(ckpt_dir) / "params.json", "r") as f:
+        with open(Path(ckpt_dir) / "params.json") as f:
             params = json.loads(f.read())
 
         model_args: ModelArgs = ModelArgs(
@@ -154,15 +154,15 @@ class Llama3:
     @torch.inference_mode()
     def generate(
         self,
-        llm_inputs: List[LLMInput],
+        llm_inputs: list[LLMInput],
         temperature: float = 0.6,
         top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
+        max_gen_len: int | None = None,
         logprobs: bool = False,
         echo: bool = False,
         print_model_input: bool = False,
-        logits_processor: Optional[Callable[[torch.Tensor, torch.Tensor], torch.Tensor]] = None,
-    ) -> Generator[List[GenerationResult], None, None]:
+        logits_processor: Callable[[torch.Tensor, torch.Tensor], torch.Tensor] | None = None,
+    ) -> Generator[list[GenerationResult], None, None]:
         if max_gen_len is None or max_gen_len == 0 or max_gen_len >= self.args.max_seq_len:
             max_gen_len = self.args.max_seq_len - 1
         params = self.model.params
@@ -174,6 +174,7 @@ class Llama3:
                 cprint(
                     "Input to model:\n" + self.tokenizer.decode(tokens_to_print) + "\n",
                     "red",
+                    file=sys.stderr,
                 )
         prompt_tokens = [inp.tokens for inp in llm_inputs]
 
@@ -184,7 +185,11 @@ class Llama3:
         max_prompt_len = max(len(t) for t in prompt_tokens)
 
         if max_prompt_len >= params.max_seq_len:
-            cprint(f"Out of token budget {max_prompt_len} vs {params.max_seq_len}", "red")
+            cprint(
+                f"Out of token budget {max_prompt_len} vs {params.max_seq_len}",
+                color="red",
+                file=sys.stderr,
+            )
             return
 
         total_len = min(max_gen_len + max_prompt_len, params.max_seq_len)
@@ -302,13 +307,13 @@ class Llama3:
 
     def completion(
         self,
-        contents: List[RawContent],
+        contents: list[RawContent],
         temperature: float = 0.6,
         top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
+        max_gen_len: int | None = None,
         logprobs: bool = False,
         echo: bool = False,
-    ) -> Generator[List[GenerationResult], None, None]:
+    ) -> Generator[list[GenerationResult], None, None]:
         model_inputs = [self.formatter.encode_content(c) for c in contents]
         for result in self.generate(
             model_inputs=model_inputs,
@@ -324,14 +329,14 @@ class Llama3:
 
     def chat_completion(
         self,
-        messages_batch: List[List[RawMessage]],
+        messages_batch: list[list[RawMessage]],
         temperature: float = 0.6,
         top_p: float = 0.9,
-        max_gen_len: Optional[int] = None,
+        max_gen_len: int | None = None,
         logprobs: bool = False,
         tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json,
         echo: bool = False,
-    ) -> Generator[List[GenerationResult], None, None]:
+    ) -> Generator[list[GenerationResult], None, None]:
         model_inputs = [self.formatter.encode_dialog_prompt(messages) for messages in messages_batch]
         for result in self.generate(
             model_inputs=model_inputs,

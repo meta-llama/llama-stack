@@ -6,7 +6,16 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import Provider, ShieldInput, ToolGroupInput
+from llama_stack.apis.models.models import ModelType
+from llama_stack.distribution.datatypes import (
+    ModelInput,
+    Provider,
+    ShieldInput,
+    ToolGroupInput,
+)
+from llama_stack.providers.inline.inference.sentence_transformers import (
+    SentenceTransformersInferenceConfig,
+)
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.remote.inference.sambanova import SambaNovaImplConfig
 from llama_stack.providers.remote.inference.sambanova.models import MODEL_ENTRIES
@@ -23,26 +32,38 @@ from llama_stack.templates.template import (
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::sambanova"],
+        "inference": ["remote::sambanova", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard"],
+        "safety": ["remote::sambanova"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
-            "inline::code-interpreter",
             "inline::rag-runtime",
+            "remote::model-context-protocol",
+            "remote::wolfram-alpha",
         ],
     }
     name = "sambanova"
-
     inference_provider = Provider(
         provider_id=name,
         provider_type=f"remote::{name}",
         config=SambaNovaImplConfig.sample_run_config(),
     )
-
+    embedding_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config=SentenceTransformersInferenceConfig.sample_run_config(),
+    )
+    embedding_model = ModelInput(
+        model_id="all-MiniLM-L6-v2",
+        provider_id="sentence-transformers",
+        model_type=ModelType.embedding,
+        metadata={
+            "embedding_dimension": 384,
+        },
+    )
     vector_io_providers = [
         Provider(
             provider_id="faiss",
@@ -81,27 +102,35 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="rag-runtime",
         ),
         ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
+            toolgroup_id="builtin::wolfram_alpha",
+            provider_id="wolfram-alpha",
         ),
     ]
 
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Use SambaNova.AI for running LLM inference",
-        docker_image=None,
+        description="Use SambaNova for running LLM inference and safety",
+        container_image=None,
         template_path=Path(__file__).parent / "doc_template.md",
         providers=providers,
         available_models_by_provider=available_models,
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, embedding_provider],
                     "vector_io": vector_io_providers,
                 },
-                default_models=default_models,
-                default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
+                default_models=default_models + [embedding_model],
+                default_shields=[
+                    ShieldInput(
+                        shield_id="meta-llama/Llama-Guard-3-8B", provider_shield_id="sambanova/Meta-Llama-Guard-3-8B"
+                    ),
+                    ShieldInput(
+                        shield_id="sambanova/Meta-Llama-Guard-3-8B",
+                        provider_shield_id="sambanova/Meta-Llama-Guard-3-8B",
+                    ),
+                ],
                 default_tool_groups=default_tool_groups,
             ),
         },
@@ -112,7 +141,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "SAMBANOVA_API_KEY": (
                 "",
-                "SambaNova.AI API Key",
+                "SambaNova API Key",
             ),
         },
     )

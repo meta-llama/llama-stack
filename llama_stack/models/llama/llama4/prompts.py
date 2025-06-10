@@ -7,7 +7,10 @@
 import textwrap
 from io import BytesIO
 from pathlib import Path
-from typing import List
+
+from llama_stack.models.llama.llama4.prompt_templates.system_prompts import (
+    PythonListCustomToolGenerator,
+)
 
 from ..datatypes import RawMediaItem, RawMessage, RawTextItem
 from ..prompt_format import (
@@ -19,7 +22,7 @@ from ..prompt_format import (
 THIS_DIR = Path(__file__).parent
 
 
-def usecases(base_model: bool = False) -> List[UseCase | str]:
+def usecases(base_model: bool = False) -> list[UseCase | str]:
     with open(THIS_DIR.parent / "resources/small_dog.jpg", "rb") as f:
         img_small_dog = f.read()
     with open(THIS_DIR.parent / "resources/dog.jpg", "rb") as f:
@@ -177,39 +180,9 @@ def usecases(base_model: bool = False) -> List[UseCase | str]:
                     [
                         RawMessage(
                             role="system",
-                            content="""You are an expert in composing functions. You are given a question and a set of possible functions.
-Based on the question, you will need to make one or more function/tool calls to achieve the purpose.
-If none of the function can be used, point it out. If the given question lacks the parameters required by the function,
-also point it out. You should only return the function call in tools call sections.
-
-If you decide to invoke any of the function(s), you MUST put it in the format of [func_name1(params_name1=params_value1, params_name2=params_value2...), func_name2(params)]
-You SHOULD NOT include any other text in the response.
-
-Here is a list of functions in JSON format that you can invoke.
-
-[
-    {
-        "name": "get_weather",
-        "description": "Get weather info for places",
-        "parameters": {
-            "type": "dict",
-            "required": [
-                "city"
-            ],
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "description": "The name of the city to get the weather for"
-                },
-                "metric": {
-                    "type": "string",
-                    "description": "The metric for weather. Options are: celsius, fahrenheit",
-                    "default": "celsius"
-                }
-            }
-        }
-    }
-""",
+                            content=PythonListCustomToolGenerator()
+                            .gen(PythonListCustomToolGenerator().data_examples()[0])
+                            .render(),
                         ),
                         RawMessage(
                             role="user",

@@ -25,6 +25,11 @@ def pytest_addoption(parser):
         action="store",
         help="Provider to use for testing",
     )
+    parser.addoption(
+        "--model",
+        action="store",
+        help="Model to use for testing",
+    )
 
 
 pytest_plugins = [

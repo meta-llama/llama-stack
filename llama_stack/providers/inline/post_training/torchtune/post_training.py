@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
@@ -64,7 +64,7 @@ class TorchtunePostTrainingImpl:
         )
 
     @staticmethod
-    def _resources_stats_to_artifact(resources_stats: Dict[str, Any]) -> JobArtifact:
+    def _resources_stats_to_artifact(resources_stats: dict[str, Any]) -> JobArtifact:
         return JobArtifact(
             type=TrainingArtifactType.RESOURCES_STATS.value,
             name=TrainingArtifactType.RESOURCES_STATS.value,
@@ -75,11 +75,11 @@ class TorchtunePostTrainingImpl:
         self,
         job_uuid: str,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
         model: str,
-        checkpoint_dir: Optional[str],
-        algorithm_config: Optional[AlgorithmConfig],
+        checkpoint_dir: str | None,
+        algorithm_config: AlgorithmConfig | None,
     ) -> PostTrainingJob:
         if isinstance(algorithm_config, LoraFinetuningConfig):
 
@@ -121,8 +121,8 @@ class TorchtunePostTrainingImpl:
         finetuned_model: str,
         algorithm_config: DPOAlignmentConfig,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
     ) -> PostTrainingJob: ...
 
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
@@ -144,7 +144,7 @@ class TorchtunePostTrainingImpl:
         return data[0] if data else None
 
     @webmethod(route="/post-training/job/status")
-    async def get_training_job_status(self, job_uuid: str) -> Optional[PostTrainingJobStatusResponse]:
+    async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse | None:
         job = self._scheduler.get_job(job_uuid)
 
         match job.status:
@@ -175,6 +175,6 @@ class TorchtunePostTrainingImpl:
         self._scheduler.cancel(job_uuid)
 
     @webmethod(route="/post-training/job/artifacts")
-    async def get_training_job_artifacts(self, job_uuid: str) -> Optional[PostTrainingJobArtifactsResponse]:
+    async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse | None:
         job = self._scheduler.get_job(job_uuid)
         return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=self._get_checkpoints(job))

@@ -14,7 +14,6 @@
 import json
 import textwrap
 from pathlib import Path
-from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -44,7 +43,7 @@ class TextCompletionContent(BaseModel):
 class UseCase(BaseModel):
     title: str = ""
     description: str = ""
-    dialogs: List[List[RawMessage] | TextCompletionContent | str] = Field(default_factory=list)
+    dialogs: list[list[RawMessage] | TextCompletionContent | str] = Field(default_factory=list)
     notes: str = ""
     tool_prompt_format: ToolPromptFormat = ToolPromptFormat.json
     max_gen_len: int = 512

@@ -6,7 +6,7 @@
 
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional, Protocol, Tuple
+from typing import Protocol
 
 import pydantic
 
@@ -20,13 +20,13 @@ logger = get_logger(__name__, category="core")
 
 
 class DistributionRegistry(Protocol):
-    async def get_all(self) -> List[RoutableObjectWithProvider]: ...
+    async def get_all(self) -> list[RoutableObjectWithProvider]: ...
 
     async def initialize(self) -> None: ...
 
-    async def get(self, identifier: str) -> Optional[RoutableObjectWithProvider]: ...
+    async def get(self, identifier: str) -> RoutableObjectWithProvider | None: ...
 
-    def get_cached(self, identifier: str) -> Optional[RoutableObjectWithProvider]: ...
+    def get_cached(self, identifier: str) -> RoutableObjectWithProvider | None: ...
 
     async def update(self, obj: RoutableObjectWithProvider) -> RoutableObjectWithProvider: ...
 
@@ -36,17 +36,17 @@ class DistributionRegistry(Protocol):
 
 
 REGISTER_PREFIX = "distributions:registry"
-KEY_VERSION = "v8"
+KEY_VERSION = "v9"
 KEY_FORMAT = f"{REGISTER_PREFIX}:{KEY_VERSION}::" + "{type}:{identifier}"
 
 
-def _get_registry_key_range() -> Tuple[str, str]:
+def _get_registry_key_range() -> tuple[str, str]:
     """Returns the start and end keys for the registry range query."""
     start_key = f"{REGISTER_PREFIX}:{KEY_VERSION}"
     return start_key, f"{start_key}\xff"
 
 
-def _parse_registry_values(values: List[str]) -> List[RoutableObjectWithProvider]:
+def _parse_registry_values(values: list[str]) -> list[RoutableObjectWithProvider]:
     """Utility function to parse registry values into RoutableObjectWithProvider objects."""
     all_objects = []
     for value in values:
@@ -67,16 +67,16 @@ class DiskDistributionRegistry(DistributionRegistry):
     async def initialize(self) -> None:
         pass
 
-    def get_cached(self, type: str, identifier: str) -> Optional[RoutableObjectWithProvider]:
+    def get_cached(self, type: str, identifier: str) -> RoutableObjectWithProvider | None:
         # Disk registry does not have a cache
         raise NotImplementedError("Disk registry does not have a cache")
 
-    async def get_all(self) -> List[RoutableObjectWithProvider]:
+    async def get_all(self) -> list[RoutableObjectWithProvider]:
         start_key, end_key = _get_registry_key_range()
-        values = await self.kvstore.range(start_key, end_key)
+        values = await self.kvstore.values_in_range(start_key, end_key)
         return _parse_registry_values(values)
 
-    async def get(self, type: str, identifier: str) -> Optional[RoutableObjectWithProvider]:
+    async def get(self, type: str, identifier: str) -> RoutableObjectWithProvider | None:
         json_str = await self.kvstore.get(KEY_FORMAT.format(type=type, identifier=identifier))
         if not json_str:
             return None
@@ -113,7 +113,7 @@ class DiskDistributionRegistry(DistributionRegistry):
 class CachedDiskDistributionRegistry(DiskDistributionRegistry):
     def __init__(self, kvstore: KVStore):
         super().__init__(kvstore)
-        self.cache: Dict[Tuple[str, str], RoutableObjectWithProvider] = {}
+        self.cache: dict[tuple[str, str], RoutableObjectWithProvider] = {}
         self._initialized = False
         self._initialize_lock = asyncio.Lock()
         self._cache_lock = asyncio.Lock()
@@ -134,7 +134,7 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
                 return
 
             start_key, end_key = _get_registry_key_range()
-            values = await self.kvstore.range(start_key, end_key)
+            values = await self.kvstore.values_in_range(start_key, end_key)
             objects = _parse_registry_values(values)
 
             async with self._locked_cache() as cache:
@@ -147,15 +147,15 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
     async def initialize(self) -> None:
         await self._ensure_initialized()
 
-    def get_cached(self, type: str, identifier: str) -> Optional[RoutableObjectWithProvider]:
+    def get_cached(self, type: str, identifier: str) -> RoutableObjectWithProvider | None:
         return self.cache.get((type, identifier), None)
 
-    async def get_all(self) -> List[RoutableObjectWithProvider]:
+    async def get_all(self) -> list[RoutableObjectWithProvider]:
         await self._ensure_initialized()
         async with self._locked_cache() as cache:
             return list(cache.values())
 
-    async def get(self, type: str, identifier: str) -> Optional[RoutableObjectWithProvider]:
+    async def get(self, type: str, identifier: str) -> RoutableObjectWithProvider | None:
         await self._ensure_initialized()
         cache_key = (type, identifier)
 
@@ -189,7 +189,7 @@ class CachedDiskDistributionRegistry(DiskDistributionRegistry):
 
 
 async def create_dist_registry(
-    metadata_store: Optional[KVStoreConfig],
+    metadata_store: KVStoreConfig | None,
     image_name: str,
 ) -> tuple[CachedDiskDistributionRegistry, KVStore]:
     # instantiate kvstore for storing and retrieving distribution metadata

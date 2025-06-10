@@ -9,11 +9,11 @@ import asyncio
 import json
 import os
 import shutil
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import httpx
 from pydantic import BaseModel, ConfigDict
@@ -102,7 +102,7 @@ class DownloadTask:
     output_file: str
     total_size: int = 0
     downloaded_size: int = 0
-    task_id: Optional[int] = None
+    task_id: int | None = None
     retries: int = 0
     max_retries: int = 3
 
@@ -262,7 +262,7 @@ class ParallelDownloader:
             self.progress.update(task.task_id, description=f"[red]Failed: {task.output_file}[/red]")
             raise DownloadError(f"Download failed for {task.output_file}: {str(e)}") from e
 
-    def has_disk_space(self, tasks: List[DownloadTask]) -> bool:
+    def has_disk_space(self, tasks: list[DownloadTask]) -> bool:
         try:
             total_remaining_size = sum(task.total_size - task.downloaded_size for task in tasks)
             dir_path = os.path.dirname(os.path.abspath(tasks[0].output_file))
@@ -282,7 +282,7 @@ class ParallelDownloader:
         except Exception as e:
             raise DownloadError(f"Failed to check disk space: {str(e)}") from e
 
-    async def download_all(self, tasks: List[DownloadTask]) -> None:
+    async def download_all(self, tasks: list[DownloadTask]) -> None:
         if not tasks:
             raise ValueError("No download tasks provided")
 
@@ -378,33 +378,34 @@ def _meta_download(
     downloader = ParallelDownloader(max_concurrent_downloads=max_concurrent_downloads)
     asyncio.run(downloader.download_all(tasks))
 
-    cprint(f"\nSuccessfully downloaded model to {output_dir}", "green")
+    cprint(f"\nSuccessfully downloaded model to {output_dir}", color="green", file=sys.stderr)
     cprint(
         f"\nView MD5 checksum files at: {output_dir / 'checklist.chk'}",
-        "white",
+        file=sys.stderr,
     )
     cprint(
         f"\n[Optionally] To run MD5 checksums, use the following command: llama model verify-download --model-id {model_id}",
-        "yellow",
+        color="yellow",
+        file=sys.stderr,
     )
 
 
 class ModelEntry(BaseModel):
     model_id: str
-    files: Dict[str, str]
+    files: dict[str, str]
 
     model_config = ConfigDict(protected_namespaces=())
 
 
 class Manifest(BaseModel):
-    models: List[ModelEntry]
+    models: list[ModelEntry]
     expires_on: datetime
 
 
 def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
     from llama_stack.distribution.utils.model_utils import model_local_dir
 
-    with open(manifest_file, "r") as f:
+    with open(manifest_file) as f:
         d = json.load(f)
         manifest = Manifest(**d)
 
@@ -460,15 +461,17 @@ def run_download_cmd(args: argparse.Namespace, parser: argparse.ArgumentParser):
         from llama_stack.models.llama.sku_list import llama_meta_net_info, resolve_model
 
         from .model.safety_models import (
-            prompt_guard_download_info,
-            prompt_guard_model_sku,
+            prompt_guard_download_info_map,
+            prompt_guard_model_sku_map,
         )
 
-        prompt_guard = prompt_guard_model_sku()
+        prompt_guard_model_sku_map = prompt_guard_model_sku_map()
+        prompt_guard_download_info_map = prompt_guard_download_info_map()
+
         for model_id in model_ids:
-            if model_id == prompt_guard.model_id:
-                model = prompt_guard
-                info = prompt_guard_download_info()
+            if model_id in prompt_guard_model_sku_map.keys():
+                model = prompt_guard_model_sku_map[model_id]
+                info = prompt_guard_download_info_map[model_id]
             else:
                 model = resolve_model(model_id)
                 if model is None:

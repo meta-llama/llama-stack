@@ -41,13 +41,16 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/groq/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/trace_store.db
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -93,15 +96,15 @@ providers:
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:}
       max_results: 3
-  - provider_id: code-interpreter
-    provider_type: inline::code-interpreter
-    config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/inference_store.db
 models:
 - metadata: {}
   model_id: groq/llama3-8b-8192
@@ -109,7 +112,7 @@ models:
   provider_model_id: groq/llama3-8b-8192
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.1-8B-Instruct
+  model_id: groq/meta-llama/Llama-3.1-8B-Instruct
   provider_id: groq
   provider_model_id: groq/llama3-8b-8192
   model_type: llm
@@ -124,7 +127,7 @@ models:
   provider_model_id: groq/llama3-70b-8192
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3-70B-Instruct
+  model_id: groq/meta-llama/Llama-3-70B-Instruct
   provider_id: groq
   provider_model_id: groq/llama3-70b-8192
   model_type: llm
@@ -134,7 +137,7 @@ models:
   provider_model_id: groq/llama-3.3-70b-versatile
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.3-70B-Instruct
+  model_id: groq/meta-llama/Llama-3.3-70B-Instruct
   provider_id: groq
   provider_model_id: groq/llama-3.3-70b-versatile
   model_type: llm
@@ -144,7 +147,7 @@ models:
   provider_model_id: groq/llama-3.2-3b-preview
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-3.2-3B-Instruct
+  model_id: groq/meta-llama/Llama-3.2-3B-Instruct
   provider_id: groq
   provider_model_id: groq/llama-3.2-3b-preview
   model_type: llm
@@ -154,7 +157,7 @@ models:
   provider_model_id: groq/llama-4-scout-17b-16e-instruct
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  model_id: groq/meta-llama/Llama-4-Scout-17B-16E-Instruct
   provider_id: groq
   provider_model_id: groq/llama-4-scout-17b-16e-instruct
   model_type: llm
@@ -164,7 +167,7 @@ models:
   provider_model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-4-Scout-17B-16E-Instruct
+  model_id: groq/meta-llama/Llama-4-Scout-17B-16E-Instruct
   provider_id: groq
   provider_model_id: groq/meta-llama/llama-4-scout-17b-16e-instruct
   model_type: llm
@@ -174,7 +177,7 @@ models:
   provider_model_id: groq/llama-4-maverick-17b-128e-instruct
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  model_id: groq/meta-llama/Llama-4-Maverick-17B-128E-Instruct
   provider_id: groq
   provider_model_id: groq/llama-4-maverick-17b-128e-instruct
   model_type: llm
@@ -184,7 +187,7 @@ models:
   provider_model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
   model_type: llm
 - metadata: {}
-  model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+  model_id: groq/meta-llama/Llama-4-Maverick-17B-128E-Instruct
   provider_id: groq
   provider_model_id: groq/meta-llama/llama-4-maverick-17b-128e-instruct
   model_type: llm
@@ -203,7 +206,5 @@ tool_groups:
   provider_id: tavily-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
-- toolgroup_id: builtin::code_interpreter
-  provider_id: code-interpreter
 server:
   port: 8321

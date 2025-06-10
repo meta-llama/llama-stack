@@ -9,10 +9,11 @@ import inspect
 import json
 import logging
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union, get_args, get_origin
+from typing import Any, TypeVar, Union, get_args, get_origin
 
 import httpx
 import yaml
@@ -30,16 +31,13 @@ from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.datatypes import Api, BuildConfig, DistributionSpec
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import ProviderRegistry
-from llama_stack.distribution.server.endpoints import (
-    find_matching_endpoint,
-    initialize_endpoint_impls,
-)
+from llama_stack.distribution.server.routes import find_matching_route, initialize_route_impls
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
@@ -119,8 +117,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self,
         config_path_or_template_name: str,
         skip_logger_removal: bool = False,
-        custom_provider_registry: Optional[ProviderRegistry] = None,
-        provider_data: Optional[dict[str, Any]] = None,
+        custom_provider_registry: ProviderRegistry | None = None,
+        provider_data: dict[str, Any] | None = None,
     ):
         super().__init__()
         self.async_client = AsyncLlamaStackAsLibraryClient(
@@ -151,12 +149,13 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
+        # NOTE: We are using AsyncLlamaStackClient under the hood
+        # A new event loop is needed to convert the AsyncStream
+        # from async client into SyncStream return type for streaming
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         if kwargs.get("stream"):
-            # NOTE: We are using AsyncLlamaStackClient under the hood
-            # A new event loop is needed to convert the AsyncStream
-            # from async client into SyncStream return type for streaming
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
 
             def sync_generator():
                 try:
@@ -174,15 +173,22 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
             return sync_generator()
         else:
-            return asyncio.run(self.async_client.request(*args, **kwargs))
+            try:
+                result = loop.run_until_complete(self.async_client.request(*args, **kwargs))
+            finally:
+                pending = asyncio.all_tasks(loop)
+                if pending:
+                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+                loop.close()
+            return result
 
 
 class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
     def __init__(
         self,
         config_path_or_template_name: str,
-        custom_provider_registry: Optional[ProviderRegistry] = None,
-        provider_data: Optional[dict[str, Any]] = None,
+        custom_provider_registry: ProviderRegistry | None = None,
+        provider_data: dict[str, Any] | None = None,
     ):
         super().__init__()
         # when using the library client, we should not log to console since many
@@ -207,22 +213,41 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
     async def initialize(self) -> bool:
         try:
-            self.endpoint_impls = None
+            self.route_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)
         except ModuleNotFoundError as _e:
-            cprint(_e.msg, "red")
+            cprint(_e.msg, color="red", file=sys.stderr)
             cprint(
                 "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
-                "yellow",
+                color="yellow",
+                file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
-                print_pip_install_help(self.config.providers)
+                # Convert Provider objects to their types
+                provider_types: dict[str, str | list[str]] = {}
+                for api, providers in self.config.providers.items():
+                    types = [p.provider_type for p in providers]
+                    # Convert single-item lists to strings
+                    provider_types[api] = types[0] if len(types) == 1 else types
+                build_config = BuildConfig(
+                    distribution_spec=DistributionSpec(
+                        providers=provider_types,
+                    ),
+                    external_providers_dir=self.config.external_providers_dir,
+                )
+                print_pip_install_help(build_config)
             else:
                 prefix = "!" if in_notebook() else ""
                 cprint(
                     f"Please run:\n\n{prefix}llama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
                     "yellow",
+                    file=sys.stderr,
                 )
+            cprint(
+                "Please check your internet connection and try again.",
+                "red",
+                file=sys.stderr,
+            )
             raise _e
 
         if Api.telemetry in self.impls:
@@ -234,7 +259,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             safe_config = redact_sensitive_fields(self.config.model_dump())
             console.print(yaml.dump(safe_config, indent=2))
 
-        self.endpoint_impls = initialize_endpoint_impls(self.impls)
+        self.route_impls = initialize_route_impls(self.impls)
         return True
 
     async def request(
@@ -245,13 +270,15 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         stream=False,
         stream_cls=None,
     ):
-        if not self.endpoint_impls:
+        if not self.route_impls:
             raise ValueError("Client not initialized")
 
         # Create headers with provider data if available
-        headers = {}
+        headers = options.headers or {}
         if self.provider_data:
-            headers["X-LlamaStack-Provider-Data"] = json.dumps(self.provider_data)
+            keys = ["X-LlamaStack-Provider-Data", "x-llamastack-provider-data"]
+            if all(key not in headers for key in keys):
+                headers["X-LlamaStack-Provider-Data"] = json.dumps(self.provider_data)
 
         # Use context manager for provider data
         with request_provider_data_context(headers):
@@ -274,11 +301,14 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         cast_to: Any,
         options: Any,
     ):
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
+        matched_func, path_params, route = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
         body = self._convert_body(path, options.method, body)
         await start_trace(route, {"__location__": "library_client"})
@@ -320,10 +350,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         options: Any,
         stream_cls: Any,
     ):
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = find_matching_endpoint(options.method, path, self.endpoint_impls)
+        func, path_params, route = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
@@ -371,11 +404,14 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         )
         return await response.parse()
 
-    def _convert_body(self, path: str, method: str, body: Optional[dict] = None) -> dict:
+    def _convert_body(self, path: str, method: str, body: dict | None = None) -> dict:
         if not body:
             return {}
 
-        func, _, _ = find_matching_endpoint(method, path, self.endpoint_impls)
+        if self.route_impls is None:
+            raise ValueError("Client not initialized")
+
+        func, _, _ = find_matching_route(method, path, self.route_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature

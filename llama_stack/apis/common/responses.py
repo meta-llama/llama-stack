@@ -4,11 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List
+from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel
 
 from llama_stack.schema_utils import json_schema_type
+
+
+class Order(Enum):
+    asc = "asc"
+    desc = "desc"
 
 
 @json_schema_type
@@ -19,5 +25,5 @@ class PaginatedResponse(BaseModel):
     :param has_more: Whether there are more items available after this set
     """
 
-    data: List[Dict[str, Any]]
+    data: list[dict[str, Any]]
     has_more: bool

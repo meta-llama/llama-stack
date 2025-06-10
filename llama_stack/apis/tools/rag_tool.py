@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field
-from typing_extensions import Annotated, Protocol, runtime_checkable
+from pydantic import BaseModel, Field, field_validator
+from typing_extensions import Protocol, runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -29,13 +29,13 @@ class RAGDocument(BaseModel):
     document_id: str
     content: InterleavedContent | URL
     mime_type: str | None = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RAGQueryResult(BaseModel):
-    content: Optional[InterleavedContent] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    content: InterleavedContent | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
@@ -59,10 +59,7 @@ class LLMRAGQueryGeneratorConfig(BaseModel):
 
 
 RAGQueryGeneratorConfig = Annotated[
-    Union[
-        DefaultRAGQueryGeneratorConfig,
-        LLMRAGQueryGeneratorConfig,
-    ],
+    DefaultRAGQueryGeneratorConfig | LLMRAGQueryGeneratorConfig,
     Field(discriminator="type"),
 ]
 register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
@@ -70,11 +67,35 @@ register_schema(RAGQueryGeneratorConfig, name="RAGQueryGeneratorConfig")
 
 @json_schema_type
 class RAGQueryConfig(BaseModel):
+    """
+    Configuration for the RAG query generation.
+
+    :param query_generator_config: Configuration for the query generator.
+    :param max_tokens_in_context: Maximum number of tokens in the context.
+    :param max_chunks: Maximum number of chunks to retrieve.
+    :param chunk_template: Template for formatting each retrieved chunk in the context.
+        Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
+        Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
+    :param mode: Search mode for retrieval—either "vector" or "keyword". Default "vector".
+    """
+
     # This config defines how a query is generated using the messages
     # for memory bank retrieval.
     query_generator_config: RAGQueryGeneratorConfig = Field(default=DefaultRAGQueryGeneratorConfig())
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
+    chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
+    mode: str | None = None
+
+    @field_validator("chunk_template")
+    def validate_chunk_template(cls, v: str) -> str:
+        if "{chunk.content}" not in v:
+            raise ValueError("chunk_template must contain {chunk.content}")
+        if "{index}" not in v:
+            raise ValueError("chunk_template must contain {index}")
+        if len(v) == 0:
+            raise ValueError("chunk_template must not be empty")
+        return v
 
 
 @runtime_checkable
@@ -83,7 +104,7 @@ class RAGToolRuntime(Protocol):
     @webmethod(route="/tool-runtime/rag-tool/insert", method="POST")
     async def insert(
         self,
-        documents: List[RAGDocument],
+        documents: list[RAGDocument],
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
@@ -94,8 +115,8 @@ class RAGToolRuntime(Protocol):
     async def query(
         self,
         content: InterleavedContent,
-        vector_db_ids: List[str],
-        query_config: Optional[RAGQueryConfig] = None,
+        vector_db_ids: list[str],
+        query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
         """Query the RAG system for context; typically invoked by the agent"""
         ...

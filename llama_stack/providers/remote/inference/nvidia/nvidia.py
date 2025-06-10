@@ -6,8 +6,9 @@
 
 import logging
 import warnings
+from collections.abc import AsyncIterator
 from functools import lru_cache
-from typing import Any, AsyncIterator, Dict, List, Optional, Union
+from typing import Any
 
 from openai import APIConnectionError, AsyncOpenAI, BadRequestError
 
@@ -28,12 +29,12 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
     ToolChoice,
     ToolConfig,
-    ToolDefinition,
 )
 from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
@@ -42,7 +43,11 @@ from llama_stack.apis.inference.inference import (
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
-from llama_stack.models.llama.datatypes import ToolPromptFormat
+from llama_stack.apis.models import Model, ModelType
+from llama_stack.models.llama.datatypes import ToolDefinition, ToolPromptFormat
+from llama_stack.providers.utils.inference import (
+    ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -120,10 +125,10 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             "meta/llama-3.2-90b-vision-instruct": "https://ai.api.nvidia.com/v1/gr/meta/llama-3.2-90b-vision-instruct",
         }
 
-        base_url = f"{self._config.url}/v1"
+        base_url = f"{self._config.url}/v1" if self._config.append_api_version else self._config.url
+
         if _is_nvidia_hosted(self._config) and provider_model_id in special_model_urls:
             base_url = special_model_urls[provider_model_id]
-
         return _get_client_for_base_url(base_url)
 
     async def _get_provider_model_id(self, model_id: str) -> str:
@@ -138,11 +143,11 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         self,
         model_id: str,
         content: InterleavedContent,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, AsyncIterator[CompletionResponseStreamChunk]]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | AsyncIterator[CompletionResponseStreamChunk]:
         if sampling_params is None:
             sampling_params = SamplingParams()
         if content_has_media(content):
@@ -179,20 +184,20 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def embeddings(
         self,
         model_id: str,
-        contents: List[str] | List[InterleavedContentItem],
-        text_truncation: Optional[TextTruncation] = TextTruncation.none,
-        output_dimension: Optional[int] = None,
-        task_type: Optional[EmbeddingTaskType] = None,
+        contents: list[str] | list[InterleavedContentItem],
+        text_truncation: TextTruncation | None = TextTruncation.none,
+        output_dimension: int | None = None,
+        task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         if any(content_has_media(content) for content in contents):
             raise NotImplementedError("Media is not supported")
 
         #
-        # Llama Stack: contents = List[str] | List[InterleavedContentItem]
+        # Llama Stack: contents = list[str] | list[InterleavedContentItem]
         #  ->
-        # OpenAI: input = str | List[str]
+        # OpenAI: input = str | list[str]
         #
-        # we can ignore str and always pass List[str] to OpenAI
+        # we can ignore str and always pass list[str] to OpenAI
         #
         flat_contents = [content.text if isinstance(content, TextContentItem) else content for content in contents]
         input = [content.text if isinstance(content, TextContentItem) else content for content in flat_contents]
@@ -228,25 +233,35 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             raise ValueError(f"Failed to get embeddings: {e}") from e
 
         #
-        # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=List[float], ...)], ...)
+        # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=list[float], ...)], ...)
         #  ->
-        # Llama Stack: EmbeddingsResponse(embeddings=List[List[float]])
+        # Llama Stack: EmbeddingsResponse(embeddings=list[list[float]])
         #
         return EmbeddingsResponse(embeddings=[embedding.embedding for embedding in response.data])
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
+        raise NotImplementedError()
 
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
-    ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionResponseStreamChunk]]:
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
+    ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
         if sampling_params is None:
             sampling_params = SamplingParams()
         if tool_prompt_format:
@@ -283,24 +298,24 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def openai_completion(
         self,
         model: str,
-        prompt: Union[str, List[str], List[int], List[List[int]]],
-        best_of: Optional[int] = None,
-        echo: Optional[bool] = None,
-        frequency_penalty: Optional[float] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        presence_penalty: Optional[float] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-        guided_choice: Optional[List[str]] = None,
-        prompt_logprobs: Optional[int] = None,
+        prompt: str | list[str] | list[int] | list[list[int]],
+        best_of: int | None = None,
+        echo: bool | None = None,
+        frequency_penalty: float | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        presence_penalty: float | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+        guided_choice: list[str] | None = None,
+        prompt_logprobs: int | None = None,
     ) -> OpenAICompletion:
         provider_model_id = await self._get_provider_model_id(model)
 
@@ -332,29 +347,29 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
     async def openai_chat_completion(
         self,
         model: str,
-        messages: List[OpenAIMessageParam],
-        frequency_penalty: Optional[float] = None,
-        function_call: Optional[Union[str, Dict[str, Any]]] = None,
-        functions: Optional[List[Dict[str, Any]]] = None,
-        logit_bias: Optional[Dict[str, float]] = None,
-        logprobs: Optional[bool] = None,
-        max_completion_tokens: Optional[int] = None,
-        max_tokens: Optional[int] = None,
-        n: Optional[int] = None,
-        parallel_tool_calls: Optional[bool] = None,
-        presence_penalty: Optional[float] = None,
-        response_format: Optional[OpenAIResponseFormatParam] = None,
-        seed: Optional[int] = None,
-        stop: Optional[Union[str, List[str]]] = None,
-        stream: Optional[bool] = None,
-        stream_options: Optional[Dict[str, Any]] = None,
-        temperature: Optional[float] = None,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
-        tools: Optional[List[Dict[str, Any]]] = None,
-        top_logprobs: Optional[int] = None,
-        top_p: Optional[float] = None,
-        user: Optional[str] = None,
-    ) -> Union[OpenAIChatCompletion, AsyncIterator[OpenAIChatCompletionChunk]]:
+        messages: list[OpenAIMessageParam],
+        frequency_penalty: float | None = None,
+        function_call: str | dict[str, Any] | None = None,
+        functions: list[dict[str, Any]] | None = None,
+        logit_bias: dict[str, float] | None = None,
+        logprobs: bool | None = None,
+        max_completion_tokens: int | None = None,
+        max_tokens: int | None = None,
+        n: int | None = None,
+        parallel_tool_calls: bool | None = None,
+        presence_penalty: float | None = None,
+        response_format: OpenAIResponseFormatParam | None = None,
+        seed: int | None = None,
+        stop: str | list[str] | None = None,
+        stream: bool | None = None,
+        stream_options: dict[str, Any] | None = None,
+        temperature: float | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        top_logprobs: int | None = None,
+        top_p: float | None = None,
+        user: str | None = None,
+    ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
         provider_model_id = await self._get_provider_model_id(model)
 
         params = await prepare_openai_completion_params(
@@ -387,3 +402,44 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
             return await self._get_client(provider_model_id).chat.completions.create(**params)
         except APIConnectionError as e:
             raise ConnectionError(f"Failed to connect to NVIDIA NIM at {self._config.url}: {e}") from e
+
+    async def register_model(self, model: Model) -> Model:
+        """
+        Allow non-llama model registration.
+
+        Non-llama model registration: API Catalogue models, post-training models, etc.
+            client = LlamaStackAsLibraryClient("nvidia")
+            client.models.register(
+                    model_id="mistralai/mixtral-8x7b-instruct-v0.1",
+                    model_type=ModelType.llm,
+                    provider_id="nvidia",
+                    provider_model_id="mistralai/mixtral-8x7b-instruct-v0.1"
+            )
+
+            NOTE: Only supports models endpoints compatible with AsyncOpenAI base_url format.
+        """
+        if model.model_type == ModelType.embedding:
+            # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
+            provider_resource_id = model.provider_resource_id
+        else:
+            provider_resource_id = self.get_provider_model_id(model.provider_resource_id)
+
+        if provider_resource_id:
+            model.provider_resource_id = provider_resource_id
+        else:
+            llama_model = model.metadata.get("llama_model")
+            existing_llama_model = self.get_llama_model(model.provider_resource_id)
+            if existing_llama_model:
+                if existing_llama_model != llama_model:
+                    raise ValueError(
+                        f"Provider model id '{model.provider_resource_id}' is already registered to a different llama model: '{existing_llama_model}'"
+                    )
+            else:
+                # not llama model
+                if llama_model in ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR:
+                    self.provider_id_to_llama_model_map[model.provider_resource_id] = (
+                        ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[llama_model]
+                    )
+                else:
+                    self.alias_to_provider_id_map[model.provider_model_id] = model.provider_model_id
+        return model

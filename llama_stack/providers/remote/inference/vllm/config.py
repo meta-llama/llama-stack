@@ -4,16 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Optional
+from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
 class VLLMInferenceAdapterConfig(BaseModel):
-    url: Optional[str] = Field(
+    url: str | None = Field(
         default=None,
         description="The URL for the vLLM model serving endpoint",
     )
@@ -21,14 +21,30 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default=4096,
         description="Maximum number of tokens to generate.",
     )
-    api_token: Optional[str] = Field(
+    api_token: str | None = Field(
         default="fake",
         description="The API token",
     )
-    tls_verify: bool = Field(
+    tls_verify: bool | str = Field(
         default=True,
-        description="Whether to verify TLS certificates",
+        description="Whether to verify TLS certificates. Can be a boolean or a path to a CA certificate file.",
     )
+
+    @field_validator("tls_verify")
+    @classmethod
+    def validate_tls_verify(cls, v):
+        if isinstance(v, str):
+            # Check if it's a boolean string
+            if v.lower() in ("true", "false"):
+                return v.lower() == "true"
+            # Otherwise, treat it as a cert path
+            cert_path = Path(v).expanduser().resolve()
+            if not cert_path.exists():
+                raise ValueError(f"TLS certificate file does not exist: {v}")
+            if not cert_path.is_file():
+                raise ValueError(f"TLS certificate path is not a file: {v}")
+            return v
+        return v
 
     @classmethod
     def sample_run_config(

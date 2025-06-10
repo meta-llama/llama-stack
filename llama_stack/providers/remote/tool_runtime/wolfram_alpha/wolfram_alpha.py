@@ -5,26 +5,26 @@
 # the root directory of this source tree.
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
-    Tool,
     ToolDef,
+    ToolGroup,
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 
 from .config import WolframAlphaToolConfig
 
 
-class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
+class WolframAlphaToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: WolframAlphaToolConfig):
         self.config = config
         self.url = "https://api.wolframalpha.com/v2/query"
@@ -32,10 +32,10 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool) -> None:
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None:
         pass
 
-    async def unregister_tool(self, tool_id: str) -> None:
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         return
 
     def _get_api_key(self) -> str:
@@ -50,7 +50,7 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
         return provider_data.wolfram_alpha_api_key
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolDefsResponse:
         return ListToolDefsResponse(
             data=[
@@ -68,7 +68,7 @@ class WolframAlphaToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsReques
             ]
         )
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         params = {
             "input": kwargs["query"],

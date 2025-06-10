@@ -7,7 +7,7 @@
 [![Unit Tests](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml?query=branch%3Amain)
 [![Integration Tests](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml?query=branch%3Amain)
 
-[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb)
+[**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb) | [**Discord**](https://discord.gg/llama-stack)
 
 ### ✨🎉 Llama 4 Support  🎉✨
 We released [Version 0.2.0](https://github.com/meta-llama/llama-stack/releases/tag/v0.2.0) with support for the Llama 4 herd of models released by Meta.
@@ -70,6 +70,13 @@ As more providers start supporting Llama 4, you can use them in Llama Stack as w
 
 </details>
 
+### 🚀 One-Line Installer 🚀
+
+To try Llama Stack locally, run:
+
+```bash
+curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/install.sh | sh
+```
 
 ### Overview
 
@@ -100,25 +107,29 @@ By reducing friction and complexity, Llama Stack empowers developers to focus on
 ### API Providers
 Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
-| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** |
-|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|
-|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |
-|        SambaNova         |         Hosted         |            |       ✅       |            |            |               |
-|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |
-|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |
-|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |
-|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |
-|           Groq           |         Hosted         |            |       ✅       |            |            |               |
-|          Ollama          |      Single Node       |            |       ✅       |            |            |               |
-|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |
-|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |
-|          Chroma          |      Single Node       |            |               |     ✅      |            |               |
-|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |
-|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |
-|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |
-|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |
-|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |
-|          Gemini          |         Hosted         |            |       ✅       |            |            |               |
+| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** | **Post Training** |
+|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|:-----------------:|
+|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |               |
+|        SambaNova         |         Hosted         |            |       ✅       |            |     ✅      |               |                  |
+|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |                  |
+|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |                |
+|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |                |
+|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |                |
+|           Groq           |         Hosted         |            |       ✅       |            |            |               |                 |
+|          Ollama          |      Single Node       |            |       ✅       |            |            |               |                 |
+|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |                 |
+|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |                 |
+|          Chroma          |      Single Node       |            |               |     ✅      |            |               |                 |
+|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |                 |
+|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |                |
+|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |                 |
+|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |                 |
+|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |                 |
+|          Gemini          |         Hosted         |            |       ✅       |            |            |               |                 |
+|          watsonx         |         Hosted         |            |       ✅       |            |            |               |                 |
+|        HuggingFace       |       Single Node      |            |                |            |            |               |       ✅        |
+|         TorchTune        |       Single Node      |            |                |            |            |               |       ✅        |
+|       NVIDIA NEMO        |         Hosted         |            |                |            |            |               |       ✅        |
 
 
 ### Distributions
@@ -128,7 +139,6 @@ A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider 
 |               **Distribution**                |                                                                    **Llama Stack Docker**                                                                     |                                                 Start This Distribution                                                  |
 |:---------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------:|
 |                Meta Reference                 |           [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general)           |      [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-gpu.html)      |
-|           Meta Reference Quantized            | [llamastack/distribution-meta-reference-quantized-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-quantized-gpu/general) | [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-quantized-gpu.html) |
 |                   SambaNova                   |                     [llamastack/distribution-sambanova](https://hub.docker.com/repository/docker/llamastack/distribution-sambanova/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/sambanova.html)   |
 |                   Cerebras                    |                     [llamastack/distribution-cerebras](https://hub.docker.com/repository/docker/llamastack/distribution-cerebras/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/cerebras.html)   |
 |                    Ollama                     |                       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)                       |            [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/ollama.html)            |

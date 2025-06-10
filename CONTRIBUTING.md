@@ -72,7 +72,7 @@ source .venv/bin/activate
 ```
 
 > [!NOTE]
-> You can pin a specific version of Python to use for `uv` by adding a `.python-version` file in the root project directory.
+> You can use a specific version of Python with `uv` by adding the `--python <version>` flag (e.g. `--python 3.11`)
 > Otherwise, `uv` will automatically select a Python version according to the `requires-python` section of the `pyproject.toml`.
 > For more info, see the [uv docs around Python versions](https://docs.astral.sh/uv/concepts/python-versions/).
 
@@ -110,25 +110,9 @@ uv run pre-commit run --all-files
 > [!CAUTION]
 > Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
 
-## Running unit tests
+## Running tests
 
-You can run the unit tests by running:
-
-```bash
-source .venv/bin/activate
-./scripts/unit-tests.sh
-```
-
-If you'd like to run for a non-default version of Python (currently 3.10), pass `PYTHON_VERSION` variable as follows:
-
-```
-source .venv/bin/activate
-PYTHON_VERSION=3.13 ./scripts/unit-tests.sh
-```
-
-## Running integration tests
-
-You can run integration tests following the instructions [here](tests/integration/README.md).
+You can find the Llama Stack testing documentation here [here](tests/README.md).
 
 ## Adding a new dependency to the project
 
@@ -141,11 +125,20 @@ uv sync
 
 ## Coding Style
 
-* Comments should provide meaningful insights into the code. Avoid filler comments that simply describe the next step, as they create unnecessary clutter, same goes for docstrings.
-* Prefer comments to clarify surprising behavior and/or relationships between parts of the code rather than explain what the next line of code does.
-* Catching exceptions, prefer using a specific exception type rather than a broad catch-all like `Exception`.
+* Comments should provide meaningful insights into the code. Avoid filler comments that simply
+  describe the next step, as they create unnecessary clutter, same goes for docstrings.
+* Prefer comments to clarify surprising behavior and/or relationships between parts of the code
+  rather than explain what the next line of code does.
+* Catching exceptions, prefer using a specific exception type rather than a broad catch-all like
+  `Exception`.
 * Error messages should be prefixed with "Failed to ..."
-* 4 spaces for indentation rather than tabs
+* 4 spaces for indentation rather than tab
+* When using `# noqa` to suppress a style or linter warning, include a comment explaining the
+  justification for bypassing the check.
+* When using `# type: ignore` to suppress a mypy warning, include a comment explaining the
+  justification for bypassing the check.
+* Don't use unicode characters in the codebase. ASCII-only is preferred for compatibility or
+  readability reasons.
 
 ## Common Tasks
 
@@ -174,14 +167,11 @@ If you have made changes to a provider's configuration in any form (introducing 
 If you are making changes to the documentation at [https://llama-stack.readthedocs.io/en/latest/](https://llama-stack.readthedocs.io/en/latest/), you can use the following command to build the documentation and preview your changes. You will need [Sphinx](https://www.sphinx-doc.org/en/master/) and the readthedocs theme.
 
 ```bash
-cd docs
-uv sync --extra docs
-
 # This rebuilds the documentation pages.
-uv run make html
+uv run --group docs make -C docs/ html
 
 # This will start a local server (usually at http://127.0.0.1:8000) that automatically rebuilds and refreshes when you make changes to the documentation.
-uv run sphinx-autobuild source build/html --write-all
+uv run --group docs sphinx-autobuild docs/source docs/build/html --write-all
 ```
 
 ### Update API Documentation
@@ -189,7 +179,7 @@ uv run sphinx-autobuild source build/html --write-all
 If you modify or add new API endpoints, update the API documentation accordingly. You can do this by running the following command:
 
 ```bash
-uv run --with ".[dev]" ./docs/openapi_generator/run_openapi_generator.sh
+uv run ./docs/openapi_generator/run_openapi_generator.sh
 ```
 
 The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.

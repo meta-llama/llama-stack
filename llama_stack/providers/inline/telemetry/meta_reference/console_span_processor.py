@@ -78,7 +78,7 @@ class ConsoleSpanProcessor(SpanProcessor):
 
             severity = event.attributes.get("severity", "info")
             message = event.attributes.get("message", event.name)
-            if isinstance(message, (dict, list)):
+            if isinstance(message, dict | list):
                 message = json.dumps(message, indent=2)
 
             severity_colors = {

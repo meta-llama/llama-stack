@@ -4,24 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import sys
+from collections.abc import AsyncIterator
 from datetime import datetime
 from enum import Enum
-from typing import (
-    Annotated,
-    Any,
-    AsyncIterator,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Protocol,
-    Union,
-    runtime_checkable,
-)
+from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.apis.common.content_types import URL, ContentDelta, InterleavedContent
+from llama_stack.apis.common.responses import Order, PaginatedResponse
 from llama_stack.apis.inference import (
     CompletionMessage,
     ResponseFormat,
@@ -37,6 +29,24 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import SafetyViolation
 from llama_stack.apis.tools import ToolDef
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
+
+from .openai_responses import (
+    ListOpenAIResponseInputItem,
+    ListOpenAIResponseObject,
+    OpenAIResponseInput,
+    OpenAIResponseInputTool,
+    OpenAIResponseObject,
+    OpenAIResponseObjectStream,
+    OpenAIResponseText,
+)
+
+# TODO: use enum.StrEnum when we drop support for python 3.10
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+
+    class StrEnum(str, Enum):
+        """Backport of StrEnum for Python 3.10 and below."""
 
 
 class Attachment(BaseModel):
@@ -72,11 +82,11 @@ class StepCommon(BaseModel):
 
     turn_id: str
     step_id: str
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
 
 
-class StepType(Enum):
+class StepType(StrEnum):
     """Type of the step in an agent turn.
 
     :cvar inference: The step is an inference step that calls an LLM.
@@ -100,7 +110,7 @@ class InferenceStep(StepCommon):
 
     model_config = ConfigDict(protected_namespaces=())
 
-    step_type: Literal[StepType.inference.value] = StepType.inference.value
+    step_type: Literal[StepType.inference] = StepType.inference
     model_response: CompletionMessage
 
 
@@ -112,9 +122,9 @@ class ToolExecutionStep(StepCommon):
     :param tool_responses: The tool responses from the tool calls.
     """
 
-    step_type: Literal[StepType.tool_execution.value] = StepType.tool_execution.value
-    tool_calls: List[ToolCall]
-    tool_responses: List[ToolResponse]
+    step_type: Literal[StepType.tool_execution] = StepType.tool_execution
+    tool_calls: list[ToolCall]
+    tool_responses: list[ToolResponse]
 
 
 @json_schema_type
@@ -124,8 +134,8 @@ class ShieldCallStep(StepCommon):
     :param violation: The violation from the shield call.
     """
 
-    step_type: Literal[StepType.shield_call.value] = StepType.shield_call.value
-    violation: Optional[SafetyViolation]
+    step_type: Literal[StepType.shield_call] = StepType.shield_call
+    violation: SafetyViolation | None
 
 
 @json_schema_type
@@ -136,19 +146,14 @@ class MemoryRetrievalStep(StepCommon):
     :param inserted_context: The context retrieved from the vector databases.
     """
 
-    step_type: Literal[StepType.memory_retrieval.value] = StepType.memory_retrieval.value
+    step_type: Literal[StepType.memory_retrieval] = StepType.memory_retrieval
     # TODO: should this be List[str]?
     vector_db_ids: str
     inserted_context: InterleavedContent
 
 
 Step = Annotated[
-    Union[
-        InferenceStep,
-        ToolExecutionStep,
-        ShieldCallStep,
-        MemoryRetrievalStep,
-    ],
+    InferenceStep | ToolExecutionStep | ShieldCallStep | MemoryRetrievalStep,
     Field(discriminator="step_type"),
 ]
 
@@ -159,18 +164,13 @@ class Turn(BaseModel):
 
     turn_id: str
     session_id: str
-    input_messages: List[
-        Union[
-            UserMessage,
-            ToolResponseMessage,
-        ]
-    ]
-    steps: List[Step]
+    input_messages: list[UserMessage | ToolResponseMessage]
+    steps: list[Step]
     output_message: CompletionMessage
-    output_attachments: Optional[List[Attachment]] = Field(default_factory=list)
+    output_attachments: list[Attachment] | None = Field(default_factory=lambda: [])
 
     started_at: datetime
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
 
 @json_schema_type
@@ -179,34 +179,31 @@ class Session(BaseModel):
 
     session_id: str
     session_name: str
-    turns: List[Turn]
+    turns: list[Turn]
     started_at: datetime
 
 
 class AgentToolGroupWithArgs(BaseModel):
     name: str
-    args: Dict[str, Any]
+    args: dict[str, Any]
 
 
-AgentToolGroup = Union[
-    str,
-    AgentToolGroupWithArgs,
-]
+AgentToolGroup = str | AgentToolGroupWithArgs
 register_schema(AgentToolGroup, name="AgentTool")
 
 
 class AgentConfigCommon(BaseModel):
-    sampling_params: Optional[SamplingParams] = Field(default_factory=SamplingParams)
+    sampling_params: SamplingParams | None = Field(default_factory=SamplingParams)
 
-    input_shields: Optional[List[str]] = Field(default_factory=list)
-    output_shields: Optional[List[str]] = Field(default_factory=list)
-    toolgroups: Optional[List[AgentToolGroup]] = Field(default_factory=list)
-    client_tools: Optional[List[ToolDef]] = Field(default_factory=list)
-    tool_choice: Optional[ToolChoice] = Field(default=None, deprecated="use tool_config instead")
-    tool_prompt_format: Optional[ToolPromptFormat] = Field(default=None, deprecated="use tool_config instead")
-    tool_config: Optional[ToolConfig] = Field(default=None)
+    input_shields: list[str] | None = Field(default_factory=lambda: [])
+    output_shields: list[str] | None = Field(default_factory=lambda: [])
+    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [])
+    client_tools: list[ToolDef] | None = Field(default_factory=lambda: [])
+    tool_choice: ToolChoice | None = Field(default=None, deprecated="use tool_config instead")
+    tool_prompt_format: ToolPromptFormat | None = Field(default=None, deprecated="use tool_config instead")
+    tool_config: ToolConfig | None = Field(default=None)
 
-    max_infer_iters: Optional[int] = 10
+    max_infer_iters: int | None = 10
 
     def model_post_init(self, __context):
         if self.tool_config:
@@ -236,9 +233,9 @@ class AgentConfig(AgentConfigCommon):
 
     model: str
     instructions: str
-    name: Optional[str] = None
-    enable_session_persistence: Optional[bool] = False
-    response_format: Optional[ResponseFormat] = None
+    name: str | None = None
+    enable_session_persistence: bool | None = False
+    response_format: ResponseFormat | None = None
 
 
 @json_schema_type
@@ -248,21 +245,11 @@ class Agent(BaseModel):
     created_at: datetime
 
 
-@json_schema_type
-class ListAgentsResponse(BaseModel):
-    data: List[Agent]
-
-
-@json_schema_type
-class ListAgentSessionsResponse(BaseModel):
-    data: List[Session]
-
-
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
-    instructions: Optional[str] = None
+    instructions: str | None = None
 
 
-class AgentTurnResponseEventType(Enum):
+class AgentTurnResponseEventType(StrEnum):
     step_start = "step_start"
     step_complete = "step_complete"
     step_progress = "step_progress"
@@ -274,15 +261,15 @@ class AgentTurnResponseEventType(Enum):
 
 @json_schema_type
 class AgentTurnResponseStepStartPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.step_start.value] = AgentTurnResponseEventType.step_start.value
+    event_type: Literal[AgentTurnResponseEventType.step_start] = AgentTurnResponseEventType.step_start
     step_type: StepType
     step_id: str
-    metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    metadata: dict[str, Any] | None = Field(default_factory=lambda: {})
 
 
 @json_schema_type
 class AgentTurnResponseStepCompletePayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.step_complete.value] = AgentTurnResponseEventType.step_complete.value
+    event_type: Literal[AgentTurnResponseEventType.step_complete] = AgentTurnResponseEventType.step_complete
     step_type: StepType
     step_id: str
     step_details: Step
@@ -292,7 +279,7 @@ class AgentTurnResponseStepCompletePayload(BaseModel):
 class AgentTurnResponseStepProgressPayload(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
 
-    event_type: Literal[AgentTurnResponseEventType.step_progress.value] = AgentTurnResponseEventType.step_progress.value
+    event_type: Literal[AgentTurnResponseEventType.step_progress] = AgentTurnResponseEventType.step_progress
     step_type: StepType
     step_id: str
 
@@ -301,33 +288,29 @@ class AgentTurnResponseStepProgressPayload(BaseModel):
 
 @json_schema_type
 class AgentTurnResponseTurnStartPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_start.value] = AgentTurnResponseEventType.turn_start.value
+    event_type: Literal[AgentTurnResponseEventType.turn_start] = AgentTurnResponseEventType.turn_start
     turn_id: str
 
 
 @json_schema_type
 class AgentTurnResponseTurnCompletePayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_complete.value] = AgentTurnResponseEventType.turn_complete.value
+    event_type: Literal[AgentTurnResponseEventType.turn_complete] = AgentTurnResponseEventType.turn_complete
     turn: Turn
 
 
 @json_schema_type
 class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
-    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input.value] = (
-        AgentTurnResponseEventType.turn_awaiting_input.value
-    )
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input] = AgentTurnResponseEventType.turn_awaiting_input
     turn: Turn
 
 
 AgentTurnResponseEventPayload = Annotated[
-    Union[
-        AgentTurnResponseStepStartPayload,
-        AgentTurnResponseStepProgressPayload,
-        AgentTurnResponseStepCompletePayload,
-        AgentTurnResponseTurnStartPayload,
-        AgentTurnResponseTurnCompletePayload,
-        AgentTurnResponseTurnAwaitingInputPayload,
-    ],
+    AgentTurnResponseStepStartPayload
+    | AgentTurnResponseStepProgressPayload
+    | AgentTurnResponseStepCompletePayload
+    | AgentTurnResponseTurnStartPayload
+    | AgentTurnResponseTurnCompletePayload
+    | AgentTurnResponseTurnAwaitingInputPayload,
     Field(discriminator="event_type"),
 ]
 register_schema(AgentTurnResponseEventPayload, name="AgentTurnResponseEventPayload")
@@ -356,18 +339,13 @@ class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
     # TODO: figure out how we can simplify this and make why
     # ToolResponseMessage needs to be here (it is function call
     # execution from outside the system)
-    messages: List[
-        Union[
-            UserMessage,
-            ToolResponseMessage,
-        ]
-    ]
+    messages: list[UserMessage | ToolResponseMessage]
 
-    documents: Optional[List[Document]] = None
-    toolgroups: Optional[List[AgentToolGroup]] = None
+    documents: list[Document] | None = None
+    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [])
 
-    stream: Optional[bool] = False
-    tool_config: Optional[ToolConfig] = None
+    stream: bool | None = False
+    tool_config: ToolConfig | None = None
 
 
 @json_schema_type
@@ -375,8 +353,8 @@ class AgentTurnResumeRequest(BaseModel):
     agent_id: str
     session_id: str
     turn_id: str
-    tool_responses: List[ToolResponse]
-    stream: Optional[bool] = False
+    tool_responses: list[ToolResponse]
+    stream: bool | None = False
 
 
 @json_schema_type
@@ -422,17 +400,12 @@ class Agents(Protocol):
         self,
         agent_id: str,
         session_id: str,
-        messages: List[
-            Union[
-                UserMessage,
-                ToolResponseMessage,
-            ]
-        ],
-        stream: Optional[bool] = False,
-        documents: Optional[List[Document]] = None,
-        toolgroups: Optional[List[AgentToolGroup]] = None,
-        tool_config: Optional[ToolConfig] = None,
-    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+        messages: list[UserMessage | ToolResponseMessage],
+        stream: bool | None = False,
+        documents: list[Document] | None = None,
+        toolgroups: list[AgentToolGroup] | None = None,
+        tool_config: ToolConfig | None = None,
+    ) -> Turn | AsyncIterator[AgentTurnResponseStreamChunk]:
         """Create a new turn for an agent.
 
         :param agent_id: The ID of the agent to create the turn for.
@@ -443,8 +416,9 @@ class Agents(Protocol):
         :param toolgroups: (Optional) List of toolgroups to create the turn with, will be used in addition to the agent's config toolgroups for the request.
         :param tool_config: (Optional) The tool configuration to create the turn with, will be used to override the agent's tool_config.
         :returns: If stream=False, returns a Turn object.
-                  If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk
+                  If stream=True, returns an SSE event stream of AgentTurnResponseStreamChunk.
         """
+        ...
 
     @webmethod(
         route="/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume",
@@ -456,9 +430,9 @@ class Agents(Protocol):
         agent_id: str,
         session_id: str,
         turn_id: str,
-        tool_responses: List[ToolResponse],
-        stream: Optional[bool] = False,
-    ) -> Union[Turn, AsyncIterator[AgentTurnResponseStreamChunk]]:
+        tool_responses: list[ToolResponse],
+        stream: bool | None = False,
+    ) -> Turn | AsyncIterator[AgentTurnResponseStreamChunk]:
         """Resume an agent turn with executed tool call responses.
 
         When a Turn has the status `awaiting_input` due to pending input from client side tool calls, this endpoint can be used to submit the outputs from the tool calls once they are ready.
@@ -531,13 +505,14 @@ class Agents(Protocol):
         self,
         session_id: str,
         agent_id: str,
-        turn_ids: Optional[List[str]] = None,
+        turn_ids: list[str] | None = None,
     ) -> Session:
         """Retrieve an agent session by its ID.
 
         :param session_id: The ID of the session to get.
         :param agent_id: The ID of the agent to get the session for.
         :param turn_ids: (Optional) List of turn IDs to filter the session by.
+        :returns: A Session.
         """
         ...
 
@@ -547,7 +522,7 @@ class Agents(Protocol):
         session_id: str,
         agent_id: str,
     ) -> None:
-        """Delete an agent session by its ID.
+        """Delete an agent session by its ID and its associated turns.
 
         :param session_id: The ID of the session to delete.
         :param agent_id: The ID of the agent to delete the session for.
@@ -559,17 +534,19 @@ class Agents(Protocol):
         self,
         agent_id: str,
     ) -> None:
-        """Delete an agent by its ID.
+        """Delete an agent by its ID and its associated sessions and turns.
 
         :param agent_id: The ID of the agent to delete.
         """
         ...
 
     @webmethod(route="/agents", method="GET")
-    async def list_agents(self) -> ListAgentsResponse:
+    async def list_agents(self, start_index: int | None = None, limit: int | None = None) -> PaginatedResponse:
         """List all agents.
 
-        :returns: A ListAgentsResponse.
+        :param start_index: The index to start the pagination from.
+        :param limit: The number of agents to return.
+        :returns: A PaginatedResponse.
         """
         ...
 
@@ -586,10 +563,96 @@ class Agents(Protocol):
     async def list_agent_sessions(
         self,
         agent_id: str,
-    ) -> ListAgentSessionsResponse:
+        start_index: int | None = None,
+        limit: int | None = None,
+    ) -> PaginatedResponse:
         """List all session(s) of a given agent.
 
         :param agent_id: The ID of the agent to list sessions for.
-        :returns: A ListAgentSessionsResponse.
+        :param start_index: The index to start the pagination from.
+        :param limit: The number of sessions to return.
+        :returns: A PaginatedResponse.
+        """
+        ...
+
+    # We situate the OpenAI Responses API in the Agents API just like we did things
+    # for Inference. The Responses API, in its intent, serves the same purpose as
+    # the Agents API above -- it is essentially a lightweight "agentic loop" with
+    # integrated tool calling.
+    #
+    # Both of these APIs are inherently stateful.
+
+    @webmethod(route="/openai/v1/responses/{response_id}", method="GET")
+    async def get_openai_response(
+        self,
+        response_id: str,
+    ) -> OpenAIResponseObject:
+        """Retrieve an OpenAI response by its ID.
+
+        :param response_id: The ID of the OpenAI response to retrieve.
+        :returns: An OpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses", method="POST")
+    async def create_openai_response(
+        self,
+        input: str | list[OpenAIResponseInput],
+        model: str,
+        instructions: str | None = None,
+        previous_response_id: str | None = None,
+        store: bool | None = True,
+        stream: bool | None = False,
+        temperature: float | None = None,
+        text: OpenAIResponseText | None = None,
+        tools: list[OpenAIResponseInputTool] | None = None,
+        max_infer_iters: int | None = 10,  # this is an extension to the OpenAI API
+    ) -> OpenAIResponseObject | AsyncIterator[OpenAIResponseObjectStream]:
+        """Create a new OpenAI response.
+
+        :param input: Input message(s) to create the response.
+        :param model: The underlying LLM used for completions.
+        :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
+        :returns: An OpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses", method="GET")
+    async def list_openai_responses(
+        self,
+        after: str | None = None,
+        limit: int | None = 50,
+        model: str | None = None,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseObject:
+        """List all OpenAI responses.
+
+        :param after: The ID of the last response to return.
+        :param limit: The number of responses to return.
+        :param model: The model to filter responses by.
+        :param order: The order to sort responses by when sorted by created_at ('asc' or 'desc').
+        :returns: A ListOpenAIResponseObject.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses/{response_id}/input_items", method="GET")
+    async def list_openai_response_input_items(
+        self,
+        response_id: str,
+        after: str | None = None,
+        before: str | None = None,
+        include: list[str] | None = None,
+        limit: int | None = 20,
+        order: Order | None = Order.desc,
+    ) -> ListOpenAIResponseInputItem:
+        """List input items for a given OpenAI response.
+
+        :param response_id: The ID of the response to retrieve input items for.
+        :param after: An item ID to list items after, used for pagination.
+        :param before: An item ID to list items before, used for pagination.
+        :param include: Additional fields to include in the response.
+        :param limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
+        :param order: The order to return the input items in. Default is desc.
+        :returns: An ListOpenAIResponseInputItem.
         """
         ...

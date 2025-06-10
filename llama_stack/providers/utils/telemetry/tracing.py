@@ -10,9 +10,10 @@ import logging
 import queue
 import random
 import threading
+from collections.abc import Callable
 from datetime import datetime, timezone
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from llama_stack.apis.telemetry import (
     LogSeverity,
@@ -32,6 +33,8 @@ logger = get_logger(__name__, category="core")
 
 INVALID_SPAN_ID = 0x0000000000000000
 INVALID_TRACE_ID = 0x00000000000000000000000000000000
+
+ROOT_SPAN_MARKERS = ["__root__", "__root_span__"]
 
 
 def trace_id_to_str(trace_id: int) -> str:
@@ -106,13 +109,13 @@ class BackgroundLogger:
 
 
 class TraceContext:
-    spans: List[Span] = []
+    spans: list[Span] = []
 
     def __init__(self, logger: BackgroundLogger, trace_id: str):
         self.logger = logger
         self.trace_id = trace_id
 
-    def push_span(self, name: str, attributes: Dict[str, Any] = None) -> Span:
+    def push_span(self, name: str, attributes: dict[str, Any] = None) -> Span:
         current_span = self.get_current_span()
         span = Span(
             span_id=generate_span_id(),
@@ -168,7 +171,7 @@ def setup_logger(api: Telemetry, level: int = logging.INFO):
     root_logger.addHandler(TelemetryHandler())
 
 
-async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceContext:
+async def start_trace(name: str, attributes: dict[str, Any] = None) -> TraceContext:
     global CURRENT_TRACE_CONTEXT, BACKGROUND_LOGGER
 
     if BACKGROUND_LOGGER is None:
@@ -177,7 +180,8 @@ async def start_trace(name: str, attributes: Dict[str, Any] = None) -> TraceCont
 
     trace_id = generate_trace_id()
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
-    context.push_span(name, {"__root__": True, **(attributes or {})})
+    attributes = {marker: True for marker in ROOT_SPAN_MARKERS} | (attributes or {})
+    context.push_span(name, attributes)
 
     CURRENT_TRACE_CONTEXT.set(context)
     return context
@@ -246,7 +250,7 @@ class TelemetryHandler(logging.Handler):
 
 
 class SpanContextManager:
-    def __init__(self, name: str, attributes: Dict[str, Any] = None):
+    def __init__(self, name: str, attributes: dict[str, Any] = None):
         self.name = name
         self.attributes = attributes
         self.span = None
@@ -316,11 +320,11 @@ class SpanContextManager:
         return wrapper
 
 
-def span(name: str, attributes: Dict[str, Any] = None):
+def span(name: str, attributes: dict[str, Any] = None):
     return SpanContextManager(name, attributes)
 
 
-def get_current_span() -> Optional[Span]:
+def get_current_span() -> Span | None:
     global CURRENT_TRACE_CONTEXT
     if CURRENT_TRACE_CONTEXT is None:
         logger.debug("No trace context to get current span")

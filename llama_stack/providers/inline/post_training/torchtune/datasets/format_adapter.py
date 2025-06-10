@@ -11,7 +11,8 @@
 # LICENSE file in the root directory of this source tree.
 
 import json
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from llama_stack.providers.utils.common.data_schema_validator import ColumnName
 

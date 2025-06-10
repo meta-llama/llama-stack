@@ -4,13 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Union
-
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
 
 
 async def get_adapter_impl(
-    config: Union[InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig],
+    config: InferenceAPIImplConfig | InferenceEndpointImplConfig | TGIImplConfig,
     _deps,
 ):
     from .tgi import InferenceAPIAdapter, InferenceEndpointAdapter, TGIAdapter

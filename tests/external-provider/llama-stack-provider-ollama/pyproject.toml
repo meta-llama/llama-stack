@@ -6,7 +6,6 @@ dependencies = [
     "aiohttp",
     "aiosqlite",
     "autoevals",
-    "blobfile",
     "chardet",
     "chromadb-client",
     "datasets",

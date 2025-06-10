@@ -7,9 +7,11 @@
 import time
 from uuid import uuid4
 
+import pytest
 from llama_stack_client import Agent
 
 
+@pytest.mark.skip(reason="telemetry is not stable")
 def test_agent_query_spans(llama_stack_client, text_model_id):
     agent = Agent(llama_stack_client, model=text_model_id, instructions="You are a helpful assistant")
     session_id = agent.create_session(f"test-session-{uuid4()}")

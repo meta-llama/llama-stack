@@ -4,14 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Dict
-
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig  # noqa: F401
+from .config import WeaviateVectorIOConfig
 
 
-async def get_adapter_impl(config: WeaviateVectorIOConfig, deps: Dict[Api, ProviderSpec]):
+async def get_adapter_impl(config: WeaviateVectorIOConfig, deps: dict[Api, ProviderSpec]):
     from .weaviate import WeaviateVectorIOAdapter
 
     impl = WeaviateVectorIOAdapter(config, deps[Api.inference])

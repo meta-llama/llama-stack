@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import re
-from typing import Sequence
+from collections.abc import Sequence
 
 from llama_stack.providers.utils.scoring.basic_scoring_utils import time_limit
 
@@ -323,7 +323,7 @@ def _fix_a_slash_b(string: str) -> str:
     try:
         ia = int(a)
         ib = int(b)
-        assert string == "{}/{}".format(ia, ib)
+        assert string == f"{ia}/{ib}"
         new_string = "\\frac{" + str(ia) + "}{" + str(ib) + "}"
         return new_string
     except (ValueError, AssertionError):

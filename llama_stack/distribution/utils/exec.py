@@ -8,6 +8,7 @@ import logging
 import os
 import signal
 import subprocess
+import sys
 
 from termcolor import cprint
 
@@ -22,15 +23,15 @@ from llama_stack.distribution.utils.image_types import LlamaStackImageType
 
 def formulate_run_args(image_type, image_name, config, template_name) -> list:
     env_name = ""
-    if image_type == LlamaStackImageType.CONTAINER.value or config.container_image:
-        env_name = f"distribution-{template_name}" if template_name else config.container_image
-    elif image_type == LlamaStackImageType.CONDA.value:
+
+    if image_type == LlamaStackImageType.CONDA.value:
         current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
         env_name = image_name or current_conda_env
         if not env_name:
             cprint(
                 "No current conda environment detected, please specify a conda environment name with --image-name",
                 color="red",
+                file=sys.stderr,
             )
             return
 
@@ -47,12 +48,13 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
                     return envpath
             return None
 
-        print(f"Using conda environment: {env_name}")
+        cprint(f"Using conda environment: {env_name}", color="green", file=sys.stderr)
         conda_prefix = get_conda_prefix(env_name)
         if not conda_prefix:
             cprint(
                 f"Conda environment {env_name} does not exist.",
                 color="red",
+                file=sys.stderr,
             )
             return
 
@@ -61,6 +63,7 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
             cprint(
                 f"Build file {build_file} does not exist.\n\nPlease run `llama stack build` or specify the correct conda environment name with --image-name",
                 color="red",
+                file=sys.stderr,
             )
             return
     else:
@@ -71,9 +74,10 @@ def formulate_run_args(image_type, image_name, config, template_name) -> list:
             cprint(
                 "No current virtual environment detected, please specify a virtual environment name with --image-name",
                 color="red",
+                file=sys.stderr,
             )
             return
-        print(f"Using virtual environment: {env_name}")
+        cprint(f"Using virtual environment: {env_name}", file=sys.stderr)
 
     script = importlib.resources.files("llama_stack") / "distribution/start_stack.sh"
     run_args = [

@@ -47,9 +47,45 @@ async def test_sse_generator_client_disconnected():
     sse_gen = sse_generator(async_event_gen())
     assert sse_gen is not None
 
-    # Start reading the events, ensuring this doesn't raise an exception
     seen_events = []
     async for event in sse_gen:
         seen_events.append(event)
+
+    # We should see 1 event before the client disconnected
     assert len(seen_events) == 1
     assert seen_events[0] == create_sse_event("Test event 1")
+
+
+@pytest.mark.asyncio
+async def test_sse_generator_client_disconnected_before_response_starts():
+    # Disconnect before the response starts
+    async def async_event_gen():
+        raise asyncio.CancelledError()
+
+    sse_gen = sse_generator(async_event_gen())
+    assert sse_gen is not None
+
+    seen_events = []
+    async for event in sse_gen:
+        seen_events.append(event)
+
+    # No events should be seen since the client disconnected immediately
+    assert len(seen_events) == 0
+
+
+@pytest.mark.asyncio
+async def test_sse_generator_error_before_response_starts():
+    # Raise an error before the response starts
+    async def async_event_gen():
+        raise Exception("Test error")
+
+    sse_gen = sse_generator(async_event_gen())
+    assert sse_gen is not None
+
+    seen_events = []
+    async for event in sse_gen:
+        seen_events.append(event)
+
+    # We should have 1 error event
+    assert len(seen_events) == 1
+    assert 'data: {"error":' in seen_events[0]

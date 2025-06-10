@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.1"
+version = "0.2.10"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -21,41 +21,54 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-    "blobfile",
+    "aiohttp",
+    "fastapi>=0.115.0,<1.0",
     "fire",
     "httpx",
     "huggingface-hub",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.2",
+    "llama-stack-client>=0.2.10",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
+    "python-jose",
     "pydantic>=2",
     "requests",
     "rich",
     "setuptools",
+    "starlette",
     "termcolor",
     "tiktoken",
     "pillow",
+    "h11>=0.16.0",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
+ui = [
+    "streamlit",
+    "pandas",
+    "llama-stack-client>=0.2.10",
+    "streamlit-option-menu",
+]
+
+[dependency-groups]
 dev = [
     "pytest",
+    "pytest-timeout",
     "pytest-asyncio",
     "pytest-cov",
     "pytest-html",
     "pytest-json-report",
-    "nbval",            # For notebook testing
+    "nbval",              # For notebook testing
     "black",
     "ruff",
     "types-requests",
     "types-setuptools",
     "pre-commit",
     "uvicorn",
-    "fastapi",
-    "ruamel.yaml",      # needed for openapi generator
+    "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
 unit = [
@@ -64,13 +77,18 @@ unit = [
     "aiosqlite",
     "aiohttp",
     "pypdf",
+    "mcp",
     "chardet",
     "qdrant-client",
-    "opentelemetry-exporter-otlp-proto-http"
+    "opentelemetry-exporter-otlp-proto-http",
+    "sqlalchemy",
+    "sqlalchemy[asyncio]>=2.0.41",
+    "blobfile",
+    "faiss-cpu"
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
-# separately. If you are using "uv" to execute your tests, you can use the "--with" flag to specify extra
+# separately. If you are using "uv" to execute your tests, you can use the "--group" flag to specify extra
 # dependencies.
 test = [
     "openai",
@@ -85,10 +103,14 @@ test = [
     "mcp",
     "datasets",
     "autoevals",
+    "transformers",
+    "sqlalchemy",
+    "sqlalchemy[asyncio]>=2.0.41",
 ]
 docs = [
     "sphinx-autobuild",
     "myst-parser",
+    "sphinx",
     "sphinx-rtd-theme",
     "sphinx_rtd_dark_mode",
     "sphinx-copybutton",
@@ -98,14 +120,10 @@ docs = [
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
     "tomli",
+    "linkify",
+    "sphinxcontrib.openapi",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
-ui = [
-    "streamlit",
-    "pandas",
-    "llama-stack-client>=0.2.1",
-    "streamlit-option-menu",
-]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"
@@ -114,9 +132,9 @@ Homepage = "https://github.com/meta-llama/llama-stack"
 llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
-[tool.setuptools]
-packages = { find = {} }
-license-files = []
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["llama_stack", "llama_stack.*"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
@@ -142,15 +160,26 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "B",   # flake8-bugbear
-    "B9",  # flake8-bugbear subset
-    "C",   # comprehensions
-    "E",   # pycodestyle
-    "F",   # Pyflakes
-    "N",   # Naming
-    "W",   # Warnings
-    "DTZ", # datetime rules
-    "I",   # isort (imports order)
+    "UP",      # pyupgrade
+    "B",       # flake8-bugbear
+    "B9",      # flake8-bugbear subset
+    "C",       # comprehensions
+    "E",       # pycodestyle
+    "F",       # Pyflakes
+    "N",       # Naming
+    "W",       # Warnings
+    "DTZ",     # datetime rules
+    "I",       # isort (imports order)
+    "RUF001",  # Checks for ambiguous Unicode characters in strings
+    "RUF002",  # Checks for ambiguous Unicode characters in docstrings
+    "RUF003",  # Checks for ambiguous Unicode characters in comments
+    "PLC2401", # Checks for the use of non-ASCII characters in variable names
+    "PLC2403", # Checks for the use of non-ASCII characters in import statements
+    "PLE2510", # Checks for strings that contain the control character BS.
+    "PLE2512", # Checks for strings that contain the raw control character SUB.
+    "PLE2513", # Checks for strings that contain the raw control character ESC.
+    "PLE2514", # Checks for strings that contain the raw control character NUL (0 byte).
+    "PLE2515", # Checks for strings that contain the zero width space character.
 ]
 ignore = [
     # The following ignores are desired by the project maintainers.
@@ -163,10 +192,18 @@ ignore = [
     # These are the additional ones we started ignoring after moving to ruff. We should look into each one of them later.
     "C901", # Complexity of the function is too high
 ]
+unfixable = [
+    "PLE2515",
+] # Do not fix this automatically since ruff will replace the zero-width space with \u200b - let's do it manually
 
 # Ignore the following errors for the following files
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["DTZ"] # Ignore datetime rules for tests
+"llama_stack/providers/inline/scoring/basic/utils/ifeval_utils.py" = ["RUF001"]
+"llama_stack/providers/inline/scoring/basic/scoring_fn/fn_defs/regex_parser_multiple_choice_answer.py" = [
+    "RUF001",
+    "PLE2515",
+]
 
 [tool.mypy]
 mypy_path = ["llama_stack"]
@@ -181,58 +218,25 @@ follow_imports = "silent"
 # to exclude the entire directory.
 exclude = [
     # As we fix more and more of these, we should remove them from the list
-    "^llama_stack/apis/agents/agents\\.py$",
-    "^llama_stack/apis/batch_inference/batch_inference\\.py$",
-    "^llama_stack/apis/benchmarks/benchmarks\\.py$",
-    "^llama_stack/apis/common/content_types\\.py$",
     "^llama_stack/apis/common/training_types\\.py$",
-    "^llama_stack/apis/datasetio/datasetio\\.py$",
-    "^llama_stack/apis/datasets/datasets\\.py$",
-    "^llama_stack/apis/eval/eval\\.py$",
-    "^llama_stack/apis/files/files\\.py$",
-    "^llama_stack/apis/inference/inference\\.py$",
-    "^llama_stack/apis/inspect/inspect\\.py$",
-    "^llama_stack/apis/models/models\\.py$",
-    "^llama_stack/apis/post_training/post_training\\.py$",
-    "^llama_stack/apis/providers/providers\\.py$",
-    "^llama_stack/apis/resource\\.py$",
-    "^llama_stack/apis/safety/safety\\.py$",
-    "^llama_stack/apis/scoring/scoring\\.py$",
-    "^llama_stack/apis/scoring_functions/scoring_functions\\.py$",
-    "^llama_stack/apis/shields/shields\\.py$",
-    "^llama_stack/apis/synthetic_data_generation/synthetic_data_generation\\.py$",
-    "^llama_stack/apis/telemetry/telemetry\\.py$",
-    "^llama_stack/apis/tools/rag_tool\\.py$",
-    "^llama_stack/apis/tools/tools\\.py$",
-    "^llama_stack/apis/vector_dbs/vector_dbs\\.py$",
-    "^llama_stack/apis/vector_io/vector_io\\.py$",
     "^llama_stack/cli/download\\.py$",
-    "^llama_stack/cli/llama\\.py$",
     "^llama_stack/cli/stack/_build\\.py$",
-    "^llama_stack/cli/stack/list_providers\\.py$",
     "^llama_stack/distribution/build\\.py$",
     "^llama_stack/distribution/client\\.py$",
-    "^llama_stack/distribution/configure\\.py$",
-    "^llama_stack/distribution/library_client\\.py$",
     "^llama_stack/distribution/request_headers\\.py$",
     "^llama_stack/distribution/routers/",
+    "^llama_stack/distribution/routing_tables/",
     "^llama_stack/distribution/server/endpoints\\.py$",
     "^llama_stack/distribution/server/server\\.py$",
-    "^llama_stack/distribution/server/websocket_server\\.py$",
     "^llama_stack/distribution/stack\\.py$",
     "^llama_stack/distribution/store/registry\\.py$",
-    "^llama_stack/distribution/ui/page/playground/chat\\.py$",
     "^llama_stack/distribution/utils/exec\\.py$",
     "^llama_stack/distribution/utils/prompt_for_config\\.py$",
-    "^llama_stack/models/llama/datatypes\\.py$",
     "^llama_stack/models/llama/llama3/chat_format\\.py$",
     "^llama_stack/models/llama/llama3/interface\\.py$",
-    "^llama_stack/models/llama/llama3/prompt_templates/system_prompts\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
     "^llama_stack/models/llama/llama3_3/prompts\\.py$",
-    "^llama_stack/models/llama/llama4/",
-    "^llama_stack/models/llama/sku_list\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/",
     "^llama_stack/providers/inline/agents/meta_reference/agent_instance\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/agents\\.py$",
@@ -259,6 +263,7 @@ exclude = [
     "^llama_stack/providers/inline/scoring/llm_as_judge/",
     "^llama_stack/providers/remote/agents/sample/",
     "^llama_stack/providers/remote/datasetio/huggingface/",
+    "^llama_stack/providers/remote/datasetio/nvidia/",
     "^llama_stack/providers/remote/inference/anthropic/",
     "^llama_stack/providers/remote/inference/bedrock/",
     "^llama_stack/providers/remote/inference/cerebras/",
@@ -274,8 +279,10 @@ exclude = [
     "^llama_stack/providers/remote/inference/sample/",
     "^llama_stack/providers/remote/inference/tgi/",
     "^llama_stack/providers/remote/inference/together/",
+    "^llama_stack/providers/remote/inference/watsonx/",
     "^llama_stack/providers/remote/safety/bedrock/",
     "^llama_stack/providers/remote/safety/nvidia/",
+    "^llama_stack/providers/remote/safety/sambanova/",
     "^llama_stack/providers/remote/safety/sample/",
     "^llama_stack/providers/remote/tool_runtime/bing_search/",
     "^llama_stack/providers/remote/tool_runtime/brave_search/",
@@ -309,14 +316,13 @@ exclude = [
     "^llama_stack/providers/utils/telemetry/dataset_mixin\\.py$",
     "^llama_stack/providers/utils/telemetry/trace_protocol\\.py$",
     "^llama_stack/providers/utils/telemetry/tracing\\.py$",
-    "^llama_stack/scripts/",
     "^llama_stack/strong_typing/auxiliary\\.py$",
     "^llama_stack/strong_typing/deserializer\\.py$",
     "^llama_stack/strong_typing/inspection\\.py$",
     "^llama_stack/strong_typing/schema\\.py$",
     "^llama_stack/strong_typing/serializer\\.py$",
-    "^llama_stack/templates/dev/dev\\.py$",
     "^llama_stack/templates/groq/groq\\.py$",
+    "^llama_stack/templates/llama_api/llama_api\\.py$",
     "^llama_stack/templates/sambanova/sambanova\\.py$",
     "^llama_stack/templates/template\\.py$",
 ]
@@ -330,3 +336,6 @@ ignore_missing_imports = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod", "pydantic.field_validator"]

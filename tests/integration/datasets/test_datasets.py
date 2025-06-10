@@ -31,7 +31,6 @@ def data_url_from_file(file_path: str) -> str:
     return data_url
 
 
-@pytest.mark.skip(reason="flaky. Couldn't find 'llamastack/simpleqa' on the Hugging Face Hub")
 @pytest.mark.parametrize(
     "purpose, source, provider_id, limit",
     [

@@ -6,9 +6,10 @@
 
 import inspect
 import json
+import sys
 from collections.abc import AsyncIterator
 from enum import Enum
-from typing import Any, Type, Union, get_args, get_origin
+from typing import Any, Union, get_args, get_origin
 
 import httpx
 from pydantic import BaseModel, parse_obj_as
@@ -27,7 +28,7 @@ async def get_client_impl(protocol, config: RemoteProviderConfig, _deps: Any):
     return impl
 
 
-def create_api_client_class(protocol) -> Type:
+def create_api_client_class(protocol) -> type:
     if protocol in _CLIENT_CLASSES:
         return _CLIENT_CLASSES[protocol]
 
@@ -96,13 +97,13 @@ def create_api_client_class(protocol) -> Type:
                             try:
                                 data = json.loads(data)
                                 if "error" in data:
-                                    cprint(data, "red")
+                                    cprint(data, color="red", file=sys.stderr)
                                     continue
 
                                 yield parse_obj_as(return_type, data)
                             except Exception as e:
-                                print(f"Error with parsing or validation: {e}")
-                                print(data)
+                                cprint(f"Error with parsing or validation: {e}", color="red", file=sys.stderr)
+                                cprint(data, color="red", file=sys.stderr)
 
         def httpx_request_params(self, method_name: str, *args, **kwargs) -> dict:
             webmethod, sig = self.routes[method_name]

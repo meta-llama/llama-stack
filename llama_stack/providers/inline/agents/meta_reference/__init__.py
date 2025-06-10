@@ -4,14 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict
+from typing import Any
 
-from llama_stack.distribution.datatypes import Api
+from llama_stack.distribution.datatypes import AccessRule, Api
 
 from .config import MetaReferenceAgentsImplConfig
 
 
-async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: Dict[Api, Any]):
+async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: dict[Api, Any], policy: list[AccessRule]):
     from .agents import MetaReferenceAgentsImpl
 
     impl = MetaReferenceAgentsImpl(
@@ -21,6 +21,7 @@ async def get_provider_impl(config: MetaReferenceAgentsImplConfig, deps: Dict[Ap
         deps[Api.safety],
         deps[Api.tool_runtime],
         deps[Api.tool_groups],
+        policy,
     )
     await impl.initialize()
     return impl

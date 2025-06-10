@@ -4,18 +4,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from pydantic import BaseModel
-
-from .config import ModelContextProtocolConfig
+from .config import MCPProviderConfig
 
 
-class ModelContextProtocolToolProviderDataValidator(BaseModel):
-    api_key: str
-
-
-async def get_adapter_impl(config: ModelContextProtocolConfig, _deps):
+async def get_adapter_impl(config: MCPProviderConfig, _deps):
     from .model_context_protocol import ModelContextProtocolToolRuntimeImpl
 
-    impl = ModelContextProtocolToolRuntimeImpl(config)
+    impl = ModelContextProtocolToolRuntimeImpl(config, _deps)
     await impl.initialize()
     return impl

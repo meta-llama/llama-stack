@@ -21,7 +21,7 @@ The `llamastack/distribution-remote-vllm` distribution consists of the following
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime`, `remote::model-context-protocol`, `remote::wolfram-alpha` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol`, `remote::wolfram-alpha` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
@@ -233,7 +233,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./llama_stack/templates/remote-vllm/run.yaml:/root/my-run.yaml \
   llamastack/distribution-remote-vllm \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1
@@ -255,7 +255,7 @@ docker run \
   -v ~/.llama:/root/.llama \
   -v ./llama_stack/templates/remote-vllm/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-remote-vllm \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env VLLM_URL=http://host.docker.internal:$INFERENCE_PORT/v1 \

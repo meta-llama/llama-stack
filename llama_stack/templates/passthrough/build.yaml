@@ -28,7 +28,9 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - remote::wolfram-alpha
-    - inline::code-interpreter
     - inline::rag-runtime
     - remote::model-context-protocol
 image_type: conda
+additional_pip_packages:
+- aiosqlite
+- sqlalchemy[asyncio]

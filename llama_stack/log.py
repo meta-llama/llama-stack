@@ -6,8 +6,8 @@
 
 import logging
 import os
+import sys
 from logging.config import dictConfig
-from typing import Dict, Optional
 
 from rich.console import Console
 from rich.errors import MarkupError
@@ -33,7 +33,7 @@ CATEGORIES = [
 ]
 
 # Initialize category levels with default level
-_category_levels: Dict[str, int] = {category: DEFAULT_LOG_LEVEL for category in CATEGORIES}
+_category_levels: dict[str, int] = {category: DEFAULT_LOG_LEVEL for category in CATEGORIES}
 
 
 def config_to_category_levels(category: str, level: str):
@@ -49,7 +49,7 @@ def config_to_category_levels(category: str, level: str):
         Dict[str, int]: A dictionary mapping categories to their log levels.
     """
 
-    category_levels: Dict[str, int] = {}
+    category_levels: dict[str, int] = {}
     level_value = logging._nameToLevel.get(str(level).upper())
     if level_value is None:
         logging.warning(f"Unknown log level '{level}' for category '{category}'. Falling back to default 'INFO'.")
@@ -69,7 +69,7 @@ def config_to_category_levels(category: str, level: str):
     return category_levels
 
 
-def parse_yaml_config(yaml_config: LoggingConfig) -> Dict[str, int]:
+def parse_yaml_config(yaml_config: LoggingConfig) -> dict[str, int]:
     """
     Helper function to parse a yaml logging configuration found in the run.yaml
 
@@ -86,7 +86,7 @@ def parse_yaml_config(yaml_config: LoggingConfig) -> Dict[str, int]:
     return category_levels
 
 
-def parse_environment_config(env_config: str) -> Dict[str, int]:
+def parse_environment_config(env_config: str) -> dict[str, int]:
     """
     Parse the LLAMA_STACK_LOGGING environment variable and return a dictionary of category log levels.
 
@@ -131,7 +131,7 @@ class CustomRichHandler(RichHandler):
                 self.markup = original_markup
 
 
-def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None:
+def setup_logging(category_levels: dict[str, int], log_file: str | None) -> None:
     """
     Configure logging based on the provided category log levels and an optional log file.
 
@@ -211,7 +211,7 @@ def setup_logging(category_levels: Dict[str, int], log_file: str | None) -> None
 
 
 def get_logger(
-    name: str, category: str = "uncategorized", config: Optional[LoggingConfig] | None = None
+    name: str, category: str = "uncategorized", config: LoggingConfig | None | None = None
 ) -> logging.LoggerAdapter:
     """
     Returns a logger with the specified name and category.
@@ -235,7 +235,7 @@ def get_logger(
 
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
-    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", "yellow")
+    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", color="yellow", file=sys.stderr)
     _category_levels.update(parse_environment_config(env_config))
 
 log_file = os.environ.get("LLAMA_STACK_LOG_FILE")

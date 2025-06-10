@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import importlib
 import inspect
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any
 
 from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
@@ -13,7 +13,7 @@ from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.files import Files
-from llama_stack.apis.inference import Inference
+from llama_stack.apis.inference import Inference, InferenceProvider
 from llama_stack.apis.inspect import Inspect
 from llama_stack.apis.models import Models
 from llama_stack.apis.post_training import PostTraining
@@ -28,6 +28,7 @@ from llama_stack.apis.vector_dbs import VectorDBs
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.client import get_client_impl
 from llama_stack.distribution.datatypes import (
+    AccessRule,
     AutoRoutedProviderSpec,
     Provider,
     RoutingTableProviderSpec,
@@ -47,7 +48,7 @@ from llama_stack.providers.datatypes import (
     RemoteProviderSpec,
     ScoringFunctionsProtocolPrivate,
     ShieldsProtocolPrivate,
-    ToolsProtocolPrivate,
+    ToolGroupsProtocolPrivate,
     VectorDBsProtocolPrivate,
 )
 
@@ -58,7 +59,7 @@ class InvalidProviderError(Exception):
     pass
 
 
-def api_protocol_map() -> Dict[Api, Any]:
+def api_protocol_map() -> dict[Api, Any]:
     return {
         Api.providers: ProvidersAPI,
         Api.agents: Agents,
@@ -83,10 +84,17 @@ def api_protocol_map() -> Dict[Api, Any]:
     }
 
 
-def additional_protocols_map() -> Dict[Api, Any]:
+def api_protocol_map_for_compliance_check() -> dict[Api, Any]:
+    return {
+        **api_protocol_map(),
+        Api.inference: InferenceProvider,
+    }
+
+
+def additional_protocols_map() -> dict[Api, Any]:
     return {
         Api.inference: (ModelsProtocolPrivate, Models, Api.models),
-        Api.tool_groups: (ToolsProtocolPrivate, ToolGroups, Api.tool_groups),
+        Api.tool_groups: (ToolGroupsProtocolPrivate, ToolGroups, Api.tool_groups),
         Api.vector_io: (VectorDBsProtocolPrivate, VectorDBs, Api.vector_dbs),
         Api.safety: (ShieldsProtocolPrivate, Shields, Api.shields),
         Api.datasetio: (DatasetsProtocolPrivate, Datasets, Api.datasets),
@@ -104,14 +112,15 @@ class ProviderWithSpec(Provider):
     spec: ProviderSpec
 
 
-ProviderRegistry = Dict[Api, Dict[str, ProviderSpec]]
+ProviderRegistry = dict[Api, dict[str, ProviderSpec]]
 
 
 async def resolve_impls(
     run_config: StackRunConfig,
     provider_registry: ProviderRegistry,
     dist_registry: DistributionRegistry,
-) -> Dict[Api, Any]:
+    policy: list[AccessRule],
+) -> dict[Api, Any]:
     """
     Resolves provider implementations by:
     1. Validating and organizing providers.
@@ -133,10 +142,10 @@ async def resolve_impls(
 
     sorted_providers = sort_providers_by_deps(providers_with_specs, run_config)
 
-    return await instantiate_providers(sorted_providers, router_apis, dist_registry)
+    return await instantiate_providers(sorted_providers, router_apis, dist_registry, run_config, policy)
 
 
-def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, Dict[str, ProviderWithSpec]]:
+def specs_for_autorouted_apis(apis_to_serve: list[str] | set[str]) -> dict[str, dict[str, ProviderWithSpec]]:
     """Generates specifications for automatically routed APIs."""
     specs = {}
     for info in builtin_automatically_routed_apis():
@@ -178,10 +187,10 @@ def specs_for_autorouted_apis(apis_to_serve: List[str] | Set[str]) -> Dict[str, 
 
 
 def validate_and_prepare_providers(
-    run_config: StackRunConfig, provider_registry: ProviderRegistry, routing_table_apis: Set[Api], router_apis: Set[Api]
-) -> Dict[str, Dict[str, ProviderWithSpec]]:
+    run_config: StackRunConfig, provider_registry: ProviderRegistry, routing_table_apis: set[Api], router_apis: set[Api]
+) -> dict[str, dict[str, ProviderWithSpec]]:
     """Validates providers, handles deprecations, and organizes them into a spec dictionary."""
-    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]] = {}
+    providers_with_specs: dict[str, dict[str, ProviderWithSpec]] = {}
 
     for api_str, providers in run_config.providers.items():
         api = Api(api_str)
@@ -222,10 +231,10 @@ def validate_provider(provider: Provider, api: Api, provider_registry: ProviderR
 
 
 def sort_providers_by_deps(
-    providers_with_specs: Dict[str, Dict[str, ProviderWithSpec]], run_config: StackRunConfig
-) -> List[Tuple[str, ProviderWithSpec]]:
+    providers_with_specs: dict[str, dict[str, ProviderWithSpec]], run_config: StackRunConfig
+) -> list[tuple[str, ProviderWithSpec]]:
     """Sorts providers based on their dependencies."""
-    sorted_providers: List[Tuple[str, ProviderWithSpec]] = topological_sort(
+    sorted_providers: list[tuple[str, ProviderWithSpec]] = topological_sort(
         {k: list(v.values()) for k, v in providers_with_specs.items()}
     )
 
@@ -236,11 +245,15 @@ def sort_providers_by_deps(
 
 
 async def instantiate_providers(
-    sorted_providers: List[Tuple[str, ProviderWithSpec]], router_apis: Set[Api], dist_registry: DistributionRegistry
-) -> Dict:
+    sorted_providers: list[tuple[str, ProviderWithSpec]],
+    router_apis: set[Api],
+    dist_registry: DistributionRegistry,
+    run_config: StackRunConfig,
+    policy: list[AccessRule],
+) -> dict:
     """Instantiates providers asynchronously while managing dependencies."""
-    impls: Dict[Api, Any] = {}
-    inner_impls_by_provider_id: Dict[str, Dict[str, Any]] = {f"inner-{x.value}": {} for x in router_apis}
+    impls: dict[Api, Any] = {}
+    inner_impls_by_provider_id: dict[str, dict[str, Any]] = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
         for a in provider.spec.optional_api_dependencies:
@@ -251,7 +264,7 @@ async def instantiate_providers(
         if isinstance(provider.spec, RoutingTableProviderSpec):
             inner_impls = inner_impls_by_provider_id[f"inner-{provider.spec.router_api.value}"]
 
-        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry)
+        impl = await instantiate_provider(provider, deps, inner_impls, dist_registry, run_config, policy)
 
         if api_str.startswith("inner-"):
             inner_impls_by_provider_id[api_str][provider.provider_id] = impl
@@ -263,9 +276,9 @@ async def instantiate_providers(
 
 
 def topological_sort(
-    providers_with_specs: Dict[str, List[ProviderWithSpec]],
-) -> List[Tuple[str, ProviderWithSpec]]:
-    def dfs(kv, visited: Set[str], stack: List[str]):
+    providers_with_specs: dict[str, list[ProviderWithSpec]],
+) -> list[tuple[str, ProviderWithSpec]]:
+    def dfs(kv, visited: set[str], stack: list[str]):
         api_str, providers = kv
         visited.add(api_str)
 
@@ -280,8 +293,8 @@ def topological_sort(
 
         stack.append(api_str)
 
-    visited: Set[str] = set()
-    stack: List[str] = []
+    visited: set[str] = set()
+    stack: list[str] = []
 
     for api_str, providers in providers_with_specs.items():
         if api_str not in visited:
@@ -298,13 +311,12 @@ def topological_sort(
 # returns a class implementing the protocol corresponding to the Api
 async def instantiate_provider(
     provider: ProviderWithSpec,
-    deps: Dict[Api, Any],
-    inner_impls: Dict[str, Any],
+    deps: dict[Api, Any],
+    inner_impls: dict[str, Any],
     dist_registry: DistributionRegistry,
+    run_config: StackRunConfig,
+    policy: list[AccessRule],
 ):
-    protocols = api_protocol_map()
-    additional_protocols = additional_protocols_map()
-
     provider_spec = provider.spec
     if not hasattr(provider_spec, "module"):
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
@@ -323,18 +335,20 @@ async def instantiate_provider(
         method = "get_auto_router_impl"
 
         config = None
-        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps]
+        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps, run_config]
     elif isinstance(provider_spec, RoutingTableProviderSpec):
         method = "get_routing_table_impl"
 
         config = None
-        args = [provider_spec.api, inner_impls, deps, dist_registry]
+        args = [provider_spec.api, inner_impls, deps, dist_registry, policy]
     else:
         method = "get_provider_impl"
 
         config_type = instantiate_class_type(provider_spec.config_class)
         config = config_type(**provider.config)
         args = [config, deps]
+        if "policy" in inspect.signature(getattr(module, method)).parameters:
+            args.append(policy)
 
     fn = getattr(module, method)
     impl = await fn(*args)
@@ -342,6 +356,8 @@ async def instantiate_provider(
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
 
+    protocols = api_protocol_map_for_compliance_check()
+    additional_protocols = additional_protocols_map()
     # TODO: check compliance for special tool groups
     # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol
     check_protocol_compliance(impl, protocols[provider_spec.api])
@@ -391,8 +407,8 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
 
 async def resolve_remote_stack_impls(
     config: RemoteProviderConfig,
-    apis: List[str],
-) -> Dict[Api, Any]:
+    apis: list[str],
+) -> dict[Api, Any]:
     protocols = api_protocol_map()
     additional_protocols = additional_protocols_map()
 

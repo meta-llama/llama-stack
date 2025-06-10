@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,7 +15,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonModelFields(BaseModel):
-    metadata: Dict[str, Any] = Field(
+    metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Any additional metadata for this model",
     )
@@ -29,14 +29,14 @@ class ModelType(str, Enum):
 
 @json_schema_type
 class Model(CommonModelFields, Resource):
-    type: Literal[ResourceType.model.value] = ResourceType.model.value
+    type: Literal[ResourceType.model] = ResourceType.model
 
     @property
     def model_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_model_id(self) -> str:
+    def provider_model_id(self) -> str | None:
         return self.provider_resource_id
 
     model_config = ConfigDict(protected_namespaces=())
@@ -46,14 +46,14 @@ class Model(CommonModelFields, Resource):
 
 class ModelInput(CommonModelFields):
     model_id: str
-    provider_id: Optional[str] = None
-    provider_model_id: Optional[str] = None
-    model_type: Optional[ModelType] = ModelType.llm
+    provider_id: str | None = None
+    provider_model_id: str | None = None
+    model_type: ModelType | None = ModelType.llm
     model_config = ConfigDict(protected_namespaces=())
 
 
 class ListModelsResponse(BaseModel):
-    data: List[Model]
+    data: list[Model]
 
 
 @json_schema_type
@@ -73,36 +73,67 @@ class OpenAIModel(BaseModel):
 
 
 class OpenAIListModelsResponse(BaseModel):
-    data: List[OpenAIModel]
+    data: list[OpenAIModel]
 
 
 @runtime_checkable
 @trace_protocol
 class Models(Protocol):
     @webmethod(route="/models", method="GET")
-    async def list_models(self) -> ListModelsResponse: ...
+    async def list_models(self) -> ListModelsResponse:
+        """List all models.
+
+        :returns: A ListModelsResponse.
+        """
+        ...
 
     @webmethod(route="/openai/v1/models", method="GET")
-    async def openai_list_models(self) -> OpenAIListModelsResponse: ...
+    async def openai_list_models(self) -> OpenAIListModelsResponse:
+        """List models using the OpenAI API.
+
+        :returns: A OpenAIListModelsResponse.
+        """
+        ...
 
     @webmethod(route="/models/{model_id:path}", method="GET")
     async def get_model(
         self,
         model_id: str,
-    ) -> Model: ...
+    ) -> Model:
+        """Get a model by its identifier.
+
+        :param model_id: The identifier of the model to get.
+        :returns: A Model.
+        """
+        ...
 
     @webmethod(route="/models", method="POST")
     async def register_model(
         self,
         model_id: str,
-        provider_model_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        model_type: Optional[ModelType] = None,
-    ) -> Model: ...
+        provider_model_id: str | None = None,
+        provider_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        model_type: ModelType | None = None,
+    ) -> Model:
+        """Register a model.
+
+        :param model_id: The identifier of the model to register.
+        :param provider_model_id: The identifier of the model in the provider.
+        :param provider_id: The identifier of the provider.
+        :param metadata: Any additional metadata for this model.
+        :param model_type: The type of model to register.
+        :returns: A Model.
+        """
+        ...
 
     @webmethod(route="/models/{model_id:path}", method="DELETE")
     async def unregister_model(
         self,
         model_id: str,
-    ) -> None: ...
+    ) -> None:
+        """Unregister a model.
+
+        :param model_id: The identifier of the model to unregister.
+        """
+        ...

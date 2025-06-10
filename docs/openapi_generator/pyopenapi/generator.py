@@ -6,6 +6,7 @@
 
 import hashlib
 import ipaddress
+import types
 import typing
 from dataclasses import make_dataclass
 from typing import Any, Dict, Set, Union
@@ -29,6 +30,9 @@ from llama_stack.strong_typing.schema import (
     Schema,
     SchemaOptions,
 )
+from typing import get_origin, get_args
+from typing import Annotated
+from fastapi import UploadFile
 from llama_stack.strong_typing.serialization import json_dump_string, object_to_json
 
 from .operations import (
@@ -179,7 +183,7 @@ class ContentBuilder:
         "Creates the content subtree for a request or response."
 
         def is_iterator_type(t):
-            return "StreamChunk" in str(t)
+            return "StreamChunk" in str(t) or "OpenAIResponseObjectStream" in str(t)
 
         def get_media_type(t):
             if is_generic_list(t):
@@ -189,7 +193,7 @@ class ContentBuilder:
             else:
                 return "application/json"
 
-        if typing.get_origin(payload_type) is typing.Union:
+        if typing.get_origin(payload_type) in (typing.Union, types.UnionType):
             media_types = []
             item_types = []
             for x in typing.get_args(payload_type):
@@ -617,6 +621,45 @@ class Generator:
                 },
                 required=True,
             )
+        # data passed in request body as multipart/form-data
+        elif op.multipart_params:
+            builder = ContentBuilder(self.schema_builder)
+            
+            # Create schema properties for multipart form fields
+            properties = {}
+            required_fields = []
+            
+            for name, param_type in op.multipart_params:
+                if get_origin(param_type) is Annotated:
+                    base_type = get_args(param_type)[0]
+                else:
+                    base_type = param_type
+                if base_type is UploadFile:
+                    # File upload
+                    properties[name] = {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                else:
+                    # Form field
+                    properties[name] = self.schema_builder.classdef_to_ref(base_type)
+                
+                required_fields.append(name)
+            
+            multipart_schema = {
+                "type": "object",
+                "properties": properties,
+                "required": required_fields
+            }
+            
+            requestBody = RequestBody(
+                content={
+                    "multipart/form-data": {
+                        "schema": multipart_schema
+                    }
+                },
+                required=True,
+            )
         # data passed in payload as JSON and mapped to request parameters
         elif op.request_params:
             builder = ContentBuilder(self.schema_builder)
@@ -758,7 +801,7 @@ class Generator:
         )
 
         return Operation(
-            tags=[op.defining_class.__name__],
+            tags=[getattr(op.defining_class, "API_NAMESPACE", op.defining_class.__name__)],
             summary=None,
             # summary=doc_string.short_description,
             description=description,
@@ -804,6 +847,8 @@ class Generator:
         operation_tags: List[Tag] = []
         for cls in endpoint_classes:
             doc_string = parse_type(cls)
+            if hasattr(cls, "API_NAMESPACE") and cls.API_NAMESPACE != cls.__name__:
+                continue
             operation_tags.append(
                 Tag(
                     name=cls.__name__,

@@ -13,6 +13,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplConfig
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -36,11 +37,11 @@ def get_distribution_template() -> DistributionTemplate:
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "files": ["inline::localfs"],
         "tool_runtime": [
             "remote::brave-search",
             "remote::tavily-search",
             "remote::wolfram-alpha",
-            "inline::code-interpreter",
             "inline::rag-runtime",
             "remote::model-context-protocol",
         ],
@@ -62,6 +63,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="faiss",
         provider_type="inline::faiss",
         config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+    )
+    files_provider = Provider(
+        provider_id="meta-reference-files",
+        provider_type="inline::localfs",
+        config=LocalfsFilesImplConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
 
     available_models = {
@@ -90,10 +96,6 @@ def get_distribution_template() -> DistributionTemplate:
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
         ),
-        ToolGroupInput(
-            toolgroup_id="builtin::code_interpreter",
-            provider_id="code-interpreter",
-        ),
     ]
 
     return DistributionTemplate(
@@ -109,6 +111,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": [inference_provider, embedding_provider],
                     "vector_io": [vector_io_provider],
+                    "files": [files_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_shields=[ShieldInput(shield_id="meta-llama/Llama-Guard-3-8B")],
@@ -121,6 +124,7 @@ def get_distribution_template() -> DistributionTemplate:
                         embedding_provider,
                     ],
                     "vector_io": [vector_io_provider],
+                    "files": [files_provider],
                     "safety": [
                         Provider(
                             provider_id="llama-guard",

@@ -5,7 +5,8 @@
 # the root directory of this source tree.
 
 import math
-from typing import Generator, List, Optional, Tuple
+from collections.abc import Generator
+from typing import Optional
 
 import torch
 from lmformatenforcer import JsonSchemaParser, TokenEnforcer, TokenEnforcerTokenizerData
@@ -39,7 +40,7 @@ Tokenizer = Llama4Tokenizer | Llama3Tokenizer
 class LogitsProcessor:
     def __init__(self, token_enforcer: TokenEnforcer):
         self.token_enforcer = token_enforcer
-        self.mask: Optional[torch.Tensor] = None
+        self.mask: torch.Tensor | None = None
 
     def __call__(self, tokens: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         token_sequence = tokens[0, :].tolist()
@@ -58,7 +59,7 @@ class LogitsProcessor:
 def get_logits_processor(
     tokenizer: Tokenizer,
     vocab_size: int,
-    response_format: Optional[ResponseFormat],
+    response_format: ResponseFormat | None,
 ) -> Optional["LogitsProcessor"]:
     if response_format is None:
         return None
@@ -76,7 +77,7 @@ def get_logits_processor(
     return LogitsProcessor(token_enforcer)
 
 
-def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> List[Tuple[int, str, bool]]:
+def _build_regular_tokens_list(tokenizer: Tokenizer, vocab_size: int) -> list[tuple[int, str, bool]]:
     token_0 = tokenizer.encode("0", bos=False, eos=False)[-1]
     regular_tokens = []
 
@@ -158,7 +159,7 @@ class LlamaGenerator:
 
     def completion(
         self,
-        request_batch: List[CompletionRequestWithRawContent],
+        request_batch: list[CompletionRequestWithRawContent],
     ) -> Generator:
         first_request = request_batch[0]
         sampling_params = first_request.sampling_params or SamplingParams()
@@ -167,7 +168,7 @@ class LlamaGenerator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        for result in self.inner_generator.generate(
+        yield from self.inner_generator.generate(
             llm_inputs=[self.formatter.encode_content(request.content) for request in request_batch],
             max_gen_len=max_gen_len,
             temperature=temperature,
@@ -179,12 +180,11 @@ class LlamaGenerator:
                 self.args.vocab_size,
                 first_request.response_format,
             ),
-        ):
-            yield result
+        )
 
     def chat_completion(
         self,
-        request_batch: List[ChatCompletionRequestWithRawContent],
+        request_batch: list[ChatCompletionRequestWithRawContent],
     ) -> Generator:
         first_request = request_batch[0]
         sampling_params = first_request.sampling_params or SamplingParams()
@@ -193,7 +193,7 @@ class LlamaGenerator:
             max_gen_len = self.args.max_seq_len - 1
 
         temperature, top_p = _infer_sampling_params(sampling_params)
-        for result in self.inner_generator.generate(
+        yield from self.inner_generator.generate(
             llm_inputs=[
                 self.formatter.encode_dialog_prompt(request.messages, _infer_tool_prompt_format(request))
                 for request in request_batch
@@ -208,5 +208,4 @@ class LlamaGenerator:
                 self.args.vocab_size,
                 first_request.response_format,
             ),
-        ):
-            yield result
+        )

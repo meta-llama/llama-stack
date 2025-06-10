@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import weaviate
 import weaviate.classes as wvc
@@ -33,7 +33,7 @@ class WeaviateIndex(EmbeddingIndex):
         self.client = client
         self.collection_name = collection_name
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
@@ -55,7 +55,7 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
         results = collection.query.near_vector(
@@ -80,9 +80,17 @@ class WeaviateIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
-    async def delete(self, chunk_ids: List[str]) -> None:
+    async def delete(self, chunk_ids: list[str]) -> None:
         collection = self.client.collections.get(self.collection_name)
         collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Weaviate")
 
 
 class WeaviateVectorIOAdapter(
@@ -144,7 +152,7 @@ class WeaviateVectorIOAdapter(
             self.inference_api,
         )
 
-    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> Optional[VectorDBWithIndex]:
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
@@ -167,8 +175,8 @@ class WeaviateVectorIOAdapter(
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
@@ -180,7 +188,7 @@ class WeaviateVectorIOAdapter(
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:

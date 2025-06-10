@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Literal, Optional, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -14,48 +14,68 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 class CommonShieldFields(BaseModel):
-    params: Optional[Dict[str, Any]] = None
+    params: dict[str, Any] | None = None
 
 
 @json_schema_type
 class Shield(CommonShieldFields, Resource):
     """A safety shield resource that can be used to check content"""
 
-    type: Literal[ResourceType.shield.value] = ResourceType.shield.value
+    type: Literal[ResourceType.shield] = ResourceType.shield
 
     @property
     def shield_id(self) -> str:
         return self.identifier
 
     @property
-    def provider_shield_id(self) -> str:
+    def provider_shield_id(self) -> str | None:
         return self.provider_resource_id
 
 
 class ShieldInput(CommonShieldFields):
     shield_id: str
-    provider_id: Optional[str] = None
-    provider_shield_id: Optional[str] = None
+    provider_id: str | None = None
+    provider_shield_id: str | None = None
 
 
 class ListShieldsResponse(BaseModel):
-    data: List[Shield]
+    data: list[Shield]
 
 
 @runtime_checkable
 @trace_protocol
 class Shields(Protocol):
     @webmethod(route="/shields", method="GET")
-    async def list_shields(self) -> ListShieldsResponse: ...
+    async def list_shields(self) -> ListShieldsResponse:
+        """List all shields.
+
+        :returns: A ListShieldsResponse.
+        """
+        ...
 
     @webmethod(route="/shields/{identifier:path}", method="GET")
-    async def get_shield(self, identifier: str) -> Shield: ...
+    async def get_shield(self, identifier: str) -> Shield:
+        """Get a shield by its identifier.
+
+        :param identifier: The identifier of the shield to get.
+        :returns: A Shield.
+        """
+        ...
 
     @webmethod(route="/shields", method="POST")
     async def register_shield(
         self,
         shield_id: str,
-        provider_shield_id: Optional[str] = None,
-        provider_id: Optional[str] = None,
-        params: Optional[Dict[str, Any]] = None,
-    ) -> Shield: ...
+        provider_shield_id: str | None = None,
+        provider_id: str | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> Shield:
+        """Register a shield.
+
+        :param shield_id: The identifier of the shield to register.
+        :param provider_shield_id: The identifier of the shield in the provider.
+        :param provider_id: The identifier of the provider.
+        :param params: The parameters of the shield.
+        :returns: A Shield.
+        """
+        ...

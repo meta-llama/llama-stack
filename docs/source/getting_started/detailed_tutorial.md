@@ -42,7 +42,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 Setup your virtual environment.
 
 ```bash
-uv venv --python 3.10
+uv sync --python 3.10
 source .venv/bin/activate
 ```
 ## Step 2:  Run Llama Stack
@@ -445,7 +445,6 @@ from llama_stack_client import LlamaStackClient
 from llama_stack_client import Agent, AgentEventLogger
 from llama_stack_client.types import Document
 import uuid
-from termcolor import cprint
 
 client = LlamaStackClient(base_url="http://localhost:8321")
 
@@ -463,7 +462,6 @@ urls = [
     "memory_optimizations.rst",
     "chat.rst",
     "llama3.rst",
-    "datasets.rst",
     "qat_finetune.rst",
     "lora_finetune.rst",
 ]

@@ -1,5 +1,124 @@
 # Changelog
 
+# v0.2.10.1
+Published on: 2025-06-06T20:11:02Z
+
+## Highlights
+* ChromaDB provider fix
+
+
+---
+
+# v0.2.10
+Published on: 2025-06-05T23:21:45Z
+
+## Highlights
+
+* OpenAI-compatible embeddings API
+* OpenAI-compatible Files API
+* Postgres support in starter distro
+* Enable ingestion of precomputed embeddings
+* Full multi-turn support in Responses API
+* Fine-grained access control policy
+
+
+---
+
+# v0.2.9
+Published on: 2025-05-30T20:01:56Z
+
+## Highlights
+* Added initial streaming support in Responses API
+* UI view for Responses
+* Postgres inference store support
+
+
+---
+
+# v0.2.8
+Published on: 2025-05-27T21:03:47Z
+
+# Release v0.2.8
+
+## Highlights
+
+* Server-side MCP with auth firewalls now works in the Stack - both for Agents and Responses
+* Get chat completions APIs and UI to show chat completions
+* Enable keyword search for sqlite-vec
+
+
+---
+
+# v0.2.7
+Published on: 2025-05-16T20:38:10Z
+
+## Highlights
+
+This is a small update. But a couple highlights:
+
+* feat: function tools in OpenAI Responses by @bbrowning in https://github.com/meta-llama/llama-stack/pull/2094, getting closer to ready. Streaming is the next missing piece.
+* feat: Adding support for customizing chunk context in RAG insertion and querying by @franciscojavierarceo in https://github.com/meta-llama/llama-stack/pull/2134
+* feat: scaffolding for Llama Stack UI by @ehhuang in https://github.com/meta-llama/llama-stack/pull/2149, more to come in the coming releases.
+
+
+---
+
+# v0.2.6
+Published on: 2025-05-12T18:06:52Z
+
+
+
+---
+
+# v0.2.5
+Published on: 2025-05-04T20:16:49Z
+
+
+
+---
+
+# v0.2.4
+Published on: 2025-04-29T17:26:01Z
+
+## Highlights
+
+* One-liner to install and run Llama Stack yay! by @reluctantfuturist in https://github.com/meta-llama/llama-stack/pull/1383
+* support for NVIDIA NeMo datastore by @raspawar in https://github.com/meta-llama/llama-stack/pull/1852
+* (yuge!) Kubernetes authentication by @leseb in https://github.com/meta-llama/llama-stack/pull/1778
+* (yuge!) OpenAI Responses API by @bbrowning in https://github.com/meta-llama/llama-stack/pull/1989
+* add api.llama provider, llama-guard-4 model by @ashwinb in https://github.com/meta-llama/llama-stack/pull/2058
+
+
+---
+
+# v0.2.3
+Published on: 2025-04-25T22:46:21Z
+
+## Highlights
+
+* OpenAI compatible inference endpoints and client-SDK support. `client.chat.completions.create()` now works.
+* significant improvements and functionality added to the nVIDIA distribution
+* many improvements to the test verification suite.
+* new inference providers: Ramalama, IBM WatsonX
+* many improvements to the Playground UI
+
+
+---
+
+# v0.2.2
+Published on: 2025-04-13T01:19:49Z
+
+## Main changes
+
+- Bring Your Own Provider (@leseb) - use out-of-tree provider code to execute the distribution server
+- OpenAI compatible inference API in progress (@bbrowning)
+- Provider verifications (@ehhuang)
+- Many updates and fixes to playground
+- Several llama4 related fixes
+
+
+---
+
 # v0.2.1
 Published on: 2025-04-05T23:13:00Z
 

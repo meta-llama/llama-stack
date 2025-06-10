@@ -12,7 +12,7 @@ The `llamastack/distribution-cerebras` distribution consists of the following pr
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
@@ -52,7 +52,7 @@ docker run \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ./run.yaml:/root/my-run.yaml \
   llamastack/distribution-cerebras \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env CEREBRAS_API_KEY=$CEREBRAS_API_KEY
 ```

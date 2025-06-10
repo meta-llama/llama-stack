@@ -7,10 +7,6 @@
 # the root directory of this source tree.
 
 
-CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
-CONTAINER_OPTS=${CONTAINER_OPTS:-}
-LLAMA_CHECKPOINT_DIR=${LLAMA_CHECKPOINT_DIR:-}
-LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
 PYPI_VERSION=${PYPI_VERSION:-}
 VIRTUAL_ENV=${VIRTUAL_ENV:-}
@@ -29,7 +25,7 @@ error_handler() {
 trap 'error_handler ${LINENO}' ERR
 
 if [ $# -lt 3 ]; then
-  echo "Usage: $0 <env_type> <env_path_or_name> <yaml_config> <port> <script_args...>"
+  echo "Usage: $0 <env_type> <env_path_or_name> <port> [--config <yaml_config>] [--env KEY=VALUE]..."
   exit 1
 fi
 
@@ -40,37 +36,51 @@ env_path_or_name="$1"
 container_image="localhost/$env_path_or_name"
 shift
 
-yaml_config="$1"
-shift
-
 port="$1"
 shift
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
 
-# Initialize env_vars as an string
+# Initialize variables
+yaml_config=""
 env_vars=""
 other_args=""
-# Process environment variables from --env arguments
+
+# Process remaining arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-  --env)
-
-    if [[ -n "$2" ]]; then
-      env_vars="$env_vars --env $2"
-      shift 2
-    else
-      echo -e "${RED}Error: --env requires a KEY=VALUE argument${NC}" >&2
-      exit 1
-    fi
-    ;;
-  *)
-    other_args="$other_args $1"
-    shift
-    ;;
+    --config)
+      if [[ -n "$2" ]]; then
+        yaml_config="$2"
+        shift 2
+      else
+        echo -e "${RED}Error: $1 requires a CONFIG argument${NC}" >&2
+        exit 1
+      fi
+      ;;
+    --env)
+      if [[ -n "$2" ]]; then
+        env_vars="$env_vars --env $2"
+        shift 2
+      else
+        echo -e "${RED}Error: --env requires a KEY=VALUE argument${NC}" >&2
+        exit 1
+      fi
+      ;;
+    *)
+      other_args="$other_args $1"
+      shift
+      ;;
   esac
 done
+
+# Check if yaml_config is required based on env_type
+if [[ "$env_type" == "venv" || "$env_type" == "conda" ]] && [ -z "$yaml_config" ]; then
+  echo -e "${RED}Error: --config is required for venv and conda environments${NC}" >&2
+  exit 1
+fi
+
 PYTHON_BINARY="python"
 case "$env_type" in
   "venv")
@@ -106,58 +116,19 @@ esac
 if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     set -x
 
+    if [ -n "$yaml_config" ]; then
+        yaml_config_arg="--config $yaml_config"
+    else
+        yaml_config_arg=""
+    fi
+
     $PYTHON_BINARY -m llama_stack.distribution.server.server \
-    --yaml-config "$yaml_config" \
+    $yaml_config_arg \
     --port "$port" \
     $env_vars \
     $other_args
 elif [[ "$env_type" == "container" ]]; then
-    set -x
-
-    # Check if container command is available
-    if ! is_command_available $CONTAINER_BINARY; then
-      printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
-      exit 1
-    fi
-
-    if is_command_available selinuxenabled &> /dev/null && selinuxenabled; then
-        # Disable SELinux labels
-        CONTAINER_OPTS="$CONTAINER_OPTS --security-opt label=disable"
-    fi
-
-    mounts=""
-    if [ -n "$LLAMA_STACK_DIR" ]; then
-        mounts="$mounts -v $(readlink -f $LLAMA_STACK_DIR):/app/llama-stack-source"
-    fi
-    if [ -n "$LLAMA_CHECKPOINT_DIR" ]; then
-        mounts="$mounts -v $LLAMA_CHECKPOINT_DIR:/root/.llama"
-        CONTAINER_OPTS="$CONTAINER_OPTS --gpus=all"
-    fi
-
-    if [ -n "$PYPI_VERSION" ]; then
-        version_tag="$PYPI_VERSION"
-    elif [ -n "$LLAMA_STACK_DIR" ]; then
-        version_tag="dev"
-    elif [ -n "$TEST_PYPI_VERSION" ]; then
-        version_tag="test-$TEST_PYPI_VERSION"
-    else
-        if ! is_command_available jq; then
-            echo -e "${RED}Error: jq not found" >&2
-            exit 1
-        fi
-        URL="https://pypi.org/pypi/llama-stack/json"
-        version_tag=$(curl -s $URL | jq -r '.info.version')
-    fi
-
-    $CONTAINER_BINARY run $CONTAINER_OPTS -it \
-    -p $port:$port \
-    $env_vars \
-    -v "$yaml_config:/app/config.yaml" \
-    $mounts \
-    --env LLAMA_STACK_PORT=$port \
-    --entrypoint python \
-    $container_image:$version_tag \
-    -m llama_stack.distribution.server.server \
-    --yaml-config /app/config.yaml \
-    $other_args
+    echo -e "${RED}Warning: Llama Stack no longer supports running Containers via the 'llama stack run' command.${NC}"
+    echo -e "Please refer to the documentation for more information: https://llama-stack.readthedocs.io/en/latest/distributions/building_distro.html#llama-stack-build"
+    exit 1
 fi

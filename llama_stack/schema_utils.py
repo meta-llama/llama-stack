@@ -4,37 +4,38 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, TypeVar
+from typing import Any, TypeVar
 
 from .strong_typing.schema import json_schema_type, register_schema  # noqa: F401
 
 
 @dataclass
 class WebMethod:
-    route: Optional[str] = None
+    route: str | None = None
     public: bool = False
-    request_examples: Optional[List[Any]] = None
-    response_examples: Optional[List[Any]] = None
-    method: Optional[str] = None
-    raw_bytes_request_body: Optional[bool] = False
+    request_examples: list[Any] | None = None
+    response_examples: list[Any] | None = None
+    method: str | None = None
+    raw_bytes_request_body: bool | None = False
     # A descriptive name of the corresponding span created by tracing
-    descriptive_name: Optional[str] = None
-    experimental: Optional[bool] = False
+    descriptive_name: str | None = None
+    experimental: bool | None = False
 
 
 T = TypeVar("T", bound=Callable[..., Any])
 
 
 def webmethod(
-    route: Optional[str] = None,
-    method: Optional[str] = None,
-    public: Optional[bool] = False,
-    request_examples: Optional[List[Any]] = None,
-    response_examples: Optional[List[Any]] = None,
-    raw_bytes_request_body: Optional[bool] = False,
-    descriptive_name: Optional[str] = None,
-    experimental: Optional[bool] = False,
+    route: str | None = None,
+    method: str | None = None,
+    public: bool | None = False,
+    request_examples: list[Any] | None = None,
+    response_examples: list[Any] | None = None,
+    raw_bytes_request_body: bool | None = False,
+    descriptive_name: str | None = None,
+    experimental: bool | None = False,
 ) -> Callable[[T], T]:
     """
     Decorator that supplies additional metadata to an endpoint operation function.

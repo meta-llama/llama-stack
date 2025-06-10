@@ -4,6 +4,7 @@ apis:
 - agents
 - datasetio
 - eval
+- files
 - inference
 - safety
 - scoring
@@ -41,13 +42,16 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/fireworks/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/trace_store.db
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -82,6 +86,14 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  files:
+  - provider_id: meta-reference-files
+    provider_type: inline::localfs
+    config:
+      storage_dir: ${env.FILES_STORAGE_DIR:~/.llama/distributions/fireworks/files}
+      metadata_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/files_metadata.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -97,9 +109,6 @@ providers:
     provider_type: remote::wolfram-alpha
     config:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
-  - provider_id: code-interpreter
-    provider_type: inline::code-interpreter
-    config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
@@ -109,6 +118,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/fireworks}/inference_store.db
 models:
 - metadata: {}
   model_id: accounts/fireworks/models/llama-v3p1-8b-instruct
@@ -245,7 +257,5 @@ tool_groups:
   provider_id: wolfram-alpha
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
-- toolgroup_id: builtin::code_interpreter
-  provider_id: code-interpreter
 server:
   port: 8321

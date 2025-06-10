@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 from llama_stack.apis.common.type_system import (
     ChatCompletionInputType,
@@ -85,16 +85,16 @@ def get_valid_schemas(api_str: str):
 
 
 def validate_dataset_schema(
-    dataset_schema: Dict[str, Any],
-    expected_schemas: List[Dict[str, Any]],
+    dataset_schema: dict[str, Any],
+    expected_schemas: list[dict[str, Any]],
 ):
     if dataset_schema not in expected_schemas:
         raise ValueError(f"Dataset {dataset_schema} does not have a correct input schema in {expected_schemas}")
 
 
 def validate_row_schema(
-    input_row: Dict[str, Any],
-    expected_schemas: List[Dict[str, Any]],
+    input_row: dict[str, Any],
+    expected_schemas: list[dict[str, Any]],
 ):
     for schema in expected_schemas:
         if all(key in input_row for key in schema):

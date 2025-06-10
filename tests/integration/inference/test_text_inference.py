@@ -30,10 +30,23 @@ def skip_if_model_doesnt_support_completion(client_with_models, model_id):
             "remote::anthropic",
             "remote::gemini",
             "remote::groq",
+            "remote::sambanova",
         )
         or "openai-compat" in provider.provider_type
     ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support completion")
+
+
+def skip_if_model_doesnt_support_json_schema_structured_output(client_with_models, model_id):
+    models = {m.identifier: m for m in client_with_models.models.list()}
+    models.update({m.provider_resource_id: m for m in client_with_models.models.list()})
+    provider_id = models[model_id].provider_id
+    providers = {p.provider_id: p for p in client_with_models.providers.list()}
+    provider = providers[provider_id]
+    if provider.provider_type in ("remote::sambanova",):
+        pytest.skip(
+            f"Model {model_id} hosted by {provider.provider_type} doesn't support json_schema structured output"
+        )
 
 
 def get_llama_model(client_with_models, model_id):
@@ -384,6 +397,8 @@ def test_text_chat_completion_with_tool_choice_none(client_with_models, text_mod
     ],
 )
 def test_text_chat_completion_structured_output(client_with_models, text_model_id, test_case):
+    skip_if_model_doesnt_support_json_schema_structured_output(client_with_models, text_model_id)
+
     class NBAStats(BaseModel):
         year_for_draft: int
         num_seasons_in_nba: int
@@ -458,18 +473,12 @@ def test_text_chat_completion_tool_calling_tools_not_in_request(
     [
         # Tests if the model can handle simple messages like "Hi" or
         # a message unrelated to one of the tool calls
-        "inference:chat_completion:multi_turn_tool_calling_01",
+        "inference:chat_completion:text_then_tool",
         # Tests if the model can do full tool call with responses correctly
-        "inference:chat_completion:multi_turn_tool_calling_02",
+        "inference:chat_completion:tool_then_answer",
         # Tests if model can generate multiple params and
         # read outputs correctly
-        "inference:chat_completion:multi_turn_tool_calling_03",
-        # Tests if model can do different tool calls in a seqeunce
-        # and use the information between appropriately
-        "inference:chat_completion:multi_turn_tool_calling_04",
-        # Tests if model can use current date and run multiple tool calls
-        # sequentially and infer using both
-        "inference:chat_completion:multi_turn_tool_calling_05",
+        "inference:chat_completion:array_parameter",
     ],
 )
 def test_text_chat_completion_with_multi_turn_tool_calling(client_with_models, text_model_id, test_case):

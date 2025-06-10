@@ -9,7 +9,7 @@ import base64
 import io
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import faiss
 import numpy as np
@@ -84,7 +84,7 @@ class FaissIndex(EmbeddingIndex):
 
         await self.kvstore.delete(f"{FAISS_INDEX_PREFIX}{self.bank_id}")
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         # Add dimension check
         embedding_dim = embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
         if embedding_dim != self.index.d:
@@ -99,18 +99,30 @@ class FaissIndex(EmbeddingIndex):
         # Save updated index
         await self._save_index()
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(
+        self,
+        embedding: NDArray,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
         distances, indices = await asyncio.to_thread(self.index.search, embedding.reshape(1, -1).astype(np.float32), k)
-
         chunks = []
         scores = []
         for d, i in zip(distances[0], indices[0], strict=False):
             if i < 0:
                 continue
             chunks.append(self.chunk_by_index[int(i)])
-            scores.append(1.0 / float(d))
+            scores.append(1.0 / float(d) if d != 0 else float("inf"))
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
+
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in FAISS")
 
 
 class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
@@ -125,7 +137,7 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         # Load existing banks from kvstore
         start_key = VECTOR_DBS_PREFIX
         end_key = f"{VECTOR_DBS_PREFIX}\xff"
-        stored_vector_dbs = await self.kvstore.range(start_key, end_key)
+        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
 
         for vector_db_data in stored_vector_dbs:
             vector_db = VectorDB.model_validate_json(vector_db_data)
@@ -159,7 +171,7 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             inference_api=self.inference_api,
         )
 
-    async def list_vector_dbs(self) -> List[VectorDB]:
+    async def list_vector_dbs(self) -> list[VectorDB]:
         return [i.vector_db for i in self.cache.values()]
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
@@ -176,8 +188,8 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = self.cache.get(vector_db_id)
         if index is None:
@@ -189,7 +201,7 @@ class FaissVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = self.cache.get(vector_db_id)
         if index is None:

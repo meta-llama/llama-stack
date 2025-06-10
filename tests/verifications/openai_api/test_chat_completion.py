@@ -7,72 +7,23 @@
 import base64
 import copy
 import json
-import re
 from pathlib import Path
 from typing import Any
 
 import pytest
+from openai import APIError
 from pydantic import BaseModel
 
 from tests.verifications.openai_api.fixtures.fixtures import (
-    _load_all_verification_configs,
+    case_id_generator,
+    get_base_test_name,
+    should_skip_test,
 )
 from tests.verifications.openai_api.fixtures.load import load_test_cases
 
 chat_completion_test_cases = load_test_cases("chat_completion")
 
 THIS_DIR = Path(__file__).parent
-
-
-def case_id_generator(case):
-    """Generate a test ID from the case's 'case_id' field, or use a default."""
-    case_id = case.get("case_id")
-    if isinstance(case_id, (str, int)):
-        return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
-    return None
-
-
-def pytest_generate_tests(metafunc):
-    """Dynamically parametrize tests based on the selected provider and config."""
-    if "model" in metafunc.fixturenames:
-        provider = metafunc.config.getoption("provider")
-        if not provider:
-            print("Warning: --provider not specified. Skipping model parametrization.")
-            metafunc.parametrize("model", [])
-            return
-
-        try:
-            config_data = _load_all_verification_configs()
-        except (FileNotFoundError, IOError) as e:
-            print(f"ERROR loading verification configs: {e}")
-            config_data = {"providers": {}}
-
-        provider_config = config_data.get("providers", {}).get(provider)
-        if provider_config:
-            models = provider_config.get("models", [])
-            if models:
-                metafunc.parametrize("model", models)
-            else:
-                print(f"Warning: No models found for provider '{provider}' in config.")
-                metafunc.parametrize("model", [])  # Parametrize empty if no models found
-        else:
-            print(f"Warning: Provider '{provider}' not found in config. No models parametrized.")
-            metafunc.parametrize("model", [])  # Parametrize empty if provider not found
-
-
-def should_skip_test(verification_config, provider, model, test_name_base):
-    """Check if a test should be skipped based on config exclusions."""
-    provider_config = verification_config.get("providers", {}).get(provider)
-    if not provider_config:
-        return False  # No config for provider, don't skip
-
-    exclusions = provider_config.get("test_exclusions", {}).get(model, [])
-    return test_name_base in exclusions
-
-
-# Helper to get the base test name from the request object
-def get_base_test_name(request):
-    return request.node.originalname
 
 
 @pytest.fixture
@@ -134,6 +85,50 @@ def test_chat_streaming_basic(request, openai_client, model, provider, verificat
     # TODO: add detailed type validation
 
     assert case["output"].lower() in content.lower()
+
+
+@pytest.mark.parametrize(
+    "case",
+    chat_completion_test_cases["test_chat_input_validation"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_chat_non_streaming_error_handling(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    with pytest.raises(APIError) as e:
+        openai_client.chat.completions.create(
+            model=model,
+            messages=case["input"]["messages"],
+            stream=False,
+            tool_choice=case["input"]["tool_choice"] if "tool_choice" in case["input"] else None,
+            tools=case["input"]["tools"] if "tools" in case["input"] else None,
+        )
+    assert case["output"]["error"]["status_code"] == e.value.status_code
+
+
+@pytest.mark.parametrize(
+    "case",
+    chat_completion_test_cases["test_chat_input_validation"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_chat_streaming_error_handling(request, openai_client, model, provider, verification_config, case):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    with pytest.raises(APIError) as e:
+        response = openai_client.chat.completions.create(
+            model=model,
+            messages=case["input"]["messages"],
+            stream=True,
+            tool_choice=case["input"]["tool_choice"] if "tool_choice" in case["input"] else None,
+            tools=case["input"]["tools"] if "tools" in case["input"] else None,
+        )
+        for _chunk in response:
+            pass
+    assert str(case["output"]["error"]["status_code"]) in e.value.message
 
 
 @pytest.mark.parametrize(

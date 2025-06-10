@@ -1,0 +1,9 @@
+name: Setup Ollama
+description: Start Ollama
+runs:
+  using: "composite"
+  steps:
+    - name: Start Ollama
+      shell: bash
+      run: |
+        docker run -d --name ollama -p 11434:11434 docker.io/leseb/ollama-with-models

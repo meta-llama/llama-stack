@@ -5,6 +5,7 @@ apis:
 - datasetio
 - eval
 - inference
+- post_training
 - safety
 - scoring
 - telemetry
@@ -37,13 +38,16 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
+      responses_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
       service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
       sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_DB_PATH:~/.llama/distributions/ollama/trace_store.db}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/trace_store.db
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -78,6 +82,13 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  post_training:
+  - provider_id: huggingface
+    provider_type: inline::huggingface
+    config:
+      checkpoint_format: huggingface
+      distributed_backend: null
+      device: cpu
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
@@ -89,9 +100,6 @@ providers:
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:}
       max_results: 3
-  - provider_id: code-interpreter
-    provider_type: inline::code-interpreter
-    config: {}
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
@@ -105,6 +113,9 @@ providers:
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/inference_store.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
@@ -126,8 +137,6 @@ tool_groups:
   provider_id: tavily-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
-- toolgroup_id: builtin::code_interpreter
-  provider_id: code-interpreter
 - toolgroup_id: builtin::wolfram_alpha
   provider_id: wolfram-alpha
 server:

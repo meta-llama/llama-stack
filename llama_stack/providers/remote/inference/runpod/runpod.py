@@ -3,11 +3,12 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
+from llama_stack.apis.inference.inference import OpenAIEmbeddingsResponse
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
@@ -133,4 +134,14 @@ class RunpodInferenceAdapter(
         output_dimension: Optional[int] = None,
         task_type: Optional[EmbeddingTaskType] = None,
     ) -> EmbeddingsResponse:
+        raise NotImplementedError()
+
+    async def openai_embeddings(
+        self,
+        model: str,
+        input: str | list[str],
+        encoding_format: str | None = "float",
+        dimensions: int | None = None,
+        user: str | None = None,
+    ) -> OpenAIEmbeddingsResponse:
         raise NotImplementedError()

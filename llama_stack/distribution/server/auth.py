@@ -5,74 +5,30 @@
 # the root directory of this source tree.
 
 import json
-from typing import Dict, List, Optional
-from urllib.parse import parse_qs
 
 import httpx
-from pydantic import BaseModel, Field
 
-from llama_stack.distribution.datatypes import AccessAttributes
+from llama_stack.distribution.datatypes import AuthenticationConfig
+from llama_stack.distribution.server.auth_providers import create_auth_provider
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="auth")
 
 
-class AuthRequestContext(BaseModel):
-    path: str = Field(description="The path of the request being authenticated")
-
-    headers: Dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
-
-    params: Dict[str, List[str]] = Field(
-        description="Query parameters from the original request, parsed as dictionary of lists"
-    )
-
-
-class AuthRequest(BaseModel):
-    api_key: str = Field(description="The API key extracted from the Authorization header")
-
-    request: AuthRequestContext = Field(description="Context information about the request being authenticated")
-
-
-class AuthResponse(BaseModel):
-    """The format of the authentication response from the auth endpoint."""
-
-    access_attributes: Optional[AccessAttributes] = Field(
-        default=None,
-        description="""
-        Structured user attributes for attribute-based access control.
-
-        These attributes determine which resources the user can access.
-        The model provides standard categories like "roles", "teams", "projects", and "namespaces".
-        Each attribute category contains a list of values that the user has for that category.
-        During access control checks, these values are compared against resource requirements.
-
-        Example with standard categories:
-        ```json
-        {
-            "roles": ["admin", "data-scientist"],
-            "teams": ["ml-team"],
-            "projects": ["llama-3"],
-            "namespaces": ["research"]
-        }
-        ```
-        """,
-    )
-
-    message: Optional[str] = Field(
-        default=None, description="Optional message providing additional context about the authentication result."
-    )
-
-
 class AuthenticationMiddleware:
-    """Middleware that authenticates requests using an external auth endpoint.
+    """Middleware that authenticates requests using configured authentication provider.
 
     This middleware:
     1. Extracts the Bearer token from the Authorization header
-    2. Sends it to the configured auth endpoint along with request details
-    3. Validates the response and extracts user attributes
+    2. Uses the configured auth provider to validate the token
+    3. Extracts user attributes from the provider's response
     4. Makes these attributes available to the route handlers for access control
 
-    Authentication Request Format:
+    The middleware supports multiple authentication providers through the AuthProvider interface:
+    - Kubernetes: Validates tokens against the Kubernetes API server
+    - Custom: Validates tokens against a custom endpoint
+
+    Authentication Request Format for Custom Auth Provider:
     ```json
     {
         "api_key": "the-api-key-extracted-from-auth-header",
@@ -105,21 +61,26 @@ class AuthenticationMiddleware:
     }
     ```
 
+    Token Validation:
+    Each provider implements its own token validation logic:
+    - Kubernetes: Uses TokenReview API to validate service account tokens
+    - Custom: Sends token to custom endpoint for validation
+
     Attribute-Based Access Control:
-    The attributes returned by the auth endpoint are used to determine which
+    The attributes returned by the auth provider are used to determine which
     resources the user can access. Resources can specify required attributes
     using the access_attributes field. For a user to access a resource:
 
     1. All attribute categories specified in the resource must be present in the user's attributes
     2. For each category, the user must have at least one matching value
 
-    If the auth endpoint doesn't return any attributes, the user will only be able to
+    If the auth provider doesn't return any attributes, the user will only be able to
     access resources that don't have access_attributes defined.
     """
 
-    def __init__(self, app, auth_endpoint):
+    def __init__(self, app, auth_config: AuthenticationConfig):
         self.app = app
-        self.auth_endpoint = auth_endpoint
+        self.auth_provider = create_auth_provider(auth_config)
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
@@ -129,65 +90,32 @@ class AuthenticationMiddleware:
             if not auth_header or not auth_header.startswith("Bearer "):
                 return await self._send_auth_error(send, "Missing or invalid Authorization header")
 
-            api_key = auth_header.split("Bearer ", 1)[1]
+            token = auth_header.split("Bearer ", 1)[1]
 
-            path = scope.get("path", "")
-            request_headers = {k.decode(): v.decode() for k, v in headers.items()}
-
-            # Remove sensitive headers
-            if "authorization" in request_headers:
-                del request_headers["authorization"]
-
-            query_string = scope.get("query_string", b"").decode()
-            params = parse_qs(query_string)
-
-            # Build the auth request model
-            auth_request = AuthRequest(
-                api_key=api_key,
-                request=AuthRequestContext(
-                    path=path,
-                    headers=request_headers,
-                    params=params,
-                ),
-            )
-
-            # Validate with authentication endpoint
+            # Validate token and get access attributes
             try:
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        self.auth_endpoint,
-                        json=auth_request.model_dump(),
-                        timeout=10.0,  # Add a reasonable timeout
-                    )
-                    if response.status_code != 200:
-                        logger.warning(f"Authentication failed: {response.status_code}")
-                        return await self._send_auth_error(send, "Authentication failed")
-
-                    # Parse and validate the auth response
-                    try:
-                        response_data = response.json()
-                        auth_response = AuthResponse(**response_data)
-
-                        # Store attributes in request scope for access control
-                        if auth_response.access_attributes:
-                            user_attributes = auth_response.access_attributes.model_dump(exclude_none=True)
-                        else:
-                            logger.warning("No access attributes, setting namespace to api_key by default")
-                            user_attributes = {
-                                "namespaces": [api_key],
-                            }
-
-                        scope["user_attributes"] = user_attributes
-                        logger.debug(f"Authentication successful: {len(user_attributes)} attributes")
-                    except Exception:
-                        logger.exception("Error parsing authentication response")
-                        return await self._send_auth_error(send, "Invalid authentication response format")
+                validation_result = await self.auth_provider.validate_token(token, scope)
             except httpx.TimeoutException:
                 logger.exception("Authentication request timed out")
                 return await self._send_auth_error(send, "Authentication service timeout")
+            except ValueError as e:
+                logger.exception("Error during authentication")
+                return await self._send_auth_error(send, str(e))
             except Exception:
                 logger.exception("Error during authentication")
                 return await self._send_auth_error(send, "Authentication service error")
+
+            # Store the client ID in the request scope so that downstream middleware (like QuotaMiddleware)
+            # can identify the requester and enforce per-client rate limits.
+            scope["authenticated_client_id"] = token
+
+            # Store attributes in request scope
+            scope["principal"] = validation_result.principal
+            if validation_result.attributes:
+                scope["user_attributes"] = validation_result.attributes
+            logger.debug(
+                f"Authentication successful: {validation_result.principal} with {len(validation_result.attributes)} attributes"
+            )
 
         return await self.app(scope, receive, send)
 

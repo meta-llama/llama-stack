@@ -6,7 +6,7 @@
 
 import logging
 import warnings
-from typing import Any, Dict, Set, Tuple
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -18,7 +18,7 @@ from .config import NvidiaPostTrainingConfig
 logger = logging.getLogger(__name__)
 
 
-def warn_unsupported_params(config_dict: Any, supported_keys: Set[str], config_name: str) -> None:
+def warn_unsupported_params(config_dict: Any, supported_keys: set[str], config_name: str) -> None:
     keys = set(config_dict.__annotations__.keys()) if isinstance(config_dict, BaseModel) else config_dict.keys()
     unsupported_params = [k for k in keys if k not in supported_keys]
     if unsupported_params:
@@ -28,7 +28,7 @@ def warn_unsupported_params(config_dict: Any, supported_keys: Set[str], config_n
 
 
 def validate_training_params(
-    training_config: Dict[str, Any], supported_keys: Set[str], config_name: str = "TrainingConfig"
+    training_config: dict[str, Any], supported_keys: set[str], config_name: str = "TrainingConfig"
 ) -> None:
     """
     Validates training parameters against supported keys.
@@ -57,7 +57,7 @@ def validate_training_params(
 
 
 # ToDo: implement post health checks for customizer are enabled
-async def _get_health(url: str) -> Tuple[bool, bool]: ...
+async def _get_health(url: str) -> tuple[bool, bool]: ...
 
 
 async def check_health(config: NvidiaPostTrainingConfig) -> None: ...

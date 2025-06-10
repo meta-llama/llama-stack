@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 import datasets as hf_datasets
@@ -12,8 +12,8 @@ from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.pagination import paginate_records
 
 from .config import HuggingfaceDatasetIOConfig
 
@@ -42,7 +42,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         # Load existing datasets from kvstore
         start_key = DATASETS_PREFIX
         end_key = f"{DATASETS_PREFIX}\xff"
-        stored_datasets = await self.kvstore.range(start_key, end_key)
+        stored_datasets = await self.kvstore.values_in_range(start_key, end_key)
 
         for dataset in stored_datasets:
             dataset = Dataset.model_validate_json(dataset)
@@ -70,8 +70,8 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         path, params = parse_hf_params(dataset_def)
@@ -80,7 +80,7 @@ class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         records = [loaded_dataset[i] for i in range(len(loaded_dataset))]
         return paginate_records(records, start_index, limit)
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         path, params = parse_hf_params(dataset_def)
         loaded_dataset = hf_datasets.load_dataset(path, **params)

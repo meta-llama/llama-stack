@@ -4,37 +4,37 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
 from llama_stack.apis.common.content_types import URL
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
-    Tool,
     ToolDef,
+    ToolGroup,
     ToolInvocationResult,
     ToolParameter,
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.models.llama.datatypes import BuiltinTool
-from llama_stack.providers.datatypes import ToolsProtocolPrivate
+from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 
 from .config import BraveSearchToolConfig
 
 
-class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
+class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRequestProviderData):
     def __init__(self, config: BraveSearchToolConfig):
         self.config = config
 
     async def initialize(self):
         pass
 
-    async def register_tool(self, tool: Tool) -> None:
+    async def register_toolgroup(self, toolgroup: ToolGroup) -> None:
         pass
 
-    async def unregister_tool(self, tool_id: str) -> None:
+    async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         return
 
     def _get_api_key(self) -> str:
@@ -49,7 +49,7 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
         return provider_data.brave_search_api_key
 
     async def list_runtime_tools(
-        self, tool_group_id: Optional[str] = None, mcp_endpoint: Optional[URL] = None
+        self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolDefsResponse:
         return ListToolDefsResponse(
             data=[
@@ -68,7 +68,7 @@ class BraveSearchToolRuntimeImpl(ToolsProtocolPrivate, ToolRuntime, NeedsRequest
             ]
         )
 
-    async def invoke_tool(self, tool_name: str, kwargs: Dict[str, Any]) -> ToolInvocationResult:
+    async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
         url = "https://api.search.brave.com/res/v1/web/search"
         headers = {

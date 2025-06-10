@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 from tqdm import tqdm
 
@@ -58,7 +58,7 @@ class MetaReferenceEvalImpl(
         # Load existing benchmarks from kvstore
         start_key = EVAL_TASKS_PREFIX
         end_key = f"{EVAL_TASKS_PREFIX}\xff"
-        stored_benchmarks = await self.kvstore.range(start_key, end_key)
+        stored_benchmarks = await self.kvstore.values_in_range(start_key, end_key)
 
         for benchmark in stored_benchmarks:
             benchmark = Benchmark.model_validate_json(benchmark)
@@ -105,8 +105,8 @@ class MetaReferenceEvalImpl(
         return Job(job_id=job_id, status=JobStatus.completed)
 
     async def _run_agent_generation(
-        self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
-    ) -> List[Dict[str, Any]]:
+        self, input_rows: list[dict[str, Any]], benchmark_config: BenchmarkConfig
+    ) -> list[dict[str, Any]]:
         candidate = benchmark_config.eval_candidate
         create_response = await self.agents_api.create_agent(candidate.config)
         agent_id = create_response.agent_id
@@ -148,8 +148,8 @@ class MetaReferenceEvalImpl(
         return generations
 
     async def _run_model_generation(
-        self, input_rows: List[Dict[str, Any]], benchmark_config: BenchmarkConfig
-    ) -> List[Dict[str, Any]]:
+        self, input_rows: list[dict[str, Any]], benchmark_config: BenchmarkConfig
+    ) -> list[dict[str, Any]]:
         candidate = benchmark_config.eval_candidate
         assert candidate.sampling_params.max_tokens is not None, "SamplingParams.max_tokens must be provided"
 
@@ -185,8 +185,8 @@ class MetaReferenceEvalImpl(
     async def evaluate_rows(
         self,
         benchmark_id: str,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: List[str],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: list[str],
         benchmark_config: BenchmarkConfig,
     ) -> EvaluateResponse:
         candidate = benchmark_config.eval_candidate

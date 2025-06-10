@@ -6,7 +6,6 @@
 
 import os
 from datetime import datetime
-from typing import List, Optional
 
 import aiosqlite
 
@@ -33,7 +32,7 @@ class SqliteKVStoreImpl(KVStore):
             )
             await db.commit()
 
-    async def set(self, key: str, value: str, expiration: Optional[datetime] = None) -> None:
+    async def set(self, key: str, value: str, expiration: datetime | None = None) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 f"INSERT OR REPLACE INTO {self.table_name} (key, value, expiration) VALUES (?, ?, ?)",
@@ -41,7 +40,7 @@ class SqliteKVStoreImpl(KVStore):
             )
             await db.commit()
 
-    async def get(self, key: str) -> Optional[str]:
+    async def get(self, key: str) -> str | None:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(f"SELECT value, expiration FROM {self.table_name} WHERE key = ?", (key,)) as cursor:
                 row = await cursor.fetchone()
@@ -55,7 +54,7 @@ class SqliteKVStoreImpl(KVStore):
             await db.execute(f"DELETE FROM {self.table_name} WHERE key = ?", (key,))
             await db.commit()
 
-    async def range(self, start_key: str, end_key: str) -> List[str]:
+    async def values_in_range(self, start_key: str, end_key: str) -> list[str]:
         async with aiosqlite.connect(self.db_path) as db:
             async with db.execute(
                 f"SELECT key, value, expiration FROM {self.table_name} WHERE key >= ? AND key <= ?",
@@ -66,3 +65,13 @@ class SqliteKVStoreImpl(KVStore):
                     _, value, _ = row
                     result.append(value)
                 return result
+
+    async def keys_in_range(self, start_key: str, end_key: str) -> list[str]:
+        """Get all keys in the given range."""
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                f"SELECT key FROM {self.table_name} WHERE key >= ? AND key <= ?",
+                (start_key, end_key),
+            )
+            rows = await cursor.fetchall()
+            return [row[0] for row in rows]

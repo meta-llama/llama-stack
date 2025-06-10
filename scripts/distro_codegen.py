@@ -7,19 +7,13 @@
 
 import concurrent.futures
 import importlib
-import json
 import subprocess
 import sys
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import Iterable
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
-
-from llama_stack.distribution.build import (
-    SERVER_DEPENDENCIES,
-    get_provider_dependencies,
-)
 
 REPO_ROOT = Path(__file__).parent.parent
 
@@ -91,36 +85,11 @@ def check_for_changes(change_tracker: ChangedPathTracker) -> bool:
     return has_changes
 
 
-def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[str]]:
-    try:
+def pre_import_templates(template_dirs: list[Path]) -> None:
+    # Pre-import all template modules to avoid deadlocks.
+    for template_dir in template_dirs:
         module_name = f"llama_stack.templates.{template_dir.name}"
-        module = importlib.import_module(module_name)
-
-        if template_func := getattr(module, "get_distribution_template", None):
-            template = template_func()
-            normal_deps, special_deps = get_provider_dependencies(template)
-            # Combine all dependencies in order: normal deps, special deps, server deps
-            all_deps = sorted(set(normal_deps + SERVER_DEPENDENCIES)) + sorted(set(special_deps))
-
-            return template.name, all_deps
-    except Exception:
-        return None, []
-    return None, []
-
-
-def generate_dependencies_file(change_tracker: ChangedPathTracker):
-    templates_dir = REPO_ROOT / "llama_stack" / "templates"
-    distribution_deps = {}
-
-    for template_dir in find_template_dirs(templates_dir):
-        name, deps = collect_template_dependencies(template_dir)
-        if name:
-            distribution_deps[name] = deps
-
-    deps_file = REPO_ROOT / "llama_stack" / "templates" / "dependencies.json"
-    change_tracker.add_paths(deps_file)
-    with open(deps_file, "w") as f:
-        f.write(json.dumps(distribution_deps, indent=2) + "\n")
+        importlib.import_module(module_name)
 
 
 def main():
@@ -134,6 +103,8 @@ def main():
         template_dirs = list(find_template_dirs(templates_dir))
         task = progress.add_task("Processing distribution templates...", total=len(template_dirs))
 
+        pre_import_templates(template_dirs)
+
         # Create a partial function with the progress bar
         process_func = partial(process_template, progress=progress, change_tracker=change_tracker)
 
@@ -142,8 +113,6 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
-
-    generate_dependencies_file(change_tracker)
 
     if check_for_changes(change_tracker):
         print(

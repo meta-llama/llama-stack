@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import List
 
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -15,7 +14,7 @@ from llama_stack.providers.datatypes import (
 )
 
 
-def available_providers() -> List[ProviderSpec]:
+def available_providers() -> list[ProviderSpec]:
     return [
         InlineProviderSpec(
             api=Api.safety,
@@ -62,6 +61,16 @@ def available_providers() -> List[ProviderSpec]:
                 pip_packages=["requests"],
                 module="llama_stack.providers.remote.safety.nvidia",
                 config_class="llama_stack.providers.remote.safety.nvidia.NVIDIASafetyConfig",
+            ),
+        ),
+        remote_provider_spec(
+            api=Api.safety,
+            adapter=AdapterSpec(
+                adapter_type="sambanova",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.safety.sambanova",
+                config_class="llama_stack.providers.remote.safety.sambanova.SambaNovaSafetyConfig",
+                provider_data_validator="llama_stack.providers.remote.safety.sambanova.config.SambaNovaProviderDataValidator",
             ),
         ),
     ]

@@ -8,7 +8,7 @@ import importlib.resources
 import os
 import re
 import tempfile
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -90,7 +90,7 @@ RESOURCES = [
 ]
 
 
-async def register_resources(run_config: StackRunConfig, impls: Dict[Api, Any]):
+async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
     for rsrc, api, register_method, list_method in RESOURCES:
         objects = getattr(run_config, rsrc)
         if api not in impls:
@@ -197,7 +197,7 @@ def validate_env_pair(env_pair: str) -> tuple[str, str]:
         ) from e
 
 
-def add_internal_implementations(impls: Dict[Api, Any], run_config: StackRunConfig) -> None:
+def add_internal_implementations(impls: dict[Api, Any], run_config: StackRunConfig) -> None:
     """Add internal implementations (inspect and providers) to the implementations dictionary.
 
     Args:
@@ -220,10 +220,13 @@ def add_internal_implementations(impls: Dict[Api, Any], run_config: StackRunConf
 # Produces a stack of providers for the given run config. Not all APIs may be
 # asked for in the run config.
 async def construct_stack(
-    run_config: StackRunConfig, provider_registry: Optional[ProviderRegistry] = None
-) -> Dict[Api, Any]:
+    run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
+) -> dict[Api, Any]:
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
-    impls = await resolve_impls(run_config, provider_registry or get_provider_registry(run_config), dist_registry)
+    policy = run_config.server.auth.access_policy if run_config.server.auth else []
+    impls = await resolve_impls(
+        run_config, provider_registry or get_provider_registry(run_config), dist_registry, policy
+    )
 
     # Add internal implementations after all other providers are resolved
     add_internal_implementations(impls, run_config)
@@ -244,7 +247,7 @@ def get_stack_run_config_from_template(template: str) -> StackRunConfig:
 
 
 def run_config_from_adhoc_config_spec(
-    adhoc_config_spec: str, provider_registry: Optional[ProviderRegistry] = None
+    adhoc_config_spec: str, provider_registry: ProviderRegistry | None = None
 ) -> StackRunConfig:
     """
     Create an adhoc distribution from a list of API providers.

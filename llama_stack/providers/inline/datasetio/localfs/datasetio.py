@@ -3,7 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas
 
@@ -11,9 +11,9 @@ from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Dataset
 from llama_stack.providers.datatypes import DatasetsProtocolPrivate
-from llama_stack.providers.utils.datasetio.pagination import paginate_records
 from llama_stack.providers.utils.datasetio.url_utils import get_dataframe_from_uri
 from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.pagination import paginate_records
 
 from .config import LocalFSDatasetIOConfig
 
@@ -64,7 +64,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         # Load existing datasets from kvstore
         start_key = DATASETS_PREFIX
         end_key = f"{DATASETS_PREFIX}\xff"
-        stored_datasets = await self.kvstore.range(start_key, end_key)
+        stored_datasets = await self.kvstore.values_in_range(start_key, end_key)
 
         for dataset in stored_datasets:
             dataset = Dataset.model_validate_json(dataset)
@@ -92,8 +92,8 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
     async def iterrows(
         self,
         dataset_id: str,
-        start_index: Optional[int] = None,
-        limit: Optional[int] = None,
+        start_index: int | None = None,
+        limit: int | None = None,
     ) -> PaginatedResponse:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
@@ -102,7 +102,7 @@ class LocalFSDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
         records = dataset_impl.df.to_dict("records")
         return paginate_records(records, start_index, limit)
 
-    async def append_rows(self, dataset_id: str, rows: List[Dict[str, Any]]) -> None:
+    async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         dataset_def = self.dataset_infos[dataset_id]
         dataset_impl = PandasDataframeDataset(dataset_def)
         await dataset_impl.load()

@@ -23,7 +23,7 @@ The `llamastack/distribution-dell` distribution consists of the following provid
 | safety | `inline::llama-guard` |
 | scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
 | telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::code-interpreter`, `inline::rag-runtime` |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime` |
 | vector_io | `inline::faiss`, `remote::chromadb`, `remote::pgvector` |
 
 
@@ -155,7 +155,7 @@ docker run \
   -v $HOME/.llama:/root/.llama \
   -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-dell \
-  --yaml-config /root/my-run.yaml \
+  --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env DEH_URL=$DEH_URL \

@@ -1,0 +1,132 @@
+name: Integration Auth Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'distributions/**'
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/integration-auth-tests.yml' # This workflow
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        auth-provider: [oauth2_token]
+      fail-fast: false # we want to run all tests regardless of failure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup-runner
+
+      - name: Build Llama Stack
+        run: |
+          llama stack build --template ollama --image-type venv
+
+      - name: Install minikube
+        if: ${{ matrix.auth-provider == 'kubernetes' }}
+        uses: medyagh/setup-minikube@cea33675329b799adccc9526aa5daccc26cd5052 # v0.0.19
+
+      - name: Start minikube
+        if: ${{ matrix.auth-provider == 'oauth2_token' }}
+        run: |
+          minikube start
+          kubectl get pods -A
+
+      - name: Configure Kube Auth
+        if: ${{ matrix.auth-provider == 'oauth2_token' }}
+        run: |
+          kubectl create namespace llama-stack
+          kubectl create serviceaccount llama-stack-auth -n llama-stack
+          kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --serviceaccount=llama-stack:llama-stack-auth -n llama-stack
+          kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
+          cat <<EOF | kubectl apply -f -
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRole
+          metadata:
+            name: allow-anonymous-openid
+          rules:
+          - nonResourceURLs: ["/openid/v1/jwks"]
+            verbs: ["get"]
+          ---
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: ClusterRoleBinding
+          metadata:
+            name: allow-anonymous-openid
+          roleRef:
+            apiGroup: rbac.authorization.k8s.io
+            kind: ClusterRole
+            name: allow-anonymous-openid
+          subjects:
+          - kind: User
+            name: system:anonymous
+            apiGroup: rbac.authorization.k8s.io
+          EOF
+
+      - name: Set Kubernetes Config
+        if: ${{ matrix.auth-provider == 'oauth2_token' }}
+        run: |
+          echo "KUBERNETES_API_SERVER_URL=$(kubectl get --raw /.well-known/openid-configuration| jq -r .jwks_uri)" >> $GITHUB_ENV
+          echo "KUBERNETES_CA_CERT_PATH=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.certificate-authority}')" >> $GITHUB_ENV
+          echo "KUBERNETES_ISSUER=$(kubectl get --raw /.well-known/openid-configuration| jq -r .issuer)" >> $GITHUB_ENV
+          echo "KUBERNETES_AUDIENCE=$(kubectl create token llama-stack-auth -n llama-stack --duration=1h | cut -d. -f2 | base64 -d | jq -r '.aud[0]')" >> $GITHUB_ENV
+
+      - name: Set Kube Auth Config and run server
+        env:
+          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+        if: ${{ matrix.auth-provider == 'oauth2_token' }}
+        run: |
+          run_dir=$(mktemp -d)
+          cat <<'EOF' > $run_dir/run.yaml
+          version: '2'
+          image_name: kube
+          apis: []
+          providers: {}
+          server:
+            port: 8321
+          EOF
+          yq eval '.server.auth = {"provider_type": "${{ matrix.auth-provider }}"}' -i $run_dir/run.yaml
+          yq eval '.server.auth.config = {"tls_cafile": "${{ env.KUBERNETES_CA_CERT_PATH }}", "issuer": "${{ env.KUBERNETES_ISSUER }}", "audience": "${{ env.KUBERNETES_AUDIENCE }}"}' -i $run_dir/run.yaml
+          yq eval '.server.auth.config.jwks = {"uri": "${{ env.KUBERNETES_API_SERVER_URL }}"}' -i $run_dir/run.yaml
+          cat $run_dir/run.yaml
+
+          nohup uv run llama stack run $run_dir/run.yaml --image-type venv > server.log 2>&1 &
+
+      - name: Wait for Llama Stack server to be ready
+        run: |
+          echo "Waiting for Llama Stack server..."
+          for i in {1..30}; do
+            if curl -s -L -H "Authorization: Bearer $(cat llama-stack-auth-token)" http://localhost:8321/v1/health | grep -q "OK"; then
+              echo "Llama Stack server is up!"
+              if grep -q "Enabling authentication with provider: ${{ matrix.auth-provider }}" server.log; then
+                echo "Llama Stack server is configured to use ${{ matrix.auth-provider }} auth"
+                exit 0
+              else
+                echo "Llama Stack server is not configured to use ${{ matrix.auth-provider }} auth"
+                cat server.log
+                exit 1
+              fi
+            fi
+            sleep 1
+          done
+          echo "Llama Stack server failed to start"
+          cat server.log
+          exit 1
+
+      - name: Test auth
+        run: |
+          curl -s -L -H "Authorization: Bearer $(cat llama-stack-auth-token)" http://127.0.0.1:8321/v1/providers|jq

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import threading
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
@@ -16,11 +16,15 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.semconv.resource import ResourceAttributes
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 from llama_stack.apis.telemetry import (
     Event,
     MetricEvent,
+    MetricLabelMatcher,
+    MetricQueryType,
     QueryCondition,
+    QueryMetricsResponse,
     QuerySpanTreeResponse,
     QueryTracesResponse,
     Span,
@@ -41,6 +45,7 @@ from llama_stack.providers.inline.telemetry.meta_reference.sqlite_span_processor
 )
 from llama_stack.providers.utils.telemetry.dataset_mixin import TelemetryDatasetMixin
 from llama_stack.providers.utils.telemetry.sqlite_trace_store import SQLiteTraceStore
+from llama_stack.providers.utils.telemetry.tracing import ROOT_SPAN_MARKERS
 
 from .config import TelemetryConfig, TelemetrySink
 
@@ -60,7 +65,7 @@ def is_tracing_enabled(tracer):
 
 
 class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
-    def __init__(self, config: TelemetryConfig, deps: Dict[Api, Any]) -> None:
+    def __init__(self, config: TelemetryConfig, deps: dict[Api, Any]) -> None:
         self.config = config
         self.datasetio_api = deps.get(Api.datasetio)
         self.meter = None
@@ -123,6 +128,17 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         else:
             raise ValueError(f"Unknown event type: {event}")
 
+    async def query_metrics(
+        self,
+        metric_name: str,
+        start_time: int,
+        end_time: int | None = None,
+        granularity: str | None = "1d",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: list[MetricLabelMatcher] | None = None,
+    ) -> QueryMetricsResponse:
+        raise NotImplementedError("Querying metrics is not implemented")
+
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
             # Use global storage instead of instance storage
@@ -132,7 +148,7 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             if span:
                 timestamp_ns = int(event.timestamp.timestamp() * 1e9)
                 span.add_event(
-                    name=event.type,
+                    name=event.type.value,
                     attributes={
                         "message": event.message,
                         "severity": event.severity.value,
@@ -192,6 +208,15 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 event.attributes = {}
             event.attributes["__ttl__"] = ttl_seconds
 
+            # Extract these W3C trace context attributes so they are not written to
+            # underlying storage, as we just need them to propagate the trace context.
+            traceparent = event.attributes.pop("traceparent", None)
+            tracestate = event.attributes.pop("tracestate", None)
+            if traceparent:
+                # If we have a traceparent header value, we're not the root span.
+                for root_attribute in ROOT_SPAN_MARKERS:
+                    event.attributes.pop(root_attribute, None)
+
             if isinstance(event.payload, SpanStartPayload):
                 # Check if span already exists to prevent duplicates
                 if span_id in _GLOBAL_STORAGE["active_spans"]:
@@ -202,8 +227,12 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                     parent_span_id = int(event.payload.parent_span_id, 16)
                     parent_span = _GLOBAL_STORAGE["active_spans"].get(parent_span_id)
                     context = trace.set_span_in_context(parent_span)
-                else:
-                    event.attributes["__root_span__"] = "true"
+                elif traceparent:
+                    carrier = {
+                        "traceparent": traceparent,
+                        "tracestate": tracestate,
+                    }
+                    context = TraceContextTextMapPropagator().extract(carrier=carrier)
 
                 span = tracer.start_span(
                     name=event.payload.name,
@@ -231,10 +260,10 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
 
     async def query_traces(
         self,
-        attribute_filters: Optional[List[QueryCondition]] = None,
-        limit: Optional[int] = 100,
-        offset: Optional[int] = 0,
-        order_by: Optional[List[str]] = None,
+        attribute_filters: list[QueryCondition] | None = None,
+        limit: int | None = 100,
+        offset: int | None = 0,
+        order_by: list[str] | None = None,
     ) -> QueryTracesResponse:
         return QueryTracesResponse(
             data=await self.trace_store.query_traces(
@@ -254,8 +283,8 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     async def get_span_tree(
         self,
         span_id: str,
-        attributes_to_return: Optional[List[str]] = None,
-        max_depth: Optional[int] = None,
+        attributes_to_return: list[str] | None = None,
+        max_depth: int | None = None,
     ) -> QuerySpanTreeResponse:
         return QuerySpanTreeResponse(
             data=await self.trace_store.get_span_tree(

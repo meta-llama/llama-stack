@@ -5,15 +5,15 @@
 # the root directory of this source tree.
 
 import logging
-from typing import Any, List, Optional
+from typing import Any
 
 import requests
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import RunShieldResponse, Safety, SafetyViolation, ViolationLevel
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.library_client import convert_pydantic_to_json_value
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
+from llama_stack.providers.utils.inference.openai_compat import convert_message_to_openai_dict_new
 
 from .config import NVIDIASafetyConfig
 
@@ -28,7 +28,6 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
         Args:
             config (NVIDIASafetyConfig): The configuration containing the guardrails service URL and config ID.
         """
-        print(f"Initializing NVIDIASafetyAdapter({config.guardrails_service_url})...")
         self.config = config
 
     async def initialize(self) -> None:
@@ -42,7 +41,7 @@ class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
             raise ValueError("Shield model not provided.")
 
     async def run_shield(
-        self, shield_id: str, messages: List[Message], params: Optional[dict[str, Any]] = None
+        self, shield_id: str, messages: list[Message], params: dict[str, Any] | None = None
     ) -> RunShieldResponse:
         """
         Run a safety shield check against the provided messages.
@@ -113,7 +112,7 @@ class NeMoGuardrails:
         response.raise_for_status()
         return response.json()
 
-    async def run(self, messages: List[Message]) -> RunShieldResponse:
+    async def run(self, messages: list[Message]) -> RunShieldResponse:
         """
         Queries the /v1/guardrails/checks endpoint of the NeMo guardrails deployed API.
 
@@ -127,9 +126,10 @@ class NeMoGuardrails:
         Raises:
             requests.HTTPError: If the POST request fails.
         """
+        request_messages = [await convert_message_to_openai_dict_new(message) for message in messages]
         request_data = {
             "model": self.model,
-            "messages": convert_pydantic_to_json_value(messages),
+            "messages": request_messages,
             "temperature": self.temperature,
             "top_p": 1,
             "frequency_penalty": 0,

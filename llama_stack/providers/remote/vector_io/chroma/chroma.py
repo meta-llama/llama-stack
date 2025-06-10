@@ -6,7 +6,7 @@
 import asyncio
 import json
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from urllib.parse import urlparse
 
 import chromadb
@@ -26,8 +26,7 @@ from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
 log = logging.getLogger(__name__)
 
-
-ChromaClientType = Union[chromadb.AsyncHttpClient, chromadb.PersistentClient]
+ChromaClientType = chromadb.api.AsyncClientAPI | chromadb.api.ClientAPI
 
 
 # this is a helper to allow us to use async and non-async chroma clients interchangeably
@@ -42,7 +41,7 @@ class ChromaIndex(EmbeddingIndex):
         self.client = client
         self.collection = collection
 
-    async def add_chunks(self, chunks: List[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
@@ -56,7 +55,7 @@ class ChromaIndex(EmbeddingIndex):
             )
         )
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = await maybe_await(
             self.collection.query(
                 query_embeddings=[embedding.tolist()],
@@ -77,19 +76,31 @@ class ChromaIndex(EmbeddingIndex):
                 log.exception(f"Failed to parse document: {doc}")
                 continue
 
+            score = 1.0 / float(dist) if dist != 0 else float("inf")
+            if score < score_threshold:
+                continue
+
             chunks.append(chunk)
-            scores.append(1.0 / float(dist))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
     async def delete(self):
         await maybe_await(self.client.delete_collection(self.collection.name))
 
+    async def query_keyword(
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Keyword search is not supported in Chroma")
+
 
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     def __init__(
         self,
-        config: Union[RemoteChromaVectorIOConfig, InlineChromaVectorIOConfig],
+        config: RemoteChromaVectorIOConfig | InlineChromaVectorIOConfig,
         inference_api: Api.inference,
     ) -> None:
         log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
@@ -137,8 +148,8 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def insert_chunks(
         self,
         vector_db_id: str,
-        chunks: List[Chunk],
-        ttl_seconds: Optional[int] = None,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
 
@@ -148,7 +159,7 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self,
         vector_db_id: str,
         query: InterleavedContent,
-        params: Optional[Dict[str, Any]] = None,
+        params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
 

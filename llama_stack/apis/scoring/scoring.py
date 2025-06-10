@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel
 
@@ -12,7 +12,7 @@ from llama_stack.apis.scoring_functions import ScoringFn, ScoringFnParams
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 # mapping of metric to value
-ScoringResultRow = Dict[str, Any]
+ScoringResultRow = dict[str, Any]
 
 
 @json_schema_type
@@ -24,15 +24,15 @@ class ScoringResult(BaseModel):
     :param aggregated_results: Map of metric name to aggregated value
     """
 
-    score_rows: List[ScoringResultRow]
+    score_rows: list[ScoringResultRow]
     # aggregated metrics to value
-    aggregated_results: Dict[str, Any]
+    aggregated_results: dict[str, Any]
 
 
 @json_schema_type
 class ScoreBatchResponse(BaseModel):
-    dataset_id: Optional[str] = None
-    results: Dict[str, ScoringResult]
+    dataset_id: str | None = None
+    results: dict[str, ScoringResult]
 
 
 @json_schema_type
@@ -44,7 +44,7 @@ class ScoreResponse(BaseModel):
     """
 
     # each key in the dict is a scoring function name
-    results: Dict[str, ScoringResult]
+    results: dict[str, ScoringResult]
 
 
 class ScoringFunctionStore(Protocol):
@@ -59,20 +59,28 @@ class Scoring(Protocol):
     async def score_batch(
         self,
         dataset_id: str,
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
+        scoring_functions: dict[str, ScoringFnParams | None],
         save_results_dataset: bool = False,
-    ) -> ScoreBatchResponse: ...
+    ) -> ScoreBatchResponse:
+        """Score a batch of rows.
+
+        :param dataset_id: The ID of the dataset to score.
+        :param scoring_functions: The scoring functions to use for the scoring.
+        :param save_results_dataset: Whether to save the results to a dataset.
+        :returns: A ScoreBatchResponse.
+        """
+        ...
 
     @webmethod(route="/scoring/score", method="POST")
     async def score(
         self,
-        input_rows: List[Dict[str, Any]],
-        scoring_functions: Dict[str, Optional[ScoringFnParams]],
+        input_rows: list[dict[str, Any]],
+        scoring_functions: dict[str, ScoringFnParams | None],
     ) -> ScoreResponse:
         """Score a list of rows.
 
         :param input_rows: The rows to score.
         :param scoring_functions: The scoring functions to use for the scoring.
-        :return: ScoreResponse object containing rows and aggregated results
+        :returns: A ScoreResponse object containing rows and aggregated results.
         """
         ...

@@ -4,14 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import gc
 import logging
 import os
 import time
 from datetime import datetime, timezone
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import torch
 from torch import nn
@@ -39,7 +38,6 @@ from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
     Checkpoint,
     DataConfig,
-    EfficiencyConfig,
     LoraFinetuningConfig,
     OptimizerConfig,
     QATFinetuningConfig,
@@ -48,9 +46,7 @@ from llama_stack.apis.post_training import (
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 from llama_stack.distribution.utils.model_utils import model_local_dir
 from llama_stack.models.llama.sku_list import resolve_model
-from llama_stack.providers.inline.post_training.common.validator import (
-    validate_input_dataset_schema,
-)
+from llama_stack.providers.inline.post_training.common.utils import evacuate_model_from_device
 from llama_stack.providers.inline.post_training.torchtune.common import utils
 from llama_stack.providers.inline.post_training.torchtune.common.checkpointer import (
     TorchtuneCheckpointer,
@@ -83,17 +79,15 @@ class LoraFinetuningSingleDevice:
         config: TorchtunePostTrainingConfig,
         job_uuid: str,
         training_config: TrainingConfig,
-        hyperparam_search_config: Dict[str, Any],
-        logger_config: Dict[str, Any],
+        hyperparam_search_config: dict[str, Any],
+        logger_config: dict[str, Any],
         model: str,
-        checkpoint_dir: Optional[str],
+        checkpoint_dir: str | None,
         algorithm_config: LoraFinetuningConfig | QATFinetuningConfig | None,
         datasetio_api: DatasetIO,
         datasets_api: Datasets,
     ) -> None:
         assert isinstance(training_config.data_config, DataConfig), "DataConfig must be initialized"
-
-        assert isinstance(training_config.efficiency_config, EfficiencyConfig), "EfficiencyConfig must be initialized"
 
         self.job_uuid = job_uuid
         self.training_config = training_config
@@ -159,7 +153,7 @@ class LoraFinetuningSingleDevice:
         self.datasets_api = datasets_api
 
     async def load_checkpoint(self):
-        def get_checkpoint_files(checkpoint_dir: str) -> List[str]:
+        def get_checkpoint_files(checkpoint_dir: str) -> list[str]:
             try:
                 # List all files in the given directory
                 files = os.listdir(checkpoint_dir)
@@ -253,8 +247,8 @@ class LoraFinetuningSingleDevice:
         self,
         enable_activation_checkpointing: bool,
         enable_activation_offloading: bool,
-        base_model_state_dict: Dict[str, Any],
-        lora_weights_state_dict: Optional[Dict[str, Any]] = None,
+        base_model_state_dict: dict[str, Any],
+        lora_weights_state_dict: dict[str, Any] | None = None,
     ) -> nn.Module:
         self._lora_rank = self.algorithm_config.rank
         self._lora_alpha = self.algorithm_config.alpha
@@ -338,7 +332,7 @@ class LoraFinetuningSingleDevice:
         tokenizer: Llama3Tokenizer,
         shuffle: bool,
         batch_size: int,
-    ) -> Tuple[DistributedSampler, DataLoader]:
+    ) -> tuple[DistributedSampler, DataLoader]:
         async def fetch_rows(dataset_id: str):
             return await self.datasetio_api.iterrows(
                 dataset_id=dataset_id,
@@ -348,11 +342,9 @@ class LoraFinetuningSingleDevice:
         all_rows = await fetch_rows(dataset_id)
         rows = all_rows.data
 
-        await validate_input_dataset_schema(
-            datasets_api=self.datasets_api,
-            dataset_id=dataset_id,
-            dataset_type=self._data_format.value,
-        )
+        # TODO (xiyan): validate dataset schema
+        # dataset_def = await self.datasets_api.get_dataset(dataset_id=dataset_id)
+
         data_transform = await utils.get_data_transform(self._data_format)
         ds = SFTDataset(
             rows,
@@ -435,7 +427,7 @@ class LoraFinetuningSingleDevice:
             checkpoint_format=self._checkpoint_format,
         )
 
-    async def _loss_step(self, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
+    async def _loss_step(self, batch: dict[str, torch.Tensor]) -> torch.Tensor:
         # Shape [b, s], needed for the loss not the model
         labels = batch.pop("labels")
         # run model
@@ -457,7 +449,7 @@ class LoraFinetuningSingleDevice:
 
         return loss
 
-    async def train(self) -> Tuple[Dict[str, Any], List[Checkpoint]]:
+    async def train(self) -> tuple[dict[str, Any], list[Checkpoint]]:
         """
         The core training loop.
         """
@@ -469,7 +461,7 @@ class LoraFinetuningSingleDevice:
 
         # training artifacts
         checkpoints = []
-        memory_stats: Dict[str, Any] = {}
+        memory_stats: dict[str, Any] = {}
 
         # self.epochs_run should be non-zero when we're resuming from a checkpoint
         for curr_epoch in range(self.epochs_run, self.total_epochs):
@@ -562,15 +554,11 @@ class LoraFinetuningSingleDevice:
             checkpoints.append(checkpoint)
 
         # clean up the memory after training finishes
-        if self._device.type != "cpu":
-            self._model.to("cpu")
-            torch.cuda.empty_cache()
-        del self._model
-        gc.collect()
+        evacuate_model_from_device(self._model, self._device.type)
 
         return (memory_stats, checkpoints)
 
-    async def validation(self) -> Tuple[float, float]:
+    async def validation(self) -> tuple[float, float]:
         total_loss = 0.0
         total_tokens = 0
         log.info("Starting validation...")

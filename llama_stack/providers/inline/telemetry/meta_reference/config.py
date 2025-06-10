@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -30,10 +30,10 @@ class TelemetryConfig(BaseModel):
     )
     service_name: str = Field(
         # service name is always the same, use zero-width space to avoid clutter
-        default="​",
+        default="\u200b",
         description="The service name to use for telemetry",
     )
-    sinks: List[TelemetrySink] = Field(
+    sinks: list[TelemetrySink] = Field(
         default=[TelemetrySink.CONSOLE, TelemetrySink.SQLITE],
         description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
     )
@@ -50,9 +50,9 @@ class TelemetryConfig(BaseModel):
         return v
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str, db_name: str = "trace_store.db") -> Dict[str, Any]:
+    def sample_run_config(cls, __distro_dir__: str, db_name: str = "trace_store.db") -> dict[str, Any]:
         return {
-            "service_name": "${env.OTEL_SERVICE_NAME:​}",
+            "service_name": "${env.OTEL_SERVICE_NAME:\u200b}",
             "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
-            "sqlite_db_path": "${env.SQLITE_DB_PATH:" + __distro_dir__ + "/" + db_name + "}",
+            "sqlite_db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + db_name,
         }

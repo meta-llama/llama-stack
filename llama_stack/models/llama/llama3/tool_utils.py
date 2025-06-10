@@ -6,7 +6,6 @@
 
 import json
 import re
-from typing import Optional, Tuple
 
 from llama_stack.log import get_logger
 
@@ -172,7 +171,7 @@ class ToolUtils:
         return match is not None
 
     @staticmethod
-    def maybe_extract_builtin_tool_call(message_body: str) -> Optional[Tuple[str, str]]:
+    def maybe_extract_builtin_tool_call(message_body: str) -> tuple[str, str] | None:
         # Find the first match in the text
         match = re.search(BUILTIN_TOOL_PATTERN, message_body)
 
@@ -185,7 +184,7 @@ class ToolUtils:
             return None
 
     @staticmethod
-    def maybe_extract_custom_tool_call(message_body: str) -> Optional[Tuple[str, str]]:
+    def maybe_extract_custom_tool_call(message_body: str) -> tuple[str, str] | None:
         # NOTE: Custom function too calls are still experimental
         # Sometimes, response is of the form
         # {"type": "function", "name": "function_name", "parameters": {...}
@@ -252,7 +251,7 @@ class ToolUtils:
                 def format_value(value: RecursiveType) -> str:
                     if isinstance(value, str):
                         return f'"{value}"'
-                    elif isinstance(value, (int, float, bool)) or value is None:
+                    elif isinstance(value, int | float | bool) or value is None:
                         return str(value)
                     elif isinstance(value, list):
                         return f"[{', '.join(format_value(v) for v in value)}]"

@@ -5,11 +5,11 @@
 # the root directory of this source tree.
 
 import logging
-from typing import AsyncGenerator, List, Optional, Union
+from collections.abc import AsyncGenerator
 
 from llama_stack.apis.inference import (
     CompletionResponse,
-    Inference,
+    InferenceProvider,
     InterleavedContent,
     LogProbConfig,
     Message,
@@ -38,7 +38,7 @@ class SentenceTransformersInferenceImpl(
     OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompletionToLlamaStackMixin,
     SentenceTransformerEmbeddingMixin,
-    Inference,
+    InferenceProvider,
     ModelsProtocolPrivate,
 ):
     def __init__(self, config: SentenceTransformersInferenceConfig) -> None:
@@ -60,46 +60,46 @@ class SentenceTransformersInferenceImpl(
         self,
         model_id: str,
         content: str,
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-    ) -> Union[CompletionResponse, AsyncGenerator]:
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+    ) -> CompletionResponse | AsyncGenerator:
         raise ValueError("Sentence transformers don't support completion")
 
     async def chat_completion(
         self,
         model_id: str,
-        messages: List[Message],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_choice: Optional[ToolChoice] = ToolChoice.auto,
-        tool_prompt_format: Optional[ToolPromptFormat] = None,
-        stream: Optional[bool] = False,
-        logprobs: Optional[LogProbConfig] = None,
-        tool_config: Optional[ToolConfig] = None,
+        messages: list[Message],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_choice: ToolChoice | None = ToolChoice.auto,
+        tool_prompt_format: ToolPromptFormat | None = None,
+        stream: bool | None = False,
+        logprobs: LogProbConfig | None = None,
+        tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         raise ValueError("Sentence transformers don't support chat completion")
 
     async def batch_completion(
         self,
         model_id: str,
-        content_batch: List[InterleavedContent],
-        sampling_params: Optional[SamplingParams] = None,
-        response_format: Optional[ResponseFormat] = None,
-        logprobs: Optional[LogProbConfig] = None,
+        content_batch: list[InterleavedContent],
+        sampling_params: SamplingParams | None = None,
+        response_format: ResponseFormat | None = None,
+        logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch completion is not supported for Sentence Transformers")
 
     async def batch_chat_completion(
         self,
         model_id: str,
-        messages_batch: List[List[Message]],
-        sampling_params: Optional[SamplingParams] = None,
-        tools: Optional[List[ToolDefinition]] = None,
-        tool_config: Optional[ToolConfig] = None,
-        response_format: Optional[ResponseFormat] = None,
-        logprobs: Optional[LogProbConfig] = None,
+        messages_batch: list[list[Message]],
+        sampling_params: SamplingParams | None = None,
+        tools: list[ToolDefinition] | None = None,
+        tool_config: ToolConfig | None = None,
+        response_format: ResponseFormat | None = None,
+        logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for Sentence Transformers")

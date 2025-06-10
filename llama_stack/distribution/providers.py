@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -73,14 +73,14 @@ class ProviderImpl(Providers):
 
         raise ValueError(f"Provider {provider_id} not found")
 
-    async def get_providers_health(self) -> Dict[str, Dict[str, HealthResponse]]:
+    async def get_providers_health(self) -> dict[str, dict[str, HealthResponse]]:
         """Get health status for all providers.
 
         Returns:
             Dict[str, Dict[str, HealthResponse]]: A dictionary mapping API names to provider health statuses.
                 Each API maps to a dictionary of provider IDs to their health responses.
         """
-        providers_health: Dict[str, Dict[str, HealthResponse]] = {}
+        providers_health: dict[str, dict[str, HealthResponse]] = {}
         timeout = 1.0
 
         async def check_provider_health(impl: Any) -> tuple[str, HealthResponse] | None:
@@ -99,7 +99,7 @@ class ProviderImpl(Providers):
             try:
                 health = await asyncio.wait_for(impl.health(), timeout=timeout)
                 return api_name, health
-            except asyncio.TimeoutError:
+            except (asyncio.TimeoutError, TimeoutError):
                 return (
                     api_name,
                     HealthResponse(
