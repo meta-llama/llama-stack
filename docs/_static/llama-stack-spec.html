@@ -7048,6 +7048,9 @@
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
                     },
                     {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall"
+                    },
+                    {
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
                     },
                     {
@@ -7193,7 +7196,7 @@
                         "const": "file_search",
                         "default": "file_search"
                     },
-                    "vector_store_id": {
+                    "vector_store_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -7217,7 +7220,7 @@
                 "additionalProperties": false,
                 "required": [
                     "type",
-                    "vector_store_id"
+                    "vector_store_ids"
                 ],
                 "title": "OpenAIResponseInputToolFileSearch"
             },
@@ -7483,6 +7486,64 @@
                     "type"
                 ],
                 "title": "OpenAIResponseOutputMessageContentOutputText"
+            },
+            "OpenAIResponseOutputMessageFileSearchToolCall": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "queries": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "file_search_call",
+                        "default": "file_search_call"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "queries",
+                    "status",
+                    "type"
+                ],
+                "title": "OpenAIResponseOutputMessageFileSearchToolCall"
             },
             "OpenAIResponseOutputMessageFunctionToolCall": {
                 "type": "object",
@@ -7761,6 +7822,9 @@
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall"
                     },
                     {
+                        "$ref": "#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall"
+                    },
+                    {
                         "$ref": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall"
                     },
                     {
@@ -7775,6 +7839,7 @@
                     "mapping": {
                         "message": "#/components/schemas/OpenAIResponseMessage",
                         "web_search_call": "#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall",
+                        "file_search_call": "#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall",
                         "function_call": "#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall",
                         "mcp_call": "#/components/schemas/OpenAIResponseOutputMessageMCPCall",
                         "mcp_list_tools": "#/components/schemas/OpenAIResponseOutputMessageMCPListTools"

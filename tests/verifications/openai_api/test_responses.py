@@ -9,6 +9,7 @@ import json
 import httpx
 import openai
 import pytest
+from llama_stack_client import LlamaStackClient
 
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.distribution.datatypes import AuthenticationRequiredError
@@ -251,6 +252,62 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     assert len(response.output) > 1
     assert response.output[0].type == "web_search_call"
     assert response.output[0].status == "completed"
+    assert response.output[1].type == "message"
+    assert response.output[1].status == "completed"
+    assert response.output[1].role == "assistant"
+    assert len(response.output[1].content) > 0
+    assert case["output"].lower() in response.output_text.lower().strip()
+
+
+@pytest.mark.parametrize(
+    "case",
+    responses_test_cases["test_response_file_search"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_response_non_streaming_file_search(
+    base_url, request, openai_client, model, provider, verification_config, case
+):
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    lls_client = LlamaStackClient(base_url=base_url.replace("/v1/openai/v1", ""))
+    vector_db_id = "test_vector_store"
+
+    # Ensure the test starts from a clean vector store
+    try:
+        lls_client.vector_dbs.unregister(vector_db_id=vector_db_id)
+    except Exception:
+        pass
+
+    lls_client.vector_dbs.register(
+        vector_db_id=vector_db_id,
+        embedding_model="all-MiniLM-L6-v2",
+    )
+    doc_content = "Llama 4 Maverick has 128 experts"
+    chunks = [
+        {
+            "content": doc_content,
+            "mime_type": "text/plain",
+            "metadata": {
+                "document_id": "doc1",
+            },
+        },
+    ]
+    lls_client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks)
+
+    response = openai_client.responses.create(
+        model=model,
+        input=case["input"],
+        tools=case["tools"],
+        stream=False,
+    )
+    assert len(response.output) > 1
+    assert response.output[0].type == "file_search_call"
+    assert response.output[0].status == "completed"
+    assert response.output[0].queries  # ensure it's some non-empty list
+    assert response.output[0].results[0].text == doc_content
+    assert response.output[0].results[0].score > 0
     assert response.output[1].type == "message"
     assert response.output[1].status == "completed"
     assert response.output[1].role == "assistant"
