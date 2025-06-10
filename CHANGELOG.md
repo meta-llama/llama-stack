@@ -1,5 +1,54 @@
 # Changelog
 
+# v0.2.10.1
+Published on: 2025-06-06T20:11:02Z
+
+## Highlights
+* ChromaDB provider fix
+
+
+---
+
+# v0.2.10
+Published on: 2025-06-05T23:21:45Z
+
+## Highlights
+
+* OpenAI-compatible embeddings API
+* OpenAI-compatible Files API
+* Postgres support in starter distro
+* Enable ingestion of precomputed embeddings
+* Full multi-turn support in Responses API
+* Fine-grained access control policy
+
+
+---
+
+# v0.2.9
+Published on: 2025-05-30T20:01:56Z
+
+## Highlights
+* Added initial streaming support in Responses API
+* UI view for Responses
+* Postgres inference store support
+
+
+---
+
+# v0.2.8
+Published on: 2025-05-27T21:03:47Z
+
+# Release v0.2.8
+
+## Highlights
+
+* Server-side MCP with auth firewalls now works in the Stack - both for Agents and Responses
+* Get chat completions APIs and UI to show chat completions
+* Enable keyword search for sqlite-vec
+
+
+---
+
 # v0.2.7
 Published on: 2025-05-16T20:38:10Z
 
