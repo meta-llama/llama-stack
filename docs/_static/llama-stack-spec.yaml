@@ -8791,6 +8791,8 @@ components:
           description: >-
             The provider-specific vector database ID.
       additionalProperties: false
+      required:
+        - name
       title: OpenaiCreateVectorStoreRequest
     VectorStoreObject:
       type: object
