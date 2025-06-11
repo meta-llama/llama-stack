@@ -163,6 +163,9 @@ class InferenceRouter(Inference):
         messages: list[Message] | InterleavedContent,
         tool_prompt_format: ToolPromptFormat | None = None,
     ) -> int | None:
+        if not hasattr(self, "formatter") or self.formatter is None:
+            return None
+
         if isinstance(messages, list):
             encoded = self.formatter.encode_dialog_prompt(messages, tool_prompt_format)
         else:
