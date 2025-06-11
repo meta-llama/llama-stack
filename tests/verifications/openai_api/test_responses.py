@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import os
 import time
 
 import httpx
@@ -38,7 +39,7 @@ def _new_vector_store(openai_client, name):
     return vector_store
 
 
-def _new_file(openai_client, name, content, tmp_path):
+def _upload_file(openai_client, name, file_path):
     # Ensure we don't reuse an existing file
     files = openai_client.files.list()
     for file in files:
@@ -46,8 +47,6 @@ def _new_file(openai_client, name, content, tmp_path):
             openai_client.files.delete(file_id=file.id)
 
     # Upload a text file with our document content
-    file_path = tmp_path / name
-    file_path.write_text(content)
     return openai_client.files.create(file=open(file_path, "rb"), purpose="assistants")
 
 
@@ -291,7 +290,7 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     responses_test_cases["test_response_file_search"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_file_search_simple_text(
+def test_response_non_streaming_file_search(
     request, openai_client, model, provider, verification_config, tmp_path, case
 ):
     if isinstance(openai_client, LlamaStackAsLibraryClient):
@@ -303,8 +302,17 @@ def test_response_non_streaming_file_search_simple_text(
 
     vector_store = _new_vector_store(openai_client, "test_vector_store")
 
-    file_content = "Llama 4 Maverick has 128 experts"
-    file_response = _new_file(openai_client, "test_response_non_streaming_file_search.txt", file_content, tmp_path)
+    if "file_content" in case:
+        file_name = "test_response_non_streaming_file_search.txt"
+        file_path = tmp_path / file_name
+        file_path.write_text(case["file_content"])
+    elif "file_path" in case:
+        file_path = os.path.join(os.path.dirname(__file__), "fixtures", case["file_path"])
+        file_name = os.path.basename(file_path)
+    else:
+        raise ValueError(f"No file content or path provided for case {case['case_id']}")
+
+    file_response = _upload_file(openai_client, file_name, file_path)
 
     # Attach our file to the vector store
     file_attach_response = openai_client.vector_stores.files.create(
@@ -343,7 +351,7 @@ def test_response_non_streaming_file_search_simple_text(
     assert response.output[0].status == "completed"
     assert response.output[0].queries  # ensure it's some non-empty list
     assert response.output[0].results
-    assert response.output[0].results[0].text == file_content
+    assert case["output"].lower() in response.output[0].results[0].text.lower()
     assert response.output[0].results[0].score > 0
 
     # Verify the assistant response that summarizes the results
@@ -354,13 +362,8 @@ def test_response_non_streaming_file_search_simple_text(
     assert case["output"].lower() in response.output_text.lower().strip()
 
 
-@pytest.mark.parametrize(
-    "case",
-    responses_test_cases["test_response_file_search"]["test_params"]["case"],
-    ids=case_id_generator,
-)
 def test_response_non_streaming_file_search_empty_vector_store(
-    request, openai_client, model, provider, verification_config, tmp_path, case
+    request, openai_client, model, provider, verification_config
 ):
     if isinstance(openai_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
@@ -371,17 +374,11 @@ def test_response_non_streaming_file_search_empty_vector_store(
 
     vector_store = _new_vector_store(openai_client, "test_vector_store")
 
-    # Update our tools with the right vector store id
-    tools = case["tools"]
-    for tool in tools:
-        if tool["type"] == "file_search":
-            tool["vector_store_ids"] = [vector_store.id]
-
     # Create the response request, which should query our vector store
     response = openai_client.responses.create(
         model=model,
-        input=case["input"],
-        tools=case["tools"],
+        input="How many experts does the Llama 4 Maverick model have?",
+        tools=[{"type": "file_search", "vector_store_ids": [vector_store.id]}],
         stream=False,
         include=["file_search_call.results"],
     )

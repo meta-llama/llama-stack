@@ -39,7 +39,15 @@ test_response_file_search:
       input: "How many experts does the Llama 4 Maverick model have?"
       tools:
       - type: file_search
-        # vector_store_ids gets added by the test runner
+        # vector_store_ids param for file_search tool gets added by the test runner
+      file_content: "Llama 4 Maverick has 128 experts"
+      output: "128"
+    - case_id: "What is the "
+      input: "How many experts does the Llama 4 Maverick model have?"
+      tools:
+      - type: file_search
+        # vector_store_ids param for file_search toolgets added by the test runner
+      file_path: "pdfs/llama_stack_and_models.pdf"
       output: "128"
 
 test_response_mcp_tool:

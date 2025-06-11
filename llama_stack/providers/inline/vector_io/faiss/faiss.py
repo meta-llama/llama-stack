@@ -9,6 +9,7 @@ import base64
 import io
 import json
 import logging
+import mimetypes
 import time
 from typing import Any
 
@@ -19,7 +20,6 @@ from numpy.typing import NDArray
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.inference.inference import Inference
-from llama_stack.apis.tools.rag_tool import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
@@ -40,8 +40,8 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
-    content_from_doc,
     make_overlapped_chunks,
+    parse_pdf,
 )
 
 from .config import FaissVectorIOConfig
@@ -292,20 +292,23 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
             chunk_overlap_tokens = 400
 
         try:
+            file_response = await self.files_api.openai_retrieve_file(file_id)
+            mime_type, _ = mimetypes.guess_type(file_response.filename)
             content_response = await self.files_api.openai_retrieve_file_content(file_id)
-            content = content_response.body
-            doc = RAGDocument(
-                document_id=file_id,
-                content=content,
-                metadata=attributes,
-            )
-            content = await content_from_doc(doc)
+
+            # TODO: We can't use content_from_doc directly from vector_store
+            # but should figure out how to centralize this logic near there
+            if mime_type == "application/pdf":
+                content = parse_pdf(content_response.body)
+            else:
+                content = content_response.body.decode("utf-8")
+
             chunks = make_overlapped_chunks(
-                doc.document_id,
+                file_id,
                 content,
                 max_chunk_size_tokens,
                 chunk_overlap_tokens,
-                doc.metadata,
+                attributes,
             )
 
             if not chunks:
