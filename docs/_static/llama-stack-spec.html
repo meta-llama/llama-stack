@@ -3240,6 +3240,59 @@
                 }
             }
         },
+        "/v1/openai/v1/vector_stores/{vector_store_id}/files": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreFileObject representing the attached file.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreFileObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Attach a file to a vector store.",
+                "parameters": [
+                    {
+                        "name": "vector_store_id",
+                        "in": "path",
+                        "description": "The ID of the vector store to attach the file to.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpenaiAttachFileToVectorStoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/openai/v1/completions": {
             "post": {
                 "responses": {
@@ -11830,6 +11883,232 @@
                     "ttl_seconds"
                 ],
                 "title": "LogEventRequest"
+            },
+            "VectorStoreChunkingStrategy": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategyAuto"
+                    },
+                    {
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategyStatic"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "auto": "#/components/schemas/VectorStoreChunkingStrategyAuto",
+                        "static": "#/components/schemas/VectorStoreChunkingStrategyStatic"
+                    }
+                }
+            },
+            "VectorStoreChunkingStrategyAuto": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "auto",
+                        "default": "auto"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "VectorStoreChunkingStrategyAuto"
+            },
+            "VectorStoreChunkingStrategyStatic": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "static",
+                        "default": "static"
+                    },
+                    "static": {
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategyStaticConfig"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "static"
+                ],
+                "title": "VectorStoreChunkingStrategyStatic"
+            },
+            "VectorStoreChunkingStrategyStaticConfig": {
+                "type": "object",
+                "properties": {
+                    "chunk_overlap_tokens": {
+                        "type": "integer",
+                        "default": 400
+                    },
+                    "max_chunk_size_tokens": {
+                        "type": "integer",
+                        "default": 800
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "chunk_overlap_tokens",
+                    "max_chunk_size_tokens"
+                ],
+                "title": "VectorStoreChunkingStrategyStaticConfig"
+            },
+            "OpenaiAttachFileToVectorStoreRequest": {
+                "type": "object",
+                "properties": {
+                    "file_id": {
+                        "type": "string",
+                        "description": "The ID of the file to attach to the vector store."
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The key-value attributes stored with the file, which can be used for filtering."
+                    },
+                    "chunking_strategy": {
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategy",
+                        "description": "The chunking strategy to use for the file."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "file_id"
+                ],
+                "title": "OpenaiAttachFileToVectorStoreRequest"
+            },
+            "VectorStoreFileLastError": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "server_error"
+                            },
+                            {
+                                "type": "string",
+                                "const": "rate_limit_exceeded"
+                            }
+                        ]
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "title": "VectorStoreFileLastError"
+            },
+            "VectorStoreFileObject": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "default": "vector_store.file"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "chunking_strategy": {
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategy"
+                    },
+                    "created_at": {
+                        "type": "integer"
+                    },
+                    "last_error": {
+                        "$ref": "#/components/schemas/VectorStoreFileLastError"
+                    },
+                    "status": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "const": "completed"
+                            },
+                            {
+                                "type": "string",
+                                "const": "in_progress"
+                            },
+                            {
+                                "type": "string",
+                                "const": "cancelled"
+                            },
+                            {
+                                "type": "string",
+                                "const": "failed"
+                            }
+                        ]
+                    },
+                    "usage_bytes": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "vector_store_id": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "object",
+                    "attributes",
+                    "chunking_strategy",
+                    "created_at",
+                    "status",
+                    "usage_bytes",
+                    "vector_store_id"
+                ],
+                "title": "VectorStoreFileObject",
+                "description": "OpenAI Vector Store File object."
             },
             "OpenAIJSONSchema": {
                 "type": "object",

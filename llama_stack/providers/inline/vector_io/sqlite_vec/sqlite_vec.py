@@ -24,6 +24,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
@@ -488,6 +489,15 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores Files API is not supported in sqlite_vec")
 
 
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:

@@ -10,7 +10,6 @@ import time
 import httpx
 import openai
 import pytest
-from llama_stack_client import LlamaStackClient
 
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.distribution.datatypes import AuthenticationRequiredError
@@ -275,10 +274,13 @@ def test_response_non_streaming_file_search(
     if should_skip_test(verification_config, provider, model, test_name_base):
         pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
 
+    # Ensure we don't reuse an existing vector store
     vector_stores = openai_client.vector_stores.list()
     for vector_store in vector_stores:
         if vector_store.name == "test_vector_store":
             openai_client.vector_stores.delete(vector_store_id=vector_store.id)
+
+    # Create a new vector store
     vector_store = openai_client.vector_stores.create(
         name="test_vector_store",
         # extra_body={
@@ -287,47 +289,42 @@ def test_response_non_streaming_file_search(
         # },
     )
 
-    doc_content = "Llama 4 Maverick has 128 experts"
-    chunks = [
-        {
-            "content": doc_content,
-            "mime_type": "text/plain",
-            "metadata": {
-                "document_id": "doc1",
-            },
-        },
-    ]
-
+    # Ensure we don't reuse an existing file
     file_name = "test_response_non_streaming_file_search.txt"
     files = openai_client.files.list()
     for file in files:
         if file.filename == file_name:
             openai_client.files.delete(file_id=file.id)
+
+    # Upload a text file with our document content
+    doc_content = "Llama 4 Maverick has 128 experts"
     file_path = tmp_path / file_name
     file_path.write_text(doc_content)
     file_response = openai_client.files.create(file=open(file_path, "rb"), purpose="assistants")
 
-    if "api.openai.com" in base_url:
-        file_attach_response = openai_client.vector_stores.files.create(
+    # Attach our file to the vector store
+    file_attach_response = openai_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_response.id,
+    )
+
+    # Wait for the file to be attached
+    while file_attach_response.status == "in_progress":
+        time.sleep(0.1)
+        file_attach_response = openai_client.vector_stores.files.retrieve(
             vector_store_id=vector_store.id,
             file_id=file_response.id,
         )
-        while file_attach_response.status == "in_progress":
-            time.sleep(0.1)
-            file_attach_response = openai_client.vector_stores.files.retrieve(
-                vector_store_id=vector_store.id,
-                file_id=file_response.id,
-            )
-    else:
-        # TODO: only until we have a way to insert content into OpenAI vector stores
-        lls_client = LlamaStackClient(base_url=base_url.replace("/v1/openai/v1", ""))
-        lls_client.vector_io.insert(vector_db_id=vector_store.id, chunks=chunks)
+    assert file_attach_response.status == "completed"
+    assert not file_attach_response.last_error
 
+    # Update our tools with the right vector store id
     tools = case["tools"]
     for tool in tools:
         if tool["type"] == "file_search":
             tool["vector_store_ids"] = [vector_store.id]
 
+    # Create the response request, which should query our document
     response = openai_client.responses.create(
         model=model,
         input=case["input"],
@@ -335,6 +332,8 @@ def test_response_non_streaming_file_search(
         stream=False,
         include=["file_search_call.results"],
     )
+
+    # Verify the file_search_tool was called
     assert len(response.output) > 1
     assert response.output[0].type == "file_search_call"
     assert response.output[0].status == "completed"
@@ -342,6 +341,8 @@ def test_response_non_streaming_file_search(
     assert response.output[0].results
     assert response.output[0].results[0].text == doc_content
     assert response.output[0].results[0].score > 0
+
+    # Verify the assistant response that summarizes the results
     assert response.output[1].type == "message"
     assert response.output[1].status == "completed"
     assert response.output[1].role == "assistant"

@@ -9,19 +9,29 @@ import base64
 import io
 import json
 import logging
+import time
 from typing import Any
 
 import faiss
 import numpy as np
 from numpy.typing import NDArray
 
+from llama_stack.apis.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.inference.inference import Inference
+from llama_stack.apis.tools.rag_tool import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
     VectorIO,
+)
+from llama_stack.apis.vector_io.vector_io import (
+    VectorStoreChunkingStrategy,
+    VectorStoreChunkingStrategyAuto,
+    VectorStoreChunkingStrategyStatic,
+    VectorStoreFileLastError,
+    VectorStoreFileObject,
 )
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -30,6 +40,8 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
+    content_from_doc,
+    make_overlapped_chunks,
 )
 
 from .config import FaissVectorIOConfig
@@ -132,9 +144,10 @@ class FaissIndex(EmbeddingIndex):
 
 
 class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference) -> None:
+    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference, files_api: Files) -> None:
         self.config = config
         self.inference_api = inference_api
+        self.files_api = files_api
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.kvstore: KVStore | None = None
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}
@@ -250,3 +263,71 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        attributes = attributes or {}
+        chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
+
+        vector_store_file_object = VectorStoreFileObject(
+            id=file_id,
+            attributes=attributes,
+            chunking_strategy=chunking_strategy,
+            created_at=int(time.time()),
+            status="in_progress",
+            vector_store_id=vector_store_id,
+        )
+
+        if isinstance(chunking_strategy, VectorStoreChunkingStrategyStatic):
+            max_chunk_size_tokens = chunking_strategy.static.max_chunk_size_tokens
+            chunk_overlap_tokens = chunking_strategy.static.chunk_overlap_tokens
+        else:
+            # Default values from OpenAI API docs
+            max_chunk_size_tokens = 800
+            chunk_overlap_tokens = 400
+
+        try:
+            content_response = await self.files_api.openai_retrieve_file_content(file_id)
+            content = content_response.body
+            doc = RAGDocument(
+                document_id=file_id,
+                content=content,
+                metadata=attributes,
+            )
+            content = await content_from_doc(doc)
+            chunks = make_overlapped_chunks(
+                doc.document_id,
+                content,
+                max_chunk_size_tokens,
+                chunk_overlap_tokens,
+                doc.metadata,
+            )
+
+            if not chunks:
+                vector_store_file_object.status = "failed"
+                vector_store_file_object.last_error = VectorStoreFileLastError(
+                    code="server_error",
+                    message="No chunks were generated from the file",
+                )
+                return vector_store_file_object
+
+            await self.insert_chunks(
+                vector_db_id=vector_store_id,
+                chunks=chunks,
+            )
+        except Exception as e:
+            vector_store_file_object.status = "failed"
+            vector_store_file_object.last_error = VectorStoreFileLastError(
+                code="server_error",
+                message=str(e),
+            )
+            return vector_store_file_object
+
+        vector_store_file_object.status = "completed"
+
+        return vector_store_file_object
