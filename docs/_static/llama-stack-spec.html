@@ -3283,6 +3283,117 @@
                 }
             }
         },
+        "/v1/openai/v1/vector_stores": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreListResponse containing the list of vector stores.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Returns a list of vector stores.",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "after",
+                        "in": "query",
+                        "description": "A cursor for use in pagination. `after` is an object ID that defines your place in the list.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "before",
+                        "in": "query",
+                        "description": "A cursor for use in pagination. `before` is an object ID that defines your place in the list.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreObject representing the created vector store.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Creates a vector store.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpenaiCreateVectorStoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/openai/v1/files/{file_id}": {
             "get": {
                 "responses": {
@@ -3359,6 +3470,141 @@
                         "name": "file_id",
                         "in": "path",
                         "description": "The ID of the file to use for this request.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
+        "/v1/openai/v1/vector_stores/{vector_store_id}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreObject representing the vector store.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Retrieves a vector store.",
+                "parameters": [
+                    {
+                        "name": "vector_store_id",
+                        "in": "path",
+                        "description": "The ID of the vector store to retrieve.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            },
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreObject representing the updated vector store.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Updates a vector store.",
+                "parameters": [
+                    {
+                        "name": "vector_store_id",
+                        "in": "path",
+                        "description": "The ID of the vector store to update.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpenaiUpdateVectorStoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            },
+            "delete": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreDeleteResponse indicating the deletion status.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreDeleteResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Delete a vector store.",
+                "parameters": [
+                    {
+                        "name": "vector_store_id",
+                        "in": "path",
+                        "description": "The ID of the vector store to delete.",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -3608,6 +3854,59 @@
                         }
                     }
                 ]
+            }
+        },
+        "/v1/openai/v1/vector_stores/{vector_store_id}/search": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A VectorStoreSearchResponse containing the search results.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VectorStoreSearchResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "VectorIO"
+                ],
+                "description": "Search for chunks in a vector store.\nSearches a vector store for relevant chunks based on a query and optional file attribute filters.",
+                "parameters": [
+                    {
+                        "name": "vector_store_id",
+                        "in": "path",
+                        "description": "The ID of the vector store to search.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OpenaiSearchVectorStoreRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
             }
         },
         "/v1/post-training/preference-optimize": {
@@ -12178,6 +12477,218 @@
                 "title": "OpenAICompletionChoice",
                 "description": "A choice from an OpenAI-compatible completion response."
             },
+            "OpenaiCreateVectorStoreRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "A name for the vector store."
+                    },
+                    "file_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "A list of File IDs that the vector store should use. Useful for tools like `file_search` that can access files."
+                    },
+                    "expires_after": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The expiration policy for a vector store."
+                    },
+                    "chunking_strategy": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Set of 16 key-value pairs that can be attached to an object."
+                    },
+                    "embedding_model": {
+                        "type": "string",
+                        "description": "The embedding model to use for this vector store."
+                    },
+                    "embedding_dimension": {
+                        "type": "integer",
+                        "description": "The dimension of the embedding vectors (default: 384)."
+                    },
+                    "provider_id": {
+                        "type": "string",
+                        "description": "The ID of the provider to use for this vector store."
+                    },
+                    "provider_vector_db_id": {
+                        "type": "string",
+                        "description": "The provider-specific vector database ID."
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenaiCreateVectorStoreRequest"
+            },
+            "VectorStoreObject": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "default": "vector_store"
+                    },
+                    "created_at": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "usage_bytes": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "file_counts": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer"
+                        }
+                    },
+                    "status": {
+                        "type": "string",
+                        "default": "completed"
+                    },
+                    "expires_after": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "expires_at": {
+                        "type": "integer"
+                    },
+                    "last_active_at": {
+                        "type": "integer"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "object",
+                    "created_at",
+                    "usage_bytes",
+                    "file_counts",
+                    "status",
+                    "metadata"
+                ],
+                "title": "VectorStoreObject",
+                "description": "OpenAI Vector Store object."
+            },
             "OpenAIFileDeleteResponse": {
                 "type": "object",
                 "properties": {
@@ -12204,6 +12715,30 @@
                 ],
                 "title": "OpenAIFileDeleteResponse",
                 "description": "Response for deleting a file in OpenAI Files API."
+            },
+            "VectorStoreDeleteResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "object": {
+                        "type": "string",
+                        "default": "vector_store.deleted"
+                    },
+                    "deleted": {
+                        "type": "boolean",
+                        "default": true
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "object",
+                    "deleted"
+                ],
+                "title": "VectorStoreDeleteResponse",
+                "description": "Response from deleting a vector store."
             },
             "OpenaiEmbeddingsRequest": {
                 "type": "object",
@@ -12477,9 +13012,247 @@
                 ],
                 "title": "OpenAIListModelsResponse"
             },
+            "VectorStoreListResponse": {
+                "type": "object",
+                "properties": {
+                    "object": {
+                        "type": "string",
+                        "default": "list"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VectorStoreObject"
+                        }
+                    },
+                    "first_id": {
+                        "type": "string"
+                    },
+                    "last_id": {
+                        "type": "string"
+                    },
+                    "has_more": {
+                        "type": "boolean",
+                        "default": false
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "object",
+                    "data",
+                    "has_more"
+                ],
+                "title": "VectorStoreListResponse",
+                "description": "Response from listing vector stores."
+            },
             "Response": {
                 "type": "object",
                 "title": "Response"
+            },
+            "OpenaiSearchVectorStoreRequest": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "description": "The query string or array for performing the search."
+                    },
+                    "filters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Filters based on file attributes to narrow the search results."
+                    },
+                    "max_num_results": {
+                        "type": "integer",
+                        "description": "Maximum number of results to return (1 to 50 inclusive, default 10)."
+                    },
+                    "ranking_options": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Ranking options for fine-tuning the search results."
+                    },
+                    "rewrite_query": {
+                        "type": "boolean",
+                        "description": "Whether to rewrite the natural language query for vector search (default false)"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query",
+                    "max_num_results",
+                    "rewrite_query"
+                ],
+                "title": "OpenaiSearchVectorStoreRequest"
+            },
+            "VectorStoreSearchResponse": {
+                "type": "object",
+                "properties": {
+                    "object": {
+                        "type": "string",
+                        "default": "vector_store.search_results.page"
+                    },
+                    "search_query": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "oneOf": [
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "has_more": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "next_page": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "object",
+                    "search_query",
+                    "data",
+                    "has_more"
+                ],
+                "title": "VectorStoreSearchResponse",
+                "description": "Response from searching a vector store."
+            },
+            "OpenaiUpdateVectorStoreRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the vector store."
+                    },
+                    "expires_after": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "The expiration policy for a vector store."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Set of 16 key-value pairs that can be attached to an object."
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenaiUpdateVectorStoreRequest"
             },
             "DPOAlignmentConfig": {
                 "type": "object",
