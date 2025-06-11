@@ -24,6 +24,33 @@ from tests.verifications.openai_api.fixtures.load import load_test_cases
 responses_test_cases = load_test_cases("responses")
 
 
+def _new_vector_store(openai_client, name):
+    # Ensure we don't reuse an existing vector store
+    vector_stores = openai_client.vector_stores.list()
+    for vector_store in vector_stores:
+        if vector_store.name == name:
+            openai_client.vector_stores.delete(vector_store_id=vector_store.id)
+
+    # Create a new vector store
+    vector_store = openai_client.vector_stores.create(
+        name=name,
+    )
+    return vector_store
+
+
+def _new_file(openai_client, name, content, tmp_path):
+    # Ensure we don't reuse an existing file
+    files = openai_client.files.list()
+    for file in files:
+        if file.filename == name:
+            openai_client.files.delete(file_id=file.id)
+
+    # Upload a text file with our document content
+    file_path = tmp_path / name
+    file_path.write_text(content)
+    return openai_client.files.create(file=open(file_path, "rb"), purpose="assistants")
+
+
 @pytest.mark.parametrize(
     "case",
     responses_test_cases["test_response_basic"]["test_params"]["case"],
@@ -264,8 +291,8 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     responses_test_cases["test_response_file_search"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_file_search(
-    base_url, request, openai_client, model, provider, verification_config, tmp_path, case
+def test_response_non_streaming_file_search_simple_text(
+    request, openai_client, model, provider, verification_config, tmp_path, case
 ):
     if isinstance(openai_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
@@ -274,33 +301,10 @@ def test_response_non_streaming_file_search(
     if should_skip_test(verification_config, provider, model, test_name_base):
         pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
 
-    # Ensure we don't reuse an existing vector store
-    vector_stores = openai_client.vector_stores.list()
-    for vector_store in vector_stores:
-        if vector_store.name == "test_vector_store":
-            openai_client.vector_stores.delete(vector_store_id=vector_store.id)
+    vector_store = _new_vector_store(openai_client, "test_vector_store")
 
-    # Create a new vector store
-    vector_store = openai_client.vector_stores.create(
-        name="test_vector_store",
-        # extra_body={
-        #     "embedding_model": "all-MiniLM-L6-v2",
-        #     "embedding_dimension": 384,
-        # },
-    )
-
-    # Ensure we don't reuse an existing file
-    file_name = "test_response_non_streaming_file_search.txt"
-    files = openai_client.files.list()
-    for file in files:
-        if file.filename == file_name:
-            openai_client.files.delete(file_id=file.id)
-
-    # Upload a text file with our document content
-    doc_content = "Llama 4 Maverick has 128 experts"
-    file_path = tmp_path / file_name
-    file_path.write_text(doc_content)
-    file_response = openai_client.files.create(file=open(file_path, "rb"), purpose="assistants")
+    file_content = "Llama 4 Maverick has 128 experts"
+    file_response = _new_file(openai_client, "test_response_non_streaming_file_search.txt", file_content, tmp_path)
 
     # Attach our file to the vector store
     file_attach_response = openai_client.vector_stores.files.create(
@@ -324,7 +328,7 @@ def test_response_non_streaming_file_search(
         if tool["type"] == "file_search":
             tool["vector_store_ids"] = [vector_store.id]
 
-    # Create the response request, which should query our document
+    # Create the response request, which should query our vector store
     response = openai_client.responses.create(
         model=model,
         input=case["input"],
@@ -339,7 +343,7 @@ def test_response_non_streaming_file_search(
     assert response.output[0].status == "completed"
     assert response.output[0].queries  # ensure it's some non-empty list
     assert response.output[0].results
-    assert response.output[0].results[0].text == doc_content
+    assert response.output[0].results[0].text == file_content
     assert response.output[0].results[0].score > 0
 
     # Verify the assistant response that summarizes the results
@@ -348,6 +352,52 @@ def test_response_non_streaming_file_search(
     assert response.output[1].role == "assistant"
     assert len(response.output[1].content) > 0
     assert case["output"].lower() in response.output_text.lower().strip()
+
+
+@pytest.mark.parametrize(
+    "case",
+    responses_test_cases["test_response_file_search"]["test_params"]["case"],
+    ids=case_id_generator,
+)
+def test_response_non_streaming_file_search_empty_vector_store(
+    request, openai_client, model, provider, verification_config, tmp_path, case
+):
+    if isinstance(openai_client, LlamaStackAsLibraryClient):
+        pytest.skip("Responses API file search is not yet supported in library client.")
+
+    test_name_base = get_base_test_name(request)
+    if should_skip_test(verification_config, provider, model, test_name_base):
+        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
+
+    vector_store = _new_vector_store(openai_client, "test_vector_store")
+
+    # Update our tools with the right vector store id
+    tools = case["tools"]
+    for tool in tools:
+        if tool["type"] == "file_search":
+            tool["vector_store_ids"] = [vector_store.id]
+
+    # Create the response request, which should query our vector store
+    response = openai_client.responses.create(
+        model=model,
+        input=case["input"],
+        tools=case["tools"],
+        stream=False,
+        include=["file_search_call.results"],
+    )
+
+    # Verify the file_search_tool was called
+    assert len(response.output) > 1
+    assert response.output[0].type == "file_search_call"
+    assert response.output[0].status == "completed"
+    assert response.output[0].queries  # ensure it's some non-empty list
+    assert not response.output[0].results  # ensure we don't get any results
+
+    # Verify the assistant response that summarizes the results
+    assert response.output[1].type == "message"
+    assert response.output[1].status == "completed"
+    assert response.output[1].role == "assistant"
+    assert len(response.output[1].content) > 0
 
 
 @pytest.mark.parametrize(
