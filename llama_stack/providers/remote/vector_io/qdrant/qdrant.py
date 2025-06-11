@@ -189,7 +189,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def openai_create_vector_store(
         self,
-        name: str | None = None,
+        name: str,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
