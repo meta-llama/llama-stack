@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import json
+import time
 
 import httpx
 import openai
@@ -265,25 +266,27 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     ids=case_id_generator,
 )
 def test_response_non_streaming_file_search(
-    base_url, request, openai_client, model, provider, verification_config, case
+    base_url, request, openai_client, model, provider, verification_config, tmp_path, case
 ):
+    if isinstance(openai_client, LlamaStackAsLibraryClient):
+        pytest.skip("Responses API file search is not yet supported in library client.")
+
     test_name_base = get_base_test_name(request)
     if should_skip_test(verification_config, provider, model, test_name_base):
         pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
 
-    lls_client = LlamaStackClient(base_url=base_url.replace("/v1/openai/v1", ""))
-    vector_db_id = "test_vector_store"
-
-    # Ensure the test starts from a clean vector store
-    try:
-        lls_client.vector_dbs.unregister(vector_db_id=vector_db_id)
-    except Exception:
-        pass
-
-    lls_client.vector_dbs.register(
-        vector_db_id=vector_db_id,
-        embedding_model="all-MiniLM-L6-v2",
+    vector_stores = openai_client.vector_stores.list()
+    for vector_store in vector_stores:
+        if vector_store.name == "test_vector_store":
+            openai_client.vector_stores.delete(vector_store_id=vector_store.id)
+    vector_store = openai_client.vector_stores.create(
+        name="test_vector_store",
+        # extra_body={
+        #     "embedding_model": "all-MiniLM-L6-v2",
+        #     "embedding_dimension": 384,
+        # },
     )
+
     doc_content = "Llama 4 Maverick has 128 experts"
     chunks = [
         {
@@ -294,18 +297,49 @@ def test_response_non_streaming_file_search(
             },
         },
     ]
-    lls_client.vector_io.insert(vector_db_id=vector_db_id, chunks=chunks)
+
+    file_name = "test_response_non_streaming_file_search.txt"
+    files = openai_client.files.list()
+    for file in files:
+        if file.filename == file_name:
+            openai_client.files.delete(file_id=file.id)
+    file_path = tmp_path / file_name
+    file_path.write_text(doc_content)
+    file_response = openai_client.files.create(file=open(file_path, "rb"), purpose="assistants")
+
+    if "api.openai.com" in base_url:
+        file_attach_response = openai_client.vector_stores.files.create(
+            vector_store_id=vector_store.id,
+            file_id=file_response.id,
+        )
+        while file_attach_response.status == "in_progress":
+            time.sleep(0.1)
+            file_attach_response = openai_client.vector_stores.files.retrieve(
+                vector_store_id=vector_store.id,
+                file_id=file_response.id,
+            )
+    else:
+        # TODO: only until we have a way to insert content into OpenAI vector stores
+        lls_client = LlamaStackClient(base_url=base_url.replace("/v1/openai/v1", ""))
+        lls_client.vector_io.insert(vector_db_id=vector_store.id, chunks=chunks)
+
+    tools = case["tools"]
+    for tool in tools:
+        if tool["type"] == "file_search":
+            tool["vector_store_ids"] = [vector_store.id]
 
     response = openai_client.responses.create(
         model=model,
         input=case["input"],
         tools=case["tools"],
         stream=False,
+        include=["file_search_call.results"],
     )
     assert len(response.output) > 1
     assert response.output[0].type == "file_search_call"
     assert response.output[0].status == "completed"
     assert response.output[0].queries  # ensure it's some non-empty list
+    assert response.output[0].results
     assert response.output[0].results[0].text == doc_content
     assert response.output[0].results[0].score > 0
     assert response.output[1].type == "message"
