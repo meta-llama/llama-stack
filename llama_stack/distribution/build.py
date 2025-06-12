@@ -14,6 +14,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.utils.exec import run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
@@ -82,6 +83,21 @@ def get_provider_dependencies(
 
 
 def print_pip_install_help(config: BuildConfig):
+    if config.external_apis_dir:
+        cprint("Installing external APIs", color="yellow", file=sys.stderr)
+        external_apis = load_external_apis(config)
+        if external_apis:
+            # install the external APIs
+            packages = []
+            for _, api_spec in external_apis.items():
+                if api_spec.pip_packages:
+                    packages.extend(api_spec.pip_packages)
+                    cprint(
+                        f"Installing {api_spec.name} with pip packages {api_spec.pip_packages}",
+                        color="yellow",
+                        file=sys.stderr,
+                    )
+            run_command(["uv", "pip", "install", *packages])
     normal_deps, special_deps = get_provider_dependencies(config)
 
     cprint(
@@ -105,6 +121,11 @@ def build_image(
 
     normal_deps, special_deps = get_provider_dependencies(build_config)
     normal_deps += SERVER_DEPENDENCIES
+    if build_config.external_apis_dir:
+        external_apis = load_external_apis(build_config)
+        if external_apis:
+            for _, api_spec in external_apis.items():
+                normal_deps.extend(api_spec.pip_packages)
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
