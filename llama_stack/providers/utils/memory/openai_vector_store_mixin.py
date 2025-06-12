@@ -13,10 +13,12 @@ from typing import Any
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     QueryChunksResponse,
+    VectorStoreContent,
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
     VectorStoreObject,
     VectorStoreSearchResponse,
+    VectorStoreSearchResponsePage,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,7 +87,6 @@ class OpenAIVectorStoreMixin(ABC):
         provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         """Creates a vector store."""
-        print("IN OPENAI VECTOR STORE MIXIN, openai_create_vector_store")
         # store and vector_db have the same id
         store_id = name or str(uuid.uuid4())
         created_at = int(time.time())
@@ -281,7 +282,7 @@ class OpenAIVectorStoreMixin(ABC):
         ranking_options: dict[str, Any] | None = None,
         rewrite_query: bool | None = False,
         # search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
-    ) -> VectorStoreSearchResponse:
+    ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store."""
         # TODO: Add support in the API for this
         search_mode = "vector"
@@ -312,7 +313,7 @@ class OpenAIVectorStoreMixin(ABC):
 
             # Convert response to OpenAI format
             data = []
-            for i, (chunk, score) in enumerate(zip(response.chunks, response.scores, strict=False)):
+            for chunk, score in zip(response.chunks, response.scores, strict=False):
                 # Apply score based filtering
                 if score < score_threshold:
                     continue
@@ -323,18 +324,46 @@ class OpenAIVectorStoreMixin(ABC):
                     if not self._matches_filters(chunk.metadata, filters):
                         continue
 
-                chunk_data = {
-                    "id": f"chunk_{i}",
-                    "object": "vector_store.search_result",
-                    "score": score,
-                    "content": chunk.content.content if hasattr(chunk.content, "content") else str(chunk.content),
-                    "metadata": chunk.metadata,
-                }
-                data.append(chunk_data)
+                # content is InterleavedContent
+                if isinstance(chunk.content, str):
+                    content = [
+                        VectorStoreContent(
+                            type="text",
+                            text=chunk.content,
+                        )
+                    ]
+                elif isinstance(chunk.content, list):
+                    # TODO: Add support for other types of content
+                    content = [
+                        VectorStoreContent(
+                            type="text",
+                            text=item.text,
+                        )
+                        for item in chunk.content
+                        if item.type == "text"
+                    ]
+                else:
+                    if chunk.content.type != "text":
+                        raise ValueError(f"Unsupported content type: {chunk.content.type}")
+                    content = [
+                        VectorStoreContent(
+                            type="text",
+                            text=chunk.content.text,
+                        )
+                    ]
+
+                response_data_item = VectorStoreSearchResponse(
+                    file_id=chunk.metadata.get("file_id", ""),
+                    filename=chunk.metadata.get("filename", ""),
+                    score=score,
+                    attributes=chunk.metadata,
+                    content=content,
+                )
+                data.append(response_data_item)
                 if len(data) >= max_num_results:
                     break
 
-            return VectorStoreSearchResponse(
+            return VectorStoreSearchResponsePage(
                 search_query=search_query,
                 data=data,
                 has_more=False,  # For simplicity, we don't implement pagination here
@@ -344,7 +373,7 @@ class OpenAIVectorStoreMixin(ABC):
         except Exception as e:
             logger.error(f"Error searching vector store {vector_store_id}: {e}")
             # Return empty results on error
-            return VectorStoreSearchResponse(
+            return VectorStoreSearchResponsePage(
                 search_query=search_query,
                 data=[],
                 has_more=False,
