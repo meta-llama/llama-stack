@@ -327,7 +327,7 @@ def test_response_non_streaming_file_search(
             vector_store_id=vector_store.id,
             file_id=file_response.id,
         )
-    assert file_attach_response.status == "completed"
+    assert file_attach_response.status == "completed", f"Expected file to be attached, got {file_attach_response}"
     assert not file_attach_response.last_error
 
     # Update our tools with the right vector store id

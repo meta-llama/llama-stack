@@ -9,8 +9,6 @@ import base64
 import io
 import json
 import logging
-import mimetypes
-import time
 from typing import Any
 
 import faiss
@@ -26,13 +24,6 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
-from llama_stack.apis.vector_io.vector_io import (
-    VectorStoreChunkingStrategy,
-    VectorStoreChunkingStrategyAuto,
-    VectorStoreChunkingStrategyStatic,
-    VectorStoreFileLastError,
-    VectorStoreFileObject,
-)
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -40,8 +31,6 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
-    make_overlapped_chunks,
-    parse_pdf,
 )
 
 from .config import FaissVectorIOConfig
@@ -263,74 +252,3 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
-
-    async def openai_attach_file_to_vector_store(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-        chunking_strategy: VectorStoreChunkingStrategy | None = None,
-    ) -> VectorStoreFileObject:
-        attributes = attributes or {}
-        chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
-
-        vector_store_file_object = VectorStoreFileObject(
-            id=file_id,
-            attributes=attributes,
-            chunking_strategy=chunking_strategy,
-            created_at=int(time.time()),
-            status="in_progress",
-            vector_store_id=vector_store_id,
-        )
-
-        if isinstance(chunking_strategy, VectorStoreChunkingStrategyStatic):
-            max_chunk_size_tokens = chunking_strategy.static.max_chunk_size_tokens
-            chunk_overlap_tokens = chunking_strategy.static.chunk_overlap_tokens
-        else:
-            # Default values from OpenAI API docs
-            max_chunk_size_tokens = 800
-            chunk_overlap_tokens = 400
-
-        try:
-            file_response = await self.files_api.openai_retrieve_file(file_id)
-            mime_type, _ = mimetypes.guess_type(file_response.filename)
-            content_response = await self.files_api.openai_retrieve_file_content(file_id)
-
-            # TODO: We can't use content_from_doc directly from vector_store
-            # but should figure out how to centralize this logic near there
-            if mime_type == "application/pdf":
-                content = parse_pdf(content_response.body)
-            else:
-                content = content_response.body.decode("utf-8")
-
-            chunks = make_overlapped_chunks(
-                file_id,
-                content,
-                max_chunk_size_tokens,
-                chunk_overlap_tokens,
-                attributes,
-            )
-
-            if not chunks:
-                vector_store_file_object.status = "failed"
-                vector_store_file_object.last_error = VectorStoreFileLastError(
-                    code="server_error",
-                    message="No chunks were generated from the file",
-                )
-                return vector_store_file_object
-
-            await self.insert_chunks(
-                vector_db_id=vector_store_id,
-                chunks=chunks,
-            )
-        except Exception as e:
-            vector_store_file_object.status = "failed"
-            vector_store_file_object.last_error = VectorStoreFileLastError(
-                code="server_error",
-                message=str(e),
-            )
-            return vector_store_file_object
-
-        vector_store_file_object.status = "completed"
-
-        return vector_store_file_object
