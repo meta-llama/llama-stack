@@ -109,11 +109,6 @@ class OpenAIVectorStoreMixin(ABC):
             provider_id=provider_id,
             provider_resource_id=provider_vector_db_id,
         )
-        from rich.pretty import pprint
-
-        print("VECTOR DB")
-        pprint(vector_db)
-
         # Register the vector DB
         await self.register_vector_db(vector_db)
 
