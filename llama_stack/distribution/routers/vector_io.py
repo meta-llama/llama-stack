@@ -17,7 +17,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
     VectorStoreObject,
-    VectorStoreSearchResponse,
+    VectorStoreSearchResponsePage,
 )
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
@@ -242,7 +242,7 @@ class VectorIORouter(VectorIO):
         max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
         rewrite_query: bool | None = False,
-    ) -> VectorStoreSearchResponse:
+    ) -> VectorStoreSearchResponsePage:
         logger.debug(f"VectorIORouter.openai_search_vector_store: {vector_store_id}")
         # Route based on vector store ID
         provider = self.routing_table.get_provider_impl(vector_store_id)

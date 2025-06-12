@@ -8,7 +8,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -97,12 +97,29 @@ class VectorStoreSearchRequest(BaseModel):
 
 
 @json_schema_type
+class VectorStoreContent(BaseModel):
+    type: Literal["text"]
+    text: str
+
+
+@json_schema_type
 class VectorStoreSearchResponse(BaseModel):
+    """Response from searching a vector store."""
+
+    file_id: str
+    filename: str
+    score: float
+    attributes: dict[str, str | float | bool] | None = None
+    content: list[VectorStoreContent]
+
+
+@json_schema_type
+class VectorStoreSearchResponsePage(BaseModel):
     """Response from searching a vector store."""
 
     object: str = "vector_store.search_results.page"
     search_query: str
-    data: list[dict[str, Any]]
+    data: list[VectorStoreSearchResponse]
     has_more: bool = False
     next_page: str | None = None
 
@@ -259,7 +276,7 @@ class VectorIO(Protocol):
         max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
         rewrite_query: bool | None = False,
-    ) -> VectorStoreSearchResponse:
+    ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store.
 
         Searches a vector store for relevant chunks based on a query and optional file attribute filters.
