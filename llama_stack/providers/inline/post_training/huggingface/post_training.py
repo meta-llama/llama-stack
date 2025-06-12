@@ -3,6 +3,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import json
 from enum import Enum
 from typing import Any
 
@@ -81,43 +82,130 @@ class HuggingFacePostTrainingImpl:
         checkpoint_dir: str | None = None,
         algorithm_config: AlgorithmConfig | None = None,
     ) -> PostTrainingJob:
-        async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
-            on_log_message_cb("Starting HF finetuning")
+        from collections.abc import Callable, Coroutine
+        from typing import Any
 
-            recipe = HFFinetuningSingleDevice(
-                job_uuid=job_uuid,
-                datasetio_api=self.datasetio_api,
-                datasets_api=self.datasets_api,
-            )
-            if self.config.recipe == "multi":
-                recipe = HFFinetuningMultiDevice(
+        # Type for the handler: async fn taking 3 Any args, returns Awaitable[None]
+        handler: (
+            Callable[
+                [Callable[[str], None], Callable[[SchedulerJobStatus], None], Callable[[JobArtifact], None]],
+                Coroutine[Any, Any, None],
+            ]
+            | None
+        ) = None
+
+        # Determine world size for distributed training
+        world_size = getattr(self.config, "world_size", 1)
+
+        # Choose the backend and recipe based on world size
+        if world_size > 1:
+            recipe = "multi"
+
+            # Create parameters for the handler script
+            run_params = {
+                "job_uuid": job_uuid,
+                "model": model,
+                "world_size": world_size,
+                "recipe": recipe,
+            }
+
+            # Add optional parameters
+            if checkpoint_dir is not None:
+                run_params["checkpoint_dir"] = checkpoint_dir
+
+            if training_config is not None:
+                run_params["training_config"] = training_config.model_dump_json()
+
+            if algorithm_config is not None:
+                run_params["algorithm_config"] = algorithm_config.model_dump_json()
+
+            # Add provider-specific configuration
+            run_params["provider_config"] = self.config.model_dump_json()
+
+            # Add NCCL debug settings if present
+            if hasattr(self.config, "enable_nccl_debug"):
+                run_params["enable_nccl_debug"] = self.config.enable_nccl_debug
+
+            if hasattr(self.config, "nccl_debug_subsys"):
+                run_params["nccl_debug_subsys"] = self.config.nccl_debug_subsys
+
+            # Initialize the scheduler with the distributed backend
+            self._scheduler = Scheduler(backend="distributed")
+        else:
+            self._scheduler = Scheduler(backend="naive")
+
+            # TODO: this can probably be cleaner
+            # Single-device training path
+            # Define a handler for single-device training
+            async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
+                on_log_message_cb("Starting HF finetuning")
+
+                recipe = HFFinetuningSingleDevice(
                     job_uuid=job_uuid,
                     datasetio_api=self.datasetio_api,
                     datasets_api=self.datasets_api,
-                    enable_nccl_debug=self.config.enable_nccl_debug,
-                    nccl_debug_subsys=self.config.nccl_debug_subsys,
+                )
+                if self.config.recipe == "multi":
+                    recipe = HFFinetuningMultiDevice(
+                        job_uuid=job_uuid,
+                        datasetio_api=self.datasetio_api,
+                        datasets_api=self.datasets_api,
+                        enable_nccl_debug=getattr(self.config, "enable_nccl_debug", False),
+                        nccl_debug_subsys=getattr(self.config, "nccl_debug_subsys", "NONE"),
+                    )
+
+                resources_allocated, checkpoints = await recipe.train(
+                    model=model,
+                    output_dir=checkpoint_dir,
+                    job_uuid=job_uuid,
+                    lora_config=algorithm_config,
+                    config=training_config,
+                    provider_config=self.config,
                 )
 
-            resources_allocated, checkpoints = await recipe.train(
-                model=model,
-                output_dir=checkpoint_dir,
-                job_uuid=job_uuid,
-                lora_config=algorithm_config,
-                config=training_config,
-                provider_config=self.config,
+                on_artifact_collected_cb(self._resources_stats_to_artifact(resources_allocated))
+                if checkpoints:
+                    for checkpoint in checkpoints:
+                        artifact = self._checkpoint_to_artifact(checkpoint)
+                        on_artifact_collected_cb(artifact)
+
+                on_status_change_cb(SchedulerJobStatus.completed)
+                on_log_message_cb("HF finetuning completed")
+
+        assert training_config.data_config is not None
+        data = self._setup_data(dataset_id=training_config.data_config.dataset_id)
+
+        json_data = json.dumps(data)
+
+        run_params["data"] = json_data
+
+        # Schedule the job with the regular scheduler and the handler
+        job_id = self._scheduler.schedule(_JOB_TYPE_SUPERVISED_FINE_TUNE, job_uuid, handler, run_params)
+
+        return PostTrainingJob(job_uuid=job_id)
+
+    async def _setup_data(self, dataset_id: str) -> list[dict[str, Any]]:
+        """Load dataset from llama stack dataset provider.
+
+        Args:
+            dataset_id: ID of the dataset to load
+
+        Returns:
+            list: List of dataset rows
+
+        Raises:
+            RuntimeError: If dataset loading fails
+        """
+        try:
+            all_rows = await self.datasetio_api.iterrows(
+                dataset_id=dataset_id,
+                limit=-1,
             )
-
-            on_artifact_collected_cb(self._resources_stats_to_artifact(resources_allocated))
-            if checkpoints:
-                for checkpoint in checkpoints:
-                    artifact = self._checkpoint_to_artifact(checkpoint)
-                    on_artifact_collected_cb(artifact)
-
-            on_status_change_cb(SchedulerJobStatus.completed)
-            on_log_message_cb("HF finetuning completed")
-
-        job_uuid = self._scheduler.schedule(_JOB_TYPE_SUPERVISED_FINE_TUNE, job_uuid, handler)
-        return PostTrainingJob(job_uuid=job_uuid)
+            if not isinstance(all_rows.data, list):
+                raise RuntimeError("Expected dataset data to be a list")
+            return all_rows.data
+        except Exception as e:
+            raise RuntimeError(f"Failed to load dataset: {str(e)}") from e
 
     async def preference_optimize(
         self,
