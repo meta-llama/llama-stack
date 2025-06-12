@@ -17,9 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
-    if isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI vector stores are not supported when testing with library client yet.")
-
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
         if p.provider_type in ["inline::faiss", "inline::sqlite-vec"]:
@@ -34,7 +31,7 @@ def openai_client(client_with_models):
     return OpenAI(base_url=base_url, api_key="fake")
 
 
-@pytest.fixture(params=["openai_client"])  # , "llama_stack_client"])
+@pytest.fixture(params=["openai_client", "llama_stack_client"])
 def compat_client(request, client_with_models):
     if request.param == "openai_client" and isinstance(client_with_models, LlamaStackAsLibraryClient):
         pytest.skip("OpenAI client tests not supported with library client")
