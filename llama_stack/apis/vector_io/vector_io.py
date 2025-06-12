@@ -256,9 +256,9 @@ class VectorIO(Protocol):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int | None = None,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool | None = None,
+        rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponse:
         """Search for chunks in a vector store.
 
