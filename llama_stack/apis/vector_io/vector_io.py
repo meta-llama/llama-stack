@@ -193,8 +193,8 @@ class VectorIO(Protocol):
     @webmethod(route="/openai/v1/vector_stores", method="GET")
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
@@ -256,9 +256,9 @@ class VectorIO(Protocol):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = None,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
+        rewrite_query: bool | None = None,
     ) -> VectorStoreSearchResponse:
         """Search for chunks in a vector store.
 

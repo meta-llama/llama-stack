@@ -2323,7 +2323,7 @@ paths:
           description: >-
             A limit on the number of objects to be returned. Limit can range between
             1 and 100, and the default is 20.
-          required: true
+          required: false
           schema:
             type: integer
         - name: order
@@ -2331,7 +2331,7 @@ paths:
           description: >-
             Sort order by the `created_at` timestamp of the objects. `asc` for ascending
             order and `desc` for descending order.
-          required: true
+          required: false
           schema:
             type: string
         - name: after
@@ -9189,8 +9189,6 @@ components:
       additionalProperties: false
       required:
         - query
-        - max_num_results
-        - rewrite_query
       title: OpenaiSearchVectorStoreRequest
     VectorStoreSearchResponse:
       type: object

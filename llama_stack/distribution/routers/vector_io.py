@@ -151,8 +151,8 @@ class VectorIORouter(VectorIO):
 
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
@@ -239,9 +239,9 @@ class VectorIORouter(VectorIO):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
+        rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponse:
         logger.debug(f"VectorIORouter.openai_search_vector_store: {vector_store_id}")
         # Route based on vector store ID
