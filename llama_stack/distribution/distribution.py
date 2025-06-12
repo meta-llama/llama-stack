@@ -152,10 +152,15 @@ def get_provider_registry(
         try:
             module = importlib.import_module(api_spec.module)
             registry[api] = {a.provider_type: a for a in module.available_providers()}
-        except ImportError as e:
-            raise ImportError(
-                f"Failed to import external API module {name}. Is the external API package installed? {e}"
-            ) from e
+        except (ImportError, AttributeError) as e:
+            # Populate the registry with an empty dict to avoid breaking the provider registry
+            # This assume that the in-tree provider(s) are not available for this API which means
+            # that users will need to use external providers for this API.
+            registry[api] = {}
+            logger.error(
+                f"Failed to import external API {name}: {e}. Could not populate the in-tree provider(s) registry for {api.name}. \n"
+                "Install the API package to load any in-tree providers for this API."
+            )
 
     # Check if config has the external_providers_dir attribute
     if config and hasattr(config, "external_providers_dir") and config.external_providers_dir:

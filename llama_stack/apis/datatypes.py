@@ -30,13 +30,13 @@ class DynamicApiMeta(EnumMeta):
         try:
             return super().__call__(value)
         except ValueError as e:
-            # If the value doesn't exist, create a new enum member
-            # Create a new member name from the value
-            member_name = value.lower().replace("-", "_")
-
             # If this value was already dynamically added, return it
             if value in cls._dynamic_values:
                 return cls._dynamic_values[value]
+
+            # If the value doesn't exist, create a new enum member
+            # Create a new member name from the value
+            member_name = value.lower().replace("-", "_")
 
             # If this member name already exists in the enum, return the existing member
             if member_name in cls._member_map_:
@@ -55,7 +55,7 @@ class DynamicApiMeta(EnumMeta):
     def add(cls, value):
         """
         Add a new API to the enum.
-        Particulary useful for external APIs.
+        Used to register external APIs.
         """
         member_name = value.lower().replace("-", "_")
 
