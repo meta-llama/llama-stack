@@ -47,7 +47,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     # These should be provided by the implementing class
     openai_vector_stores: dict[str, dict[str, Any]]
-    files_api: Files
+    files_api: Files | None
 
     @abstractmethod
     async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
@@ -424,6 +424,14 @@ class OpenAIVectorStoreMixin(ABC):
             status="in_progress",
             vector_store_id=vector_store_id,
         )
+
+        if not self.files_api:
+            vector_store_file_object.status = "failed"
+            vector_store_file_object.last_error = VectorStoreFileLastError(
+                code="server_error",
+                message="Files API is not available",
+            )
+            return vector_store_file_object
 
         if isinstance(chunking_strategy, VectorStoreChunkingStrategyStatic):
             max_chunk_size_tokens = chunking_strategy.static.max_chunk_size_tokens
