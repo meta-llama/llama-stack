@@ -361,7 +361,7 @@ python -m llama_stack.distribution.server.server --yaml-config ~/.llama/run-byoa
 9. Test the API:
 
 ```bash
-curl -s http://127.0.0.1:8321/v1/weather/locations
+curl -sSf http://127.0.0.1:8321/v1/weather/locations
 {"locations":["Paris","Tokyo"]}%
 ```
 
