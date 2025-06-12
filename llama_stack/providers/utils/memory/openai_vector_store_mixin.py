@@ -8,7 +8,7 @@ import logging
 import time
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any, Literal
+from typing import Any
 
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
@@ -161,12 +161,15 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
         """Returns a list of vector stores."""
+        limit = limit or 20
+        order = order or "desc"
+
         # Get all vector stores
         all_stores = list(self.openai_vector_stores.values())
 
@@ -274,12 +277,16 @@ class OpenAIVectorStoreMixin(ABC):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
-        search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
+        rewrite_query: bool | None = False,
+        # search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
     ) -> VectorStoreSearchResponse:
         """Search for chunks in a vector store."""
+        # TODO: Add support in the API for this
+        search_mode = "vector"
+        max_num_results = max_num_results or 10
+
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
 
