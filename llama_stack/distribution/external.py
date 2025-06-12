@@ -8,23 +8,21 @@
 import yaml
 
 from llama_stack.apis.datatypes import Api, ExternalApiSpec
+from llama_stack.distribution.datatypes import BuildConfig, StackRunConfig
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="core")
 
 
-def load_external_apis(config=None) -> dict[Api, ExternalApiSpec]:
+def load_external_apis(config: StackRunConfig | BuildConfig) -> dict[Api, ExternalApiSpec]:
     """Load external API specifications from the configured directory.
 
     Args:
-        config: StackRunConfig containing the external APIs directory path
+        config: StackRunConfig or BuildConfig containing the external APIs directory path
 
     Returns:
         A dictionary mapping API names to their specifications
     """
-    if not config:
-        return {}
-
     if not hasattr(config, "external_apis_dir"):
         return {}
 
@@ -51,9 +49,9 @@ def load_external_apis(config=None) -> dict[Api, ExternalApiSpec]:
             external_apis[api] = spec
         except yaml.YAMLError as yaml_err:
             logger.error(f"Failed to parse YAML file {yaml_path}: {yaml_err}")
-            raise yaml_err
-        except Exception as e:
-            logger.error(f"Failed to load external API spec from {yaml_path}: {e}")
-            raise e
+            raise
+        except Exception:
+            logger.exception(f"Failed to load external API spec from {yaml_path}")
+            raise
 
     return external_apis

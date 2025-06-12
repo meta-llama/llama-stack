@@ -37,8 +37,6 @@ def get_all_api_routes(
 ) -> dict[Api, list[tuple[Route, WebMethod]]]:
     apis = {}
 
-    # Lazy import to avoid circular dependency
-
     protocols = api_protocol_map(external_apis)
     toolgroup_protocols = toolgroup_protocol_map()
     for api, protocol in protocols.items():

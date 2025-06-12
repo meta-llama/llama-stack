@@ -423,6 +423,10 @@ class BuildConfig(BaseModel):
         default_factory=list,
         description="Additional pip packages to install in the distribution. These packages will be installed in the distribution environment.",
     )
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
+    )
 
     @field_validator("external_providers_dir")
     @classmethod

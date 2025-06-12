@@ -100,8 +100,8 @@ def api_protocol_map(external_apis: dict[Api, ExternalApiSpec] | None = None) ->
                 api_class = getattr(module, api_spec.protocol)
 
                 protocols[api] = api_class
-            except (ImportError, AttributeError) as e:
-                logger.warning(f"Failed to load external API {api_spec.name}: {e}")
+            except (ImportError, AttributeError):
+                logger.exception(f"Failed to load external API {api_spec.name}")
 
     return protocols
 
