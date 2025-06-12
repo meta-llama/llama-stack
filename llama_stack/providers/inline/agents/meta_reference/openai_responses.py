@@ -64,7 +64,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
 )
-from llama_stack.apis.tools.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.tools import RAGQueryConfig, ToolGroups, ToolRuntime
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
@@ -699,7 +699,15 @@ class OpenAIResponsesImpl:
                         t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)
                     )
                     if response_file_search_tool:
+                        if response_file_search_tool.filters:
+                            logger.warning("Filters are not yet supported for file_search tool")
+                        if response_file_search_tool.ranking_options:
+                            logger.warning("Ranking options are not yet supported for file_search tool")
                         tool_kwargs["vector_db_ids"] = response_file_search_tool.vector_store_ids
+                        tool_kwargs["query_config"] = RAGQueryConfig(
+                            mode="vector",
+                            max_chunks=response_file_search_tool.max_num_results,
+                        )
                 result = await self.tool_runtime_api.invoke_tool(
                     tool_name=function.name,
                     kwargs=tool_kwargs,

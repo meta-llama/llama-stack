@@ -409,8 +409,9 @@ class FileSearchRankingOptions(BaseModel):
 class OpenAIResponseInputToolFileSearch(BaseModel):
     type: Literal["file_search"] = "file_search"
     vector_store_ids: list[str]
+    filters: dict[str, Any] | None = None
+    max_num_results: int | None = Field(default=10, ge=1, le=50)
     ranking_options: FileSearchRankingOptions | None = None
-    # TODO: add filters, max_num_results
 
 
 class ApprovalFilter(BaseModel):

@@ -5157,6 +5157,19 @@ components:
           type: array
           items:
             type: string
+        filters:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        max_num_results:
+          type: integer
+          default: 10
         ranking_options:
           type: object
           properties:
