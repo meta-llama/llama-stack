@@ -419,9 +419,10 @@ class OllamaInferenceAdapter(
             prompt_tokens=response.usage.prompt_tokens,
             total_tokens=response.usage.total_tokens,
         )
+        # TODO: Investigate why model_obj.identifier is used instead of response.model
         return OpenAIEmbeddingsResponse(
             data=data,
-            model=response.model,
+            model=model_obj.identifier,
             usage=usage,
         )
 

@@ -55,6 +55,12 @@ def skip_if_model_doesnt_support_openai_embeddings(client, model_id):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support OpenAI embeddings.")
 
 
+def skip_if_client_doesnt_support_base64_encoding(client, model_id):
+    provider = provider_from_model(client, model_id)
+    if provider.provider_type in ("remote::ollama",):
+        pytest.skip(f"Client {client} doesn't support base64 encoding for embeddings.")
+
+
 @pytest.fixture
 def openai_client(client_with_models):
     base_url = f"{client_with_models.base_url}/v1/openai/v1"
@@ -247,6 +253,7 @@ def test_openai_embeddings_with_encoding_format_base64(compat_client, client_wit
 def test_openai_embeddings_base64_batch_processing(compat_client, client_with_models, embedding_model_id):
     """Test OpenAI embeddings endpoint with base64 encoding for batch processing."""
     skip_if_model_doesnt_support_openai_embeddings(client_with_models, embedding_model_id)
+    skip_if_client_doesnt_support_base64_encoding(client_with_models, embedding_model_id)
 
     input_texts = ["First text for base64", "Second text for base64", "Third text for base64"]
 
