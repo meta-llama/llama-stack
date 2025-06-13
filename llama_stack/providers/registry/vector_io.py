@@ -44,6 +44,7 @@ def available_providers() -> list[ProviderSpec]:
             module="llama_stack.providers.inline.vector_io.sqlite_vec",
             config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         InlineProviderSpec(
             api=Api.vector_io,
@@ -53,6 +54,7 @@ def available_providers() -> list[ProviderSpec]:
             config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             deprecation_warning="Please use the `inline::sqlite-vec` provider (notice the hyphen instead of underscore) instead.",
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         remote_provider_spec(
             Api.vector_io,

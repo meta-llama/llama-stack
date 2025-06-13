@@ -425,7 +425,7 @@ class OpenAIVectorStoreMixin(ABC):
             vector_store_id=vector_store_id,
         )
 
-        if not self.files_api:
+        if not hasattr(self, "files_api") or not self.files_api:
             vector_store_file_object.status = "failed"
             vector_store_file_object.last_error = VectorStoreFileLastError(
                 code="server_error",
