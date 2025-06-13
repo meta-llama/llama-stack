@@ -17,7 +17,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
     VectorStoreObject,
-    VectorStoreSearchResponse,
+    VectorStoreSearchResponsePage,
 )
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
@@ -108,7 +108,7 @@ class VectorIORouter(VectorIO):
     # OpenAI Vector Stores API endpoints
     async def openai_create_vector_store(
         self,
-        name: str | None = None,
+        name: str,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
@@ -151,8 +151,8 @@ class VectorIORouter(VectorIO):
 
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
@@ -239,10 +239,10 @@ class VectorIORouter(VectorIO):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
-    ) -> VectorStoreSearchResponse:
+        rewrite_query: bool | None = False,
+    ) -> VectorStoreSearchResponsePage:
         logger.debug(f"VectorIORouter.openai_search_vector_store: {vector_store_id}")
         # Route based on vector store ID
         provider = self.routing_table.get_provider_impl(vector_store_id)

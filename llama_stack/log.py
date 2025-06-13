@@ -115,7 +115,7 @@ def parse_environment_config(env_config: str) -> dict[str, int]:
 
 class CustomRichHandler(RichHandler):
     def __init__(self, *args, **kwargs):
-        kwargs["console"] = Console(width=120)
+        kwargs["console"] = Console(width=150)
         super().__init__(*args, **kwargs)
 
     def emit(self, record):

@@ -180,6 +180,7 @@ def get_provider_registry(
                         if provider_type_key in ret[api]:
                             logger.warning(f"Overriding already registered provider {provider_type_key} for {api.name}")
                         ret[api][provider_type_key] = spec
+                        logger.info(f"Successfully loaded external provider {provider_type_key}")
                     except yaml.YAMLError as yaml_err:
                         logger.error(f"Failed to parse YAML file {spec_path}: {yaml_err}")
                         raise yaml_err

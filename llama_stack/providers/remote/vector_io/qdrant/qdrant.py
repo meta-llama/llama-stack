@@ -6,7 +6,7 @@
 
 import logging
 import uuid
-from typing import Any, Literal
+from typing import Any
 
 from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
@@ -21,7 +21,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
     VectorStoreObject,
-    VectorStoreSearchResponse,
+    VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
@@ -189,7 +189,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def openai_create_vector_store(
         self,
-        name: str | None = None,
+        name: str,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
@@ -203,8 +203,8 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
@@ -236,9 +236,8 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
-        search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
-    ) -> VectorStoreSearchResponse:
+        rewrite_query: bool | None = False,
+    ) -> VectorStoreSearchResponsePage:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

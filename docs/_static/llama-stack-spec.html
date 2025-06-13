@@ -3318,7 +3318,7 @@
                         "name": "limit",
                         "in": "query",
                         "description": "A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "integer"
                         }
@@ -3327,7 +3327,7 @@
                         "name": "order",
                         "in": "query",
                         "description": "Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.",
-                        "required": true,
+                        "required": false,
                         "schema": {
                             "type": "string"
                         }
@@ -3864,7 +3864,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/VectorStoreSearchResponse"
+                                    "$ref": "#/components/schemas/VectorStoreSearchResponsePage"
                                 }
                             }
                         }
@@ -12587,6 +12587,9 @@
                     }
                 },
                 "additionalProperties": false,
+                "required": [
+                    "name"
+                ],
                 "title": "OpenaiCreateVectorStoreRequest"
             },
             "VectorStoreObject": {
@@ -13129,13 +13132,74 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "query",
-                    "max_num_results",
-                    "rewrite_query"
+                    "query"
                 ],
                 "title": "OpenaiSearchVectorStoreRequest"
             },
+            "VectorStoreContent": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
+                ],
+                "title": "VectorStoreContent"
+            },
             "VectorStoreSearchResponse": {
+                "type": "object",
+                "properties": {
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "score": {
+                        "type": "number"
+                    },
+                    "attributes": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    },
+                    "content": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/VectorStoreContent"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "file_id",
+                    "filename",
+                    "score",
+                    "content"
+                ],
+                "title": "VectorStoreSearchResponse",
+                "description": "Response from searching a vector store."
+            },
+            "VectorStoreSearchResponsePage": {
                 "type": "object",
                 "properties": {
                     "object": {
@@ -13148,29 +13212,7 @@
                     "data": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
-                                    },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
+                            "$ref": "#/components/schemas/VectorStoreSearchResponse"
                         }
                     },
                     "has_more": {
@@ -13188,7 +13230,7 @@
                     "data",
                     "has_more"
                 ],
-                "title": "VectorStoreSearchResponse",
+                "title": "VectorStoreSearchResponsePage",
                 "description": "Response from searching a vector store."
             },
             "OpenaiUpdateVectorStoreRequest": {

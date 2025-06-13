@@ -8,7 +8,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -97,12 +97,29 @@ class VectorStoreSearchRequest(BaseModel):
 
 
 @json_schema_type
+class VectorStoreContent(BaseModel):
+    type: Literal["text"]
+    text: str
+
+
+@json_schema_type
 class VectorStoreSearchResponse(BaseModel):
+    """Response from searching a vector store."""
+
+    file_id: str
+    filename: str
+    score: float
+    attributes: dict[str, str | float | bool] | None = None
+    content: list[VectorStoreContent]
+
+
+@json_schema_type
+class VectorStoreSearchResponsePage(BaseModel):
     """Response from searching a vector store."""
 
     object: str = "vector_store.search_results.page"
     search_query: str
-    data: list[dict[str, Any]]
+    data: list[VectorStoreSearchResponse]
     has_more: bool = False
     next_page: str | None = None
 
@@ -165,7 +182,7 @@ class VectorIO(Protocol):
     @webmethod(route="/openai/v1/vector_stores", method="POST")
     async def openai_create_vector_store(
         self,
-        name: str | None = None,
+        name: str,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
@@ -193,8 +210,8 @@ class VectorIO(Protocol):
     @webmethod(route="/openai/v1/vector_stores", method="GET")
     async def openai_list_vector_stores(
         self,
-        limit: int = 20,
-        order: str = "desc",
+        limit: int | None = 20,
+        order: str | None = "desc",
         after: str | None = None,
         before: str | None = None,
     ) -> VectorStoreListResponse:
@@ -256,10 +273,10 @@ class VectorIO(Protocol):
         vector_store_id: str,
         query: str | list[str],
         filters: dict[str, Any] | None = None,
-        max_num_results: int = 10,
+        max_num_results: int | None = 10,
         ranking_options: dict[str, Any] | None = None,
-        rewrite_query: bool = False,
-    ) -> VectorStoreSearchResponse:
+        rewrite_query: bool | None = False,
+    ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store.
 
         Searches a vector store for relevant chunks based on a query and optional file attribute filters.
