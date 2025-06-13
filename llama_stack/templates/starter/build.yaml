@@ -37,8 +37,11 @@ distribution_spec:
     - remote::tavily-search
     - inline::rag-runtime
     - remote::model-context-protocol
+  internal_providers:
+    sql_store:
+      - inline::sqlite-store
+      - inline::postgres-store
+    kv_store:
+      - inline::sqlite-kv
+      - inline::postgres-kv
 image_type: conda
-additional_pip_packages:
-- aiosqlite
-- asyncpg
-- sqlalchemy[asyncio]
