@@ -13994,7 +13994,11 @@
                     },
                     "mode": {
                         "type": "string",
-                        "description": "Search mode for retrieval—either \"vector\" or \"keyword\". Default \"vector\"."
+                        "description": "Search mode for retrieval—either \"vector\", \"keyword\", or \"hybrid\". Default \"vector\"."
+                    },
+                    "ranker": {
+                        "$ref": "#/components/schemas/Ranker",
+                        "description": "Configuration for the ranker to use in hybrid search. Defaults to RRF ranker."
                     }
                 },
                 "additionalProperties": false,
@@ -14023,6 +14027,69 @@
                         "llm": "#/components/schemas/LLMRAGQueryGeneratorConfig"
                     }
                 }
+            },
+            "RRFRanker": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "rrf",
+                        "default": "rrf",
+                        "description": "The type of ranker, always \"rrf\""
+                    },
+                    "impact_factor": {
+                        "type": "number",
+                        "default": 60.0,
+                        "description": "The impact factor for RRF scoring. Higher values give more weight to higher-ranked results. Must be greater than 0. Default of 60 is from the original RRF paper (Cormack et al., 2009)."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "impact_factor"
+                ],
+                "title": "RRFRanker",
+                "description": "Reciprocal Rank Fusion (RRF) ranker configuration."
+            },
+            "Ranker": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/RRFRanker"
+                    },
+                    {
+                        "$ref": "#/components/schemas/WeightedRanker"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "rrf": "#/components/schemas/RRFRanker",
+                        "weighted": "#/components/schemas/WeightedRanker"
+                    }
+                }
+            },
+            "WeightedRanker": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "weighted",
+                        "default": "weighted",
+                        "description": "The type of ranker, always \"weighted\""
+                    },
+                    "alpha": {
+                        "type": "number",
+                        "default": 0.5,
+                        "description": "Weight factor between 0 and 1. 0 means only use keyword scores, 1 means only use vector scores, values in between blend both scores."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "alpha"
+                ],
+                "title": "WeightedRanker",
+                "description": "Weighted ranker configuration that combines vector and keyword scores."
             },
             "QueryRequest": {
                 "type": "object",
