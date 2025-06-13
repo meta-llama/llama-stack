@@ -37,8 +37,6 @@ from transformers import (
 )
 from trl import SFTConfig, SFTTrainer
 
-from llama_stack.apis.datasetio import DatasetIO
-from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
     Checkpoint,
     DataConfig,
@@ -136,11 +134,9 @@ class HFFinetuningSingleDevice:
     def __init__(
         self,
         job_uuid: str,
-        datasetio_api: DatasetIO,
-        datasets_api: Datasets,
+        data: list[dict[str, Any]],
     ):
-        self.datasetio_api = datasetio_api
-        self.datasets_api = datasets_api
+        self.data = data
         self.job_uuid = job_uuid
 
     def validate_dataset_format(self, rows: list[dict]) -> bool:
@@ -262,19 +258,6 @@ class HFFinetuningSingleDevice:
             remove_columns=ds.column_names,
         )
 
-    async def _setup_data(self, dataset_id: str) -> list[dict[str, Any]]:
-        """Load dataset from llama stack dataset provider"""
-        try:
-            all_rows = await self.datasetio_api.iterrows(
-                dataset_id=dataset_id,
-                limit=-1,
-            )
-            if not isinstance(all_rows.data, list):
-                raise RuntimeError("Expected dataset data to be a list")
-            return all_rows.data
-        except Exception as e:
-            raise RuntimeError(f"Failed to load dataset: {str(e)}") from e
-
     def _run_training_sync(
         self,
         model: str,
@@ -327,10 +310,9 @@ class HFFinetuningSingleDevice:
 
         # Load dataset
         logger.info(f"Loading dataset: {config.data_config.dataset_id}")
-        rows = await self._setup_data(config.data_config.dataset_id)
-        if not self.validate_dataset_format(rows):
+        if not self.validate_dataset_format(self.data):
             raise ValueError("Dataset is missing required fields: input_query, expected_answer, chat_completion_input")
-        logger.info(f"Loaded {len(rows)} rows from dataset")
+        logger.info(f"Loaded {len(self.data)} rows from dataset")
 
         # Initialize tokenizer
         logger.info(f"Initializing tokenizer for model: {model}")
@@ -362,7 +344,7 @@ class HFFinetuningSingleDevice:
         # Create and preprocess dataset
         logger.info("Creating and preprocessing dataset")
         try:
-            ds = self._create_dataset(rows, config, provider_config)
+            ds = self._create_dataset(self.data, config, provider_config)
             ds = self._preprocess_dataset(ds, tokenizer, provider_config)
             logger.info(f"Dataset created with {len(ds)} examples")
         except Exception as e:
