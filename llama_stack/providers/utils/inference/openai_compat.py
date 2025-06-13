@@ -1290,6 +1290,7 @@ class OpenAICompletionToLlamaStackMixin:
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         if stream:
             raise ValueError(f"{self.__class__.__name__} doesn't support streaming openai completions")

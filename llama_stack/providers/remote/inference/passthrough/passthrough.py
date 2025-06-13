@@ -242,6 +242,7 @@ class PassthroughInferenceAdapter(Inference):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         client = self._get_client()
         model_obj = await self.model_store.get_model(model)

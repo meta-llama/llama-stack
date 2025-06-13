@@ -8903,6 +8903,10 @@ components:
             type: string
         prompt_logprobs:
           type: integer
+        suffix:
+          type: string
+          description: >-
+            (Optional) The suffix that should be appended to the completion.
       additionalProperties: false
       required:
         - model

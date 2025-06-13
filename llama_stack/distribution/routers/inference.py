@@ -426,6 +426,7 @@ class InferenceRouter(Inference):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         logger.debug(
             f"InferenceRouter.openai_completion: {model=}, {stream=}, {prompt=}",
@@ -456,6 +457,7 @@ class InferenceRouter(Inference):
             user=user,
             guided_choice=guided_choice,
             prompt_logprobs=prompt_logprobs,
+            suffix=suffix,
         )
 
         provider = self.routing_table.get_provider_impl(model_obj.identifier)

@@ -1038,6 +1038,8 @@ class InferenceProvider(Protocol):
         # vLLM-specific parameters
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        # for fill-in-the-middle type completion
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         """Generate an OpenAI-compatible completion for the given prompt using the specified model.
 
@@ -1058,6 +1060,7 @@ class InferenceProvider(Protocol):
         :param temperature: (Optional) The temperature to use.
         :param top_p: (Optional) The top p to use.
         :param user: (Optional) The user to use.
+        :param suffix: (Optional) The suffix that should be appended to the completion.
         :returns: An OpenAICompletion.
         """
         ...
