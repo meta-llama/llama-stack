@@ -392,7 +392,7 @@ class OllamaInferenceAdapter(
         if model_obj.model_type != ModelType.embedding:
             raise ValueError(f"Model {model} is not an embedding model")
 
-        params = {
+        params: dict[str, Any] = {
             "model": model_obj.provider_resource_id,
             "input": input,
         }
@@ -401,7 +401,7 @@ class OllamaInferenceAdapter(
         if encoding_format is not None:
             params["encoding_format"] = encoding_format
         if dimensions is not None:
-            params["dimensions"] = str(dimensions)
+            params["dimensions"] = dimensions
         if user is not None:
             params["user"] = user
 
