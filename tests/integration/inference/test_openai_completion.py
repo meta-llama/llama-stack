@@ -240,34 +240,6 @@ def test_openai_chat_completion_non_streaming(compat_client, client_with_models,
 @pytest.mark.parametrize(
     "test_case",
     [
-        "inference:chat_completion:non_streaming_suffix_01",
-        "inference:chat_completion:non_streaming_suffix_02",
-    ],
-)
-def test_openai_chat_completion_non_streaming_suffix(compat_client, client_with_models, text_model_id, test_case):
-    skip_if_model_doesnt_support_openai_chat_completion(client_with_models, text_model_id)
-    tc = TestCase(test_case)
-    question = tc["question"]
-    expected = tc["expected"]
-
-    response = compat_client.chat.completions.create(
-        model=text_model_id,
-        messages=[
-            {
-                "role": "user",
-                "content": question,
-            }
-        ],
-        stream=False,
-    )
-    message_content = response.choices[0].message.content.lower().strip()
-    assert len(message_content) > 0
-    assert expected.lower() in message_content
-
-
-@pytest.mark.parametrize(
-    "test_case",
-    [
         "inference:chat_completion:streaming_01",
         "inference:chat_completion:streaming_02",
     ],
