@@ -559,6 +559,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         self._lazy_initialize_client()
         model_obj = await self._get_model(model)

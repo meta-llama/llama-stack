@@ -409,6 +409,7 @@ class OllamaInferenceAdapter(
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         if not isinstance(prompt, str):
             raise ValueError("Ollama does not support non-string prompts for completion")
@@ -432,6 +433,7 @@ class OllamaInferenceAdapter(
             temperature=temperature,
             top_p=top_p,
             user=user,
+            suffix=suffix,
         )
         return await self.openai_client.completions.create(**params)  # type: ignore
 

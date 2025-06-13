@@ -292,6 +292,7 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(
