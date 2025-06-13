@@ -3,8 +3,10 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import base64
 import json
 import logging
+import struct
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -38,7 +40,9 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -536,7 +540,46 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         dimensions: int | None = None,
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
-        raise NotImplementedError()
+        self._lazy_initialize_client()
+        assert self.client is not None
+        model_obj = await self._get_model(model)
+
+        # Convert input to list if it's a string
+        input_list = [input] if isinstance(input, str) else input
+
+        # Call vLLM embeddings endpoint
+        response = await self.client.embeddings.create(
+            model=model_obj.provider_resource_id,
+            input=input_list,
+            dimensions=dimensions,
+        )
+
+        # Convert response to OpenAI format
+        data = []
+        for i, embedding_data in enumerate(response.data):
+            if encoding_format == "base64":
+                # Convert float array to base64 string
+                float_bytes = struct.pack(f"{len(embedding_data.embedding)}f", *embedding_data.embedding)
+                embedding_value = base64.b64encode(float_bytes).decode("ascii")
+            else:
+                # Default to float format
+                embedding_value = embedding_data.embedding
+
+            data.append(
+                OpenAIEmbeddingData(
+                    embedding=embedding_value,
+                    index=i,
+                )
+            )
+
+        # Not returning actual token usage since vLLM doesn't provide it
+        usage = OpenAIEmbeddingUsage(prompt_tokens=-1, total_tokens=-1)
+
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=model_obj.provider_resource_id,
+            usage=usage,
+        )
 
     async def openai_completion(
         self,
