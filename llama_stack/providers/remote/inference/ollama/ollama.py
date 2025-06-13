@@ -71,7 +71,6 @@ from llama_stack.providers.utils.inference.openai_compat import (
     process_chat_completion_stream_response,
     process_completion_response,
     process_completion_stream_response,
-    process_embedding_b64_encoded_input,
 )
 from llama_stack.providers.utils.inference.prompt_adapter import (
     chat_completion_request_to_prompt,
@@ -397,6 +396,7 @@ class OllamaInferenceAdapter(
         if model_obj.provider_resource_id is None:
             raise ValueError(f"Model {model} has no provider_resource_id set")
 
+        # Note, at the moment Ollama does not support encoding_format, dimensions, and user parameters
         params = prepare_openai_embeddings_params(
             model=model_obj.provider_resource_id,
             input=input,
@@ -404,9 +404,6 @@ class OllamaInferenceAdapter(
             dimensions=dimensions,
             user=user,
         )
-        # Note, at the moment Ollama does not support encoding_format, dimensions, and user parameters
-        # but we implement the encoding here
-        params = process_embedding_b64_encoded_input(params)
 
         response = await self.openai_client.embeddings.create(**params)
         data = b64_encode_openai_embeddings_response(response.data, encoding_format)

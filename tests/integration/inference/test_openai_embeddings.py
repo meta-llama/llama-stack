@@ -34,11 +34,7 @@ def skip_if_model_doesnt_support_variable_dimensions(model_id):
         pytest.skip("{model_id} does not support variable output embedding dimensions")
 
 
-@pytest.fixture(
-    params=[
-        "openai_client",
-    ]
-)
+@pytest.fixture(params=["openai_client", "llama_stack_client"])
 def compat_client(request, client_with_models):
     if request.param == "openai_client" and isinstance(client_with_models, LlamaStackAsLibraryClient):
         pytest.skip("OpenAI client tests not supported with library client")

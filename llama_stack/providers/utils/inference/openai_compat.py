@@ -1515,24 +1515,6 @@ def prepare_openai_embeddings_params(
     return params
 
 
-def process_embedding_b64_encoded_input(params: dict[str, Any]) -> dict[str, Any]:
-    """
-    Process the embeddings parameters to encode the input in base64 format if specified.
-        Currently implemented for ollama as base64 is not yet supported by their compatible API.
-    """
-    if params.get("encoding_format") == "base64":
-        processed_params = params.copy()
-        input = params.get("input")
-        if isinstance(input, str):
-            processed_params["input"] = base64.b64encode(input.encode()).decode()
-        elif isinstance(input, list):
-            processed_params["input"] = [base64.b64encode(i.encode()).decode() for i in input]
-    else:
-        return params
-
-    return processed_params
-
-
 def b64_encode_openai_embeddings_response(
     response_data: dict, encoding_format: str | None = "float"
 ) -> list[OpenAIEmbeddingData]:
