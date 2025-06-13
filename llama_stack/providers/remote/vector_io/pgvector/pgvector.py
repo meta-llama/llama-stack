@@ -128,6 +128,17 @@ class PGVectorIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in PGVector")
 
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in PGVector")
+
     async def delete(self):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")

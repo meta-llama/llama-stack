@@ -5,11 +5,13 @@
 # the root directory of this source tree.
 
 import logging
+import mimetypes
 import time
 import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
+from llama_stack.apis.files import Files
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     QueryChunksResponse,
@@ -20,6 +22,15 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponse,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.apis.vector_io.vector_io import (
+    Chunk,
+    VectorStoreChunkingStrategy,
+    VectorStoreChunkingStrategyAuto,
+    VectorStoreChunkingStrategyStatic,
+    VectorStoreFileLastError,
+    VectorStoreFileObject,
+)
+from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +47,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     # These should be provided by the implementing class
     openai_vector_stores: dict[str, dict[str, Any]]
+    files_api: Files | None
 
     @abstractmethod
     async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
@@ -65,6 +77,16 @@ class OpenAIVectorStoreMixin(ABC):
     @abstractmethod
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         """Unregister a vector database (provider-specific implementation)."""
+        pass
+
+    @abstractmethod
+    async def insert_chunks(
+        self,
+        vector_db_id: str,
+        chunks: list[Chunk],
+        ttl_seconds: int | None = None,
+    ) -> None:
+        """Insert chunks into a vector database (provider-specific implementation)."""
         pass
 
     @abstractmethod
@@ -383,3 +405,78 @@ class OpenAIVectorStoreMixin(ABC):
             if metadata[key] != value:
                 return False
         return True
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        attributes = attributes or {}
+        chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
+
+        vector_store_file_object = VectorStoreFileObject(
+            id=file_id,
+            attributes=attributes,
+            chunking_strategy=chunking_strategy,
+            created_at=int(time.time()),
+            status="in_progress",
+            vector_store_id=vector_store_id,
+        )
+
+        if not hasattr(self, "files_api") or not self.files_api:
+            vector_store_file_object.status = "failed"
+            vector_store_file_object.last_error = VectorStoreFileLastError(
+                code="server_error",
+                message="Files API is not available",
+            )
+            return vector_store_file_object
+
+        if isinstance(chunking_strategy, VectorStoreChunkingStrategyStatic):
+            max_chunk_size_tokens = chunking_strategy.static.max_chunk_size_tokens
+            chunk_overlap_tokens = chunking_strategy.static.chunk_overlap_tokens
+        else:
+            # Default values from OpenAI API spec
+            max_chunk_size_tokens = 800
+            chunk_overlap_tokens = 400
+
+        try:
+            file_response = await self.files_api.openai_retrieve_file(file_id)
+            mime_type, _ = mimetypes.guess_type(file_response.filename)
+            content_response = await self.files_api.openai_retrieve_file_content(file_id)
+
+            content = content_from_data_and_mime_type(content_response.body, mime_type)
+
+            chunks = make_overlapped_chunks(
+                file_id,
+                content,
+                max_chunk_size_tokens,
+                chunk_overlap_tokens,
+                attributes,
+            )
+
+            if not chunks:
+                vector_store_file_object.status = "failed"
+                vector_store_file_object.last_error = VectorStoreFileLastError(
+                    code="server_error",
+                    message="No chunks were generated from the file",
+                )
+                return vector_store_file_object
+
+            await self.insert_chunks(
+                vector_db_id=vector_store_id,
+                chunks=chunks,
+            )
+        except Exception as e:
+            logger.error(f"Error attaching file to vector store: {e}")
+            vector_store_file_object.status = "failed"
+            vector_store_file_object.last_error = VectorStoreFileLastError(
+                code="server_error",
+                message=str(e),
+            )
+            return vector_store_file_object
+
+        vector_store_file_object.status = "completed"
+
+        return vector_store_file_object

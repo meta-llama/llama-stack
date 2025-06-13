@@ -16,6 +16,48 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 
 
 @json_schema_type
+class RRFRanker(BaseModel):
+    """
+    Reciprocal Rank Fusion (RRF) ranker configuration.
+
+    :param type: The type of ranker, always "rrf"
+    :param impact_factor: The impact factor for RRF scoring. Higher values give more weight to higher-ranked results.
+                         Must be greater than 0. Default of 60 is from the original RRF paper (Cormack et al., 2009).
+    """
+
+    type: Literal["rrf"] = "rrf"
+    impact_factor: float = Field(default=60.0, gt=0.0)  # default of 60 for optimal performance
+
+
+@json_schema_type
+class WeightedRanker(BaseModel):
+    """
+    Weighted ranker configuration that combines vector and keyword scores.
+
+    :param type: The type of ranker, always "weighted"
+    :param alpha: Weight factor between 0 and 1.
+                 0 means only use keyword scores,
+                 1 means only use vector scores,
+                 values in between blend both scores.
+    """
+
+    type: Literal["weighted"] = "weighted"
+    alpha: float = Field(
+        default=0.5,
+        ge=0.0,
+        le=1.0,
+        description="Weight factor between 0 and 1. 0 means only keyword scores, 1 means only vector scores.",
+    )
+
+
+Ranker = Annotated[
+    RRFRanker | WeightedRanker,
+    Field(discriminator="type"),
+]
+register_schema(Ranker, name="Ranker")
+
+
+@json_schema_type
 class RAGDocument(BaseModel):
     """
     A document to be used for document ingestion in the RAG Tool.
@@ -76,7 +118,8 @@ class RAGQueryConfig(BaseModel):
     :param chunk_template: Template for formatting each retrieved chunk in the context.
         Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict).
         Default: "Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n"
-    :param mode: Search mode for retrieval—either "vector" or "keyword". Default "vector".
+    :param mode: Search mode for retrieval—either "vector", "keyword", or "hybrid". Default "vector".
+    :param ranker: Configuration for the ranker to use in hybrid search. Defaults to RRF ranker.
     """
 
     # This config defines how a query is generated using the messages
@@ -86,6 +129,7 @@ class RAGQueryConfig(BaseModel):
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
     mode: str | None = None
+    ranker: Ranker | None = Field(default=None)  # Only used for hybrid mode
 
     @field_validator("chunk_template")
     def validate_chunk_template(cls, v: str) -> str:

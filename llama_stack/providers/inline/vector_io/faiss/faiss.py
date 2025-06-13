@@ -15,6 +15,7 @@ import faiss
 import numpy as np
 from numpy.typing import NDArray
 
+from llama_stack.apis.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
@@ -130,11 +131,23 @@ class FaissIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in FAISS")
 
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in FAISS")
+
 
 class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference) -> None:
+    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference, files_api: Files | None) -> None:
         self.config = config
         self.inference_api = inference_api
+        self.files_api = files_api
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.kvstore: KVStore | None = None
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}

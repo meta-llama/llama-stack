@@ -12,6 +12,7 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplConfig
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
@@ -134,6 +135,7 @@ def get_distribution_template() -> DistributionTemplate:
     providers = {
         "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
         "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
+        "files": ["inline::localfs"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
@@ -170,6 +172,11 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         ),
     ]
+    files_provider = Provider(
+        provider_id="meta-reference-files",
+        provider_type="inline::localfs",
+        config=LocalfsFilesImplConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+    )
     embedding_provider = Provider(
         provider_id="sentence-transformers",
         provider_type="inline::sentence-transformers",
@@ -212,6 +219,7 @@ def get_distribution_template() -> DistributionTemplate:
                 provider_overrides={
                     "inference": inference_providers + [embedding_provider],
                     "vector_io": vector_io_providers,
+                    "files": [files_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,

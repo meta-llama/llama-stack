@@ -8,7 +8,7 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -16,6 +16,7 @@ from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, webmethod
+from llama_stack.strong_typing.schema import register_schema
 
 
 class Chunk(BaseModel):
@@ -131,6 +132,50 @@ class VectorStoreDeleteResponse(BaseModel):
     id: str
     object: str = "vector_store.deleted"
     deleted: bool = True
+
+
+@json_schema_type
+class VectorStoreChunkingStrategyAuto(BaseModel):
+    type: Literal["auto"] = "auto"
+
+
+@json_schema_type
+class VectorStoreChunkingStrategyStaticConfig(BaseModel):
+    chunk_overlap_tokens: int = 400
+    max_chunk_size_tokens: int = Field(800, ge=100, le=4096)
+
+
+@json_schema_type
+class VectorStoreChunkingStrategyStatic(BaseModel):
+    type: Literal["static"] = "static"
+    static: VectorStoreChunkingStrategyStaticConfig
+
+
+VectorStoreChunkingStrategy = Annotated[
+    VectorStoreChunkingStrategyAuto | VectorStoreChunkingStrategyStatic, Field(discriminator="type")
+]
+register_schema(VectorStoreChunkingStrategy, name="VectorStoreChunkingStrategy")
+
+
+@json_schema_type
+class VectorStoreFileLastError(BaseModel):
+    code: Literal["server_error"] | Literal["rate_limit_exceeded"]
+    message: str
+
+
+@json_schema_type
+class VectorStoreFileObject(BaseModel):
+    """OpenAI Vector Store File object."""
+
+    id: str
+    object: str = "vector_store.file"
+    attributes: dict[str, Any] = Field(default_factory=dict)
+    chunking_strategy: VectorStoreChunkingStrategy
+    created_at: int
+    last_error: VectorStoreFileLastError | None = None
+    status: Literal["completed"] | Literal["in_progress"] | Literal["cancelled"] | Literal["failed"]
+    usage_bytes: int = 0
+    vector_store_id: str
 
 
 class VectorDBStore(Protocol):
@@ -288,5 +333,23 @@ class VectorIO(Protocol):
         :param ranking_options: Ranking options for fine-tuning the search results.
         :param rewrite_query: Whether to rewrite the natural language query for vector search (default false)
         :returns: A VectorStoreSearchResponse containing the search results.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files", method="POST")
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        """Attach a file to a vector store.
+
+        :param vector_store_id: The ID of the vector store to attach the file to.
+        :param file_id: The ID of the file to attach to the vector store.
+        :param attributes: The key-value attributes stored with the file, which can be used for filtering.
+        :param chunking_strategy: The chunking strategy to use for the file.
+        :returns: A VectorStoreFileObject representing the attached file.
         """
         ...
