@@ -17,12 +17,18 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    inspect,
     select,
+    text,
 )
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from llama_stack.log import get_logger
+
 from .api import ColumnDefinition, ColumnType, SqlStore
 from .sqlstore import SqlAlchemySqlStoreConfig
+
+logger = get_logger(name=__name__, category="sqlstore")
 
 TYPE_MAPPING: dict[ColumnType, Any] = {
     ColumnType.INTEGER: Integer,
@@ -54,7 +60,7 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         for col_name, col_props in schema.items():
             col_type = None
             is_primary_key = False
-            is_nullable = True  # Default to nullable
+            is_nullable = True
 
             if isinstance(col_props, ColumnType):
                 col_type = col_props
@@ -71,14 +77,11 @@ class SqlAlchemySqlStoreImpl(SqlStore):
                 Column(col_name, sqlalchemy_type, primary_key=is_primary_key, nullable=is_nullable)
             )
 
-        # Check if table already exists in metadata, otherwise define it
         if table not in self.metadata.tables:
             sqlalchemy_table = Table(table, self.metadata, *sqlalchemy_columns)
         else:
             sqlalchemy_table = self.metadata.tables[table]
 
-        # Create the table in the database if it doesn't exist
-        # checkfirst=True ensures it doesn't try to recreate if it's already there
         engine = create_async_engine(self.config.engine_str)
         async with engine.begin() as conn:
             await conn.run_sync(self.metadata.create_all, tables=[sqlalchemy_table], checkfirst=True)
@@ -92,6 +95,7 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         self,
         table: str,
         where: Mapping[str, Any] | None = None,
+        where_sql: str | None = None,
         limit: int | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
     ) -> list[dict[str, Any]]:
@@ -100,6 +104,8 @@ class SqlAlchemySqlStoreImpl(SqlStore):
             if where:
                 for key, value in where.items():
                     query = query.where(self.metadata.tables[table].c[key] == value)
+            if where_sql:
+                query = query.where(text(where_sql))
             if limit:
                 query = query.limit(limit)
             if order_by:
@@ -120,17 +126,16 @@ class SqlAlchemySqlStoreImpl(SqlStore):
                     else:
                         raise ValueError(f"Invalid order '{order_type}' for column '{name}'")
             result = await session.execute(query)
-            if result.rowcount == 0:
-                return []
             return [dict(row._mapping) for row in result]
 
     async def fetch_one(
         self,
         table: str,
         where: Mapping[str, Any] | None = None,
+        where_sql: str | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
     ) -> dict[str, Any] | None:
-        rows = await self.fetch_all(table, where, limit=1, order_by=order_by)
+        rows = await self.fetch_all(table, where, where_sql, limit=1, order_by=order_by)
         if not rows:
             return None
         return rows[0]
@@ -161,3 +166,47 @@ class SqlAlchemySqlStoreImpl(SqlStore):
                 stmt = stmt.where(self.metadata.tables[table].c[key] == value)
             await session.execute(stmt)
             await session.commit()
+
+    async def add_column_if_not_exists(
+        self,
+        table: str,
+        column_name: str,
+        column_type: ColumnType,
+        nullable: bool = True,
+    ) -> None:
+        """Add a column to an existing table if the column doesn't already exist."""
+        engine = create_async_engine(self.config.engine_str)
+
+        try:
+            inspector = inspect(engine)
+
+            table_names = inspector.get_table_names()
+            if table not in table_names:
+                return
+
+            existing_columns = inspector.get_columns(table)
+            column_names = [col["name"] for col in existing_columns]
+
+            if column_name in column_names:
+                return
+
+            sqlalchemy_type = TYPE_MAPPING.get(column_type)
+            if not sqlalchemy_type:
+                raise ValueError(f"Unsupported column type '{column_type}' for column '{column_name}'.")
+
+            # Create the ALTER TABLE statement
+            # Note: We need to get the dialect-specific type name
+            dialect = engine.dialect
+            type_impl = sqlalchemy_type()
+            compiled_type = type_impl.compile(dialect=dialect)
+
+            nullable_clause = "" if nullable else " NOT NULL"
+            add_column_sql = text(f"ALTER TABLE {table} ADD COLUMN {column_name} {compiled_type}{nullable_clause}")
+
+            async with engine.begin() as conn:
+                await conn.execute(add_column_sql)
+
+        except Exception:
+            # If any error occurs during migration, log it but don't fail
+            # The table creation will handle adding the column
+            pass

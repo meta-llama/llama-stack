@@ -10,24 +10,27 @@ from llama_stack.apis.inference import (
     OpenAIMessageParam,
     Order,
 )
+from llama_stack.distribution.datatypes import AccessRule
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 from ..sqlstore.api import ColumnDefinition, ColumnType
+from ..sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from ..sqlstore.sqlstore import SqliteSqlStoreConfig, SqlStoreConfig, sqlstore_impl
 
 
 class InferenceStore:
-    def __init__(self, sql_store_config: SqlStoreConfig):
+    def __init__(self, sql_store_config: SqlStoreConfig, policy: list[AccessRule]):
         if not sql_store_config:
             sql_store_config = SqliteSqlStoreConfig(
                 db_path=(RUNTIME_BASE_DIR / "sqlstore.db").as_posix(),
             )
         self.sql_store_config = sql_store_config
         self.sql_store = None
+        self.policy = policy
 
     async def initialize(self):
         """Create the necessary tables if they don't exist."""
-        self.sql_store = sqlstore_impl(self.sql_store_config)
+        self.sql_store = AuthorizedSqlStore(sqlstore_impl(self.sql_store_config))
         await self.sql_store.create_table(
             "chat_completions",
             {
@@ -48,8 +51,8 @@ class InferenceStore:
         data = chat_completion.model_dump()
 
         await self.sql_store.insert(
-            "chat_completions",
-            {
+            table="chat_completions",
+            data={
                 "id": data["id"],
                 "created": data["created"],
                 "model": data["model"],
@@ -83,7 +86,8 @@ class InferenceStore:
             order = Order.desc
 
         rows = await self.sql_store.fetch_all(
-            "chat_completions",
+            table="chat_completions",
+            policy=self.policy,
             where={"model": model} if model else None,
             order_by=[("created", order.value)],
             limit=limit,
@@ -111,9 +115,17 @@ class InferenceStore:
         if not self.sql_store:
             raise ValueError("Inference store is not initialized")
 
-        row = await self.sql_store.fetch_one("chat_completions", where={"id": completion_id})
+        row = await self.sql_store.fetch_one(
+            table="chat_completions",
+            policy=self.policy,
+            where={"id": completion_id},
+        )
+
         if not row:
+            # SecureSqlStore will return None if record doesn't exist OR access is denied
+            # This provides security by not revealing whether the record exists
             raise ValueError(f"Chat completion with id {completion_id} not found") from None
+
         return OpenAICompletionWithInputMessages(
             id=row["id"],
             created=row["created"],
