@@ -93,13 +93,17 @@ multidict==6.1.0
     # via
     #   aiohttp
     #   yarl
-numpy==2.2.3
+numpy==1.26.4 ; python_full_version < '3.13'
+    # via pandas
+numpy==2.2.3 ; python_full_version >= '3.13'
     # via pandas
 openai==1.71.0
     # via llama-stack
 packaging==24.2
     # via huggingface-hub
-pandas==2.2.3
+pandas==2.1.1 ; python_full_version >= '3.13'
+    # via llama-stack-client
+pandas==2.1.4 ; python_full_version < '3.13'
     # via llama-stack-client
 pillow==11.1.0
     # via llama-stack
@@ -203,7 +207,7 @@ typing-extensions==4.12.2
     #   rich
 tzdata==2025.1
     # via pandas
-urllib3==2.3.0
+urllib3==2.1.0
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
