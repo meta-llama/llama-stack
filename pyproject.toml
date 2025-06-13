@@ -84,7 +84,8 @@ unit = [
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
     "blobfile",
-    "faiss-cpu"
+    "faiss-cpu",
+    "ibm-watson-machine-learning"
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
