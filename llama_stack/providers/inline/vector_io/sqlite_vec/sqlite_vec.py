@@ -17,6 +17,7 @@ import numpy as np
 import sqlite_vec
 from numpy.typing import NDArray
 
+from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
@@ -301,9 +302,10 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
     and creates a cache of VectorDBWithIndex instances (each wrapping a SQLiteVecIndex).
     """
 
-    def __init__(self, config, inference_api: Inference) -> None:
+    def __init__(self, config, inference_api: Inference, files_api: Files | None) -> None:
         self.config = config
         self.inference_api = inference_api
+        self.files_api = files_api
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}
 

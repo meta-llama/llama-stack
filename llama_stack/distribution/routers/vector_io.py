@@ -19,6 +19,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
 
@@ -253,4 +254,21 @@ class VectorIORouter(VectorIO):
             max_num_results=max_num_results,
             ranking_options=ranking_options,
             rewrite_query=rewrite_query,
+        )
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        logger.debug(f"VectorIORouter.openai_attach_file_to_vector_store: {vector_store_id}, {file_id}")
+        # Route based on vector store ID
+        provider = self.routing_table.get_provider_impl(vector_store_id)
+        return await provider.openai_attach_file_to_vector_store(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+            attributes=attributes,
+            chunking_strategy=chunking_strategy,
         )

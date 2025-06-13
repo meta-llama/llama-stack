@@ -170,6 +170,8 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
             content=picked,
             metadata={
                 "document_ids": [c.metadata["document_id"] for c in chunks[: len(picked)]],
+                "chunks": [c.content for c in chunks[: len(picked)]],
+                "scores": scores[: len(picked)],
             },
         )
 

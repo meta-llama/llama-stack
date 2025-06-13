@@ -72,16 +72,18 @@ def content_from_data(data_url: str) -> str:
         data = unquote(data)
         encoding = parts["encoding"] or "utf-8"
         data = data.encode(encoding)
+    return content_from_data_and_mime_type(data, parts["mimetype"], parts.get("encoding", None))
 
-    encoding = parts["encoding"]
-    if not encoding:
-        import chardet
 
-        detected = chardet.detect(data)
-        encoding = detected["encoding"]
+def content_from_data_and_mime_type(data: bytes | str, mime_type: str | None, encoding: str | None = None) -> str:
+    if isinstance(data, bytes):
+        if not encoding:
+            import chardet
 
-    mime_type = parts["mimetype"]
-    mime_category = mime_type.split("/")[0]
+            detected = chardet.detect(data)
+            encoding = detected["encoding"]
+
+    mime_category = mime_type.split("/")[0] if mime_type else None
     if mime_category == "text":
         # For text-based files (including CSV, MD)
         return data.decode(encoding)
