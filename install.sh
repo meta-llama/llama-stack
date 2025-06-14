@@ -5,6 +5,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+[ -z "$BASH_VERSION" ] && {
+  echo "This script must be run with bash" >&2
+  exit 1
+}
+
 set -Eeuo pipefail
 
 PORT=8321
