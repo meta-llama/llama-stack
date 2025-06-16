@@ -90,6 +90,7 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         if guided_choice is not None:
             logging.warning("guided_choice is not supported by the OpenAI API. Ignoring.")
@@ -117,6 +118,7 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
             temperature=temperature,
             top_p=top_p,
             user=user,
+            suffix=suffix,
         )
         return await self._openai_client.completions.create(**params)
 

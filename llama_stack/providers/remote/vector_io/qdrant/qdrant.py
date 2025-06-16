@@ -23,6 +23,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -110,6 +111,17 @@ class QdrantIndex(EmbeddingIndex):
         score_threshold: float,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Qdrant")
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in Qdrant")
 
     async def delete(self):
         await self.client.delete_collection(collection_name=self.collection_name)
@@ -240,4 +252,13 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         ranking_options: dict[str, Any] | None = None,
         rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponsePage:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

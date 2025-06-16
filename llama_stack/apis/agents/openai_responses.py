@@ -82,6 +82,15 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseOutputMessageFileSearchToolCall(BaseModel):
+    id: str
+    queries: list[str]
+    status: str
+    type: Literal["file_search_call"] = "file_search_call"
+    results: list[dict[str, Any]] | None = None
+
+
+@json_schema_type
 class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
     call_id: str
     name: str
@@ -119,6 +128,7 @@ class OpenAIResponseOutputMessageMCPListTools(BaseModel):
 OpenAIResponseOutput = Annotated[
     OpenAIResponseMessage
     | OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFileSearchToolCall
     | OpenAIResponseOutputMessageFunctionToolCall
     | OpenAIResponseOutputMessageMCPCall
     | OpenAIResponseOutputMessageMCPListTools,
@@ -362,6 +372,7 @@ class OpenAIResponseInputFunctionToolCallOutput(BaseModel):
 OpenAIResponseInput = Annotated[
     # Responses API allows output messages to be passed in as input
     OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFileSearchToolCall
     | OpenAIResponseOutputMessageFunctionToolCall
     | OpenAIResponseInputFunctionToolCallOutput
     |
@@ -397,9 +408,10 @@ class FileSearchRankingOptions(BaseModel):
 @json_schema_type
 class OpenAIResponseInputToolFileSearch(BaseModel):
     type: Literal["file_search"] = "file_search"
-    vector_store_id: list[str]
+    vector_store_ids: list[str]
+    filters: dict[str, Any] | None = None
+    max_num_results: int | None = Field(default=10, ge=1, le=50)
     ranking_options: FileSearchRankingOptions | None = None
-    # TODO: add filters
 
 
 class ApprovalFilter(BaseModel):

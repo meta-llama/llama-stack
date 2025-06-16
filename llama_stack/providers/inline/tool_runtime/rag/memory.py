@@ -121,8 +121,10 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
                 vector_db_id=vector_db_id,
                 query=query,
                 params={
-                    "max_chunks": query_config.max_chunks,
                     "mode": query_config.mode,
+                    "max_chunks": query_config.max_chunks,
+                    "score_threshold": 0.0,
+                    "ranker": query_config.ranker,
                 },
             )
             for vector_db_id in vector_db_ids
@@ -170,6 +172,8 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
             content=picked,
             metadata={
                 "document_ids": [c.metadata["document_id"] for c in chunks[: len(picked)]],
+                "chunks": [c.content for c in chunks[: len(picked)]],
+                "scores": scores[: len(picked)],
             },
         )
 

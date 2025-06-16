@@ -2263,6 +2263,43 @@ paths:
             schema:
               $ref: '#/components/schemas/LogEventRequest'
         required: true
+  /v1/openai/v1/vector_stores/{vector_store_id}/files:
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreFileObject representing the attached file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Attach a file to a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store to attach the file to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiAttachFileToVectorStoreRequest'
+        required: true
   /v1/openai/v1/completions:
     post:
       responses:
@@ -5021,6 +5058,7 @@ components:
     OpenAIResponseInput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
         - $ref: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
         - $ref: '#/components/schemas/OpenAIResponseMessage'
@@ -5115,10 +5153,23 @@ components:
           type: string
           const: file_search
           default: file_search
-        vector_store_id:
+        vector_store_ids:
           type: array
           items:
             type: string
+        filters:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        max_num_results:
+          type: integer
+          default: 10
         ranking_options:
           type: object
           properties:
@@ -5132,7 +5183,7 @@ components:
       additionalProperties: false
       required:
         - type
-        - vector_store_id
+        - vector_store_ids
       title: OpenAIResponseInputToolFileSearch
     OpenAIResponseInputToolFunction:
       type: object
@@ -5294,6 +5345,41 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageContentOutputText
+    "OpenAIResponseOutputMessageFileSearchToolCall":
+      type: object
+      properties:
+        id:
+          type: string
+        queries:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        type:
+          type: string
+          const: file_search_call
+          default: file_search_call
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+      additionalProperties: false
+      required:
+        - id
+        - queries
+        - status
+        - type
+      title: >-
+        OpenAIResponseOutputMessageFileSearchToolCall
     "OpenAIResponseOutputMessageFunctionToolCall":
       type: object
       properties:
@@ -5491,6 +5577,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseMessage'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
@@ -5499,6 +5586,7 @@ components:
         mapping:
           message: '#/components/schemas/OpenAIResponseMessage'
           web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+          file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
           function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
           mcp_call: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
           mcp_list_tools: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
@@ -8251,6 +8339,148 @@ components:
         - event
         - ttl_seconds
       title: LogEventRequest
+    VectorStoreChunkingStrategy:
+      oneOf:
+        - $ref: '#/components/schemas/VectorStoreChunkingStrategyAuto'
+        - $ref: '#/components/schemas/VectorStoreChunkingStrategyStatic'
+      discriminator:
+        propertyName: type
+        mapping:
+          auto: '#/components/schemas/VectorStoreChunkingStrategyAuto'
+          static: '#/components/schemas/VectorStoreChunkingStrategyStatic'
+    VectorStoreChunkingStrategyAuto:
+      type: object
+      properties:
+        type:
+          type: string
+          const: auto
+          default: auto
+      additionalProperties: false
+      required:
+        - type
+      title: VectorStoreChunkingStrategyAuto
+    VectorStoreChunkingStrategyStatic:
+      type: object
+      properties:
+        type:
+          type: string
+          const: static
+          default: static
+        static:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategyStaticConfig'
+      additionalProperties: false
+      required:
+        - type
+        - static
+      title: VectorStoreChunkingStrategyStatic
+    VectorStoreChunkingStrategyStaticConfig:
+      type: object
+      properties:
+        chunk_overlap_tokens:
+          type: integer
+          default: 400
+        max_chunk_size_tokens:
+          type: integer
+          default: 800
+      additionalProperties: false
+      required:
+        - chunk_overlap_tokens
+        - max_chunk_size_tokens
+      title: VectorStoreChunkingStrategyStaticConfig
+    OpenaiAttachFileToVectorStoreRequest:
+      type: object
+      properties:
+        file_id:
+          type: string
+          description: >-
+            The ID of the file to attach to the vector store.
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The key-value attributes stored with the file, which can be used for filtering.
+        chunking_strategy:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategy'
+          description: >-
+            The chunking strategy to use for the file.
+      additionalProperties: false
+      required:
+        - file_id
+      title: OpenaiAttachFileToVectorStoreRequest
+    VectorStoreFileLastError:
+      type: object
+      properties:
+        code:
+          oneOf:
+            - type: string
+              const: server_error
+            - type: string
+              const: rate_limit_exceeded
+        message:
+          type: string
+      additionalProperties: false
+      required:
+        - code
+        - message
+      title: VectorStoreFileLastError
+    VectorStoreFileObject:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          default: vector_store.file
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        chunking_strategy:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategy'
+        created_at:
+          type: integer
+        last_error:
+          $ref: '#/components/schemas/VectorStoreFileLastError'
+        status:
+          oneOf:
+            - type: string
+              const: completed
+            - type: string
+              const: in_progress
+            - type: string
+              const: cancelled
+            - type: string
+              const: failed
+        usage_bytes:
+          type: integer
+          default: 0
+        vector_store_id:
+          type: string
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - attributes
+        - chunking_strategy
+        - created_at
+        - status
+        - usage_bytes
+        - vector_store_id
+      title: VectorStoreFileObject
+      description: OpenAI Vector Store File object.
     OpenAIJSONSchema:
       type: object
       properties:
@@ -8673,6 +8903,10 @@ components:
             type: string
         prompt_logprobs:
           type: integer
+        suffix:
+          type: string
+          description: >-
+            (Optional) The suffix that should be appended to the completion.
       additionalProperties: false
       required:
         - model
@@ -9526,7 +9760,13 @@ components:
         mode:
           type: string
           description: >-
-            Search mode for retrieval—either "vector" or "keyword". Default "vector".
+            Search mode for retrieval—either "vector", "keyword", or "hybrid". Default
+            "vector".
+        ranker:
+          $ref: '#/components/schemas/Ranker'
+          description: >-
+            Configuration for the ranker to use in hybrid search. Defaults to RRF
+            ranker.
       additionalProperties: false
       required:
         - query_generator_config
@@ -9545,6 +9785,58 @@ components:
         mapping:
           default: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
           llm: '#/components/schemas/LLMRAGQueryGeneratorConfig'
+    RRFRanker:
+      type: object
+      properties:
+        type:
+          type: string
+          const: rrf
+          default: rrf
+          description: The type of ranker, always "rrf"
+        impact_factor:
+          type: number
+          default: 60.0
+          description: >-
+            The impact factor for RRF scoring. Higher values give more weight to higher-ranked
+            results. Must be greater than 0. Default of 60 is from the original RRF
+            paper (Cormack et al., 2009).
+      additionalProperties: false
+      required:
+        - type
+        - impact_factor
+      title: RRFRanker
+      description: >-
+        Reciprocal Rank Fusion (RRF) ranker configuration.
+    Ranker:
+      oneOf:
+        - $ref: '#/components/schemas/RRFRanker'
+        - $ref: '#/components/schemas/WeightedRanker'
+      discriminator:
+        propertyName: type
+        mapping:
+          rrf: '#/components/schemas/RRFRanker'
+          weighted: '#/components/schemas/WeightedRanker'
+    WeightedRanker:
+      type: object
+      properties:
+        type:
+          type: string
+          const: weighted
+          default: weighted
+          description: The type of ranker, always "weighted"
+        alpha:
+          type: number
+          default: 0.5
+          description: >-
+            Weight factor between 0 and 1. 0 means only use keyword scores, 1 means
+            only use vector scores, values in between blend both scores.
+      additionalProperties: false
+      required:
+        - type
+        - alpha
+      title: WeightedRanker
+      description: >-
+        Weighted ranker configuration that combines vector and keyword scores.
     QueryRequest:
       type: object
       properties:

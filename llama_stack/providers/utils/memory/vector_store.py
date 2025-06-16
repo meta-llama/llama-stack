@@ -32,6 +32,10 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 log = logging.getLogger(__name__)
 
+# Constants for reranker types
+RERANKER_TYPE_RRF = "rrf"
+RERANKER_TYPE_WEIGHTED = "weighted"
+
 
 def parse_pdf(data: bytes) -> str:
     # For PDF and DOC/DOCX files, we can't reliably convert to string
@@ -72,16 +76,18 @@ def content_from_data(data_url: str) -> str:
         data = unquote(data)
         encoding = parts["encoding"] or "utf-8"
         data = data.encode(encoding)
+    return content_from_data_and_mime_type(data, parts["mimetype"], parts.get("encoding", None))
 
-    encoding = parts["encoding"]
-    if not encoding:
-        import chardet
 
-        detected = chardet.detect(data)
-        encoding = detected["encoding"]
+def content_from_data_and_mime_type(data: bytes | str, mime_type: str | None, encoding: str | None = None) -> str:
+    if isinstance(data, bytes):
+        if not encoding:
+            import chardet
 
-    mime_type = parts["mimetype"]
-    mime_category = mime_type.split("/")[0]
+            detected = chardet.detect(data)
+            encoding = detected["encoding"]
+
+    mime_category = mime_type.split("/")[0] if mime_type else None
     if mime_category == "text":
         # For text-based files (including CSV, MD)
         return data.decode(encoding)
@@ -201,6 +207,18 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError()
+
+    @abstractmethod
     async def delete(self):
         raise NotImplementedError()
 
@@ -243,10 +261,29 @@ class VectorDBWithIndex:
         k = params.get("max_chunks", 3)
         mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
+
+        # Get ranker configuration
+        ranker = params.get("ranker")
+        if ranker is None:
+            # Default to RRF with impact_factor=60.0
+            reranker_type = RERANKER_TYPE_RRF
+            reranker_params = {"impact_factor": 60.0}
+        else:
+            reranker_type = ranker.type
+            reranker_params = (
+                {"impact_factor": ranker.impact_factor} if ranker.type == RERANKER_TYPE_RRF else {"alpha": ranker.alpha}
+            )
+
         query_string = interleaved_content_as_str(query)
         if mode == "keyword":
             return await self.index.query_keyword(query_string, k, score_threshold)
+
+        # Calculate embeddings for both vector and hybrid modes
+        embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
+        query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
+        if mode == "hybrid":
+            return await self.index.query_hybrid(
+                query_vector, query_string, k, score_threshold, reranker_type, reranker_params
+            )
         else:
-            embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
-            query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
             return await self.index.query_vector(query_vector, k, score_threshold)

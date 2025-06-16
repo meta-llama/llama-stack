@@ -4,8 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import base64
-import struct
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -37,7 +35,6 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
-    OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
     OpenAIEmbeddingUsage,
     OpenAIMessageParam,
@@ -48,6 +45,7 @@ from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
+    b64_encode_openai_embeddings_response,
     convert_message_to_openai_dict_new,
     convert_openai_chat_completion_choice,
     convert_openai_chat_completion_stream,
@@ -293,16 +291,7 @@ class LiteLLMOpenAIMixin(
         )
 
         # Convert response to OpenAI format
-        data = []
-        for i, embedding_data in enumerate(response["data"]):
-            # we encode to base64 if the encoding format is base64 in the request
-            if encoding_format == "base64":
-                byte_data = b"".join(struct.pack("f", f) for f in embedding_data["embedding"])
-                embedding = base64.b64encode(byte_data).decode("utf-8")
-            else:
-                embedding = embedding_data["embedding"]
-
-            data.append(OpenAIEmbeddingData(embedding=embedding, index=i))
+        data = b64_encode_openai_embeddings_response(response.data, encoding_format)
 
         usage = OpenAIEmbeddingUsage(
             prompt_tokens=response["usage"]["prompt_tokens"],
@@ -336,6 +325,7 @@ class LiteLLMOpenAIMixin(
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         model_obj = await self.model_store.get_model(model)
         params = await prepare_openai_completion_params(

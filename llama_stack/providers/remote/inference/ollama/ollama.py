@@ -33,7 +33,6 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
-    OpenAIEmbeddingsResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -46,6 +45,8 @@ from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
+    OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
@@ -62,8 +63,10 @@ from llama_stack.providers.utils.inference.model_registry import (
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
     OpenAICompatCompletionResponse,
+    b64_encode_openai_embeddings_response,
     get_sampling_options,
     prepare_openai_completion_params,
+    prepare_openai_embeddings_params,
     process_chat_completion_response,
     process_chat_completion_stream_response,
     process_completion_response,
@@ -386,7 +389,35 @@ class OllamaInferenceAdapter(
         dimensions: int | None = None,
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
-        raise NotImplementedError()
+        model_obj = await self._get_model(model)
+        if model_obj.model_type != ModelType.embedding:
+            raise ValueError(f"Model {model} is not an embedding model")
+
+        if model_obj.provider_resource_id is None:
+            raise ValueError(f"Model {model} has no provider_resource_id set")
+
+        # Note, at the moment Ollama does not support encoding_format, dimensions, and user parameters
+        params = prepare_openai_embeddings_params(
+            model=model_obj.provider_resource_id,
+            input=input,
+            encoding_format=encoding_format,
+            dimensions=dimensions,
+            user=user,
+        )
+
+        response = await self.openai_client.embeddings.create(**params)
+        data = b64_encode_openai_embeddings_response(response.data, encoding_format)
+
+        usage = OpenAIEmbeddingUsage(
+            prompt_tokens=response.usage.prompt_tokens,
+            total_tokens=response.usage.total_tokens,
+        )
+        # TODO: Investigate why model_obj.identifier is used instead of response.model
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=model_obj.identifier,
+            usage=usage,
+        )
 
     async def openai_completion(
         self,
@@ -409,6 +440,7 @@ class OllamaInferenceAdapter(
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         if not isinstance(prompt, str):
             raise ValueError("Ollama does not support non-string prompts for completion")
@@ -432,6 +464,7 @@ class OllamaInferenceAdapter(
             temperature=temperature,
             top_p=top_p,
             user=user,
+            suffix=suffix,
         )
         return await self.openai_client.completions.create(**params)  # type: ignore
 
