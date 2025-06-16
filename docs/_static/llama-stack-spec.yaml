@@ -7818,6 +7818,9 @@ components:
           type: boolean
           description: >-
             Whether there are more items available after this set
+        url:
+          type: string
+          description: The URL for accessing this list
       additionalProperties: false
       required:
         - data
