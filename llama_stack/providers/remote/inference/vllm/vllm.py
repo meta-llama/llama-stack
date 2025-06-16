@@ -38,7 +38,9 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -536,7 +538,39 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         dimensions: int | None = None,
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
-        raise NotImplementedError()
+        self._lazy_initialize_client()
+        assert self.client is not None
+        model_obj = await self._get_model(model)
+        assert model_obj.model_type == ModelType.embedding
+
+        # Convert input to list if it's a string
+        input_list = [input] if isinstance(input, str) else input
+
+        # Call vLLM embeddings endpoint with encoding_format
+        response = await self.client.embeddings.create(
+            model=model_obj.provider_resource_id,
+            input=input_list,
+            dimensions=dimensions,
+            encoding_format=encoding_format,
+        )
+
+        # Convert response to OpenAI format
+        data = [
+            OpenAIEmbeddingData(
+                embedding=embedding_data.embedding,
+                index=i,
+            )
+            for i, embedding_data in enumerate(response.data)
+        ]
+
+        # Not returning actual token usage since vLLM doesn't provide it
+        usage = OpenAIEmbeddingUsage(prompt_tokens=-1, total_tokens=-1)
+
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=model_obj.provider_resource_id,
+            usage=usage,
+        )
 
     async def openai_completion(
         self,
