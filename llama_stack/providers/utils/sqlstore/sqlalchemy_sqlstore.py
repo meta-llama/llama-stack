@@ -21,6 +21,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
+from llama_stack.apis.common.responses import PaginatedResponse
+
 from .api import ColumnDefinition, ColumnType, SqlStore
 from .sqlstore import SqlAlchemySqlStoreConfig
 
@@ -94,14 +96,56 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         where: Mapping[str, Any] | None = None,
         limit: int | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
-    ) -> list[dict[str, Any]]:
+        cursor: tuple[str, str] | None = None,
+    ) -> PaginatedResponse:
         async with self.async_session() as session:
-            query = select(self.metadata.tables[table])
+            table_obj = self.metadata.tables[table]
+            query = select(table_obj)
+
             if where:
                 for key, value in where.items():
-                    query = query.where(self.metadata.tables[table].c[key] == value)
-            if limit:
-                query = query.limit(limit)
+                    query = query.where(table_obj.c[key] == value)
+
+            # Handle cursor-based pagination
+            if cursor:
+                # Validate cursor tuple format
+                if not isinstance(cursor, tuple) or len(cursor) != 2:
+                    raise ValueError(f"Cursor must be a tuple of (key_column, cursor_id), got: {cursor}")
+
+                # Require order_by for cursor pagination
+                if not order_by:
+                    raise ValueError("order_by is required when using cursor pagination")
+
+                # Only support single-column ordering for cursor pagination
+                if len(order_by) != 1:
+                    raise ValueError(
+                        f"Cursor pagination only supports single-column ordering, got {len(order_by)} columns"
+                    )
+
+                cursor_key_column, cursor_id = cursor
+                order_column, order_direction = order_by[0]
+
+                # Verify cursor_key_column exists
+                if cursor_key_column not in table_obj.c:
+                    raise ValueError(f"Cursor key column '{cursor_key_column}' not found in table '{table}'")
+
+                # Get cursor value for the order column
+                cursor_query = select(table_obj.c[order_column]).where(table_obj.c[cursor_key_column] == cursor_id)
+                cursor_result = await session.execute(cursor_query)
+                cursor_row = cursor_result.fetchone()
+
+                if not cursor_row:
+                    raise ValueError(f"Record with {cursor_key_column}='{cursor_id}' not found in table '{table}'")
+
+                cursor_value = cursor_row[0]
+
+                # Apply cursor condition based on sort direction
+                if order_direction == "desc":
+                    query = query.where(table_obj.c[order_column] < cursor_value)
+                else:
+                    query = query.where(table_obj.c[order_column] > cursor_value)
+
+            # Apply ordering
             if order_by:
                 if not isinstance(order_by, list):
                     raise ValueError(
@@ -113,16 +157,36 @@ class SqlAlchemySqlStoreImpl(SqlStore):
                             f"order_by must be a list of tuples (column, order={['asc', 'desc']}), got {order_by}"
                         )
                     name, order_type = order
+                    if name not in table_obj.c:
+                        raise ValueError(f"Column '{name}' not found in table '{table}'")
                     if order_type == "asc":
-                        query = query.order_by(self.metadata.tables[table].c[name].asc())
+                        query = query.order_by(table_obj.c[name].asc())
                     elif order_type == "desc":
-                        query = query.order_by(self.metadata.tables[table].c[name].desc())
+                        query = query.order_by(table_obj.c[name].desc())
                     else:
                         raise ValueError(f"Invalid order '{order_type}' for column '{name}'")
+
+            # Fetch limit + 1 to determine has_more
+            fetch_limit = limit
+            if limit:
+                fetch_limit = limit + 1
+
+            if fetch_limit:
+                query = query.limit(fetch_limit)
+
             result = await session.execute(query)
             if result.rowcount == 0:
-                return []
-            return [dict(row._mapping) for row in result]
+                rows = []
+            else:
+                rows = [dict(row._mapping) for row in result]
+
+            # Always return pagination result
+            has_more = False
+            if limit and len(rows) > limit:
+                has_more = True
+                rows = rows[:limit]
+
+            return PaginatedResponse(data=rows, has_more=has_more)
 
     async def fetch_one(
         self,
@@ -130,10 +194,10 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         where: Mapping[str, Any] | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
     ) -> dict[str, Any] | None:
-        rows = await self.fetch_all(table, where, limit=1, order_by=order_by)
-        if not rows:
+        result = await self.fetch_all(table, where, limit=1, order_by=order_by)
+        if not result.data:
             return None
-        return rows[0]
+        return result.data[0]
 
     async def update(
         self,
