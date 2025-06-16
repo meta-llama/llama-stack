@@ -14,7 +14,16 @@ from numpy.typing import NDArray
 
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.apis.vector_io import (
+    Chunk,
+    QueryChunksResponse,
+    VectorIO,
+    VectorStoreDeleteResponse,
+    VectorStoreListResponse,
+    VectorStoreObject,
+    VectorStoreSearchResponsePage,
+)
+from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -55,7 +64,7 @@ class ChromaIndex(EmbeddingIndex):
             )
         )
 
-    async def query(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = await maybe_await(
             self.collection.query(
                 query_embeddings=[embedding.tolist()],
@@ -76,8 +85,12 @@ class ChromaIndex(EmbeddingIndex):
                 log.exception(f"Failed to parse document: {doc}")
                 continue
 
+            score = 1.0 / float(dist) if dist != 0 else float("inf")
+            if score < score_threshold:
+                continue
+
             chunks.append(chunk)
-            scores.append(1.0 / float(dist))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
@@ -91,6 +104,17 @@ class ChromaIndex(EmbeddingIndex):
         score_threshold: float,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Chroma")
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in Chroma")
 
 
 class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
@@ -174,3 +198,67 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
         self.cache[vector_db_id] = index
         return index
+
+    async def openai_create_vector_store(
+        self,
+        name: str,
+        file_ids: list[str] | None = None,
+        expires_after: dict[str, Any] | None = None,
+        chunking_strategy: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        embedding_model: str | None = None,
+        embedding_dimension: int | None = 384,
+        provider_id: str | None = None,
+        provider_vector_db_id: str | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_list_vector_stores(
+        self,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+    ) -> VectorStoreListResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_retrieve_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_update_vector_store(
+        self,
+        vector_store_id: str,
+        name: str | None = None,
+        expires_after: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_delete_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreDeleteResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_search_vector_store(
+        self,
+        vector_store_id: str,
+        query: str | list[str],
+        filters: dict[str, Any] | None = None,
+        max_num_results: int | None = 10,
+        ranking_options: dict[str, Any] | None = None,
+        rewrite_query: bool | None = False,
+    ) -> VectorStoreSearchResponsePage:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")

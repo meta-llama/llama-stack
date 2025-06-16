@@ -76,7 +76,7 @@ class WeaviateIndex(EmbeddingIndex):
                 continue
 
             chunks.append(chunk)
-            scores.append(1.0 / doc.metadata.distance)
+            scores.append(1.0 / doc.metadata.distance if doc.metadata.distance != 0 else float("inf"))
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
@@ -91,6 +91,17 @@ class WeaviateIndex(EmbeddingIndex):
         score_threshold: float,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Weaviate")
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in Weaviate")
 
 
 class WeaviateVectorIOAdapter(

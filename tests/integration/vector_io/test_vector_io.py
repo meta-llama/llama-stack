@@ -154,3 +154,36 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
     assert len(response.chunks) > 0
     assert response.chunks[0].metadata["document_id"] == "doc1"
     assert response.chunks[0].metadata["source"] == "precomputed"
+
+
+def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(client_with_empty_registry, embedding_model_id):
+    vector_db_id = "test_precomputed_embeddings_db"
+    client_with_empty_registry.vector_dbs.register(
+        vector_db_id=vector_db_id,
+        embedding_model=embedding_model_id,
+        embedding_dimension=384,
+    )
+
+    chunks_with_embeddings = [
+        Chunk(
+            content="duplicate",
+            metadata={"document_id": "doc1", "source": "precomputed"},
+            embedding=[0.1] * 384,
+        ),
+    ]
+
+    client_with_empty_registry.vector_io.insert(
+        vector_db_id=vector_db_id,
+        chunks=chunks_with_embeddings,
+    )
+
+    response = client_with_empty_registry.vector_io.query(
+        vector_db_id=vector_db_id,
+        query="duplicate",
+    )
+
+    # Verify the top result is the expected document
+    assert response is not None
+    assert len(response.chunks) > 0
+    assert response.chunks[0].metadata["document_id"] == "doc1"
+    assert response.chunks[0].metadata["source"] == "precomputed"

@@ -4,6 +4,7 @@ apis:
 - agents
 - datasetio
 - eval
+- files
 - inference
 - post_training
 - safety
@@ -82,6 +83,14 @@ providers:
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:}
+  files:
+  - provider_id: meta-reference-files
+    provider_type: inline::localfs
+    config:
+      storage_dir: ${env.FILES_STORAGE_DIR:~/.llama/distributions/ollama/files}
+      metadata_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/files_metadata.db
   post_training:
   - provider_id: huggingface
     provider_type: inline::huggingface

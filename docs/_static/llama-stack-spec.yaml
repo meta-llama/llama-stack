@@ -2263,6 +2263,43 @@ paths:
             schema:
               $ref: '#/components/schemas/LogEventRequest'
         required: true
+  /v1/openai/v1/vector_stores/{vector_store_id}/files:
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreFileObject representing the attached file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Attach a file to a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store to attach the file to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiAttachFileToVectorStoreRequest'
+        required: true
   /v1/openai/v1/completions:
     post:
       responses:
@@ -2293,6 +2330,91 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OpenaiCompletionRequest'
+        required: true
+  /v1/openai/v1/vector_stores:
+    get:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreListResponse containing the list of vector stores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Returns a list of vector stores.
+      parameters:
+        - name: limit
+          in: query
+          description: >-
+            A limit on the number of objects to be returned. Limit can range between
+            1 and 100, and the default is 20.
+          required: false
+          schema:
+            type: integer
+        - name: order
+          in: query
+          description: >-
+            Sort order by the `created_at` timestamp of the objects. `asc` for ascending
+            order and `desc` for descending order.
+          required: false
+          schema:
+            type: string
+        - name: after
+          in: query
+          description: >-
+            A cursor for use in pagination. `after` is an object ID that defines your
+            place in the list.
+          required: false
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: >-
+            A cursor for use in pagination. `before` is an object ID that defines
+            your place in the list.
+          required: false
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreObject representing the created vector store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Creates a vector store.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiCreateVectorStoreRequest'
         required: true
   /v1/openai/v1/files/{file_id}:
     get:
@@ -2353,6 +2475,100 @@ paths:
           in: path
           description: >-
             The ID of the file to use for this request.
+          required: true
+          schema:
+            type: string
+  /v1/openai/v1/vector_stores/{vector_store_id}:
+    get:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreObject representing the vector store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Retrieves a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: The ID of the vector store to retrieve.
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreObject representing the updated vector store.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Updates a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: The ID of the vector store to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiUpdateVectorStoreRequest'
+        required: true
+    delete:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreDeleteResponse indicating the deletion status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreDeleteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Delete a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: The ID of the vector store to delete.
           required: true
           schema:
             type: string
@@ -2546,6 +2762,46 @@ paths:
           required: true
           schema:
             type: string
+  /v1/openai/v1/vector_stores/{vector_store_id}/search:
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreSearchResponse containing the search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreSearchResponsePage'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: >-
+        Search for chunks in a vector store.
+
+        Searches a vector store for relevant chunks based on a query and optional
+        file attribute filters.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: The ID of the vector store to search.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiSearchVectorStoreRequest'
+        required: true
   /v1/post-training/preference-optimize:
     post:
       responses:
@@ -4802,6 +5058,7 @@ components:
     OpenAIResponseInput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
         - $ref: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
         - $ref: '#/components/schemas/OpenAIResponseMessage'
@@ -4896,10 +5153,23 @@ components:
           type: string
           const: file_search
           default: file_search
-        vector_store_id:
+        vector_store_ids:
           type: array
           items:
             type: string
+        filters:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        max_num_results:
+          type: integer
+          default: 10
         ranking_options:
           type: object
           properties:
@@ -4913,7 +5183,7 @@ components:
       additionalProperties: false
       required:
         - type
-        - vector_store_id
+        - vector_store_ids
       title: OpenAIResponseInputToolFileSearch
     OpenAIResponseInputToolFunction:
       type: object
@@ -5075,6 +5345,41 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageContentOutputText
+    "OpenAIResponseOutputMessageFileSearchToolCall":
+      type: object
+      properties:
+        id:
+          type: string
+        queries:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        type:
+          type: string
+          const: file_search_call
+          default: file_search_call
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              oneOf:
+                - type: 'null'
+                - type: boolean
+                - type: number
+                - type: string
+                - type: array
+                - type: object
+      additionalProperties: false
+      required:
+        - id
+        - queries
+        - status
+        - type
+      title: >-
+        OpenAIResponseOutputMessageFileSearchToolCall
     "OpenAIResponseOutputMessageFunctionToolCall":
       type: object
       properties:
@@ -5272,6 +5577,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseMessage'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+        - $ref: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
         - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
@@ -5280,6 +5586,7 @@ components:
         mapping:
           message: '#/components/schemas/OpenAIResponseMessage'
           web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
+          file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
           function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
           mcp_call: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
           mcp_list_tools: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
@@ -7511,6 +7818,9 @@ components:
           type: boolean
           description: >-
             Whether there are more items available after this set
+        url:
+          type: string
+          description: The URL for accessing this list
       additionalProperties: false
       required:
         - data
@@ -8032,6 +8342,148 @@ components:
         - event
         - ttl_seconds
       title: LogEventRequest
+    VectorStoreChunkingStrategy:
+      oneOf:
+        - $ref: '#/components/schemas/VectorStoreChunkingStrategyAuto'
+        - $ref: '#/components/schemas/VectorStoreChunkingStrategyStatic'
+      discriminator:
+        propertyName: type
+        mapping:
+          auto: '#/components/schemas/VectorStoreChunkingStrategyAuto'
+          static: '#/components/schemas/VectorStoreChunkingStrategyStatic'
+    VectorStoreChunkingStrategyAuto:
+      type: object
+      properties:
+        type:
+          type: string
+          const: auto
+          default: auto
+      additionalProperties: false
+      required:
+        - type
+      title: VectorStoreChunkingStrategyAuto
+    VectorStoreChunkingStrategyStatic:
+      type: object
+      properties:
+        type:
+          type: string
+          const: static
+          default: static
+        static:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategyStaticConfig'
+      additionalProperties: false
+      required:
+        - type
+        - static
+      title: VectorStoreChunkingStrategyStatic
+    VectorStoreChunkingStrategyStaticConfig:
+      type: object
+      properties:
+        chunk_overlap_tokens:
+          type: integer
+          default: 400
+        max_chunk_size_tokens:
+          type: integer
+          default: 800
+      additionalProperties: false
+      required:
+        - chunk_overlap_tokens
+        - max_chunk_size_tokens
+      title: VectorStoreChunkingStrategyStaticConfig
+    OpenaiAttachFileToVectorStoreRequest:
+      type: object
+      properties:
+        file_id:
+          type: string
+          description: >-
+            The ID of the file to attach to the vector store.
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The key-value attributes stored with the file, which can be used for filtering.
+        chunking_strategy:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategy'
+          description: >-
+            The chunking strategy to use for the file.
+      additionalProperties: false
+      required:
+        - file_id
+      title: OpenaiAttachFileToVectorStoreRequest
+    VectorStoreFileLastError:
+      type: object
+      properties:
+        code:
+          oneOf:
+            - type: string
+              const: server_error
+            - type: string
+              const: rate_limit_exceeded
+        message:
+          type: string
+      additionalProperties: false
+      required:
+        - code
+        - message
+      title: VectorStoreFileLastError
+    VectorStoreFileObject:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          default: vector_store.file
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        chunking_strategy:
+          $ref: '#/components/schemas/VectorStoreChunkingStrategy'
+        created_at:
+          type: integer
+        last_error:
+          $ref: '#/components/schemas/VectorStoreFileLastError'
+        status:
+          oneOf:
+            - type: string
+              const: completed
+            - type: string
+              const: in_progress
+            - type: string
+              const: cancelled
+            - type: string
+              const: failed
+        usage_bytes:
+          type: integer
+          default: 0
+        vector_store_id:
+          type: string
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - attributes
+        - chunking_strategy
+        - created_at
+        - status
+        - usage_bytes
+        - vector_store_id
+      title: VectorStoreFileObject
+      description: OpenAI Vector Store File object.
     OpenAIJSONSchema:
       type: object
       properties:
@@ -8454,6 +8906,10 @@ components:
             type: string
         prompt_logprobs:
           type: integer
+        suffix:
+          type: string
+          description: >-
+            (Optional) The suffix that should be appended to the completion.
       additionalProperties: false
       required:
         - model
@@ -8505,6 +8961,133 @@ components:
       title: OpenAICompletionChoice
       description: >-
         A choice from an OpenAI-compatible completion response.
+    OpenaiCreateVectorStoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A name for the vector store.
+        file_ids:
+          type: array
+          items:
+            type: string
+          description: >-
+            A list of File IDs that the vector store should use. Useful for tools
+            like `file_search` that can access files.
+        expires_after:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The expiration policy for a vector store.
+        chunking_strategy:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The chunking strategy used to chunk the file(s). If not set, will use
+            the `auto` strategy.
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            Set of 16 key-value pairs that can be attached to an object.
+        embedding_model:
+          type: string
+          description: >-
+            The embedding model to use for this vector store.
+        embedding_dimension:
+          type: integer
+          description: >-
+            The dimension of the embedding vectors (default: 384).
+        provider_id:
+          type: string
+          description: >-
+            The ID of the provider to use for this vector store.
+        provider_vector_db_id:
+          type: string
+          description: >-
+            The provider-specific vector database ID.
+      additionalProperties: false
+      required:
+        - name
+      title: OpenaiCreateVectorStoreRequest
+    VectorStoreObject:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          default: vector_store
+        created_at:
+          type: integer
+        name:
+          type: string
+        usage_bytes:
+          type: integer
+          default: 0
+        file_counts:
+          type: object
+          additionalProperties:
+            type: integer
+        status:
+          type: string
+          default: completed
+        expires_after:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        expires_at:
+          type: integer
+        last_active_at:
+          type: integer
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - created_at
+        - usage_bytes
+        - file_counts
+        - status
+        - metadata
+      title: VectorStoreObject
+      description: OpenAI Vector Store object.
     OpenAIFileDeleteResponse:
       type: object
       properties:
@@ -8528,6 +9111,24 @@ components:
       title: OpenAIFileDeleteResponse
       description: >-
         Response for deleting a file in OpenAI Files API.
+    VectorStoreDeleteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          default: vector_store.deleted
+        deleted:
+          type: boolean
+          default: true
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - deleted
+      title: VectorStoreDeleteResponse
+      description: Response from deleting a vector store.
     OpenaiEmbeddingsRequest:
       type: object
       properties:
@@ -8751,9 +9352,179 @@ components:
       required:
         - data
       title: OpenAIListModelsResponse
+    VectorStoreListResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          default: list
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VectorStoreObject'
+        first_id:
+          type: string
+        last_id:
+          type: string
+        has_more:
+          type: boolean
+          default: false
+      additionalProperties: false
+      required:
+        - object
+        - data
+        - has_more
+      title: VectorStoreListResponse
+      description: Response from listing vector stores.
     Response:
       type: object
       title: Response
+    OpenaiSearchVectorStoreRequest:
+      type: object
+      properties:
+        query:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: >-
+            The query string or array for performing the search.
+        filters:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            Filters based on file attributes to narrow the search results.
+        max_num_results:
+          type: integer
+          description: >-
+            Maximum number of results to return (1 to 50 inclusive, default 10).
+        ranking_options:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            Ranking options for fine-tuning the search results.
+        rewrite_query:
+          type: boolean
+          description: >-
+            Whether to rewrite the natural language query for vector search (default
+            false)
+      additionalProperties: false
+      required:
+        - query
+      title: OpenaiSearchVectorStoreRequest
+    VectorStoreContent:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: VectorStoreContent
+    VectorStoreSearchResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+        filename:
+          type: string
+        score:
+          type: number
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: number
+              - type: boolean
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/VectorStoreContent'
+      additionalProperties: false
+      required:
+        - file_id
+        - filename
+        - score
+        - content
+      title: VectorStoreSearchResponse
+      description: Response from searching a vector store.
+    VectorStoreSearchResponsePage:
+      type: object
+      properties:
+        object:
+          type: string
+          default: vector_store.search_results.page
+        search_query:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VectorStoreSearchResponse'
+        has_more:
+          type: boolean
+          default: false
+        next_page:
+          type: string
+      additionalProperties: false
+      required:
+        - object
+        - search_query
+        - data
+        - has_more
+      title: VectorStoreSearchResponsePage
+      description: Response from searching a vector store.
+    OpenaiUpdateVectorStoreRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the vector store.
+        expires_after:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The expiration policy for a vector store.
+        metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            Set of 16 key-value pairs that can be attached to an object.
+      additionalProperties: false
+      title: OpenaiUpdateVectorStoreRequest
     DPOAlignmentConfig:
       type: object
       properties:
@@ -8992,7 +9763,13 @@ components:
         mode:
           type: string
           description: >-
-            Search mode for retrieval—either "vector" or "keyword". Default "vector".
+            Search mode for retrieval—either "vector", "keyword", or "hybrid". Default
+            "vector".
+        ranker:
+          $ref: '#/components/schemas/Ranker'
+          description: >-
+            Configuration for the ranker to use in hybrid search. Defaults to RRF
+            ranker.
       additionalProperties: false
       required:
         - query_generator_config
@@ -9011,6 +9788,58 @@ components:
         mapping:
           default: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
           llm: '#/components/schemas/LLMRAGQueryGeneratorConfig'
+    RRFRanker:
+      type: object
+      properties:
+        type:
+          type: string
+          const: rrf
+          default: rrf
+          description: The type of ranker, always "rrf"
+        impact_factor:
+          type: number
+          default: 60.0
+          description: >-
+            The impact factor for RRF scoring. Higher values give more weight to higher-ranked
+            results. Must be greater than 0. Default of 60 is from the original RRF
+            paper (Cormack et al., 2009).
+      additionalProperties: false
+      required:
+        - type
+        - impact_factor
+      title: RRFRanker
+      description: >-
+        Reciprocal Rank Fusion (RRF) ranker configuration.
+    Ranker:
+      oneOf:
+        - $ref: '#/components/schemas/RRFRanker'
+        - $ref: '#/components/schemas/WeightedRanker'
+      discriminator:
+        propertyName: type
+        mapping:
+          rrf: '#/components/schemas/RRFRanker'
+          weighted: '#/components/schemas/WeightedRanker'
+    WeightedRanker:
+      type: object
+      properties:
+        type:
+          type: string
+          const: weighted
+          default: weighted
+          description: The type of ranker, always "weighted"
+        alpha:
+          type: number
+          default: 0.5
+          description: >-
+            Weight factor between 0 and 1. 0 means only use keyword scores, 1 means
+            only use vector scores, values in between blend both scores.
+      additionalProperties: false
+      required:
+        - type
+        - alpha
+      title: WeightedRanker
+      description: >-
+        Weighted ranker configuration that combines vector and keyword scores.
     QueryRequest:
       type: object
       properties:

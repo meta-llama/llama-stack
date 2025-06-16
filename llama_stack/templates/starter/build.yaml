@@ -17,6 +17,8 @@ distribution_spec:
     - inline::sqlite-vec
     - remote::chromadb
     - remote::pgvector
+    files:
+    - inline::localfs
     safety:
     - inline::llama-guard
     agents:

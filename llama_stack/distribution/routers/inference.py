@@ -163,6 +163,9 @@ class InferenceRouter(Inference):
         messages: list[Message] | InterleavedContent,
         tool_prompt_format: ToolPromptFormat | None = None,
     ) -> int | None:
+        if not hasattr(self, "formatter") or self.formatter is None:
+            return None
+
         if isinstance(messages, list):
             encoded = self.formatter.encode_dialog_prompt(messages, tool_prompt_format)
         else:
@@ -423,6 +426,7 @@ class InferenceRouter(Inference):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         logger.debug(
             f"InferenceRouter.openai_completion: {model=}, {stream=}, {prompt=}",
@@ -453,6 +457,7 @@ class InferenceRouter(Inference):
             user=user,
             guided_choice=guided_choice,
             prompt_logprobs=prompt_logprobs,
+            suffix=suffix,
         )
 
         provider = self.routing_table.get_provider_impl(model_obj.identifier)
@@ -602,7 +607,7 @@ class InferenceRouter(Inference):
 
     async def health(self) -> dict[str, HealthResponse]:
         health_statuses = {}
-        timeout = 0.5
+        timeout = 1  # increasing the timeout to 1 second for health checks
         for provider_id, impl in self.routing_table.impls_by_provider_id.items():
             try:
                 # check if the provider has a health method
