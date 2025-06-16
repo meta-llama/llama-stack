@@ -24,8 +24,11 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
-from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
-from llama_stack.providers.inline.vector_io.faiss.provider_patch import *  # noqa: F403
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+    VectorDBsProtocolPrivate,
+)
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
@@ -42,6 +45,7 @@ VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
 FAISS_INDEX_PREFIX = f"faiss_index:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:{VERSION}::"
+VECTOR_DIMENSION = 128  # sample dimension
 
 
 class FaissIndex(EmbeddingIndex):
@@ -175,6 +179,21 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
     async def shutdown(self) -> None:
         # Cleanup if needed
         pass
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the inline faiss DB.
+        This method is used by the Provider API to verify
+        that the service is running correctly.
+        Returns:
+
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            faiss.IndexFlatL2(VECTOR_DIMENSION)
+            return HealthResponse(status=HealthStatus.OK)
+        except Exception as e:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def register_vector_db(
         self,

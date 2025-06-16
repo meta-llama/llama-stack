@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 from typing import Any
 
 from llama_stack.apis.common.content_types import (
@@ -21,7 +22,7 @@ from llama_stack.apis.vector_io import (
 )
 from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
 from llama_stack.log import get_logger
-from llama_stack.providers.datatypes import RoutingTable
+from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
 
 logger = get_logger(name=__name__, category="core")
 
@@ -272,3 +273,26 @@ class VectorIORouter(VectorIO):
             attributes=attributes,
             chunking_strategy=chunking_strategy,
         )
+
+    async def health(self) -> dict[str, HealthResponse]:
+        health_statuses = {}
+        timeout = 1  # increasing the timeout to 1 second for health checks
+        for provider_id, impl in self.routing_table.impls_by_provider_id.items():
+            try:
+                # check if the provider has a health method
+                if not hasattr(impl, "health"):
+                    continue
+                health = await asyncio.wait_for(impl.health(), timeout=timeout)
+                health_statuses[provider_id] = health
+            except (asyncio.TimeoutError, TimeoutError):
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR,
+                    message=f"Health check timed out after {timeout} seconds",
+                )
+            except NotImplementedError:
+                health_statuses[provider_id] = HealthResponse(status=HealthStatus.NOT_IMPLEMENTED)
+            except Exception as e:
+                health_statuses[provider_id] = HealthResponse(
+                    status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
+                )
+        return health_statuses
