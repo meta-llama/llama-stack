@@ -32,7 +32,7 @@ providers:
     provider_type: remote::nvidia
     config:
       guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}
-      config_id: self-check
+      config_id: ${env.NVIDIA_GUARDRAILS_CONFIG_ID:self-check}
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

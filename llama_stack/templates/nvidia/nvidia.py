@@ -130,6 +130,10 @@ def get_distribution_template() -> DistributionTemplate:
                 "http://0.0.0.0:7331",
                 "URL for the NeMo Guardrails Service",
             ),
+            "NVIDIA_GUARDRAILS_CONFIG_ID": (
+                "self-check",
+                "NVIDIA Guardrail Configuration ID",
+            ),
             "NVIDIA_EVALUATOR_URL": (
                 "http://0.0.0.0:7331",
                 "URL for the NeMo Evaluator Service",
