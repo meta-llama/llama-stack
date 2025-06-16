@@ -73,17 +73,26 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  OpenAI  |  Hosted  |
 |  Anthropic  |  Hosted  |
 |  Gemini  |  Hosted  |
+|  WatsonX  |  Hosted  |
 
+**Agents API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  Fireworks  |  Hosted  |
+|  Together  |  Hosted  |
+|  PyTorch ExecuTorch | On-device iOS |
 
 **Vector IO API**
 |  **Provider** |  **Environments** |
 | :----: | :----: |
 |  FAISS | Single Node |
-|  SQLite-Vec| Single Node |
+|  SQLite-Vec | Single Node |
 |  Chroma | Hosted and Single Node |
 |  Milvus | Hosted and Single Node |
 |  Postgres (PGVector) | Hosted and Single Node |
 |  Weaviate | Hosted |
+|  Qdrant  | Hosted and Single Node |
 
 **Safety API**
 |  **Provider** |  **Environments** |
@@ -93,6 +102,30 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  Code Scanner | Single Node |
 |  AWS Bedrock | Hosted |
 
+**Post Training API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  HuggingFace  |  Single Node |
+|  TorchTune  |  Single Node |
+|  NVIDIA NEMO  |  Hosted |
+
+**Eval API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+|  NVIDIA NEMO  |  Hosted |
+
+**Telemetry API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Meta Reference  |  Single Node |
+
+**Tool Runtime API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Brave Search | Hosted |
+|  RAG Runtime | Single Node |
 
 ```{toctree}
 :hidden:

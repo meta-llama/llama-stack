@@ -1,15 +1,54 @@
 # Providers Overview
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
-- LLM inference providers (e.g., Ollama, Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, etc.),
-- Vector databases (e.g., ChromaDB, Weaviate, Qdrant, Milvus, FAISS, PGVector, SQLite-Vec, etc.),
-- Safety providers (e.g., Meta's Llama Guard, AWS Bedrock Guardrails, etc.)
+- LLM inference providers (e.g., Meta Reference, Ollama, Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, OpenAI, Anthropic, Gemini, WatsonX, etc.),
+- Vector databases (e.g., FAISS, SQLite-Vec, ChromaDB, Weaviate, Qdrant, Milvus, PGVector, etc.),
+- Safety providers (e.g., Meta's Llama Guard, Prompt Guard, Code Scanner, AWS Bedrock Guardrails, etc.),
+- Tool Runtime providers (e.g., RAG Runtime, Brave Search, etc.)
 
 Providers come in two flavors:
 - **Remote**: the provider runs as a separate service external to the Llama Stack codebase. Llama Stack contains a small amount of adapter code.
 - **Inline**: the provider is fully specified and implemented within the Llama Stack codebase. It may be a simple wrapper around an existing library, or a full fledged implementation within Llama Stack.
 
 Importantly, Llama Stack always strives to provide at least one fully inline provider for each API so you can iterate on a fully featured environment locally.
+
+## Available Providers
+
+Here is a comprehensive list of all available API providers in Llama Stack:
+
+| API Provider Builder    | Environments      | Agents | Inference | VectorIO | Safety | Telemetry | Post Training | Eval | DatasetIO | Tool Runtime |
+|:----------------------:|:------------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:---------:|:------------:|
+| Meta Reference         | Single Node        |   ✅   |    ✅     |    ✅    |   ✅   |    ✅     |      ✅      |  ✅  |    ✅     |      ✅     |
+| SambaNova              | Hosted             |        |    ✅     |          |   ✅   |           |              |      |           |             |
+| Cerebras               | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Fireworks              | Hosted             |   ✅   |    ✅     |    ✅    |        |           |              |      |           |             |
+| AWS Bedrock            | Hosted             |        |    ✅     |          |   ✅   |           |              |      |           |             |
+| Together               | Hosted             |   ✅   |    ✅     |          |   ✅   |           |              |      |           |             |
+| Groq                   | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Ollama                 | Single Node        |        |    ✅     |          |        |           |              |      |           |             |
+| TGI                    | Hosted/Single Node |        |    ✅     |          |        |           |              |      |           |             |
+| NVIDIA NIM             | Hosted/Single Node |        |    ✅     |          |        |           |              |      |           |             |
+| Chroma                 | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| PG Vector              | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| PyTorch ExecuTorch     | On-device iOS      |   ✅   |    ✅     |          |        |           |              |      |           |             |
+| vLLM                   | Single Node        |        |    ✅     |          |        |           |              |      |           |             |
+| OpenAI                 | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Anthropic              | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Gemini                 | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| WatsonX                | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| HuggingFace            | Single Node        |        |           |          |        |           |      ✅      |      |    ✅     |             |
+| TorchTune              | Single Node        |        |           |          |        |           |      ✅      |      |           |             |
+| NVIDIA NEMO            | Hosted             |        |    ✅     |    ✅    |        |           |      ✅      |  ✅  |    ✅     |             |
+| FAISS                  | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| SQLite-Vec             | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| Qdrant                 | Hosted/Single Node |        |           |    ✅    |        |           |              |      |           |             |
+| Weaviate               | Hosted             |        |           |    ✅    |        |           |              |      |           |             |
+| Milvus                 | Hosted/Single Node |        |           |    ✅    |        |           |              |      |           |             |
+| Prompt Guard           | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Llama Guard            | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Code Scanner           | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Brave Search           | Hosted             |        |           |          |        |           |              |      |           |      ✅     |
+| RAG Runtime            | Single Node        |        |           |          |        |           |              |      |           |      ✅     |
 
 ## External Providers
 
