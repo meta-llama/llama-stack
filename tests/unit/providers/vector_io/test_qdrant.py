@@ -69,7 +69,7 @@ def mock_api_service(sample_embeddings):
 
 @pytest.fixture
 async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service, loop) -> QdrantVectorIOAdapter:
-    adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service)
+    adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service, files_api=None)
     adapter.vector_db_store = mock_vector_db_store
     await adapter.initialize()
     yield adapter
