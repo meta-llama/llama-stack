@@ -40,6 +40,10 @@ from llama_stack.apis.inference.inference import (
     TopKSamplingStrategy,
     TopPSamplingStrategy,
 )
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+)
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAICompatCompletionChoice,
@@ -75,6 +79,23 @@ class WatsonXInferenceAdapter(Inference, ModelRegistryHelper):
 
     async def shutdown(self) -> None:
         pass
+
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the Watsonx server.
+        This method is used by the Provider API to verify
+        that the service is running correctly.
+        Specify the model ID as WATSONX_HEALTH_CHECK_MODEL_ID under env. var.
+        to use for the health check, which defaults to "ibm/granite-3-8b-instruct".
+        Returns:
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            client_model = self._get_client(self._config.health_check_model_id)
+            client_model.get_details()
+            return HealthResponse(status=HealthStatus.OK)
+        except Exception as ex:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failure reason: {str(ex)}")
 
     async def completion(
         self,
