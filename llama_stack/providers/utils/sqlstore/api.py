@@ -10,6 +10,8 @@ from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel
 
+from llama_stack.apis.common.responses import PaginatedResponse
+
 
 class ColumnType(Enum):
     INTEGER = "INTEGER"
@@ -51,9 +53,21 @@ class SqlStore(Protocol):
         where: Mapping[str, Any] | None = None,
         limit: int | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
-    ) -> list[dict[str, Any]]:
+        cursor: tuple[str, str] | None = None,
+    ) -> PaginatedResponse:
         """
-        Fetch all rows from a table.
+        Fetch all rows from a table with optional cursor-based pagination.
+
+        :param table: The table name
+        :param where: WHERE conditions
+        :param limit: Maximum number of records to return
+        :param order_by: List of (column, order) tuples for sorting
+        :param cursor: Tuple of (key_column, cursor_id) for pagination (None for first page)
+                      Requires order_by with exactly one column when used
+        :return: PaginatedResult with data and has_more flag
+
+        Note: Cursor pagination only supports single-column ordering for simplicity.
+        Multi-column ordering is allowed without cursor but will raise an error with cursor.
         """
         pass
 

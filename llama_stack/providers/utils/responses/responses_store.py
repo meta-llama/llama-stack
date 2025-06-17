@@ -70,24 +70,25 @@ class ResponsesStore:
         :param model: The model to filter by.
         :param order: The order to sort the responses by.
         """
-        # TODO: support after
-        if after:
-            raise NotImplementedError("After is not supported for SQLite")
         if not order:
             order = Order.desc
 
-        rows = await self.sql_store.fetch_all(
-            "openai_responses",
-            where={"model": model} if model else None,
+        where_conditions = {}
+        if model:
+            where_conditions["model"] = model
+
+        paginated_result = await self.sql_store.fetch_all(
+            table="openai_responses",
+            where=where_conditions if where_conditions else None,
             order_by=[("created_at", order.value)],
+            cursor=("id", after) if after else None,
             limit=limit,
         )
 
-        data = [OpenAIResponseObjectWithInput(**row["response_object"]) for row in rows]
+        data = [OpenAIResponseObjectWithInput(**row["response_object"]) for row in paginated_result.data]
         return ListOpenAIResponseObject(
             data=data,
-            # TODO: implement has_more
-            has_more=False,
+            has_more=paginated_result.has_more,
             first_id=data[0].id if data else "",
             last_id=data[-1].id if data else "",
         )
@@ -117,19 +118,38 @@ class ResponsesStore:
         :param limit: A limit on the number of objects to be returned.
         :param order: The order to return the input items in.
         """
-        # TODO: support after/before pagination
-        if after or before:
-            raise NotImplementedError("After/before pagination is not supported yet")
         if include:
             raise NotImplementedError("Include is not supported yet")
+        if before and after:
+            raise ValueError("Cannot specify both 'before' and 'after' parameters")
 
         response_with_input = await self.get_response_object(response_id)
-        input_items = response_with_input.input
+        items = response_with_input.input
 
         if order == Order.desc:
-            input_items = list(reversed(input_items))
+            items = list(reversed(items))
 
-        if limit is not None and len(input_items) > limit:
-            input_items = input_items[:limit]
+        start_index = 0
+        end_index = len(items)
 
-        return ListOpenAIResponseInputItem(data=input_items)
+        if after or before:
+            for i, item in enumerate(items):
+                item_id = getattr(item, "id", None)
+                if after and item_id == after:
+                    start_index = i + 1
+                if before and item_id == before:
+                    end_index = i
+                    break
+
+            if after and start_index == 0:
+                raise ValueError(f"Input item with id '{after}' not found for response '{response_id}'")
+            if before and end_index == len(items):
+                raise ValueError(f"Input item with id '{before}' not found for response '{response_id}'")
+
+        items = items[start_index:end_index]
+
+        # Apply limit
+        if limit is not None:
+            items = items[:limit]
+
+        return ListOpenAIResponseInputItem(data=items)
