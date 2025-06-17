@@ -1,0 +1,13 @@
+[http]
+	postBuffer = 524288000
+	sslVerify = true
+	lowSpeedLimit = 1000
+	lowSpeedTime = 30
+[core]
+	compression = 0
+[https]
+	postBuffer = 524288000
+[git]
+	postBuffer = 524288000
+[remote "origin"]
+	prune = true
