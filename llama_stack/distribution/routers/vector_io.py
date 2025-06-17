@@ -163,10 +163,14 @@ class VectorIORouter(VectorIO):
         vector_dbs = await self.routing_table.get_all_with_type("vector_db")
         all_stores = []
         for vector_db in vector_dbs:
-            vector_store = await self.routing_table.get_provider_impl(
-                vector_db.identifier
-            ).openai_retrieve_vector_store(vector_db.identifier)
-            all_stores.append(vector_store)
+            try:
+                vector_store = await self.routing_table.get_provider_impl(
+                    vector_db.identifier
+                ).openai_retrieve_vector_store(vector_db.identifier)
+                all_stores.append(vector_store)
+            except Exception as e:
+                logger.error(f"Error retrieving vector store {vector_db.identifier}: {e}")
+                continue
 
         # Sort by created_at
         reverse_order = order == "desc"
