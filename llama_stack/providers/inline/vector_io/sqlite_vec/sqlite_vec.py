@@ -461,6 +461,14 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                         metadata TEXT
                     );
                 """)
+                # Create a table to persist OpenAI vector store files.
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files (
+                        store_id TEXT,
+                        file_id TEXT,
+                        metadata TEXT
+                    );
+                """)
                 connection.commit()
                 # Load any existing vector DB registrations.
                 cur.execute("SELECT metadata FROM vector_dbs")
@@ -608,6 +616,90 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
             cur = connection.cursor()
             try:
                 cur.execute("DELETE FROM openai_vector_stores WHERE id = ?", (store_id,))
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_delete)
+
+    async def _save_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Save vector store file metadata to SQLite database."""
+
+        def _store():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "INSERT OR REPLACE INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (?, ?, ?)",
+                    (store_id, file_id, json.dumps(file_info)),
+                )
+                connection.commit()
+            except Exception as e:
+                logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
+                raise
+            finally:
+                cur.close()
+                connection.close()
+
+        try:
+            await asyncio.to_thread(_store)
+        except Exception as e:
+            logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
+            raise
+
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from SQLite database."""
+
+        def _load():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "SELECT metadata FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                print(f"!!! row is {row}")
+                if row is None:
+                    return None
+                (metadata,) = row
+                return metadata
+            finally:
+                cur.close()
+                connection.close()
+
+        stored_data = await asyncio.to_thread(_load)
+        return json.loads(stored_data) if stored_data else {}
+
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in SQLite database."""
+
+        def _update():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "UPDATE openai_vector_store_files SET metadata = ? WHERE store_id = ? AND file_id = ?",
+                    (json.dumps(file_info), store_id, file_id),
+                )
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_update)
+
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from SQLite database."""
+
+        def _delete():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "DELETE FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?", (store_id, file_id)
+                )
                 connection.commit()
             finally:
                 cur.close()

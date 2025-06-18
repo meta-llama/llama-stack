@@ -39,6 +39,15 @@ class QueryChunksResponse(BaseModel):
 
 
 @json_schema_type
+class VectorStoreFileCounts(BaseModel):
+    completed: int
+    cancelled: int
+    failed: int
+    in_progress: int
+    total: int
+
+
+@json_schema_type
 class VectorStoreObject(BaseModel):
     """OpenAI Vector Store object."""
 
@@ -47,7 +56,7 @@ class VectorStoreObject(BaseModel):
     created_at: int
     name: str | None = None
     usage_bytes: int = 0
-    file_counts: dict[str, int] = Field(default_factory=dict)
+    file_counts: VectorStoreFileCounts
     status: str = "completed"
     expires_after: dict[str, Any] | None = None
     expires_at: int | None = None
@@ -181,6 +190,23 @@ class VectorStoreFileObject(BaseModel):
     status: Literal["completed"] | Literal["in_progress"] | Literal["cancelled"] | Literal["failed"]
     usage_bytes: int = 0
     vector_store_id: str
+
+
+@json_schema_type
+class VectorStoreListFilesResponse(BaseModel):
+    """Response from listing vector stores."""
+
+    object: str = "list"
+    data: list[VectorStoreFileObject]
+
+
+@json_schema_type
+class VectorStoreFileDeleteResponse(BaseModel):
+    """Response from deleting a vector store file."""
+
+    id: str
+    object: str = "vector_store.file.deleted"
+    deleted: bool = True
 
 
 class VectorDBStore(Protocol):
@@ -356,5 +382,61 @@ class VectorIO(Protocol):
         :param attributes: The key-value attributes stored with the file, which can be used for filtering.
         :param chunking_strategy: The chunking strategy to use for the file.
         :returns: A VectorStoreFileObject representing the attached file.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files", method="GET")
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreListFilesResponse:
+        """List files in a vector store.
+
+        :param vector_store_id: The ID of the vector store to list files from.
+        :returns: A VectorStoreListFilesResponse containing the list of files.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files/{file_id}", method="GET")
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        """Retrieves a vector store file.
+
+        :param vector_store_id: The ID of the vector store containing the file to retrieve.
+        :param file_id: The ID of the file to retrieve.
+        :returns: A VectorStoreFileObject representing the file.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files/{file_id}", method="POST")
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any],
+    ) -> VectorStoreFileObject:
+        """Updates a vector store file.
+
+        :param vector_store_id: The ID of the vector store containing the file to update.
+        :param file_id: The ID of the file to update.
+        :param attributes: The updated key-value attributes to store with the file.
+        :returns: A VectorStoreFileObject representing the updated file.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files/{file_id}", method="DELETE")
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileDeleteResponse:
+        """Delete a vector store file.
+
+        :param vector_store_id: The ID of the vector store containing the file to delete.
+        :param file_id: The ID of the file to delete.
+        :returns: A VectorStoreFileDeleteResponse indicating the deletion status.
         """
         ...

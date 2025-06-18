@@ -24,7 +24,11 @@ from llama_stack.apis.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
-from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
+from llama_stack.apis.vector_io.vector_io import (
+    VectorStoreChunkingStrategy,
+    VectorStoreFileObject,
+    VectorStoreListFilesResponse,
+)
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -261,5 +265,33 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         file_id: str,
         attributes: dict[str, Any] | None = None,
         chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreListFilesResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
     ) -> VectorStoreFileObject:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

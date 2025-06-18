@@ -45,6 +45,7 @@ VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
 FAISS_INDEX_PREFIX = f"faiss_index:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:{VERSION}::"
 
 
 class FaissIndex(EmbeddingIndex):
@@ -282,4 +283,29 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         """Delete vector store metadata from kvstore."""
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.delete(key)
+
+    async def _save_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Save vector store file metadata to kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
+
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        stored_data = await self.kvstore.get(key)
+        return json.loads(stored_data) if stored_data else {}
+
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
+
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
         await self.kvstore.delete(key)

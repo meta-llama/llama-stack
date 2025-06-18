@@ -21,7 +21,11 @@ from llama_stack.apis.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
-from llama_stack.apis.vector_io.vector_io import VectorStoreChunkingStrategy, VectorStoreFileObject
+from llama_stack.apis.vector_io.vector_io import (
+    VectorStoreChunkingStrategy,
+    VectorStoreFileDeleteResponse,
+    VectorStoreFileObject,
+)
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
 
@@ -277,6 +281,58 @@ class VectorIORouter(VectorIO):
             file_id=file_id,
             attributes=attributes,
             chunking_strategy=chunking_strategy,
+        )
+
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> list[VectorStoreFileObject]:
+        logger.debug(f"VectorIORouter.openai_list_files_in_vector_store: {vector_store_id}")
+        # Route based on vector store ID
+        provider = self.routing_table.get_provider_impl(vector_store_id)
+        return await provider.openai_list_files_in_vector_store(
+            vector_store_id=vector_store_id,
+        )
+
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        logger.debug(f"VectorIORouter.openai_retrieve_vector_store_file: {vector_store_id}, {file_id}")
+        # Route based on vector store ID
+        provider = self.routing_table.get_provider_impl(vector_store_id)
+        return await provider.openai_retrieve_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+        )
+
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any],
+    ) -> VectorStoreFileObject:
+        logger.debug(f"VectorIORouter.openai_update_vector_store_file: {vector_store_id}, {file_id}")
+        # Route based on vector store ID
+        provider = self.routing_table.get_provider_impl(vector_store_id)
+        return await provider.openai_update_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+            attributes=attributes,
+        )
+
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileDeleteResponse:
+        logger.debug(f"VectorIORouter.openai_delete_vector_store_file: {vector_store_id}, {file_id}")
+        # Route based on vector store ID
+        provider = self.routing_table.get_provider_impl(vector_store_id)
+        return await provider.openai_delete_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
         )
 
     async def health(self) -> dict[str, HealthResponse]:

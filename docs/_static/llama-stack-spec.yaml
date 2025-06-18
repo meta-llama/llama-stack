@@ -2264,6 +2264,36 @@ paths:
               $ref: '#/components/schemas/LogEventRequest'
         required: true
   /v1/openai/v1/vector_stores/{vector_store_id}/files:
+    get:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreListFilesResponse containing the list of files.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreListFilesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: List files in a vector store.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store to list files from.
+          required: true
+          schema:
+            type: string
     post:
       responses:
         '200':
@@ -2569,6 +2599,121 @@ paths:
         - name: vector_store_id
           in: path
           description: The ID of the vector store to delete.
+          required: true
+          schema:
+            type: string
+  /v1/openai/v1/vector_stores/{vector_store_id}/files/{file_id}:
+    get:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreFileObject representing the file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Retrieves a vector store file.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store containing the file to retrieve.
+          required: true
+          schema:
+            type: string
+        - name: file_id
+          in: path
+          description: The ID of the file to retrieve.
+          required: true
+          schema:
+            type: string
+    post:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreFileObject representing the updated file.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Updates a vector store file.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store containing the file to update.
+          required: true
+          schema:
+            type: string
+        - name: file_id
+          in: path
+          description: The ID of the file to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenaiUpdateVectorStoreFileRequest'
+        required: true
+    delete:
+      responses:
+        '200':
+          description: >-
+            A VectorStoreFileDeleteResponse indicating the deletion status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileDeleteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: Delete a vector store file.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store containing the file to delete.
+          required: true
+          schema:
+            type: string
+        - name: file_id
+          in: path
+          description: The ID of the file to delete.
           required: true
           schema:
             type: string
@@ -9031,6 +9176,27 @@ components:
       required:
         - name
       title: OpenaiCreateVectorStoreRequest
+    VectorStoreFileCounts:
+      type: object
+      properties:
+        completed:
+          type: integer
+        cancelled:
+          type: integer
+        failed:
+          type: integer
+        in_progress:
+          type: integer
+        total:
+          type: integer
+      additionalProperties: false
+      required:
+        - completed
+        - cancelled
+        - failed
+        - in_progress
+        - total
+      title: VectorStoreFileCounts
     VectorStoreObject:
       type: object
       properties:
@@ -9047,9 +9213,7 @@ components:
           type: integer
           default: 0
         file_counts:
-          type: object
-          additionalProperties:
-            type: integer
+          $ref: '#/components/schemas/VectorStoreFileCounts'
         status:
           type: string
           default: completed
@@ -9129,6 +9293,25 @@ components:
         - deleted
       title: VectorStoreDeleteResponse
       description: Response from deleting a vector store.
+    VectorStoreFileDeleteResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          default: vector_store.file.deleted
+        deleted:
+          type: boolean
+          default: true
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - deleted
+      title: VectorStoreFileDeleteResponse
+      description: >-
+        Response from deleting a vector store file.
     OpenaiEmbeddingsRequest:
       type: object
       properties:
@@ -9320,6 +9503,22 @@ components:
       title: OpenAIFileObject
       description: >-
         OpenAI File object as defined in the OpenAI Files API.
+    VectorStoreListFilesResponse:
+      type: object
+      properties:
+        object:
+          type: string
+          default: list
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VectorStoreFileObject'
+      additionalProperties: false
+      required:
+        - object
+        - data
+      title: VectorStoreListFilesResponse
+      description: Response from listing vector stores.
     OpenAIModel:
       type: object
       properties:
@@ -9524,6 +9723,25 @@ components:
             Set of 16 key-value pairs that can be attached to an object.
       additionalProperties: false
       title: OpenaiUpdateVectorStoreRequest
+    OpenaiUpdateVectorStoreFileRequest:
+      type: object
+      properties:
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+          description: >-
+            The updated key-value attributes to store with the file.
+      additionalProperties: false
+      required:
+        - attributes
+      title: OpenaiUpdateVectorStoreFileRequest
     DPOAlignmentConfig:
       type: object
       properties:
