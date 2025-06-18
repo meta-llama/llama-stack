@@ -22,6 +22,15 @@ logger = logging.getLogger(__name__)
 def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
+        if p.provider_type in ["inline::faiss", "inline::sqlite-vec", "inline::milvus"]:
+            return
+
+    pytest.skip("OpenAI vector stores are not supported by any provider")
+
+
+def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models):
+    vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
+    for p in vector_io_providers:
         if p.provider_type in ["inline::faiss", "inline::sqlite-vec"]:
             return
 
@@ -443,6 +452,7 @@ def test_openai_vector_store_search_with_max_num_results(
 def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -494,6 +504,7 @@ def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client
 def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach files on creation."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -551,6 +562,7 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
 def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store list files."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
@@ -624,6 +636,7 @@ def test_openai_vector_store_list_files_invalid_vector_store(compat_client_with_
 def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store retrieve file contents."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files retrieve contents is not yet supported with LlamaStackClient")
@@ -665,6 +678,7 @@ def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_sto
 def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
@@ -718,10 +732,11 @@ def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client
 
 
 # TODO: Remove this xfail once we have a way to remove embeddings from vector store
-@pytest.mark.xfail(reason="Vector Store Files delete doesn't remove embeddings from vecntor store", strict=True)
+@pytest.mark.xfail(reason="Vector Store Files delete doesn't remove embeddings from vector store", strict=True)
 def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file removes from vector store."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -763,6 +778,7 @@ def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client
 def test_openai_vector_store_update_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store update file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files update is not yet supported with LlamaStackClient")

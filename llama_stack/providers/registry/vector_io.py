@@ -130,5 +130,6 @@ def available_providers() -> list[ProviderSpec]:
             module="llama_stack.providers.inline.vector_io.milvus",
             config_class="llama_stack.providers.inline.vector_io.milvus.MilvusVectorIOConfig",
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
     ]

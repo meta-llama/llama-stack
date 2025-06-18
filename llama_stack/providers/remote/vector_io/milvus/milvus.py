@@ -5,34 +5,27 @@
 # the root directory of this source tree.
 
 import asyncio
-import hashlib
+import json
 import logging
 import os
-import uuid
 from typing import Any
 
 from numpy.typing import NDArray
 from pymilvus import MilvusClient
 
-from llama_stack.apis.inference import InterleavedContent
+from llama_stack.apis.files.files import Files
+from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
-    SearchRankingOptions,
     VectorIO,
-    VectorStoreChunkingStrategy,
-    VectorStoreDeleteResponse,
-    VectorStoreFileContentsResponse,
-    VectorStoreFileObject,
-    VectorStoreFileStatus,
-    VectorStoreListFilesResponse,
-    VectorStoreListResponse,
-    VectorStoreObject,
-    VectorStoreSearchResponsePage,
 )
-from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.api import KVStore
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
@@ -42,12 +35,22 @@ from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
 logger = logging.getLogger(__name__)
 
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:milvus:{VERSION}::"
+VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
+
 
 class MilvusIndex(EmbeddingIndex):
-    def __init__(self, client: MilvusClient, collection_name: str, consistency_level="Strong"):
+    def __init__(
+        self, client: MilvusClient, collection_name: str, consistency_level="Strong", kvstore: KVStore | None = None
+    ):
         self.client = client
         self.collection_name = collection_name.replace("-", "_")
         self.consistency_level = consistency_level
+        self.kvstore = kvstore
 
     async def delete(self):
         if await asyncio.to_thread(self.client.has_collection, self.collection_name):
@@ -68,11 +71,9 @@ class MilvusIndex(EmbeddingIndex):
 
         data = []
         for chunk, embedding in zip(chunks, embeddings, strict=False):
-            chunk_id = generate_chunk_id(chunk.metadata["document_id"], chunk.content)
-
             data.append(
                 {
-                    "chunk_id": chunk_id,
+                    "chunk_id": chunk.chunk_id,
                     "vector": embedding,
                     "chunk_content": chunk.model_dump(),
                 }
@@ -120,16 +121,42 @@ class MilvusIndex(EmbeddingIndex):
         raise NotImplementedError("Hybrid search is not supported in Milvus")
 
 
-class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     def __init__(
-        self, config: RemoteMilvusVectorIOConfig | InlineMilvusVectorIOConfig, inference_api: Api.inference
+        self,
+        config: RemoteMilvusVectorIOConfig | InlineMilvusVectorIOConfig,
+        inference_api: Inference,
+        files_api: Files | None,
     ) -> None:
         self.config = config
         self.cache = {}
         self.client = None
         self.inference_api = inference_api
+        self.files_api = files_api
+        self.kvstore: KVStore | None = None
+        self.vector_db_store = None
+        self.openai_vector_stores: dict[str, dict[str, Any]] = {}
+        self.metadata_collection_name = "openai_vector_stores_metadata"
 
     async def initialize(self) -> None:
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        start_key = VECTOR_DBS_PREFIX
+        end_key = f"{VECTOR_DBS_PREFIX}\xff"
+        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
+
+        for vector_db_data in stored_vector_dbs:
+            vector_db = VectorDB.mdel_validate_json(vector_db_data)
+            index = VectorDBWithIndex(
+                vector_db,
+                index=await MilvusIndex(
+                    client=self.client,
+                    collection_name=vector_db.identifier,
+                    consistency_level=self.config.consistency_level,
+                    kvstore=self.kvstore,
+                ),
+                inference_api=self.inference_api,
+            )
+            self.cache[vector_db.identifier] = index
         if isinstance(self.config, RemoteMilvusVectorIOConfig):
             logger.info(f"Connecting to Milvus server at {self.config.uri}")
             self.client = MilvusClient(**self.config.model_dump(exclude_none=True))
@@ -137,6 +164,8 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             logger.info(f"Connecting to Milvus Lite at: {self.config.db_path}")
             uri = os.path.expanduser(self.config.db_path)
             self.client = MilvusClient(uri=uri)
+
+        self.openai_vector_stores = await self._load_openai_vector_stores()
 
     async def shutdown(self) -> None:
         self.client.close()
@@ -202,116 +231,62 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         return await index.query_chunks(query, params)
 
-    async def openai_create_vector_store(
-        self,
-        name: str,
-        file_ids: list[str] | None = None,
-        expires_after: dict[str, Any] | None = None,
-        chunking_strategy: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-        embedding_model: str | None = None,
-        embedding_dimension: int | None = 384,
-        provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Save vector store metadata to persistent storage."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
-    async def openai_list_vector_stores(
-        self,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-    ) -> VectorStoreListResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Update vector store metadata in persistent storage."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
-    async def openai_retrieve_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
+        """Delete vector store metadata from persistent storage."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.delete(key)
 
-    async def openai_update_vector_store(
-        self,
-        vector_store_id: str,
-        name: str | None = None,
-        expires_after: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to Milvus database."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
+        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=content_key, value=json.dumps(file_contents))
 
-    async def openai_delete_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreDeleteResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
+        """Load all vector store metadata from persistent storage."""
+        assert self.kvstore is not None
+        start_key = OPENAI_VECTOR_STORES_PREFIX
+        end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
+        stored = await self.kvstore.values_in_range(start_key, end_key)
+        return {json.loads(s)["id"]: json.loads(s) for s in stored}
 
-    async def openai_search_vector_store(
-        self,
-        vector_store_id: str,
-        query: str | list[str],
-        filters: dict[str, Any] | None = None,
-        max_num_results: int | None = 10,
-        ranking_options: SearchRankingOptions | None = None,
-        rewrite_query: bool | None = False,
-        search_mode: str | None = "vector",
-    ) -> VectorStoreSearchResponsePage:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to Milvus database."""
+        raise NotImplementedError("Files API not yet implemented for Milvus")
 
-    async def openai_attach_file_to_vector_store(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-        chunking_strategy: VectorStoreChunkingStrategy | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from Milvus database."""
+        raise NotImplementedError("Files API not yet implemented for Milvus")
 
-    async def openai_list_files_in_vector_store(
-        self,
-        vector_store_id: str,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-        filter: VectorStoreFileStatus | None = None,
-    ) -> VectorStoreListFilesResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from Milvus database."""
+        raise NotImplementedError("Files API not yet implemented for Milvus")
 
-    async def openai_retrieve_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in Milvus database."""
+        raise NotImplementedError("Files API not yet implemented for Milvus")
 
-    async def openai_retrieve_vector_store_file_contents(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileContentsResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
-
-    async def openai_update_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
-
-    async def openai_delete_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
-
-
-def generate_chunk_id(document_id: str, chunk_text: str) -> str:
-    """Generate a unique chunk ID using a hash of document ID and chunk text."""
-    hash_input = f"{document_id}:{chunk_text}".encode()
-    return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
-
-
-# TODO: refactor this generate_chunk_id along with the `sqlite-vec` implementation into a separate utils file
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from Milvus database."""
+        raise NotImplementedError("Files API not yet implemented for Milvus")

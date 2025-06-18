@@ -42,6 +42,12 @@ logger = logging.getLogger(__name__)
 # Constants for OpenAI vector stores
 CHUNK_MULTIPLIER = 5
 
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:{VERSION}::"
+
 
 class OpenAIVectorStoreMixin(ABC):
     """
@@ -141,7 +147,6 @@ class OpenAIVectorStoreMixin(ABC):
         provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         """Creates a vector store."""
-        # store and vector_db have the same id
         store_id = name or str(uuid.uuid4())
         created_at = int(time.time())
 
@@ -315,7 +320,7 @@ class OpenAIVectorStoreMixin(ABC):
         await self._delete_openai_vector_store_from_storage(vector_store_id)
 
         # Delete from in-memory cache
-        del self.openai_vector_stores[vector_store_id]
+        self.openai_vector_stores.pop(vector_store_id, None)
 
         # Also delete the underlying vector DB
         try:
@@ -574,6 +579,7 @@ class OpenAIVectorStoreMixin(ABC):
 
         # Save vector store file to persistent storage (provider-specific)
         dict_chunks = [c.model_dump() for c in chunks]
+        # This should be updated to include chunk_id
         await self._save_openai_vector_store_file(vector_store_id, file_id, file_info, dict_chunks)
 
         # Update file_ids and file_counts in vector store metadata

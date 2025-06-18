@@ -154,12 +154,6 @@ get_python_cmd() {
     fi
 }
 
-# Add other required item commands generic to all containers
-add_to_container << EOF
-# Allows running as non-root user
-RUN mkdir -p /.llama/providers.d /.cache
-EOF
-
 if [ -n "$run_config" ]; then
   # Copy the run config to the build context since it's an absolute path
   cp "$run_config" "$BUILD_CONTEXT_DIR/run.yaml"
@@ -175,7 +169,7 @@ if [ -n "$run_config" ]; then
     echo "Copying external providers directory: $external_providers_dir"
     cp -r "$external_providers_dir" "$BUILD_CONTEXT_DIR/providers.d"
     add_to_container << EOF
-COPY providers.d /.llama/providers.d
+COPY --chmod=g+w providers.d /.llama/providers.d
 EOF
     fi
 
@@ -268,7 +262,7 @@ fi
 # Add other require item commands genearic to all containers
 add_to_container << EOF
 
-RUN chmod -R g+rw /app /.llama /.cache
+RUN mkdir -p /.llama /.cache && chmod -R g+rw /app /.llama /.cache
 EOF
 
 printf "Containerfile created successfully in %s/Containerfile\n\n" "$TEMP_DIR"

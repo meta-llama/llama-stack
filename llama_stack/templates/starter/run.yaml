@@ -72,6 +72,14 @@ providers:
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/sqlite_vec.db
+  - provider_id: ${env.ENABLE_MILVUS:+milvus}
+    provider_type: inline::milvus
+    config:
+      db_path: ${env.MILVUS_DB_PATH:=~/.llama/distributions/starter/milvus.db}
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/${env.MILVUS_KVSTORE_DB_PATH:=~/.llama/distributions/starter/milvus_registry.db}
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
