@@ -9616,6 +9616,19 @@ components:
     Response:
       type: object
       title: Response
+    VectorStoreContent:
+      type: object
+      properties:
+        type:
+          type: string
+          const: text
+        text:
+          type: string
+      additionalProperties: false
+      required:
+        - type
+        - text
+      title: VectorStoreContent
     VectorStoreFileContentsResponse:
       type: object
       properties:
@@ -9636,7 +9649,7 @@ components:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/InterleavedContentItem'
+            $ref: '#/components/schemas/VectorStoreContent'
       additionalProperties: false
       required:
         - file_id
@@ -9693,19 +9706,6 @@ components:
       required:
         - query
       title: OpenaiSearchVectorStoreRequest
-    VectorStoreContent:
-      type: object
-      properties:
-        type:
-          type: string
-          const: text
-        text:
-          type: string
-      additionalProperties: false
-      required:
-        - type
-        - text
-      title: VectorStoreContent
     VectorStoreSearchResponse:
       type: object
       properties:

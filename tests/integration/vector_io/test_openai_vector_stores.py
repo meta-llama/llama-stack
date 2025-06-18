@@ -440,7 +440,7 @@ def test_openai_vector_store_search_with_max_num_results(
     assert len(search_response.data) == 2
 
 
-def test_openai_vector_store_attach_file_response_attributes(compat_client_with_empty_stores, client_with_models):
+def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
@@ -453,7 +453,7 @@ def test_openai_vector_store_attach_file_response_attributes(compat_client_with_
     vector_store = compat_client.vector_stores.create(name="test_store")
 
     # Create a file
-    test_content = b"This is a test file"
+    test_content = b"The secret string is foobazbar."
     with BytesIO(test_content) as file_buffer:
         file_buffer.name = "openai_test.txt"
         file = compat_client.files.create(file=file_buffer, purpose="assistants")
@@ -479,6 +479,16 @@ def test_openai_vector_store_attach_file_response_attributes(compat_client_with_
     assert updated_vector_store.file_counts.cancelled == 0
     assert updated_vector_store.file_counts.failed == 0
     assert updated_vector_store.file_counts.in_progress == 0
+
+    # Search using OpenAI API to confirm our file attached
+    search_response = compat_client.vector_stores.search(
+        vector_store_id=vector_store.id, query="What is the secret string?", max_num_results=1
+    )
+    assert search_response is not None
+    assert len(search_response.data) > 0
+    top_result = search_response.data[0]
+    top_content = top_result.content[0].text
+    assert "foobazbar" in top_content.lower()
 
 
 def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_stores, client_with_models):
@@ -687,6 +697,49 @@ def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client
     assert updated_vector_store.file_counts.cancelled == 0
     assert updated_vector_store.file_counts.failed == 0
     assert updated_vector_store.file_counts.in_progress == 0
+
+
+# TODO: Remove this xfail once we have a way to remove embeddings from vector store
+@pytest.mark.xfail(reason="Vector Store Files delete doesn't remove embeddings from vecntor store", strict=True)
+def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client_with_empty_stores, client_with_models):
+    """Test OpenAI vector store delete file removes from vector store."""
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+
+    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
+        pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
+
+    compat_client = compat_client_with_empty_stores
+
+    # Create a vector store
+    vector_store = compat_client.vector_stores.create(name="test_store")
+
+    # Create a file
+    test_content = b"The secret string is foobazbar."
+    with BytesIO(test_content) as file_buffer:
+        file_buffer.name = "openai_test.txt"
+        file = compat_client.files.create(file=file_buffer, purpose="assistants")
+
+    # Attach the file to the vector store
+    file_attach_response = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file.id,
+    )
+    assert file_attach_response.status == "completed"
+
+    # Search using OpenAI API to confirm our file attached
+    search_response = compat_client.vector_stores.search(
+        vector_store_id=vector_store.id, query="What is the secret string?", max_num_results=1
+    )
+    assert "foobazbar" in search_response.data[0].content[0].text.lower()
+
+    # Delete the file
+    compat_client.vector_stores.files.delete(vector_store_id=vector_store.id, file_id=file.id)
+
+    # Search using OpenAI API to confirm our file deleted
+    search_response = compat_client.vector_stores.search(
+        vector_store_id=vector_store.id, query="What is the secret string?", max_num_results=1
+    )
+    assert not search_response.data
 
 
 def test_openai_vector_store_update_file(compat_client_with_empty_stores, client_with_models):

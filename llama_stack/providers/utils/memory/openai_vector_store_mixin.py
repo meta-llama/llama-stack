@@ -12,7 +12,6 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
-from llama_stack.apis.common.content_types import InterleavedContentItem, TextContentItem
 from llama_stack.apis.files import Files
 from llama_stack.apis.files.files import OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
@@ -386,33 +385,7 @@ class OpenAIVectorStoreMixin(ABC):
                     if not self._matches_filters(chunk.metadata, filters):
                         continue
 
-                # content is InterleavedContent
-                if isinstance(chunk.content, str):
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=chunk.content,
-                        )
-                    ]
-                elif isinstance(chunk.content, list):
-                    # TODO: Add support for other types of content
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=item.text,
-                        )
-                        for item in chunk.content
-                        if item.type == "text"
-                    ]
-                else:
-                    if chunk.content.type != "text":
-                        raise ValueError(f"Unsupported content type: {chunk.content.type}")
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=chunk.content.text,
-                        )
-                    ]
+                content = self._chunk_to_vector_store_content(chunk)
 
                 response_data_item = VectorStoreSearchResponse(
                     file_id=chunk.metadata.get("file_id", ""),
@@ -487,6 +460,36 @@ class OpenAIVectorStoreMixin(ABC):
         else:
             # Unknown filter type, default to no match
             raise ValueError(f"Unsupported filter type: {filter_type}")
+
+    def _chunk_to_vector_store_content(self, chunk: Chunk) -> list[VectorStoreContent]:
+        # content is InterleavedContent
+        if isinstance(chunk.content, str):
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=chunk.content,
+                )
+            ]
+        elif isinstance(chunk.content, list):
+            # TODO: Add support for other types of content
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=item.text,
+                )
+                for item in chunk.content
+                if item.type == "text"
+            ]
+        else:
+            if chunk.content.type != "text":
+                raise ValueError(f"Unsupported content type: {chunk.content.type}")
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=chunk.content.text,
+                )
+            ]
+        return content
 
     async def openai_attach_file_to_vector_store(
         self,
@@ -634,20 +637,14 @@ class OpenAIVectorStoreMixin(ABC):
         file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
         dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
         chunks = [Chunk.model_validate(c) for c in dict_chunks]
-        contents: list[InterleavedContentItem] = []
+        content = []
         for chunk in chunks:
-            content = chunk.content
-            if isinstance(content, str):
-                contents.append(TextContentItem(text=content))
-            elif isinstance(content, InterleavedContentItem):
-                contents.append(content)
-            else:
-                contents.extend(contents)
+            content.extend(self._chunk_to_vector_store_content(chunk))
         return VectorStoreFileContentsResponse(
             file_id=file_id,
             filename=file_info.get("filename", ""),
             attributes=file_info.get("attributes", {}),
-            content=contents,
+            content=content,
         )
 
     async def openai_update_vector_store_file(
@@ -684,6 +681,10 @@ class OpenAIVectorStoreMixin(ABC):
         await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
 
         # TODO: We need to actually delete the embeddings from the underlying vector store...
+        # Also uncomment the corresponding integration test marked as xfail
+        #
+        # test_openai_vector_store_delete_file_removes_from_vector_store in
+        # tests/integration/vector_io/test_openai_vector_stores.py
 
         # Update in-memory cache
         store_info["file_ids"].remove(file_id)

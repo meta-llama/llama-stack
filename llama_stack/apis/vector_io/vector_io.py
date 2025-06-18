@@ -12,7 +12,6 @@ from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
-from llama_stack.apis.common.content_types import InterleavedContentItem
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -208,7 +207,7 @@ class VectorStoreFileContentsResponse(BaseModel):
     file_id: str
     filename: str
     attributes: dict[str, Any]
-    content: list[InterleavedContentItem]
+    content: list[VectorStoreContent]
 
 
 @json_schema_type
