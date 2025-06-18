@@ -509,7 +509,9 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
         valid_file_ids.append(file.id)
 
     # include an invalid file ID so we can test failed status
-    file_ids = valid_file_ids + ["invalid_file_id"]
+    failed_file_id = "invalid_file_id"
+    file_ids = valid_file_ids + [failed_file_id]
+    num_failed = len(file_ids) - len(valid_file_ids)
 
     # Create a vector store
     vector_store = compat_client.vector_stores.create(
@@ -520,7 +522,7 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
     assert vector_store.file_counts.completed == len(valid_file_ids)
     assert vector_store.file_counts.total == len(file_ids)
     assert vector_store.file_counts.cancelled == 0
-    assert vector_store.file_counts.failed == len(file_ids) - len(valid_file_ids)
+    assert vector_store.file_counts.failed == num_failed
     assert vector_store.file_counts.in_progress == 0
 
     files_list = compat_client.vector_stores.files.list(vector_store_id=vector_store.id)
@@ -532,11 +534,13 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
         else:
             assert file.status == "failed"
 
+    failed_list = compat_client.vector_stores.files.list(vector_store_id=vector_store.id, filter="failed")
+    assert len(failed_list.data) == num_failed
+    assert failed_file_id == failed_list.data[0].id
+
     # Delete the invalid file
-    delete_response = compat_client.vector_stores.files.delete(
-        vector_store_id=vector_store.id, file_id="invalid_file_id"
-    )
-    assert delete_response.id == "invalid_file_id"
+    delete_response = compat_client.vector_stores.files.delete(vector_store_id=vector_store.id, file_id=failed_file_id)
+    assert delete_response.id == failed_file_id
 
     updated_vector_store = compat_client.vector_stores.retrieve(vector_store_id=vector_store.id)
     assert updated_vector_store.file_counts.completed == len(valid_file_ids)
@@ -573,6 +577,7 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
     assert files_list
     assert files_list.object == "list"
     assert files_list.data
+    assert not files_list.has_more
     assert len(files_list.data) == 3
     assert set(file_ids) == {file.id for file in files_list.data}
     assert files_list.data[0].object == "vector_store.file"
@@ -580,7 +585,20 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
     assert files_list.data[0].status == "completed"
     assert files_list.data[0].chunking_strategy.type == "auto"
     assert files_list.data[0].created_at > 0
+    assert files_list.first_id == files_list.data[0].id
     assert not files_list.data[0].last_error
+
+    first_page = compat_client.vector_stores.files.list(vector_store_id=vector_store.id, limit=2)
+    assert first_page.has_more
+    assert len(first_page.data) == 2
+    assert first_page.first_id == first_page.data[0].id
+    assert first_page.last_id != first_page.data[-1].id
+
+    next_page = compat_client.vector_stores.files.list(
+        vector_store_id=vector_store.id, limit=2, after=first_page.data[-1].id
+    )
+    assert not next_page.has_more
+    assert len(next_page.data) == 1
 
     updated_vector_store = compat_client.vector_stores.retrieve(vector_store_id=vector_store.id)
     assert updated_vector_store.file_counts.completed == 3

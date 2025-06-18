@@ -177,6 +177,10 @@ class VectorStoreFileLastError(BaseModel):
     message: str
 
 
+VectorStoreFileStatus = Literal["completed"] | Literal["in_progress"] | Literal["cancelled"] | Literal["failed"]
+register_schema(VectorStoreFileStatus, name="VectorStoreFileStatus")
+
+
 @json_schema_type
 class VectorStoreFileObject(BaseModel):
     """OpenAI Vector Store File object."""
@@ -187,7 +191,7 @@ class VectorStoreFileObject(BaseModel):
     chunking_strategy: VectorStoreChunkingStrategy
     created_at: int
     last_error: VectorStoreFileLastError | None = None
-    status: Literal["completed"] | Literal["in_progress"] | Literal["cancelled"] | Literal["failed"]
+    status: VectorStoreFileStatus
     usage_bytes: int = 0
     vector_store_id: str
 
@@ -198,6 +202,9 @@ class VectorStoreListFilesResponse(BaseModel):
 
     object: str = "list"
     data: list[VectorStoreFileObject]
+    first_id: str | None = None
+    last_id: str | None = None
+    has_more: bool = False
 
 
 @json_schema_type
@@ -399,6 +406,11 @@ class VectorIO(Protocol):
     async def openai_list_files_in_vector_store(
         self,
         vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
     ) -> VectorStoreListFilesResponse:
         """List files in a vector store.
 

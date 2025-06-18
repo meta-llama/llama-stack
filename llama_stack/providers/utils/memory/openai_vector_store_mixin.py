@@ -35,6 +35,7 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreFileDeleteResponse,
     VectorStoreFileLastError,
     VectorStoreFileObject,
+    VectorStoreFileStatus,
     VectorStoreListFilesResponse,
 )
 from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
@@ -592,21 +593,56 @@ class OpenAIVectorStoreMixin(ABC):
     async def openai_list_files_in_vector_store(
         self,
         vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
     ) -> VectorStoreListFilesResponse:
         """List files in a vector store."""
+        limit = limit or 20
+        order = order or "desc"
 
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
 
         store_info = self.openai_vector_stores[vector_store_id]
 
-        file_objects = []
+        file_objects: list[VectorStoreFileObject] = []
         for file_id in store_info["file_ids"]:
             file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
-            file_objects.append(VectorStoreFileObject(**file_info))
+            file_object = VectorStoreFileObject(**file_info)
+            if filter and file_object.status != filter:
+                continue
+            file_objects.append(file_object)
+
+        # Sort by created_at
+        reverse_order = order == "desc"
+        file_objects.sort(key=lambda x: x.created_at, reverse=reverse_order)
+
+        # Apply cursor-based pagination
+        if after:
+            after_index = next((i for i, file in enumerate(file_objects) if file.id == after), -1)
+            if after_index >= 0:
+                file_objects = file_objects[after_index + 1 :]
+
+        if before:
+            before_index = next((i for i, file in enumerate(file_objects) if file.id == before), len(file_objects))
+            file_objects = file_objects[:before_index]
+
+        # Apply limit
+        limited_files = file_objects[:limit]
+
+        # Determine pagination info
+        has_more = len(file_objects) > limit
+        first_id = file_objects[0].id if file_objects else None
+        last_id = file_objects[-1].id if file_objects else None
 
         return VectorStoreListFilesResponse(
-            data=file_objects,
+            data=limited_files,
+            has_more=has_more,
+            first_id=first_id,
+            last_id=last_id,
         )
 
     async def openai_retrieve_vector_store_file(

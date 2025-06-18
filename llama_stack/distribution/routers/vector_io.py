@@ -26,6 +26,7 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreFileContentsResponse,
     VectorStoreFileDeleteResponse,
     VectorStoreFileObject,
+    VectorStoreFileStatus,
 )
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
@@ -287,12 +288,22 @@ class VectorIORouter(VectorIO):
     async def openai_list_files_in_vector_store(
         self,
         vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
     ) -> list[VectorStoreFileObject]:
         logger.debug(f"VectorIORouter.openai_list_files_in_vector_store: {vector_store_id}")
         # Route based on vector store ID
         provider = self.routing_table.get_provider_impl(vector_store_id)
         return await provider.openai_list_files_in_vector_store(
             vector_store_id=vector_store_id,
+            limit=limit,
+            order=order,
+            after=after,
+            before=before,
+            filter=filter,
         )
 
     async def openai_retrieve_vector_store_file(

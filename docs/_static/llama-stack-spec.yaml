@@ -2294,6 +2294,31 @@ paths:
           required: true
           schema:
             type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: after
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: filter
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/VectorStoreFileStatus'
     post:
       responses:
         '200':
@@ -8641,15 +8666,7 @@ components:
         last_error:
           $ref: '#/components/schemas/VectorStoreFileLastError'
         status:
-          oneOf:
-            - type: string
-              const: completed
-            - type: string
-              const: in_progress
-            - type: string
-              const: cancelled
-            - type: string
-              const: failed
+          $ref: '#/components/schemas/VectorStoreFileStatus'
         usage_bytes:
           type: integer
           default: 0
@@ -8667,6 +8684,16 @@ components:
         - vector_store_id
       title: VectorStoreFileObject
       description: OpenAI Vector Store File object.
+    VectorStoreFileStatus:
+      oneOf:
+        - type: string
+          const: completed
+        - type: string
+          const: in_progress
+        - type: string
+          const: cancelled
+        - type: string
+          const: failed
     OpenAIJSONSchema:
       type: object
       properties:
@@ -9551,10 +9578,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VectorStoreFileObject'
+        first_id:
+          type: string
+        last_id:
+          type: string
+        has_more:
+          type: boolean
+          default: false
       additionalProperties: false
       required:
         - object
         - data
+        - has_more
       title: VectorStoreListFilesResponse
       description: Response from listing vector stores.
     OpenAIModel:
