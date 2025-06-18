@@ -12,7 +12,9 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
+from llama_stack.apis.common.content_types import InterleavedContentItem, TextContentItem
 from llama_stack.apis.files import Files
+from llama_stack.apis.files.files import OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     QueryChunksResponse,
@@ -29,6 +31,7 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreChunkingStrategy,
     VectorStoreChunkingStrategyAuto,
     VectorStoreChunkingStrategyStatic,
+    VectorStoreFileContentsResponse,
     VectorStoreFileCounts,
     VectorStoreFileDeleteResponse,
     VectorStoreFileLastError,
@@ -75,13 +78,20 @@ class OpenAIVectorStoreMixin(ABC):
         pass
 
     @abstractmethod
-    async def _save_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
         """Save vector store file metadata to persistent storage."""
         pass
 
     @abstractmethod
     async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
         """Load vector store file metadata from persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from persistent storage."""
         pass
 
     @abstractmethod
@@ -491,6 +501,8 @@ class OpenAIVectorStoreMixin(ABC):
         attributes = attributes or {}
         chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
         created_at = int(time.time())
+        chunks: list[Chunk] = []
+        file_response: OpenAIFileObject | None = None
 
         vector_store_file_object = VectorStoreFileObject(
             id=file_id,
@@ -554,9 +566,11 @@ class OpenAIVectorStoreMixin(ABC):
 
         # Create OpenAI vector store file metadata
         file_info = vector_store_file_object.model_dump(exclude={"last_error"})
+        file_info["filename"] = file_response.filename if file_response else ""
 
         # Save vector store file to persistent storage (provider-specific)
-        await self._save_openai_vector_store_file(vector_store_id, file_id, file_info)
+        dict_chunks = [c.model_dump() for c in chunks]
+        await self._save_openai_vector_store_file(vector_store_id, file_id, file_info, dict_chunks)
 
         # Update file_ids and file_counts in vector store metadata
         store_info = self.openai_vector_stores[vector_store_id].copy()
@@ -607,6 +621,34 @@ class OpenAIVectorStoreMixin(ABC):
 
         file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
         return VectorStoreFileObject(**file_info)
+
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
+        """Retrieves the contents of a vector store file."""
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
+        dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
+        chunks = [Chunk.model_validate(c) for c in dict_chunks]
+        contents: list[InterleavedContentItem] = []
+        for chunk in chunks:
+            content = chunk.content
+            if isinstance(content, str):
+                contents.append(TextContentItem(text=content))
+            elif isinstance(content, InterleavedContentItem):
+                contents.append(content)
+            else:
+                contents.extend(contents)
+        return VectorStoreFileContentsResponse(
+            file_id=file_id,
+            filename=file_info.get("filename", ""),
+            attributes=file_info.get("attributes", {}),
+            content=contents,
+        )
 
     async def openai_update_vector_store_file(
         self,

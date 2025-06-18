@@ -2907,6 +2907,44 @@ paths:
           required: true
           schema:
             type: string
+  /v1/openai/v1/vector_stores/{vector_store_id}/files/{file_id}/content:
+    get:
+      responses:
+        '200':
+          description: >-
+            A list of InterleavedContent representing the file contents.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VectorStoreFileContentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - VectorIO
+      description: >-
+        Retrieves the contents of a vector store file.
+      parameters:
+        - name: vector_store_id
+          in: path
+          description: >-
+            The ID of the vector store containing the file to retrieve.
+          required: true
+          schema:
+            type: string
+        - name: file_id
+          in: path
+          description: The ID of the file to retrieve.
+          required: true
+          schema:
+            type: string
   /v1/openai/v1/vector_stores/{vector_store_id}/search:
     post:
       responses:
@@ -9578,6 +9616,36 @@ components:
     Response:
       type: object
       title: Response
+    VectorStoreFileContentsResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+        filename:
+          type: string
+        attributes:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterleavedContentItem'
+      additionalProperties: false
+      required:
+        - file_id
+        - filename
+        - attributes
+        - content
+      title: VectorStoreFileContentsResponse
+      description: >-
+        Response from retrieving the contents of a vector store file.
     OpenaiSearchVectorStoreRequest:
       type: object
       properties:

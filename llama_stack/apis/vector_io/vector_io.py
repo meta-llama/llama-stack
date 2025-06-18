@@ -12,6 +12,7 @@ from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.common.content_types import InterleavedContentItem
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -198,6 +199,16 @@ class VectorStoreListFilesResponse(BaseModel):
 
     object: str = "list"
     data: list[VectorStoreFileObject]
+
+
+@json_schema_type
+class VectorStoreFileContentsResponse(BaseModel):
+    """Response from retrieving the contents of a vector store file."""
+
+    file_id: str
+    filename: str
+    attributes: dict[str, Any]
+    content: list[InterleavedContentItem]
 
 
 @json_schema_type
@@ -408,6 +419,20 @@ class VectorIO(Protocol):
         :param vector_store_id: The ID of the vector store containing the file to retrieve.
         :param file_id: The ID of the file to retrieve.
         :returns: A VectorStoreFileObject representing the file.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/vector_stores/{vector_store_id}/files/{file_id}/content", method="GET")
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
+        """Retrieves the contents of a vector store file.
+
+        :param vector_store_id: The ID of the vector store containing the file to retrieve.
+        :param file_id: The ID of the file to retrieve.
+        :returns: A list of InterleavedContent representing the file contents.
         """
         ...
 

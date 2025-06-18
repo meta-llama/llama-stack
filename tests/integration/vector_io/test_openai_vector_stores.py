@@ -593,6 +593,47 @@ def test_openai_vector_store_list_files_invalid_vector_store(compat_client_with_
         compat_client.vector_stores.files.list(vector_store_id="abc123")
 
 
+def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_stores, client_with_models):
+    """Test OpenAI vector store retrieve file contents."""
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+
+    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
+        pytest.skip("Vector Store Files retrieve contents is not yet supported with LlamaStackClient")
+
+    compat_client = compat_client_with_empty_stores
+
+    # Create a vector store
+    vector_store = compat_client.vector_stores.create(name="test_store")
+
+    # Create a file
+    test_content = b"This is a test file"
+    file_name = "openai_test.txt"
+    attributes = {"foo": "bar"}
+    with BytesIO(test_content) as file_buffer:
+        file_buffer.name = file_name
+        file = compat_client.files.create(file=file_buffer, purpose="assistants")
+
+    # Attach the file to the vector store
+    file_attach_response = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file.id,
+        attributes=attributes,
+    )
+
+    assert file_attach_response.status == "completed"
+
+    file_contents = compat_client.vector_stores.files.content(
+        vector_store_id=vector_store.id,
+        file_id=file.id,
+    )
+
+    assert file_contents
+    assert file_contents.content[0]["type"] == "text"
+    assert file_contents.content[0]["text"] == test_content.decode("utf-8")
+    assert file_contents.filename == file_name
+    assert file_contents.attributes == attributes
+
+
 def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)

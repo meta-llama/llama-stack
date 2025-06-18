@@ -46,6 +46,7 @@ VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
 FAISS_INDEX_PREFIX = f"faiss_index:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:{VERSION}::"
 
 
 class FaissIndex(EmbeddingIndex):
@@ -285,11 +286,15 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
 
-    async def _save_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
         """Save vector store file metadata to kvstore."""
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
         await self.kvstore.set(key=key, value=json.dumps(file_info))
+        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=content_key, value=json.dumps(file_contents))
 
     async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
         """Load vector store file metadata from kvstore."""
@@ -297,6 +302,13 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
         stored_data = await self.kvstore.get(key)
         return json.loads(stored_data) if stored_data else {}
+
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        stored_data = await self.kvstore.get(key)
+        return json.loads(stored_data) if stored_data else []
 
     async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
         """Update vector store file metadata in kvstore."""

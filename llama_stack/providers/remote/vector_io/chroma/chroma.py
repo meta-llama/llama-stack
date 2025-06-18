@@ -26,6 +26,7 @@ from llama_stack.apis.vector_io import (
 )
 from llama_stack.apis.vector_io.vector_io import (
     VectorStoreChunkingStrategy,
+    VectorStoreFileContentsResponse,
     VectorStoreFileObject,
     VectorStoreListFilesResponse,
 )
@@ -279,6 +280,13 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         vector_store_id: str,
         file_id: str,
     ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
 
     async def openai_update_vector_store_file(

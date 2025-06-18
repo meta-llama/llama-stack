@@ -466,7 +466,16 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                     CREATE TABLE IF NOT EXISTS openai_vector_store_files (
                         store_id TEXT,
                         file_id TEXT,
-                        metadata TEXT
+                        metadata TEXT,
+                        PRIMARY KEY (store_id, file_id)
+                    );
+                """)
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files_contents (
+                        store_id TEXT,
+                        file_id TEXT,
+                        contents TEXT,
+                        PRIMARY KEY (store_id, file_id)
                     );
                 """)
                 connection.commit()
@@ -623,7 +632,9 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
 
         await asyncio.to_thread(_delete)
 
-    async def _save_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
         """Save vector store file metadata to SQLite database."""
 
         def _store():
@@ -633,6 +644,10 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                 cur.execute(
                     "INSERT OR REPLACE INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (?, ?, ?)",
                     (store_id, file_id, json.dumps(file_info)),
+                )
+                cur.execute(
+                    "INSERT OR REPLACE INTO openai_vector_store_files_contents (store_id, file_id, contents) VALUES (?, ?, ?)",
+                    (store_id, file_id, json.dumps(file_contents)),
                 )
                 connection.commit()
             except Exception as e:
@@ -670,6 +685,29 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
 
         stored_data = await asyncio.to_thread(_load)
         return json.loads(stored_data) if stored_data else {}
+
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from SQLite database."""
+
+        def _load():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "SELECT contents FROM openai_vector_store_files_contents WHERE store_id = ? AND file_id = ?",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    return None
+                (contents,) = row
+                return contents
+            finally:
+                cur.close()
+                connection.close()
+
+        stored_contents = await asyncio.to_thread(_load)
+        return json.loads(stored_contents) if stored_contents else []
 
     async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
         """Update vector store file metadata in SQLite database."""
