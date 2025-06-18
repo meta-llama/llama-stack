@@ -2,10 +2,13 @@
 
 import {
   OpenAIResponse,
-  ResponseInput,
   ResponseInputMessageContent,
+  UsePaginationOptions,
 } from "@/lib/types";
 import { LogsTable, LogTableRow } from "@/components/logs/logs-table";
+import { usePagination } from "@/hooks/usePagination";
+import { client } from "@/lib/client";
+import type { ResponseListResponse } from "llama-stack-client/resources/responses/responses";
 import {
   isMessageInput,
   isMessageItem,
@@ -17,10 +20,33 @@ import {
 } from "./utils/item-types";
 
 interface ResponsesTableProps {
-  data: OpenAIResponse[];
-  isLoading: boolean;
-  error: Error | null;
+  /** Optional pagination configuration */
+  paginationOptions?: UsePaginationOptions;
 }
+
+/**
+ * Helper function to convert ResponseListResponse.Data to OpenAIResponse
+ */
+const convertResponseListData = (
+  responseData: ResponseListResponse.Data,
+): OpenAIResponse => {
+  return {
+    id: responseData.id,
+    created_at: responseData.created_at,
+    model: responseData.model,
+    object: responseData.object,
+    status: responseData.status,
+    output: responseData.output as OpenAIResponse["output"],
+    input: responseData.input as OpenAIResponse["input"],
+    error: responseData.error,
+    parallel_tool_calls: responseData.parallel_tool_calls,
+    previous_response_id: responseData.previous_response_id,
+    temperature: responseData.temperature,
+    top_p: responseData.top_p,
+    truncation: responseData.truncation,
+    user: responseData.user,
+  };
+};
 
 function getInputText(response: OpenAIResponse): string {
   const firstInput = response.input.find(isMessageInput);
@@ -98,18 +124,43 @@ function formatResponseToRow(response: OpenAIResponse): LogTableRow {
   };
 }
 
-export function ResponsesTable({
-  data,
-  isLoading,
-  error,
-}: ResponsesTableProps) {
+export function ResponsesTable({ paginationOptions }: ResponsesTableProps) {
+  const fetchFunction = async (params: {
+    after?: string;
+    limit: number;
+    model?: string;
+    order?: string;
+  }) => {
+    const response = await client.responses.list({
+      after: params.after,
+      limit: params.limit,
+      ...(params.model && { model: params.model }),
+      ...(params.order && { order: params.order }),
+    } as any);
+
+    const listResponse = response as ResponseListResponse;
+
+    return {
+      ...listResponse,
+      data: listResponse.data.map(convertResponseListData),
+    };
+  };
+
+  const { data, status, hasMore, error, loadMore } = usePagination({
+    ...paginationOptions,
+    fetchFunction,
+    errorMessagePrefix: "responses",
+  });
+
   const formattedData = data.map(formatResponseToRow);
 
   return (
     <LogsTable
       data={formattedData}
-      isLoading={isLoading}
+      status={status}
+      hasMore={hasMore}
       error={error}
+      onLoadMore={loadMore}
       caption="A list of your recent responses."
       emptyMessage="No responses found."
     />

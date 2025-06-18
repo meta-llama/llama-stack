@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { LogsTable, LogTableRow } from "./logs-table";
+import { PaginationStatus } from "@/lib/types";
 
 // Mock next/navigation
 const mockPush = jest.fn();
@@ -23,7 +24,7 @@ const truncateText = originalTruncateText as jest.Mock;
 describe("LogsTable", () => {
   const defaultProps = {
     data: [] as LogTableRow[],
-    isLoading: false,
+    status: "idle" as PaginationStatus,
     error: null,
     caption: "Test table caption",
     emptyMessage: "No data found",
@@ -69,7 +70,7 @@ describe("LogsTable", () => {
   describe("Loading State", () => {
     test("renders skeleton UI when isLoading is true", () => {
       const { container } = render(
-        <LogsTable {...defaultProps} isLoading={true} />,
+        <LogsTable {...defaultProps} status="loading" />,
       );
 
       // Check for skeleton in the table caption
@@ -101,7 +102,7 @@ describe("LogsTable", () => {
 
     test("renders correct number of skeleton rows", () => {
       const { container } = render(
-        <LogsTable {...defaultProps} isLoading={true} />,
+        <LogsTable {...defaultProps} status="loading" />,
       );
 
       const skeletonRows = container.querySelectorAll("tbody tr");
@@ -115,27 +116,45 @@ describe("LogsTable", () => {
       render(
         <LogsTable
           {...defaultProps}
-          error={{ name: "Error", message: errorMessage }}
+          status="error"
+          error={{ name: "Error", message: errorMessage } as Error}
         />,
       );
       expect(
-        screen.getByText(`Error fetching data: ${errorMessage}`),
+        screen.getByText("Unable to load chat completions"),
       ).toBeInTheDocument();
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
     test("renders default error message when error.message is not available", () => {
       render(
-        <LogsTable {...defaultProps} error={{ name: "Error", message: "" }} />,
+        <LogsTable
+          {...defaultProps}
+          status="error"
+          error={{ name: "Error", message: "" } as Error}
+        />,
       );
       expect(
-        screen.getByText("Error fetching data: An unknown error occurred"),
+        screen.getByText("Unable to load chat completions"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "An unexpected error occurred while loading the data.",
+        ),
       ).toBeInTheDocument();
     });
 
     test("renders default error message when error prop is an object without message", () => {
-      render(<LogsTable {...defaultProps} error={{} as Error} />);
+      render(
+        <LogsTable {...defaultProps} status="error" error={{} as Error} />,
+      );
       expect(
-        screen.getByText("Error fetching data: An unknown error occurred"),
+        screen.getByText("Unable to load chat completions"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "An unexpected error occurred while loading the data.",
+        ),
       ).toBeInTheDocument();
     });
 
@@ -143,7 +162,8 @@ describe("LogsTable", () => {
       render(
         <LogsTable
           {...defaultProps}
-          error={{ name: "Error", message: "Test error" }}
+          status="error"
+          error={{ name: "Error", message: "Test error" } as Error}
         />,
       );
       const table = screen.queryByRole("table");
@@ -337,14 +357,19 @@ describe("LogsTable", () => {
 
       render(<LogsTable {...defaultProps} data={mockData} />);
 
-      const table = screen.getByRole("table");
-      expect(table).toBeInTheDocument();
+      const tables = screen.getAllByRole("table");
+      expect(tables).toHaveLength(2); // Fixed header table + body table
 
       const columnHeaders = screen.getAllByRole("columnheader");
       expect(columnHeaders).toHaveLength(4);
 
       const rows = screen.getAllByRole("row");
-      expect(rows).toHaveLength(2); // 1 header row + 1 data row
+      expect(rows).toHaveLength(3); // 1 header row + 1 data row + 1 "no more items" row
+
+      expect(screen.getByText("Input")).toBeInTheDocument();
+      expect(screen.getByText("Output")).toBeInTheDocument();
+      expect(screen.getByText("Model")).toBeInTheDocument();
+      expect(screen.getByText("Created")).toBeInTheDocument();
     });
   });
 });
