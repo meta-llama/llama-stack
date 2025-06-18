@@ -45,7 +45,6 @@ VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
 FAISS_INDEX_PREFIX = f"faiss_index:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:{VERSION}::"
-VECTOR_DIMENSION = 128  # sample dimension
 
 
 class FaissIndex(EmbeddingIndex):
@@ -190,7 +189,8 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
             HealthResponse: A dictionary containing the health status.
         """
         try:
-            faiss.IndexFlatL2(VECTOR_DIMENSION)
+            vector_dimension = 128  # sample dimension
+            faiss.IndexFlatL2(vector_dimension)
             return HealthResponse(status=HealthStatus.OK)
         except Exception as e:
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
