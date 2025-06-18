@@ -95,6 +95,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--embedding-dimension",
         type=int,
+        default=384,
         help="Output dimensionality of the embedding model to use for testing. Default: 384",
     )
     parser.addoption(

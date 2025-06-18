@@ -63,12 +63,14 @@ def assert_valid_text_response(response):
     assert all(isinstance(chunk.text, str) for chunk in response.content)
 
 
-def test_vector_db_insert_inline_and_query(client_with_empty_registry, sample_documents, embedding_model_id):
+def test_vector_db_insert_inline_and_query(
+    client_with_empty_registry, sample_documents, embedding_model_id, embedding_dimension
+):
     vector_db_id = "test_vector_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     client_with_empty_registry.tool_runtime.rag_tool.insert(
@@ -116,7 +118,9 @@ def test_vector_db_insert_inline_and_query(client_with_empty_registry, sample_do
     assert all(score >= 0.01 for score in response4.scores)
 
 
-def test_vector_db_insert_from_url_and_query(client_with_empty_registry, sample_documents, embedding_model_id):
+def test_vector_db_insert_from_url_and_query(
+    client_with_empty_registry, sample_documents, embedding_model_id, embedding_dimension
+):
     providers = [p for p in client_with_empty_registry.providers.list() if p.api == "vector_io"]
     assert len(providers) > 0
 
@@ -125,7 +129,7 @@ def test_vector_db_insert_from_url_and_query(client_with_empty_registry, sample_
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     # list to check memory bank is successfully registered
@@ -170,7 +174,7 @@ def test_vector_db_insert_from_url_and_query(client_with_empty_registry, sample_
     assert any("llama2" in chunk.content.lower() for chunk in response2.chunks)
 
 
-def test_rag_tool_insert_and_query(client_with_empty_registry, embedding_model_id):
+def test_rag_tool_insert_and_query(client_with_empty_registry, embedding_model_id, embedding_dimension):
     providers = [p for p in client_with_empty_registry.providers.list() if p.api == "vector_io"]
     assert len(providers) > 0
 
@@ -179,7 +183,7 @@ def test_rag_tool_insert_and_query(client_with_empty_registry, embedding_model_i
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     available_vector_dbs = [vector_db.identifier for vector_db in client_with_empty_registry.vector_dbs.list()]
