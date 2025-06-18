@@ -11,7 +11,7 @@ import queue
 import random
 import threading
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import wraps
 from typing import Any
 
@@ -121,7 +121,7 @@ class TraceContext:
             span_id=generate_span_id(),
             trace_id=self.trace_id,
             name=name,
-            start_time=datetime.now(timezone.utc),
+            start_time=datetime.now(UTC),
             parent_span_id=current_span.span_id if current_span else None,
             attributes=attributes,
         )
@@ -239,7 +239,7 @@ class TelemetryHandler(logging.Handler):
             UnstructuredLogEvent(
                 trace_id=span.trace_id,
                 span_id=span.span_id,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 message=self.format(record),
                 severity=severity(record.levelname),
             )

@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from collections.abc import AsyncIterator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from llama_stack.apis.inference import (
@@ -122,7 +122,7 @@ async def stream_and_store_openai_completion(
             final_response = OpenAIChatCompletion(
                 id=id,
                 choices=assembled_choices,
-                created=created or int(datetime.now(timezone.utc).timestamp()),
+                created=created or int(datetime.now(UTC).timestamp()),
                 model=model,
                 object="chat.completion",
             )

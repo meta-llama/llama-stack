@@ -6,7 +6,7 @@
 
 import json
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -79,7 +79,7 @@ class QuotaMiddleware:
 
                 if int(prev) == 0:
                     # Set with expiration datetime when it is the first request in the window.
-                    expiration = datetime.now(timezone.utc) + timedelta(seconds=self.window_seconds)
+                    expiration = datetime.now(UTC) + timedelta(seconds=self.window_seconds)
                     await kv.set(key, str(count), expiration=expiration)
                 else:
                     await kv.set(key, str(count))
