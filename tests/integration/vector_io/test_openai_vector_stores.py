@@ -481,6 +481,59 @@ def test_openai_vector_store_attach_file_response_attributes(compat_client_with_
     assert updated_vector_store.file_counts.in_progress == 0
 
 
+def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_stores, client_with_models):
+    """Test OpenAI vector store attach files on creation."""
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+
+    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
+        pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
+
+    compat_client = compat_client_with_empty_stores
+
+    # Create some files and attach them to the vector store
+    valid_file_ids = []
+    for i in range(3):
+        with BytesIO(f"This is a test file {i}".encode()) as file_buffer:
+            file_buffer.name = f"openai_test_{i}.txt"
+            file = compat_client.files.create(file=file_buffer, purpose="assistants")
+        valid_file_ids.append(file.id)
+
+    # include an invalid file ID so we can test failed status
+    file_ids = valid_file_ids + ["invalid_file_id"]
+
+    # Create a vector store
+    vector_store = compat_client.vector_stores.create(
+        name="test_store",
+        file_ids=file_ids,
+    )
+
+    assert vector_store.file_counts.completed == len(valid_file_ids)
+    assert vector_store.file_counts.total == len(file_ids)
+    assert vector_store.file_counts.cancelled == 0
+    assert vector_store.file_counts.failed == len(file_ids) - len(valid_file_ids)
+    assert vector_store.file_counts.in_progress == 0
+
+    files_list = compat_client.vector_stores.files.list(vector_store_id=vector_store.id)
+    assert len(files_list.data) == len(file_ids)
+    assert set(file_ids) == {file.id for file in files_list.data}
+    for file in files_list.data:
+        if file.id in valid_file_ids:
+            assert file.status == "completed"
+        else:
+            assert file.status == "failed"
+
+    # Delete the invalid file
+    delete_response = compat_client.vector_stores.files.delete(
+        vector_store_id=vector_store.id, file_id="invalid_file_id"
+    )
+    assert delete_response.id == "invalid_file_id"
+
+    updated_vector_store = compat_client.vector_stores.retrieve(vector_store_id=vector_store.id)
+    assert updated_vector_store.file_counts.completed == len(valid_file_ids)
+    assert updated_vector_store.file_counts.total == len(valid_file_ids)
+    assert updated_vector_store.file_counts.failed == 0
+
+
 def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store list files."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
@@ -511,7 +564,7 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
     assert files_list.object == "list"
     assert files_list.data
     assert len(files_list.data) == 3
-    assert file_ids == [file.id for file in files_list.data]
+    assert set(file_ids) == {file.id for file in files_list.data}
     assert files_list.data[0].object == "vector_store.file"
     assert files_list.data[0].vector_store_id == vector_store.id
     assert files_list.data[0].status == "completed"

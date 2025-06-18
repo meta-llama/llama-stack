@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import logging
 import mimetypes
 import time
@@ -160,15 +161,15 @@ class OpenAIVectorStoreMixin(ABC):
 
         # Create OpenAI vector store metadata
         status = "completed"
-        file_ids = file_ids or []
+
+        # Start with no files attached and update later
         file_counts = VectorStoreFileCounts(
             cancelled=0,
-            completed=len(file_ids),
+            completed=0,
             failed=0,
             in_progress=0,
-            total=len(file_ids),
+            total=0,
         )
-        # TODO: actually attach these files to the vector store...
         store_info = {
             "id": store_id,
             "object": "vector_store",
@@ -180,7 +181,7 @@ class OpenAIVectorStoreMixin(ABC):
             "expires_after": expires_after,
             "expires_at": None,
             "last_active_at": created_at,
-            "file_ids": file_ids,
+            "file_ids": [],
             "chunking_strategy": chunking_strategy,
         }
 
@@ -198,18 +199,14 @@ class OpenAIVectorStoreMixin(ABC):
         # Store in memory cache
         self.openai_vector_stores[store_id] = store_info
 
-        return VectorStoreObject(
-            id=store_id,
-            created_at=created_at,
-            name=store_id,
-            usage_bytes=0,
-            file_counts=file_counts,
-            status=status,
-            expires_after=expires_after,
-            expires_at=None,
-            last_active_at=created_at,
-            metadata=metadata,
-        )
+        # Now that our vector store is created, attach any files that were provided
+        file_ids = file_ids or []
+        tasks = [self.openai_attach_file_to_vector_store(store_id, file_id) for file_id in file_ids]
+        await asyncio.gather(*tasks)
+
+        # Get the updated store info and return it
+        store_info = self.openai_vector_stores[store_id]
+        return VectorStoreObject.model_validate(store_info)
 
     async def openai_list_vector_stores(
         self,
@@ -491,8 +488,6 @@ class OpenAIVectorStoreMixin(ABC):
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
 
-        store_info = self.openai_vector_stores[vector_store_id].copy()
-
         attributes = attributes or {}
         chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
         created_at = int(time.time())
@@ -543,26 +538,12 @@ class OpenAIVectorStoreMixin(ABC):
                     code="server_error",
                     message="No chunks were generated from the file",
                 )
-                return vector_store_file_object
-
-            await self.insert_chunks(
-                vector_db_id=vector_store_id,
-                chunks=chunks,
-            )
-            vector_store_file_object.status = "completed"
-
-            # Create OpenAI vector store file metadata
-            file_info = vector_store_file_object.model_dump(exclude={"last_error"})
-
-            # Save to persistent storage (provider-specific)
-            await self._save_openai_vector_store_file(vector_store_id, file_id, file_info)
-
-            # Update in-memory cache
-            store_info["file_ids"].append(file_id)
-            store_info["file_counts"]["completed"] += 1
-            store_info["file_counts"]["total"] += 1
-            self.openai_vector_stores[vector_store_id] = store_info
-
+            else:
+                await self.insert_chunks(
+                    vector_db_id=vector_store_id,
+                    chunks=chunks,
+                )
+                vector_store_file_object.status = "completed"
         except Exception as e:
             logger.error(f"Error attaching file to vector store: {e}")
             vector_store_file_object.status = "failed"
@@ -570,7 +551,24 @@ class OpenAIVectorStoreMixin(ABC):
                 code="server_error",
                 message=str(e),
             )
-            return vector_store_file_object
+
+        # Create OpenAI vector store file metadata
+        file_info = vector_store_file_object.model_dump(exclude={"last_error"})
+
+        # Save vector store file to persistent storage (provider-specific)
+        await self._save_openai_vector_store_file(vector_store_id, file_id, file_info)
+
+        # Update file_ids and file_counts in vector store metadata
+        store_info = self.openai_vector_stores[vector_store_id].copy()
+        store_info["file_ids"].append(file_id)
+        store_info["file_counts"]["total"] += 1
+        store_info["file_counts"][vector_store_file_object.status] += 1
+
+        # Save updated vector store to persistent storage
+        await self._save_openai_vector_store(vector_store_id, store_info)
+
+        # Update vector store in-memory cache
+        self.openai_vector_stores[vector_store_id] = store_info
 
         return vector_store_file_object
 
@@ -643,11 +641,16 @@ class OpenAIVectorStoreMixin(ABC):
         file = await self.openai_retrieve_vector_store_file(vector_store_id, file_id)
         await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
 
+        # TODO: We need to actually delete the embeddings from the underlying vector store...
+
         # Update in-memory cache
         store_info["file_ids"].remove(file_id)
         store_info["file_counts"][file.status] -= 1
         store_info["file_counts"]["total"] -= 1
         self.openai_vector_stores[vector_store_id] = store_info
+
+        # Save updated vector store to persistent storage
+        await self._save_openai_vector_store(vector_store_id, store_info)
 
         return VectorStoreFileDeleteResponse(
             id=file_id,

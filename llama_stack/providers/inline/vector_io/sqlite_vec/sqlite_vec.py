@@ -660,7 +660,6 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                     (store_id, file_id),
                 )
                 row = cur.fetchone()
-                print(f"!!! row is {row}")
                 if row is None:
                     return None
                 (metadata,) = row
