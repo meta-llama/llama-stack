@@ -26,3 +26,5 @@ venv/
 pytest-report.xml
 .coverage
 .python-version
+CLAUDE.md
+.claude/
