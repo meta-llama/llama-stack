@@ -4,7 +4,7 @@ inputs:
   python-version:
     description: The Python version to use
     required: false
-    default: "3.11"
+    default: "3.12"
 runs:
   using: "composite"
   steps:

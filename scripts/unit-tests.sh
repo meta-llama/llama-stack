@@ -6,7 +6,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-PYTHON_VERSION=${PYTHON_VERSION:-3.11}
+PYTHON_VERSION=${PYTHON_VERSION:-3.12}
 
 command -v uv >/dev/null 2>&1 || { echo >&2 "uv is required but it's not installed. Exiting."; exit 1; }
 
