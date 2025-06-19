@@ -157,6 +157,11 @@ VectorStoreChunkingStrategy = Annotated[
 register_schema(VectorStoreChunkingStrategy, name="VectorStoreChunkingStrategy")
 
 
+class SearchRankingOptions(BaseModel):
+    ranker: str | None = None
+    score_threshold: float | None = Field(default=0.0, ge=0.0, le=1.0)
+
+
 @json_schema_type
 class VectorStoreFileLastError(BaseModel):
     code: Literal["server_error"] | Literal["rate_limit_exceeded"]
@@ -319,7 +324,7 @@ class VectorIO(Protocol):
         query: str | list[str],
         filters: dict[str, Any] | None = None,
         max_num_results: int | None = 10,
-        ranking_options: dict[str, Any] | None = None,
+        ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store.

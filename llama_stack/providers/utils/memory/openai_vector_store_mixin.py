@@ -15,6 +15,7 @@ from llama_stack.apis.files import Files
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     QueryChunksResponse,
+    SearchRankingOptions,
     VectorStoreContent,
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
@@ -296,7 +297,7 @@ class OpenAIVectorStoreMixin(ABC):
         query: str | list[str],
         filters: dict[str, Any] | None = None,
         max_num_results: int | None = 10,
-        ranking_options: dict[str, Any] | None = None,
+        ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
         # search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
     ) -> VectorStoreSearchResponsePage:
@@ -314,7 +315,11 @@ class OpenAIVectorStoreMixin(ABC):
             search_query = query
 
         try:
-            score_threshold = ranking_options.get("score_threshold", 0.0) if ranking_options else 0.0
+            score_threshold = (
+                ranking_options.score_threshold
+                if ranking_options and ranking_options.score_threshold is not None
+                else 0.0
+            )
             params = {
                 "max_chunks": max_num_results * CHUNK_MULTIPLIER,
                 "score_threshold": score_threshold,
@@ -399,12 +404,49 @@ class OpenAIVectorStoreMixin(ABC):
 
     def _matches_filters(self, metadata: dict[str, Any], filters: dict[str, Any]) -> bool:
         """Check if metadata matches the provided filters."""
-        for key, value in filters.items():
+        if not filters:
+            return True
+
+        filter_type = filters.get("type")
+
+        if filter_type in ["eq", "ne", "gt", "gte", "lt", "lte"]:
+            # Comparison filter
+            key = filters.get("key")
+            value = filters.get("value")
+
             if key not in metadata:
                 return False
-            if metadata[key] != value:
-                return False
-        return True
+
+            metadata_value = metadata[key]
+
+            if filter_type == "eq":
+                return bool(metadata_value == value)
+            elif filter_type == "ne":
+                return bool(metadata_value != value)
+            elif filter_type == "gt":
+                return bool(metadata_value > value)
+            elif filter_type == "gte":
+                return bool(metadata_value >= value)
+            elif filter_type == "lt":
+                return bool(metadata_value < value)
+            elif filter_type == "lte":
+                return bool(metadata_value <= value)
+            else:
+                raise ValueError(f"Unsupported filter type: {filter_type}")
+
+        elif filter_type == "and":
+            # All filters must match
+            sub_filters = filters.get("filters", [])
+            return all(self._matches_filters(metadata, f) for f in sub_filters)
+
+        elif filter_type == "or":
+            # At least one filter must match
+            sub_filters = filters.get("filters", [])
+            return any(self._matches_filters(metadata, f) for f in sub_filters)
+
+        else:
+            # Unknown filter type, default to no match
+            raise ValueError(f"Unsupported filter type: {filter_type}")
 
     async def openai_attach_file_to_vector_store(
         self,

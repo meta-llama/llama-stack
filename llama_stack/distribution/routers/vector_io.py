@@ -14,6 +14,7 @@ from llama_stack.apis.models import ModelType
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
+    SearchRankingOptions,
     VectorIO,
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
@@ -246,7 +247,7 @@ class VectorIORouter(VectorIO):
         query: str | list[str],
         filters: dict[str, Any] | None = None,
         max_num_results: int | None = 10,
-        ranking_options: dict[str, Any] | None = None,
+        ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponsePage:
         logger.debug(f"VectorIORouter.openai_search_vector_store: {vector_store_id}")
