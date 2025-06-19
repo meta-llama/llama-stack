@@ -1,7 +1,7 @@
 exclude: 'build/'
 
 default_language_version:
-    python: python3
+    python: python3.12
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks

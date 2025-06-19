@@ -11,7 +11,7 @@ import threading
 from collections.abc import Callable, Coroutine, Iterable
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, TypeAlias
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -30,8 +30,8 @@ class JobStatus(Enum):
     completed = "completed"
 
 
-JobID: TypeAlias = str
-JobType: TypeAlias = str
+type JobID = str
+type JobType = str
 
 
 class JobArtifact(BaseModel):
@@ -47,7 +47,7 @@ JobHandler = Callable[
 ]
 
 
-LogMessage: TypeAlias = tuple[datetime, str]
+type LogMessage = tuple[datetime, str]
 
 
 _COMPLETED_STATUSES = {JobStatus.completed, JobStatus.failed}
