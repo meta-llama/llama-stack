@@ -11,7 +11,7 @@ import multiprocessing
 import os
 import signal
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -670,7 +670,7 @@ class HFFinetuningSingleDevice:
                 # Create checkpoint
                 checkpoint = Checkpoint(
                     identifier=f"{model}-sft-{config.n_epochs}",
-                    created_at=datetime.now(timezone.utc),
+                    created_at=datetime.now(UTC),
                     epoch=config.n_epochs,
                     post_training_job_id=job_uuid,
                     path=str(output_dir_path / "merged_model"),

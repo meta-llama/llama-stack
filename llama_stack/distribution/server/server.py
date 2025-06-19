@@ -145,7 +145,7 @@ async def shutdown(app):
                 await asyncio.wait_for(impl.shutdown(), timeout=5)
             else:
                 logger.warning("No shutdown method for %s", impl_name)
-        except (asyncio.TimeoutError, TimeoutError):
+        except TimeoutError:
             logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
         except (Exception, asyncio.CancelledError) as e:
             logger.exception("Failed to shutdown %s: %s", impl_name, {e})

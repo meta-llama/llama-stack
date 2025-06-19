@@ -7,7 +7,7 @@
 import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
@@ -47,7 +47,7 @@ class AgentPersistence:
         session_info = AgentSessionInfo(
             session_id=session_id,
             session_name=name,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
             owner=user,
             turns=[],
             identifier=name,  # should this be qualified in any way?

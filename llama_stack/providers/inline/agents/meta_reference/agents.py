@@ -7,7 +7,7 @@
 import logging
 import uuid
 from collections.abc import AsyncGenerator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from llama_stack.apis.agents import (
     Agent,
@@ -93,7 +93,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse:
         agent_id = str(uuid.uuid4())
-        created_at = datetime.now(timezone.utc)
+        created_at = datetime.now(UTC)
 
         agent_info = AgentInfo(
             **agent_config.model_dump(),
