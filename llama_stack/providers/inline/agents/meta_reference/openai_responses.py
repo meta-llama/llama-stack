@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import json
 import time
 import uuid
@@ -42,6 +43,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseText,
     OpenAIResponseTextFormat,
 )
+from llama_stack.apis.common.content_types import TextContentItem
 from llama_stack.apis.inference.inference import (
     Inference,
     OpenAIAssistantMessageParam,
@@ -64,7 +66,8 @@ from llama_stack.apis.inference.inference import (
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
 )
-from llama_stack.apis.tools import RAGQueryConfig, ToolGroups, ToolRuntime
+from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
@@ -214,11 +217,13 @@ class OpenAIResponsesImpl:
         tool_groups_api: ToolGroups,
         tool_runtime_api: ToolRuntime,
         responses_store: ResponsesStore,
+        vector_io_api: VectorIO,  # VectorIO
     ):
         self.inference_api = inference_api
         self.tool_groups_api = tool_groups_api
         self.tool_runtime_api = tool_runtime_api
         self.responses_store = responses_store
+        self.vector_io_api = vector_io_api
 
     async def _prepend_previous_response(
         self, input: str | list[OpenAIResponseInput], previous_response_id: str | None = None
@@ -666,6 +671,71 @@ class OpenAIResponsesImpl:
                 raise ValueError(f"Llama Stack OpenAI Responses does not yet support tool type: {input_tool.type}")
         return chat_tools, mcp_tool_to_server, mcp_list_message
 
+    async def _execute_knowledge_search_via_vector_store(
+        self,
+        query: str,
+        response_file_search_tool: OpenAIResponseInputToolFileSearch,
+    ) -> ToolInvocationResult:
+        """Execute knowledge search using vector_stores.search API with filters support."""
+        search_results = []
+
+        # Create search tasks for all vector stores
+        async def search_single_store(vector_store_id):
+            try:
+                search_response = await self.vector_io_api.openai_search_vector_store(
+                    vector_store_id=vector_store_id,
+                    query=query,
+                    filters=response_file_search_tool.filters,
+                    max_num_results=response_file_search_tool.max_num_results,
+                    ranking_options=response_file_search_tool.ranking_options,
+                    rewrite_query=False,
+                )
+                return search_response.data
+            except Exception as e:
+                logger.warning(f"Failed to search vector store {vector_store_id}: {e}")
+                return []
+
+        # Run all searches in parallel using gather
+        search_tasks = [search_single_store(vid) for vid in response_file_search_tool.vector_store_ids]
+        all_results = await asyncio.gather(*search_tasks)
+
+        # Flatten results
+        for results in all_results:
+            search_results.extend(results)
+
+        # Convert search results to tool result format matching memory.py
+        # Format the results as interleaved content similar to memory.py
+        content_items = []
+        content_items.append(
+            TextContentItem(
+                text=f"knowledge_search tool found {len(search_results)} chunks:\nBEGIN of knowledge_search tool results.\n"
+            )
+        )
+
+        for i, result_item in enumerate(search_results):
+            chunk_text = result_item.content[0].text if result_item.content else ""
+            metadata_text = f"document_id: {result_item.file_id}, score: {result_item.score}"
+            if result_item.attributes:
+                metadata_text += f", attributes: {result_item.attributes}"
+            text_content = f"[{i + 1}] {metadata_text}\n{chunk_text}\n"
+            content_items.append(TextContentItem(text=text_content))
+
+        content_items.append(TextContentItem(text="END of knowledge_search tool results.\n"))
+        content_items.append(
+            TextContentItem(
+                text=f'The above results were retrieved to help answer the user\'s query: "{query}". Use them as supporting information only in answering this query.\n',
+            )
+        )
+
+        return ToolInvocationResult(
+            content=content_items,
+            metadata={
+                "document_ids": [r.file_id for r in search_results],
+                "chunks": [r.content[0].text if r.content else "" for r in search_results],
+                "scores": [r.score for r in search_results],
+            },
+        )
+
     async def _execute_tool_call(
         self,
         tool_call: OpenAIChatCompletionToolCall,
@@ -693,21 +763,19 @@ class OpenAIResponsesImpl:
                     tool_name=function.name,
                     kwargs=tool_kwargs,
                 )
-            else:
-                if function.name == "knowledge_search":
-                    response_file_search_tool = next(
-                        t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)
+            elif function.name == "knowledge_search":
+                response_file_search_tool = next(
+                    (t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)), None
+                )
+                if response_file_search_tool:
+                    # Use vector_stores.search API instead of knowledge_search tool
+                    # to support filters and ranking_options
+                    query = tool_kwargs.get("query", "")
+                    result = await self._execute_knowledge_search_via_vector_store(
+                        query=query,
+                        response_file_search_tool=response_file_search_tool,
                     )
-                    if response_file_search_tool:
-                        if response_file_search_tool.filters:
-                            logger.warning("Filters are not yet supported for file_search tool")
-                        if response_file_search_tool.ranking_options:
-                            logger.warning("Ranking options are not yet supported for file_search tool")
-                        tool_kwargs["vector_db_ids"] = response_file_search_tool.vector_store_ids
-                        tool_kwargs["query_config"] = RAGQueryConfig(
-                            mode="vector",
-                            max_chunks=response_file_search_tool.max_num_results,
-                        )
+            else:
                 result = await self.tool_runtime_api.invoke_tool(
                     tool_name=function.name,
                     kwargs=tool_kwargs,

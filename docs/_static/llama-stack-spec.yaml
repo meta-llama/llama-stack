@@ -5179,7 +5179,7 @@ components:
               type: number
               default: 0.0
           additionalProperties: false
-          title: FileSearchRankingOptions
+          title: SearchRankingOptions
       additionalProperties: false
       required:
         - type
@@ -9408,14 +9408,13 @@ components:
             Maximum number of results to return (1 to 50 inclusive, default 10).
         ranking_options:
           type: object
-          additionalProperties:
-            oneOf:
-              - type: 'null'
-              - type: boolean
-              - type: number
-              - type: string
-              - type: array
-              - type: object
+          properties:
+            ranker:
+              type: string
+            score_threshold:
+              type: number
+              default: 0.0
+          additionalProperties: false
           description: >-
             Ranking options for fine-tuning the search results.
         rewrite_query:

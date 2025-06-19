@@ -19,6 +19,7 @@ from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
+    SearchRankingOptions,
     VectorIO,
     VectorStoreDeleteResponse,
     VectorStoreListResponse,
@@ -247,7 +248,7 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         query: str | list[str],
         filters: dict[str, Any] | None = None,
         max_num_results: int | None = 10,
-        ranking_options: dict[str, Any] | None = None,
+        ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
     ) -> VectorStoreSearchResponsePage:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

@@ -85,6 +85,7 @@ class MetaReferenceAgentsImpl(Agents):
             tool_groups_api=self.tool_groups_api,
             tool_runtime_api=self.tool_runtime_api,
             responses_store=self.responses_store,
+            vector_io_api=self.vector_io_api,
         )
 
     async def create_agent(
