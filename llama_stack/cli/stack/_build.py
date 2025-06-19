@@ -334,7 +334,9 @@ def _generate_run_config(
             )
             run_config.providers[api].append(p_spec)
 
-    run_config_file = build_dir / f"{image_name}-run.yaml"
+    # Use only the basename for the run config file to avoid path issues with forward slashes
+    image_basename = os.path.basename(image_name)
+    run_config_file = build_dir / f"{image_basename}-run.yaml"
 
     with open(run_config_file, "w") as f:
         to_write = json.loads(run_config.model_dump_json())
@@ -371,12 +373,17 @@ def _run_stack_build_command_from_build_config(
         if not image_name:
             raise ValueError("Please specify an image name when building a venv image")
 
+    # At this point, image_name should not be None due to the validation above
+    if not image_name:
+        raise ValueError("Image name is required but was not provided")
+
     if template_name:
         build_dir = DISTRIBS_BASE_DIR / template_name
         build_file_path = build_dir / f"{template_name}-build.yaml"
     else:
         build_dir = DISTRIBS_BASE_DIR / image_name
-        build_file_path = build_dir / f"{image_name}-build.yaml"
+        image_basename = os.path.basename(image_name)
+        build_file_path = build_dir / f"{image_basename}-build.yaml"
 
     os.makedirs(build_dir, exist_ok=True)
     run_config_file = None
@@ -395,7 +402,7 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
-        run_config=run_config_file,
+        run_config=str(run_config_file) if run_config_file else None,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
