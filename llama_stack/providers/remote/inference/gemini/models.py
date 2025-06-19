@@ -12,6 +12,9 @@ from llama_stack.providers.utils.inference.model_registry import (
 LLM_MODEL_IDS = [
     "gemini/gemini-1.5-flash",
     "gemini/gemini-1.5-pro",
+    "gemini/gemini-2.0-flash",
+    "gemini/gemini-2.5-flash",
+    "gemini/gemini-2.5-pro",
 ]
 
 
