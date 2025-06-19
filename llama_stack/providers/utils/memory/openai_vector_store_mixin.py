@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import logging
 import mimetypes
 import time
@@ -12,6 +13,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from llama_stack.apis.files import Files
+from llama_stack.apis.files.files import OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     QueryChunksResponse,
@@ -28,8 +30,13 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreChunkingStrategy,
     VectorStoreChunkingStrategyAuto,
     VectorStoreChunkingStrategyStatic,
+    VectorStoreFileContentsResponse,
+    VectorStoreFileCounts,
+    VectorStoreFileDeleteResponse,
     VectorStoreFileLastError,
     VectorStoreFileObject,
+    VectorStoreFileStatus,
+    VectorStoreListFilesResponse,
 )
 from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
 
@@ -68,6 +75,33 @@ class OpenAIVectorStoreMixin(ABC):
     @abstractmethod
     async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
         """Delete vector store metadata from persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in persistent storage."""
+        pass
+
+    @abstractmethod
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from persistent storage."""
         pass
 
     @abstractmethod
@@ -136,18 +170,28 @@ class OpenAIVectorStoreMixin(ABC):
         await self.register_vector_db(vector_db)
 
         # Create OpenAI vector store metadata
+        status = "completed"
+
+        # Start with no files attached and update later
+        file_counts = VectorStoreFileCounts(
+            cancelled=0,
+            completed=0,
+            failed=0,
+            in_progress=0,
+            total=0,
+        )
         store_info = {
             "id": store_id,
             "object": "vector_store",
             "created_at": created_at,
             "name": store_id,
             "usage_bytes": 0,
-            "file_counts": {},
-            "status": "completed",
+            "file_counts": file_counts.model_dump(),
+            "status": status,
             "expires_after": expires_after,
             "expires_at": None,
             "last_active_at": created_at,
-            "file_ids": file_ids or [],
+            "file_ids": [],
             "chunking_strategy": chunking_strategy,
         }
 
@@ -165,18 +209,14 @@ class OpenAIVectorStoreMixin(ABC):
         # Store in memory cache
         self.openai_vector_stores[store_id] = store_info
 
-        return VectorStoreObject(
-            id=store_id,
-            created_at=created_at,
-            name=store_id,
-            usage_bytes=0,
-            file_counts={},
-            status="completed",
-            expires_after=expires_after,
-            expires_at=None,
-            last_active_at=created_at,
-            metadata=metadata,
-        )
+        # Now that our vector store is created, attach any files that were provided
+        file_ids = file_ids or []
+        tasks = [self.openai_attach_file_to_vector_store(store_id, file_id) for file_id in file_ids]
+        await asyncio.gather(*tasks)
+
+        # Get the updated store info and return it
+        store_info = self.openai_vector_stores[store_id]
+        return VectorStoreObject.model_validate(store_info)
 
     async def openai_list_vector_stores(
         self,
@@ -346,33 +386,7 @@ class OpenAIVectorStoreMixin(ABC):
                     if not self._matches_filters(chunk.metadata, filters):
                         continue
 
-                # content is InterleavedContent
-                if isinstance(chunk.content, str):
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=chunk.content,
-                        )
-                    ]
-                elif isinstance(chunk.content, list):
-                    # TODO: Add support for other types of content
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=item.text,
-                        )
-                        for item in chunk.content
-                        if item.type == "text"
-                    ]
-                else:
-                    if chunk.content.type != "text":
-                        raise ValueError(f"Unsupported content type: {chunk.content.type}")
-                    content = [
-                        VectorStoreContent(
-                            type="text",
-                            text=chunk.content.text,
-                        )
-                    ]
+                content = self._chunk_to_vector_store_content(chunk)
 
                 response_data_item = VectorStoreSearchResponse(
                     file_id=chunk.metadata.get("file_id", ""),
@@ -448,6 +462,36 @@ class OpenAIVectorStoreMixin(ABC):
             # Unknown filter type, default to no match
             raise ValueError(f"Unsupported filter type: {filter_type}")
 
+    def _chunk_to_vector_store_content(self, chunk: Chunk) -> list[VectorStoreContent]:
+        # content is InterleavedContent
+        if isinstance(chunk.content, str):
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=chunk.content,
+                )
+            ]
+        elif isinstance(chunk.content, list):
+            # TODO: Add support for other types of content
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=item.text,
+                )
+                for item in chunk.content
+                if item.type == "text"
+            ]
+        else:
+            if chunk.content.type != "text":
+                raise ValueError(f"Unsupported content type: {chunk.content.type}")
+            content = [
+                VectorStoreContent(
+                    type="text",
+                    text=chunk.content.text,
+                )
+            ]
+        return content
+
     async def openai_attach_file_to_vector_store(
         self,
         vector_store_id: str,
@@ -455,14 +499,20 @@ class OpenAIVectorStoreMixin(ABC):
         attributes: dict[str, Any] | None = None,
         chunking_strategy: VectorStoreChunkingStrategy | None = None,
     ) -> VectorStoreFileObject:
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
         attributes = attributes or {}
         chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
+        created_at = int(time.time())
+        chunks: list[Chunk] = []
+        file_response: OpenAIFileObject | None = None
 
         vector_store_file_object = VectorStoreFileObject(
             id=file_id,
             attributes=attributes,
             chunking_strategy=chunking_strategy,
-            created_at=int(time.time()),
+            created_at=created_at,
             status="in_progress",
             vector_store_id=vector_store_id,
         )
@@ -504,12 +554,12 @@ class OpenAIVectorStoreMixin(ABC):
                     code="server_error",
                     message="No chunks were generated from the file",
                 )
-                return vector_store_file_object
-
-            await self.insert_chunks(
-                vector_db_id=vector_store_id,
-                chunks=chunks,
-            )
+            else:
+                await self.insert_chunks(
+                    vector_db_id=vector_store_id,
+                    chunks=chunks,
+                )
+                vector_store_file_object.status = "completed"
         except Exception as e:
             logger.error(f"Error attaching file to vector store: {e}")
             vector_store_file_object.status = "failed"
@@ -517,8 +567,171 @@ class OpenAIVectorStoreMixin(ABC):
                 code="server_error",
                 message=str(e),
             )
-            return vector_store_file_object
 
-        vector_store_file_object.status = "completed"
+        # Create OpenAI vector store file metadata
+        file_info = vector_store_file_object.model_dump(exclude={"last_error"})
+        file_info["filename"] = file_response.filename if file_response else ""
+
+        # Save vector store file to persistent storage (provider-specific)
+        dict_chunks = [c.model_dump() for c in chunks]
+        await self._save_openai_vector_store_file(vector_store_id, file_id, file_info, dict_chunks)
+
+        # Update file_ids and file_counts in vector store metadata
+        store_info = self.openai_vector_stores[vector_store_id].copy()
+        store_info["file_ids"].append(file_id)
+        store_info["file_counts"]["total"] += 1
+        store_info["file_counts"][vector_store_file_object.status] += 1
+
+        # Save updated vector store to persistent storage
+        await self._save_openai_vector_store(vector_store_id, store_info)
+
+        # Update vector store in-memory cache
+        self.openai_vector_stores[vector_store_id] = store_info
 
         return vector_store_file_object
+
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
+    ) -> VectorStoreListFilesResponse:
+        """List files in a vector store."""
+        limit = limit or 20
+        order = order or "desc"
+
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        store_info = self.openai_vector_stores[vector_store_id]
+
+        file_objects: list[VectorStoreFileObject] = []
+        for file_id in store_info["file_ids"]:
+            file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
+            file_object = VectorStoreFileObject(**file_info)
+            if filter and file_object.status != filter:
+                continue
+            file_objects.append(file_object)
+
+        # Sort by created_at
+        reverse_order = order == "desc"
+        file_objects.sort(key=lambda x: x.created_at, reverse=reverse_order)
+
+        # Apply cursor-based pagination
+        if after:
+            after_index = next((i for i, file in enumerate(file_objects) if file.id == after), -1)
+            if after_index >= 0:
+                file_objects = file_objects[after_index + 1 :]
+
+        if before:
+            before_index = next((i for i, file in enumerate(file_objects) if file.id == before), len(file_objects))
+            file_objects = file_objects[:before_index]
+
+        # Apply limit
+        limited_files = file_objects[:limit]
+
+        # Determine pagination info
+        has_more = len(file_objects) > limit
+        first_id = file_objects[0].id if file_objects else None
+        last_id = file_objects[-1].id if file_objects else None
+
+        return VectorStoreListFilesResponse(
+            data=limited_files,
+            has_more=has_more,
+            first_id=first_id,
+            last_id=last_id,
+        )
+
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        """Retrieves a vector store file."""
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        store_info = self.openai_vector_stores[vector_store_id]
+        if file_id not in store_info["file_ids"]:
+            raise ValueError(f"File {file_id} not found in vector store {vector_store_id}")
+
+        file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
+        return VectorStoreFileObject(**file_info)
+
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
+        """Retrieves the contents of a vector store file."""
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
+        dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
+        chunks = [Chunk.model_validate(c) for c in dict_chunks]
+        content = []
+        for chunk in chunks:
+            content.extend(self._chunk_to_vector_store_content(chunk))
+        return VectorStoreFileContentsResponse(
+            file_id=file_id,
+            filename=file_info.get("filename", ""),
+            attributes=file_info.get("attributes", {}),
+            content=content,
+        )
+
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any],
+    ) -> VectorStoreFileObject:
+        """Updates a vector store file."""
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        store_info = self.openai_vector_stores[vector_store_id]
+        if file_id not in store_info["file_ids"]:
+            raise ValueError(f"File {file_id} not found in vector store {vector_store_id}")
+
+        file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
+        file_info["attributes"] = attributes
+        await self._update_openai_vector_store_file(vector_store_id, file_id, file_info)
+        return VectorStoreFileObject(**file_info)
+
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileDeleteResponse:
+        """Deletes a vector store file."""
+        if vector_store_id not in self.openai_vector_stores:
+            raise ValueError(f"Vector store {vector_store_id} not found")
+
+        store_info = self.openai_vector_stores[vector_store_id].copy()
+
+        file = await self.openai_retrieve_vector_store_file(vector_store_id, file_id)
+        await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
+
+        # TODO: We need to actually delete the embeddings from the underlying vector store...
+        # Also uncomment the corresponding integration test marked as xfail
+        #
+        # test_openai_vector_store_delete_file_removes_from_vector_store in
+        # tests/integration/vector_io/test_openai_vector_stores.py
+
+        # Update in-memory cache
+        store_info["file_ids"].remove(file_id)
+        store_info["file_counts"][file.status] -= 1
+        store_info["file_counts"]["total"] -= 1
+        self.openai_vector_stores[vector_store_id] = store_info
+
+        # Save updated vector store to persistent storage
+        await self._save_openai_vector_store(vector_store_id, store_info)
+
+        return VectorStoreFileDeleteResponse(
+            id=file_id,
+            deleted=True,
+        )
