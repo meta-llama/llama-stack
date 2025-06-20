@@ -543,6 +543,7 @@ class OpenAIVectorStoreMixin(ABC):
             chunk_overlap_tokens = 400
 
         try:
+            file_response = await self.files_api.openai_retrieve_file(file_id)
             tool_result = await self.tool_runtime_api.invoke_tool(
                 "convert_file_to_text",
                 {"file_id": file_id},
