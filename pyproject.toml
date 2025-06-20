@@ -25,7 +25,7 @@ dependencies = [
     "fastapi>=0.115.0,<1.0",
     "fire",
     "httpx",
-    "huggingface-hub",
+    "huggingface-hub>=0.30.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
     "llama-stack-client>=0.2.12",
