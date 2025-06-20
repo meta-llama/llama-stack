@@ -34,6 +34,14 @@ def available_providers() -> list[ProviderSpec]:
             config_class="llama_stack.providers.inline.tool_runtime.rag.config.RagToolRuntimeConfig",
             api_dependencies=[Api.vector_io, Api.inference],
         ),
+        InlineProviderSpec(
+            api=Api.tool_runtime,
+            provider_type="inline::synthetic-data-kit",
+            pip_packages=["synthetic-data-kit"],
+            module="llama_stack.providers.inline.tool_runtime.synthetic-data-kit",
+            config_class="llama_stack.providers.inline.tool_runtime.synthetic-data-kit.config.SyntheticDataKitToolRuntimeConfig",
+            api_dependencies=[Api.files],
+        ),
         remote_provider_spec(
             api=Api.tool_runtime,
             adapter=AdapterSpec(

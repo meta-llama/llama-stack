@@ -31,6 +31,7 @@ distribution_spec:
     - remote::brave-search
     - remote::tavily-search
     - inline::rag-runtime
+    - inline::synthetic-data-kit
     - remote::model-context-protocol
     - remote::wolfram-alpha
 image_type: conda
