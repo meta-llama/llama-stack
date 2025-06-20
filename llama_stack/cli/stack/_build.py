@@ -334,9 +334,10 @@ def _generate_run_config(
             )
             run_config.providers[api].append(p_spec)
 
-    # Use only the basename for the run config file to avoid path issues with forward slashes
-    image_basename = os.path.basename(image_name)
-    run_config_file = build_dir / f"{image_basename}-run.yaml"
+    run_config_file = build_dir / f"{image_name}-run.yaml"
+    
+    # Create the directory structure for the run config file
+    os.makedirs(run_config_file.parent, exist_ok=True)
 
     with open(run_config_file, "w") as f:
         to_write = json.loads(run_config.model_dump_json())
@@ -382,10 +383,10 @@ def _run_stack_build_command_from_build_config(
         build_file_path = build_dir / f"{template_name}-build.yaml"
     else:
         build_dir = DISTRIBS_BASE_DIR / image_name
-        image_basename = os.path.basename(image_name)
-        build_file_path = build_dir / f"{image_basename}-build.yaml"
+        build_file_path = build_dir / f"{image_name}-build.yaml"
 
-    os.makedirs(build_dir, exist_ok=True)
+    # Create the directory structure for the build file
+    os.makedirs(build_file_path.parent, exist_ok=True)
     run_config_file = None
     # Generate the run.yaml so it can be included in the container image with the proper entrypoint
     # Only do this if we're building a container image and we're not using a template
