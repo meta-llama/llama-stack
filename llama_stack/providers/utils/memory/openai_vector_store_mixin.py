@@ -6,13 +6,13 @@
 
 import asyncio
 import logging
-import mimetypes
 import time
 import uuid
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 
 from llama_stack.apis.files import Files, OpenAIFileObject
+from llama_stack.apis.tools.tools import ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
@@ -35,7 +35,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponse,
     VectorStoreSearchResponsePage,
 )
-from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
+from llama_stack.providers.utils.memory.vector_store import make_overlapped_chunks
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ class OpenAIVectorStoreMixin(ABC):
     # These should be provided by the implementing class
     openai_vector_stores: dict[str, dict[str, Any]]
     files_api: Files | None
+    tool_runtime_api: ToolRuntime | None
 
     @abstractmethod
     async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
@@ -525,6 +526,14 @@ class OpenAIVectorStoreMixin(ABC):
             )
             return vector_store_file_object
 
+        if not hasattr(self, "tool_runtime_api") or not self.tool_runtime_api:
+            vector_store_file_object.status = "failed"
+            vector_store_file_object.last_error = VectorStoreFileLastError(
+                code="server_error",
+                message="Tool runtime API is not available",
+            )
+            return vector_store_file_object
+
         if isinstance(chunking_strategy, VectorStoreChunkingStrategyStatic):
             max_chunk_size_tokens = chunking_strategy.static.max_chunk_size_tokens
             chunk_overlap_tokens = chunking_strategy.static.chunk_overlap_tokens
@@ -534,12 +543,13 @@ class OpenAIVectorStoreMixin(ABC):
             chunk_overlap_tokens = 400
 
         try:
-            file_response = await self.files_api.openai_retrieve_file(file_id)
-            mime_type, _ = mimetypes.guess_type(file_response.filename)
-            content_response = await self.files_api.openai_retrieve_file_content(file_id)
-
-            content = content_from_data_and_mime_type(content_response.body, mime_type)
-
+            tool_result = await self.tool_runtime_api.invoke_tool(
+                "convert_file_to_text",
+                {"file_id": file_id},
+            )
+            if tool_result.error_code or tool_result.error_message:
+                raise ValueError(f"Failed to convert file to text: {tool_result.error_message}")
+            content = cast(str, tool_result.content)  # The tool always returns strings
             chunks = make_overlapped_chunks(
                 file_id,
                 content,

@@ -163,6 +163,9 @@ providers:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+  - provider_id: synthetic-data-kit
+    provider_type: inline::synthetic-data-kit
+    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
@@ -822,5 +825,7 @@ tool_groups:
   provider_id: tavily-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
+- toolgroup_id: builtin::document_conversion
+  provider_id: synthetic-data-kit
 server:
   port: 8321

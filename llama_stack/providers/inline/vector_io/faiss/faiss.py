@@ -17,6 +17,7 @@ from numpy.typing import NDArray
 
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
+from llama_stack.apis.tools import ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
@@ -149,10 +150,17 @@ class FaissIndex(EmbeddingIndex):
 
 
 class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: FaissVectorIOConfig, inference_api: Inference, files_api: Files | None) -> None:
+    def __init__(
+        self,
+        config: FaissVectorIOConfig,
+        inference_api: Inference,
+        files_api: Files | None = None,
+        tool_runtime_api: ToolRuntime | None = None,
+    ) -> None:
         self.config = config
         self.inference_api = inference_api
         self.files_api = files_api
+        self.tool_runtime_api = tool_runtime_api
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.kvstore: KVStore | None = None
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}
