@@ -54,6 +54,8 @@ h11==0.16.0
     # via
     #   httpcore
     #   llama-stack
+hf-xet==1.1.5 ; platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+    # via huggingface-hub
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
@@ -61,7 +63,7 @@ httpx==0.28.1
     #   llama-stack
     #   llama-stack-client
     #   openai
-huggingface-hub==0.29.0
+huggingface-hub==0.33.0
     # via llama-stack
 idna==3.10
     # via
