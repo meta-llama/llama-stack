@@ -13,7 +13,13 @@ from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 
+import tomlkit
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+from llama_stack.distribution.build import (
+    SERVER_DEPENDENCIES,
+    get_provider_dependencies,
+)
 
 REPO_ROOT = Path(__file__).parent.parent
 
@@ -85,11 +91,76 @@ def check_for_changes(change_tracker: ChangedPathTracker) -> bool:
     return has_changes
 
 
+def collect_template_dependencies(template_dir: Path) -> tuple[str | None, list[str]]:
+    try:
+        module_name = f"llama_stack.templates.{template_dir.name}"
+        module = importlib.import_module(module_name)
+
+        if template_func := getattr(module, "get_distribution_template", None):
+            template = template_func()
+            normal_deps, special_deps = get_provider_dependencies(template)
+            # Combine all dependencies in order: normal deps, special deps, server deps
+            all_deps = sorted(set(normal_deps + SERVER_DEPENDENCIES)) + sorted(set(special_deps))
+
+            return template.name, all_deps
+    except Exception as e:
+        print("Error collecting template dependencies for", template_dir, e)
+        return None, []
+    return None, []
+
+
 def pre_import_templates(template_dirs: list[Path]) -> None:
     # Pre-import all template modules to avoid deadlocks.
     for template_dir in template_dirs:
         module_name = f"llama_stack.templates.{template_dir.name}"
         importlib.import_module(module_name)
+
+
+def generate_dependencies_files(change_tracker: ChangedPathTracker):
+    templates_dir = REPO_ROOT / "llama_stack" / "templates"
+    distribution_deps = {}
+
+    for template_dir in find_template_dirs(templates_dir):
+        print("template_dir", template_dir)
+        name, deps = collect_template_dependencies(template_dir)
+        if name:
+            distribution_deps[name] = deps
+        else:
+            print("No template function found for", template_dir)
+
+    # First, remove any distributions that are no longer present
+    pyproject_file = REPO_ROOT / "pyproject.toml"
+    change_tracker.add_paths(pyproject_file)
+
+    # Read and parse the current pyproject.toml content
+    with open(pyproject_file) as fp:
+        pyproject = tomlkit.load(fp)
+
+    # Get current optional dependencies
+    current_deps = pyproject["project"]["optional-dependencies"]
+
+    # Store ui dependencies if they exist
+    ui_deps = current_deps.get("ui")
+
+    # Remove distributions that are no longer present
+    for name in list(current_deps.keys()):
+        if name not in distribution_deps.keys() and name != "ui":
+            del current_deps[name]
+
+    # Now add/update the remaining distributions
+    for name, deps in distribution_deps.items():
+        deps_array = tomlkit.array()
+        for dep in sorted(deps):
+            deps_array.append(dep)
+        current_deps[name] = deps_array.multiline(True)
+
+    # Restore ui dependencies if they existed
+    if ui_deps is not None:
+        current_deps["ui"] = ui_deps
+
+    # Write back to pyproject.toml
+    with open(pyproject_file, "w") as fp:
+        tomlkit.dump(pyproject, fp)
 
 
 def main():
@@ -113,6 +184,9 @@ def main():
             # Submit all tasks and wait for completion
             list(executor.map(process_func, template_dirs))
             progress.update(task, advance=len(template_dirs))
+
+    # TODO: generate a Containerfile for each distribution as well?
+    generate_dependencies_files(change_tracker)
 
     if check_for_changes(change_tracker):
         print(

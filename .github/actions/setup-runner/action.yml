@@ -5,6 +5,10 @@ inputs:
     description: The Python version to use
     required: false
     default: "3.11"
+  install-ollama:
+    description: Install ollama
+    required: false
+    default: true
 runs:
   using: "composite"
   steps:
@@ -17,11 +21,13 @@ runs:
 
     - name: Install dependencies
       shell: bash
+      env:
+        INSTALL_OLLAMA: ${{ inputs.install-ollama }}
+      if: ${{ env.INSTALL_OLLAMA == 'true' }}
       run: |
-        uv sync --all-groups
-        uv pip install ollama faiss-cpu
+        uv sync --all-groups --extra ollama
+
         # always test against the latest version of the client
         # TODO: this is not necessarily a good idea. we need to test against both published and latest
         # to find out backwards compatibility issues.
         uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
-        uv pip install -e .
