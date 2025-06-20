@@ -56,6 +56,9 @@ export function usePagination<T>({
   const stateRef = useRef(state);
   stateRef.current = state;
 
+  // Track if initial data has been fetched
+  const hasFetchedInitialData = useRef(false);
+
   /**
    * Fetches data from the API with cursor-based pagination
    */
@@ -119,8 +122,11 @@ export function usePagination<T>({
 
   // Auto-load initial data on mount
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (!hasFetchedInitialData.current) {
+      hasFetchedInitialData.current = true;
+      fetchData();
+    }
+  }, [fetchData]);
 
   return {
     data: state.data,
