@@ -16,6 +16,7 @@ from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplCo
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
+from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import (
     SQLiteVectorIOConfig,
 )
@@ -36,9 +37,6 @@ from llama_stack.providers.remote.inference.groq.models import (
     MODEL_ENTRIES as GROQ_MODEL_ENTRIES,
 )
 from llama_stack.providers.remote.inference.ollama.config import OllamaImplConfig
-from llama_stack.providers.remote.inference.ollama.models import (
-    MODEL_ENTRIES as OLLAMA_MODEL_ENTRIES,
-)
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.models import (
     MODEL_ENTRIES as OPENAI_MODEL_ENTRIES,
@@ -85,8 +83,15 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
         ),
         (
             "ollama",
-            OLLAMA_MODEL_ENTRIES,
-            OllamaImplConfig.sample_run_config(),
+            [
+                ProviderModelEntry(
+                    provider_model_id="${env.OLLAMA_INFERENCE_MODEL:__disabled__}",
+                    model_type=ModelType.llm,
+                ),
+            ],
+            OllamaImplConfig.sample_run_config(
+                url="${env.OLLAMA_URL:http://localhost:11434}", raise_on_connect_error=False
+            ),
         ),
         (
             "anthropic",
@@ -110,7 +115,12 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
         ),
         (
             "vllm",
-            [],
+            [
+                ProviderModelEntry(
+                    provider_model_id="${env.VLLM_INFERENCE_MODEL:__disabled__}",
+                    model_type=ModelType.llm,
+                ),
+            ],
             VLLMInferenceAdapterConfig.sample_run_config(
                 url="${env.VLLM_URL:http://localhost:8000/v1}",
             ),
@@ -153,7 +163,12 @@ def get_distribution_template() -> DistributionTemplate:
 
     vector_io_providers = [
         Provider(
-            provider_id="sqlite-vec",
+            provider_id="faiss",
+            provider_type="inline::faiss",
+            config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_SQLITE_VEC+sqlite-vec}",
             provider_type="inline::sqlite-vec",
             config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
@@ -257,7 +272,19 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "VLLM_URL": (
                 "http://localhost:8000/v1",
-                "VLLM URL",
+                "vLLM URL",
+            ),
+            "VLLM_INFERENCE_MODEL": (
+                "",
+                "Optional vLLM Inference Model to register on startup",
+            ),
+            "OLLAMA_URL": (
+                "http://localhost:11434",
+                "Ollama URL",
+            ),
+            "OLLAMA_INFERENCE_MODEL": (
+                "",
+                "Optional Ollama Inference Model to register on startup",
             ),
         },
     )
