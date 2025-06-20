@@ -26,7 +26,7 @@ jobs:
         # TODO: generate matrix list from tests/integration when fixed
         test-type: [agents, inference, datasets, inspect, scoring, post_training, providers, tool_runtime, vector_io]
         client-type: [library, http]
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:

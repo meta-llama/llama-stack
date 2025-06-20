@@ -84,7 +84,7 @@ add_to_container() {
 }
 
 # Check if container command is available
-if ! is_command_available $CONTAINER_BINARY; then
+if ! is_command_available "$CONTAINER_BINARY"; then
   printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
   exit 1
 fi
@@ -95,13 +95,13 @@ if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
 FROM $container_base
 WORKDIR /app
 
-# We install the Python 3.11 dev headers and build tools so that any
+# We install the Python 3.12 dev headers and build tools so that any
 # C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
 
 RUN dnf -y update && dnf install -y iputils git net-tools wget \
-    vim-minimal python3.11 python3.11-pip python3.11-wheel \
-    python3.11-setuptools python3.11-devel gcc make && \
-    ln -s /bin/pip3.11 /bin/pip && ln -s /bin/python3.11 /bin/python && dnf clean all
+    vim-minimal python3.12 python3.12-pip python3.12-wheel \
+    python3.12-setuptools python3.12-devel gcc make && \
+    ln -s /bin/pip3.12 /bin/pip && ln -s /bin/python3.12 /bin/python && dnf clean all
 
 ENV UV_SYSTEM_PYTHON=1
 RUN pip install uv

@@ -5,15 +5,7 @@
 # the root directory of this source tree.
 
 from contextlib import asynccontextmanager
-from typing import Any
-
-try:
-    # for python < 3.11
-    import exceptiongroup
-
-    BaseExceptionGroup = exceptiongroup.BaseExceptionGroup
-except ImportError:
-    pass
+from typing import Any, cast
 
 import httpx
 from mcp import ClientSession
@@ -40,14 +32,14 @@ async def sse_client_wrapper(endpoint: str, headers: dict[str, str]):
             async with ClientSession(*streams) as session:
                 await session.initialize()
                 yield session
-    except BaseException as e:
-        if isinstance(e, BaseExceptionGroup):
-            for exc in e.exceptions:
-                if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 401:
-                    raise AuthenticationRequiredError(exc) from exc
-        elif isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 401:
-            raise AuthenticationRequiredError(e) from e
-
+    except* httpx.HTTPStatusError as eg:
+        for exc in eg.exceptions:
+            # mypy does not currently narrow the type of `eg.exceptions` based on the `except*` filter,
+            # so we explicitly cast each item to httpx.HTTPStatusError. This is safe because
+            # `except* httpx.HTTPStatusError` guarantees all exceptions in `eg.exceptions` are of that type.
+            err = cast(httpx.HTTPStatusError, exc)
+            if err.response.status_code == 401:
+                raise AuthenticationRequiredError(exc) from exc
         raise
 
 

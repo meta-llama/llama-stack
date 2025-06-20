@@ -5,10 +5,10 @@
 # the root directory of this source tree.
 
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
-from typing_extensions import Protocol, runtime_checkable
+from typing_extensions import runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.apis.resource import Resource, ResourceType
