@@ -35,6 +35,8 @@ pip install llama-stack-client
 ### CLI
 ```bash
 # Run a chat completion
+MODEL="Llama-4-Scout-17B-16E-Instruct"
+
 llama-stack-client --endpoint http://localhost:8321 \
 inference chat-completion \
 --model-id meta-llama/$MODEL \
@@ -107,30 +109,39 @@ By reducing friction and complexity, Llama Stack empowers developers to focus on
 ### API Providers
 Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
 
-| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** | **Post Training** |
-|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|:-----------------:|
-|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |               |
-|        SambaNova         |         Hosted         |            |       ✅       |            |     ✅      |               |                  |
-|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |                  |
-|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |                |
-|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |                |
-|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |                |
-|           Groq           |         Hosted         |            |       ✅       |            |            |               |                 |
-|          Ollama          |      Single Node       |            |       ✅       |            |            |               |                 |
-|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|          Chroma          |      Single Node       |            |               |     ✅      |            |               |                 |
-|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |                 |
-|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |                |
-|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |                 |
-|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |                 |
-|          Gemini          |         Hosted         |            |       ✅       |            |            |               |                 |
-|          watsonx         |         Hosted         |            |       ✅       |            |            |               |                 |
-|        HuggingFace       |       Single Node      |            |                |            |            |               |       ✅        |
-|         TorchTune        |       Single Node      |            |                |            |            |               |       ✅        |
-|       NVIDIA NEMO        |         Hosted         |            |                |            |            |               |       ✅        |
-
+| API Provider Builder    | Environments      | Agents | Inference | VectorIO | Safety | Telemetry | Post Training | Eval | DatasetIO | Tool Runtime |
+|:----------------------:|:------------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:---------:|:------------:|
+| Meta Reference         | Single Node        |   ✅   |    ✅     |    ✅    |   ✅   |    ✅     |      ✅      |  ✅  |    ✅     |      ✅     |
+| SambaNova              | Hosted             |        |    ✅     |          |   ✅   |           |              |      |           |             |
+| Cerebras               | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Fireworks              | Hosted             |   ✅   |    ✅     |    ✅    |        |           |              |      |           |             |
+| AWS Bedrock            | Hosted             |        |    ✅     |          |   ✅   |           |              |      |           |             |
+| Together               | Hosted             |   ✅   |    ✅     |          |   ✅   |           |              |      |           |             |
+| Groq                   | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Ollama                 | Single Node        |        |    ✅     |          |        |           |              |      |           |             |
+| TGI                    | Hosted/Single Node |        |    ✅     |          |        |           |              |      |           |             |
+| NVIDIA NIM             | Hosted/Single Node |        |    ✅     |          |        |           |              |      |           |             |
+| Chroma                 | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| PG Vector              | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| PyTorch ExecuTorch     | On-device iOS      |   ✅   |    ✅     |          |        |           |              |      |           |             |
+| vLLM                   | Single Node        |        |    ✅     |          |        |           |              |      |           |             |
+| OpenAI                 | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Anthropic              | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| Gemini                 | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| WatsonX                | Hosted             |        |    ✅     |          |        |           |              |      |           |             |
+| HuggingFace            | Single Node        |        |           |          |        |           |      ✅      |      |    ✅     |             |
+| TorchTune              | Single Node        |        |           |          |        |           |      ✅      |      |           |             |
+| NVIDIA NEMO            | Hosted             |        |    ✅     |    ✅    |        |           |      ✅      |  ✅  |    ✅     |             |
+| FAISS                  | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| SQLite-Vec             | Single Node        |        |           |    ✅    |        |           |              |      |           |             |
+| Qdrant                 | Hosted/Single Node |        |           |    ✅    |        |           |              |      |           |             |
+| Weaviate               | Hosted             |        |           |    ✅    |        |           |              |      |           |             |
+| Milvus                 | Hosted/Single Node |        |           |    ✅    |        |           |              |      |           |             |
+| Prompt Guard           | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Llama Guard            | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Code Scanner           | Single Node        |        |           |          |   ✅   |           |              |      |           |             |
+| Brave Search           | Hosted             |        |           |          |        |           |              |      |           |      ✅     |
+| RAG Runtime            | Single Node        |        |           |          |        |           |              |      |           |      ✅     |
 
 ### Distributions
 
