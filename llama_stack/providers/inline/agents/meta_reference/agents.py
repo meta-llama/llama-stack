@@ -359,3 +359,6 @@ class MetaReferenceAgentsImpl(Agents):
         return await self.openai_responses_impl.list_openai_response_input_items(
             response_id, after, before, include, limit, order
         )
+
+    async def delete_openai_response(self, response_id: str) -> None:
+        return await self.openai_responses_impl.delete_openai_response(response_id)
