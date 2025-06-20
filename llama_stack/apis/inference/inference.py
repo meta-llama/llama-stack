@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import sys
 from collections.abc import AsyncIterator
 from enum import Enum
 from typing import (
@@ -37,15 +36,7 @@ register_schema(ToolCall)
 register_schema(ToolParamDefinition)
 register_schema(ToolDefinition)
 
-# TODO: use enum.StrEnum when we drop support for python 3.10
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-
-    class StrEnum(str, Enum):
-        """Backport of StrEnum for Python 3.10 and below."""
-
-        pass
+from enum import StrEnum
 
 
 @json_schema_type

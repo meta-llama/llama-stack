@@ -18,7 +18,14 @@ from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
+    SearchRankingOptions,
     VectorIO,
+)
+from llama_stack.apis.vector_io.vector_io import (
+    VectorStoreChunkingStrategy,
+    VectorStoreFileContentsResponse,
+    VectorStoreFileObject,
+    VectorStoreListFilesResponse,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig

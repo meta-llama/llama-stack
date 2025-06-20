@@ -11,7 +11,7 @@ import os
 import shutil
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 
@@ -409,7 +409,7 @@ def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
         d = json.load(f)
         manifest = Manifest(**d)
 
-    if datetime.now(timezone.utc) > manifest.expires_on.astimezone(timezone.utc):
+    if datetime.now(UTC) > manifest.expires_on.astimezone(UTC):
         raise ValueError(f"Manifest URLs have expired on {manifest.expires_on}")
 
     console = Console()

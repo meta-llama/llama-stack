@@ -9,6 +9,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
+from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
 # NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
@@ -398,11 +399,6 @@ class OpenAIResponseInputToolFunction(BaseModel):
     description: str | None = None
     parameters: dict[str, Any] | None
     strict: bool | None = None
-
-
-class FileSearchRankingOptions(BaseModel):
-    ranker: str | None = None
-    score_threshold: float | None = Field(default=0.0, ge=0.0, le=1.0)
 
 
 @json_schema_type

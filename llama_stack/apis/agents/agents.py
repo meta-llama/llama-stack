@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import sys
 from collections.abc import AsyncIterator
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated, Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -39,14 +38,6 @@ from .openai_responses import (
     OpenAIResponseObjectStream,
     OpenAIResponseText,
 )
-
-# TODO: use enum.StrEnum when we drop support for python 3.10
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-
-    class StrEnum(str, Enum):
-        """Backport of StrEnum for Python 3.10 and below."""
 
 
 class Attachment(BaseModel):

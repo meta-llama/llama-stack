@@ -71,12 +71,21 @@ def mock_responses_store():
 
 
 @pytest.fixture
-def openai_responses_impl(mock_inference_api, mock_tool_groups_api, mock_tool_runtime_api, mock_responses_store):
+def mock_vector_io_api():
+    vector_io_api = AsyncMock()
+    return vector_io_api
+
+
+@pytest.fixture
+def openai_responses_impl(
+    mock_inference_api, mock_tool_groups_api, mock_tool_runtime_api, mock_responses_store, mock_vector_io_api
+):
     return OpenAIResponsesImpl(
         inference_api=mock_inference_api,
         tool_groups_api=mock_tool_groups_api,
         tool_runtime_api=mock_tool_runtime_api,
         responses_store=mock_responses_store,
+        vector_io_api=mock_vector_io_api,
     )
 
 

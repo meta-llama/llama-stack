@@ -7,7 +7,7 @@
 import logging
 import uuid
 from collections.abc import AsyncGenerator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from llama_stack.apis.agents import (
     Agent,
@@ -85,6 +85,7 @@ class MetaReferenceAgentsImpl(Agents):
             tool_groups_api=self.tool_groups_api,
             tool_runtime_api=self.tool_runtime_api,
             responses_store=self.responses_store,
+            vector_io_api=self.vector_io_api,
         )
 
     async def create_agent(
@@ -92,7 +93,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent_config: AgentConfig,
     ) -> AgentCreateResponse:
         agent_id = str(uuid.uuid4())
-        created_at = datetime.now(timezone.utc)
+        created_at = datetime.now(UTC)
 
         agent_info = AgentInfo(
             **agent_config.model_dump(),

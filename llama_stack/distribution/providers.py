@@ -99,7 +99,7 @@ class ProviderImpl(Providers):
             try:
                 health = await asyncio.wait_for(impl.health(), timeout=timeout)
                 return api_name, health
-            except (asyncio.TimeoutError, TimeoutError):
+            except TimeoutError:
                 return (
                     api_name,
                     HealthResponse(

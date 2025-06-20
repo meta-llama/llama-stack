@@ -9,12 +9,12 @@ import time
 from abc import ABC, abstractmethod
 from asyncio import Lock
 from pathlib import Path
+from typing import Self
 from urllib.parse import parse_qs
 
 import httpx
 from jose import jwt
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing_extensions import Self
 
 from llama_stack.distribution.datatypes import AuthenticationConfig, AuthProviderType, User
 from llama_stack.log import get_logger
