@@ -98,6 +98,15 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
+            # In complex templates, like our starter template, we may have dynamic model ids
+            # given by environment variables. This allows those environment variables to have
+            # a default value of __disabled__ to skip registration of the model if not set.
+            if (
+                hasattr(obj, "provider_model_id")
+                and obj.provider_model_id is not None
+                and "__disabled__" in obj.provider_model_id
+            ):
+                continue
             # we want to maintain the type information in arguments to method.
             # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,
             # we use model_dump() to find all the attrs and then getattr to get the still typed value.
