@@ -5,12 +5,10 @@
 # the root directory of this source tree.
 
 import asyncio
-import hashlib
 import json
 import logging
 import sqlite3
 import struct
-import uuid
 from typing import Any
 
 import numpy as np
@@ -33,6 +31,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 logger = logging.getLogger(__name__)
 
@@ -757,9 +756,3 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
-
-
-def generate_chunk_id(document_id: str, chunk_text: str) -> str:
-    """Generate a unique chunk ID using a hash of document ID and chunk text."""
-    hash_input = f"{document_id}:{chunk_text}".encode()
-    return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))
