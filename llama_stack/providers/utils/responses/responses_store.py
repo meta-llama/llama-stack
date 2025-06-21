@@ -13,19 +13,22 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObject,
     OpenAIResponseObjectWithInput,
 )
+from llama_stack.distribution.datatypes import AccessRule
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 from ..sqlstore.api import ColumnDefinition, ColumnType
+from ..sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from ..sqlstore.sqlstore import SqliteSqlStoreConfig, SqlStoreConfig, sqlstore_impl
 
 
 class ResponsesStore:
-    def __init__(self, sql_store_config: SqlStoreConfig):
+    def __init__(self, sql_store_config: SqlStoreConfig, policy: list[AccessRule]):
         if not sql_store_config:
             sql_store_config = SqliteSqlStoreConfig(
                 db_path=(RUNTIME_BASE_DIR / "sqlstore.db").as_posix(),
             )
-        self.sql_store = sqlstore_impl(sql_store_config)
+        self.sql_store = AuthorizedSqlStore(sqlstore_impl(sql_store_config))
+        self.policy = policy
 
     async def initialize(self):
         """Create the necessary tables if they don't exist."""
@@ -83,6 +86,7 @@ class ResponsesStore:
             order_by=[("created_at", order.value)],
             cursor=("id", after) if after else None,
             limit=limit,
+            policy=self.policy,
         )
 
         data = [OpenAIResponseObjectWithInput(**row["response_object"]) for row in paginated_result.data]
@@ -94,9 +98,20 @@ class ResponsesStore:
         )
 
     async def get_response_object(self, response_id: str) -> OpenAIResponseObjectWithInput:
-        row = await self.sql_store.fetch_one("openai_responses", where={"id": response_id})
+        """
+        Get a response object with automatic access control checking.
+        """
+        row = await self.sql_store.fetch_one(
+            "openai_responses",
+            where={"id": response_id},
+            policy=self.policy,
+        )
+
         if not row:
+            # SecureSqlStore will return None if record doesn't exist OR access is denied
+            # This provides security by not revealing whether the record exists
             raise ValueError(f"Response with id {response_id} not found") from None
+
         return OpenAIResponseObjectWithInput(**row["response_object"])
 
     async def list_response_input_items(

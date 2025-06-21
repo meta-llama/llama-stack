@@ -47,7 +47,7 @@ async def test_inference_store_pagination_basic():
     """Test basic pagination functionality."""
     with TemporaryDirectory() as tmp_dir:
         db_path = tmp_dir + "/test.db"
-        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path))
+        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path), policy=[])
         await store.initialize()
 
         # Create test data with different timestamps
@@ -93,7 +93,7 @@ async def test_inference_store_pagination_ascending():
     """Test pagination with ascending order."""
     with TemporaryDirectory() as tmp_dir:
         db_path = tmp_dir + "/test.db"
-        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path))
+        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path), policy=[])
         await store.initialize()
 
         # Create test data
@@ -128,7 +128,7 @@ async def test_inference_store_pagination_with_model_filter():
     """Test pagination combined with model filtering."""
     with TemporaryDirectory() as tmp_dir:
         db_path = tmp_dir + "/test.db"
-        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path))
+        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path), policy=[])
         await store.initialize()
 
         # Create test data with different models
@@ -166,7 +166,7 @@ async def test_inference_store_pagination_invalid_after():
     """Test error handling for invalid 'after' parameter."""
     with TemporaryDirectory() as tmp_dir:
         db_path = tmp_dir + "/test.db"
-        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path))
+        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path), policy=[])
         await store.initialize()
 
         # Try to paginate with non-existent ID
@@ -179,7 +179,7 @@ async def test_inference_store_pagination_no_limit():
     """Test pagination behavior when no limit is specified."""
     with TemporaryDirectory() as tmp_dir:
         db_path = tmp_dir + "/test.db"
-        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path))
+        store = InferenceStore(SqliteSqlStoreConfig(db_path=db_path), policy=[])
         await store.initialize()
 
         # Create test data

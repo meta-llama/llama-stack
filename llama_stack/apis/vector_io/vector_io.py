@@ -168,7 +168,10 @@ register_schema(VectorStoreChunkingStrategy, name="VectorStoreChunkingStrategy")
 
 class SearchRankingOptions(BaseModel):
     ranker: str | None = None
-    score_threshold: float | None = Field(default=0.0, ge=0.0, le=1.0)
+    # NOTE: OpenAI File Search Tool requires threshold to be between 0 and 1, however
+    # we don't guarantee that the score is between 0 and 1, so will leave this unconstrained
+    # and let the provider handle it
+    score_threshold: float | None = Field(default=0.0)
 
 
 @json_schema_type

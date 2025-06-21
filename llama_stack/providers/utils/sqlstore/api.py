@@ -51,6 +51,7 @@ class SqlStore(Protocol):
         self,
         table: str,
         where: Mapping[str, Any] | None = None,
+        where_sql: str | None = None,
         limit: int | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
         cursor: tuple[str, str] | None = None,
@@ -59,7 +60,8 @@ class SqlStore(Protocol):
         Fetch all rows from a table with optional cursor-based pagination.
 
         :param table: The table name
-        :param where: WHERE conditions
+        :param where: Simple key-value WHERE conditions
+        :param where_sql: Raw SQL WHERE clause for complex queries
         :param limit: Maximum number of records to return
         :param order_by: List of (column, order) tuples for sorting
         :param cursor: Tuple of (key_column, cursor_id) for pagination (None for first page)
@@ -75,6 +77,7 @@ class SqlStore(Protocol):
         self,
         table: str,
         where: Mapping[str, Any] | None = None,
+        where_sql: str | None = None,
         order_by: list[tuple[str, Literal["asc", "desc"]]] | None = None,
     ) -> dict[str, Any] | None:
         """
@@ -100,5 +103,26 @@ class SqlStore(Protocol):
     ) -> None:
         """
         Delete a row from a table.
+        """
+        pass
+
+    async def add_column_if_not_exists(
+        self,
+        table: str,
+        column_name: str,
+        column_type: ColumnType,
+        nullable: bool = True,
+    ) -> None:
+        """
+        Add a column to an existing table if the column doesn't already exist.
+
+        This is useful for table migrations when adding new functionality.
+        If the table doesn't exist, this method should do nothing.
+        If the column already exists, this method should do nothing.
+
+        :param table: Table name
+        :param column_name: Name of the column to add
+        :param column_type: Type of the column to add
+        :param nullable: Whether the column should be nullable (default: True)
         """
         pass

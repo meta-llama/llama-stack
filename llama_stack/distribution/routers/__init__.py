@@ -47,7 +47,7 @@ async def get_routing_table_impl(
 
 
 async def get_auto_router_impl(
-    api: Api, routing_table: RoutingTable, deps: dict[str, Any], run_config: StackRunConfig
+    api: Api, routing_table: RoutingTable, deps: dict[str, Any], run_config: StackRunConfig, policy: list[AccessRule]
 ) -> Any:
     from .datasets import DatasetIORouter
     from .eval_scoring import EvalRouter, ScoringRouter
@@ -78,7 +78,7 @@ async def get_auto_router_impl(
 
     # TODO: move pass configs to routers instead
     if api == Api.inference and run_config.inference_store:
-        inference_store = InferenceStore(run_config.inference_store)
+        inference_store = InferenceStore(run_config.inference_store, policy)
         await inference_store.initialize()
         api_to_dep_impl["store"] = inference_store
 

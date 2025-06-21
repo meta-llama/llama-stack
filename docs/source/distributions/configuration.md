@@ -140,7 +140,7 @@ server:
     config:
       jwks:
         uri: "https://kubernetes.default.svc:8443/openid/v1/jwks"
-	token: "${env.TOKEN:}"
+        token: "${env.TOKEN:}"
         key_recheck_period: 3600
       tls_cafile: "/path/to/ca.crt"
       issuer: "https://kubernetes.default.svc"
