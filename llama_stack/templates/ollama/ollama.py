@@ -36,6 +36,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::rag-runtime",
+            "inline::synthetic-data-kit",
             "remote::model-context-protocol",
             "remote::wolfram-alpha",
         ],
@@ -90,6 +91,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::wolfram_alpha",
             provider_id="wolfram-alpha",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::document_conversion",
+            provider_id="synthetic-data-kit",
         ),
     ]
 

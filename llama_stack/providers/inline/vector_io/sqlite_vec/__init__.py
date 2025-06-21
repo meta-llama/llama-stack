@@ -15,6 +15,8 @@ async def get_provider_impl(config: SQLiteVectorIOConfig, deps: dict[Api, Any]):
     from .sqlite_vec import SQLiteVecVectorIOAdapter
 
     assert isinstance(config, SQLiteVectorIOConfig), f"Unexpected config type: {type(config)}"
-    impl = SQLiteVecVectorIOAdapter(config, deps[Api.inference], deps.get(Api.files, None))
+    impl = SQLiteVecVectorIOAdapter(
+        config, deps[Api.inference], deps.get(Api.files, None), deps.get(Api.tool_runtime, None)
+    )
     await impl.initialize()
     return impl
