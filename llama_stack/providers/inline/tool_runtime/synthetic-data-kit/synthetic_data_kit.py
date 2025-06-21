@@ -13,7 +13,7 @@ import tempfile
 from typing import Any
 
 from llama_stack.apis.common.content_types import URL
-from llama_stack.apis.files.files import Files
+from llama_stack.apis.files import Files
 from llama_stack.apis.tools import (
     ListToolDefsResponse,
     ToolDef,
@@ -76,7 +76,7 @@ class SyntheticDataKitToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime):
 
         file_id = kwargs["file_id"]
         file_response = await self.files_api.openai_retrieve_file(file_id)
-        mime_type, _ = mimetypes.guess_type(file_response.filename)
+        mime_type = self._guess_mime_type(file_response.filename)
         content_response = await self.files_api.openai_retrieve_file_content(file_id)
 
         mime_category = mime_type.split("/")[0] if mime_type else None
@@ -89,10 +89,16 @@ class SyntheticDataKitToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime):
             )
         else:
             return await asyncio.to_thread(
-                self.synthetic_data_kit_convert, content_response.body, file_response.filename
+                self._synthetic_data_kit_convert, content_response.body, file_response.filename
             )
 
-    def synthetic_data_kit_convert(self, content_body: bytes, filename: str) -> ToolInvocationResult:
+    def _guess_mime_type(self, filename: str) -> str | None:
+        mime_type, _ = mimetypes.guess_type(filename)
+        if mime_type is None and filename.endswith(".md"):
+            mime_type = "text/markdown"
+        return mime_type
+
+    def _synthetic_data_kit_convert(self, content_body: bytes, filename: str) -> ToolInvocationResult:
         from synthetic_data_kit.core.ingest import process_file
 
         try:
