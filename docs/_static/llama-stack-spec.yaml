@@ -9737,6 +9737,10 @@ components:
           description: >-
             Whether to rewrite the natural language query for vector search (default
             false)
+        search_mode:
+          type: string
+          description: >-
+            The search mode to use - "keyword", "vector", or "hybrid" (default "vector")
       additionalProperties: false
       required:
         - query

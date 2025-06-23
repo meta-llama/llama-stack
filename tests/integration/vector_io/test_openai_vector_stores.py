@@ -804,3 +804,23 @@ def test_openai_vector_store_update_file(compat_client_with_empty_stores, client
         file_id=file.id,
     )
     assert retrieved_file.attributes["foo"] == "baz"
+
+
+@pytest.mark.skip(reason="Client library needs to be scaffolded to support search_mode parameter")
+def test_openai_vector_store_search_modes():
+    """Test OpenAI vector store search with different search modes.
+
+    This test is skipped because the client library
+    needs to be regenerated from the updated OpenAPI spec to support the
+    search_mode parameter. Once the client library is updated, this test
+    can be enabled to verify:
+    - vector search mode (default)
+    - keyword search mode
+    - hybrid search mode
+    - invalid search mode validation
+    """
+    # TODO: Enable this test once llama_stack_client is updated to support search_mode
+    # The server-side implementation is complete but the client
+    # library needs to be updated:
+    # https://github.com/meta-llama/llama-stack-client-python/blob/52c0b5d23e9ae67ceb09d755143d436f38c20547/src/llama_stack_client/resources/vector_stores/vector_stores.py#L314
+    pass

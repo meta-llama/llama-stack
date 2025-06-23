@@ -256,6 +256,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         max_num_results: int | None = 10,
         ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
+        search_mode: str | None = "vector",
     ) -> VectorStoreSearchResponsePage:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
 
