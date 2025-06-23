@@ -11,6 +11,8 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
+from apis.tools import ToolAnnotations
+
 # The goal is that these set of types are relevant for all Llama models.
 # That isn't the current state yet -- e.g., BuiltinTool is somewhat specific to
 # the llama3 series of models.
@@ -99,6 +101,7 @@ class ToolDefinition(BaseModel):
     tool_name: BuiltinTool | str
     description: str | None = None
     parameters: dict[str, ToolParamDefinition] | None = None
+    annotations: ToolAnnotations | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod

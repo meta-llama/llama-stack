@@ -665,6 +665,7 @@ class OpenAIResponsesImpl:
                                     },
                                     "required": [p.name for p in t.parameters if p.required],
                                 },
+                                annotations=t.annotations,
                             )
                         )
             else:

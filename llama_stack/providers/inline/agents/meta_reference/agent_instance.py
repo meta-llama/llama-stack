@@ -843,6 +843,7 @@ class ChatAgent(ShieldRunnerMixin):
                             )
                             for param in tool_def.parameters
                         },
+                        annotations=tool_def.annotations,
                     )
                     tool_name_to_args[tool_def.identifier] = toolgroup_to_args.get(toolgroup_name, {})
 

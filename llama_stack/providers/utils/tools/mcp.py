@@ -65,6 +65,7 @@ async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefs
                         description=param_schema.get("description", ""),
                     )
                 )
+            annotations = getattr(tool, "annotations", None)
             tools.append(
                 ToolDef(
                     name=tool.name,
@@ -73,6 +74,7 @@ async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefs
                     metadata={
                         "endpoint": endpoint,
                     },
+                    annotations=annotations,
                 )
             )
     return ListToolDefsResponse(data=tools)

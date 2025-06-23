@@ -116,6 +116,7 @@ class MCPListToolsTool(BaseModel):
     input_schema: dict[str, Any]
     name: str
     description: str | None = None
+    annotations: dict[str, Any] | None = None
 
 
 @json_schema_type
