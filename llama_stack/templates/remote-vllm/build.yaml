@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 distribution_spec:
   description: Use (an external) vLLM server for running LLM inference
   providers:

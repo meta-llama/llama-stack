@@ -69,67 +69,67 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
         (
             "openai",
             OPENAI_MODEL_ENTRIES,
-            OpenAIConfig.sample_run_config(api_key="${env.OPENAI_API_KEY:}"),
+            OpenAIConfig.sample_run_config(api_key="${env.OPENAI_API_KEY:+}"),
         ),
         (
             "fireworks",
             FIREWORKS_MODEL_ENTRIES,
-            FireworksImplConfig.sample_run_config(api_key="${env.FIREWORKS_API_KEY:}"),
+            FireworksImplConfig.sample_run_config(api_key="${env.FIREWORKS_API_KEY:+}"),
         ),
         (
             "together",
             TOGETHER_MODEL_ENTRIES,
-            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:}"),
+            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:+}"),
         ),
         (
             "ollama",
             [
                 ProviderModelEntry(
-                    provider_model_id="${env.OLLAMA_INFERENCE_MODEL:__disabled__}",
+                    provider_model_id="${env.OLLAMA_INFERENCE_MODEL:=__disabled__}",
                     model_type=ModelType.llm,
                 ),
                 ProviderModelEntry(
-                    provider_model_id="${env.OLLAMA_EMBEDDING_MODEL:__disabled__}",
+                    provider_model_id="${env.OLLAMA_EMBEDDING_MODEL:=__disabled__}",
                     model_type=ModelType.embedding,
                     metadata={
-                        "embedding_dimension": "${env.OLLAMA_EMBEDDING_DIMENSION:384}",
+                        "embedding_dimension": "${env.OLLAMA_EMBEDDING_DIMENSION:=384}",
                     },
                 ),
             ],
             OllamaImplConfig.sample_run_config(
-                url="${env.OLLAMA_URL:http://localhost:11434}", raise_on_connect_error=False
+                url="${env.OLLAMA_URL:=http://localhost:11434}", raise_on_connect_error=False
             ),
         ),
         (
             "anthropic",
             ANTHROPIC_MODEL_ENTRIES,
-            AnthropicConfig.sample_run_config(api_key="${env.ANTHROPIC_API_KEY:}"),
+            AnthropicConfig.sample_run_config(api_key="${env.ANTHROPIC_API_KEY:+}"),
         ),
         (
             "gemini",
             GEMINI_MODEL_ENTRIES,
-            GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:}"),
+            GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:+}"),
         ),
         (
             "groq",
             GROQ_MODEL_ENTRIES,
-            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:}"),
+            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:+}"),
         ),
         (
             "sambanova",
             SAMBANOVA_MODEL_ENTRIES,
-            SambaNovaImplConfig.sample_run_config(api_key="${env.SAMBANOVA_API_KEY:}"),
+            SambaNovaImplConfig.sample_run_config(api_key="${env.SAMBANOVA_API_KEY:+}"),
         ),
         (
             "vllm",
             [
                 ProviderModelEntry(
-                    provider_model_id="${env.VLLM_INFERENCE_MODEL:__disabled__}",
+                    provider_model_id="${env.VLLM_INFERENCE_MODEL:=__disabled__}",
                     model_type=ModelType.llm,
                 ),
             ],
             VLLMInferenceAdapterConfig.sample_run_config(
-                url="${env.VLLM_URL:http://localhost:8000/v1}",
+                url="${env.VLLM_URL:=http://localhost:8000/v1}",
             ),
         ),
     ]
@@ -180,17 +180,17 @@ def get_distribution_template() -> DistributionTemplate:
             config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:+}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
-                db="${env.PGVECTOR_DB:}",
-                user="${env.PGVECTOR_USER:}",
-                password="${env.PGVECTOR_PASSWORD:}",
+                db="${env.PGVECTOR_DB:+}",
+                user="${env.PGVECTOR_USER:+}",
+                password="${env.PGVECTOR_PASSWORD:+}",
             ),
         ),
     ]

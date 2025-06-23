@@ -19,5 +19,5 @@ class QdrantVectorIOConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str) -> dict[str, Any]:
         return {
-            "path": "${env.QDRANT_PATH:~/.llama/" + __distro_dir__ + "}/" + "qdrant.db",
+            "path": "${env.QDRANT_PATH:=~/.llama/" + __distro_dir__ + "}/" + "qdrant.db",
         }

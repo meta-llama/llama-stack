@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 distribution_spec:
   description: Distribution for running open benchmarks
   providers:

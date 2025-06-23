@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 distribution_spec:
   description: Dell's distribution of Llama Stack. TGI inference via Dell's custom
     container

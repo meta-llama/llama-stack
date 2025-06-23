@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 distribution_spec:
   description: Use NVIDIA NIM for running LLM inference, evaluation and safety
   providers:

@@ -29,8 +29,8 @@ from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import SqlStoreConfig
 
-LLAMA_STACK_BUILD_CONFIG_VERSION = "2"
-LLAMA_STACK_RUN_CONFIG_VERSION = "2"
+LLAMA_STACK_BUILD_CONFIG_VERSION = 2
+LLAMA_STACK_RUN_CONFIG_VERSION = 2
 
 
 RoutingKey = str | list[str]
@@ -229,7 +229,7 @@ class ServerConfig(BaseModel):
 
 
 class StackRunConfig(BaseModel):
-    version: str = LLAMA_STACK_RUN_CONFIG_VERSION
+    version: int = LLAMA_STACK_RUN_CONFIG_VERSION
 
     image_name: str = Field(
         ...,
@@ -300,7 +300,7 @@ a default SQLite store will be used.""",
 
 
 class BuildConfig(BaseModel):
-    version: str = LLAMA_STACK_BUILD_CONFIG_VERSION
+    version: int = LLAMA_STACK_BUILD_CONFIG_VERSION
 
     distribution_spec: DistributionSpec = Field(description="The distribution spec to build including API providers. ")
     image_type: str = Field(

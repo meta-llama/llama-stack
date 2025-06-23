@@ -49,11 +49,11 @@ class MetaReferenceInferenceConfig(BaseModel):
     def sample_run_config(
         cls,
         model: str = "Llama3.2-3B-Instruct",
-        checkpoint_dir: str = "${env.CHECKPOINT_DIR:null}",
-        quantization_type: str = "${env.QUANTIZATION_TYPE:bf16}",
-        model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:0}",
-        max_batch_size: str = "${env.MAX_BATCH_SIZE:1}",
-        max_seq_len: str = "${env.MAX_SEQ_LEN:4096}",
+        checkpoint_dir: str = "${env.CHECKPOINT_DIR:=null}",
+        quantization_type: str = "${env.QUANTIZATION_TYPE:=bf16}",
+        model_parallel_size: str = "${env.MODEL_PARALLEL_SIZE:=0}",
+        max_batch_size: str = "${env.MAX_BATCH_SIZE:=1}",
+        max_seq_len: str = "${env.MAX_SEQ_LEN:=4096}",
         **kwargs,
     ) -> dict[str, Any]:
         return {

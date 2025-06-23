@@ -41,7 +41,7 @@ def get_inference_providers() -> tuple[list[Provider], list[ModelInput]]:
         (
             "llama-openai-compat",
             LLLAMA_MODEL_ENTRIES,
-            LlamaCompatConfig.sample_run_config(api_key="${env.LLAMA_API_KEY:}"),
+            LlamaCompatConfig.sample_run_config(api_key="${env.LLAMA_API_KEY:+}"),
         ),
     ]
     inference_providers = []
@@ -85,17 +85,17 @@ def get_distribution_template() -> DistributionTemplate:
             config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:+}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
-                db="${env.PGVECTOR_DB:}",
-                user="${env.PGVECTOR_USER:}",
-                password="${env.PGVECTOR_PASSWORD:}",
+                db="${env.PGVECTOR_DB:+}",
+                user="${env.PGVECTOR_USER:+}",
+                password="${env.PGVECTOR_PASSWORD:+}",
             ),
         ),
     ]

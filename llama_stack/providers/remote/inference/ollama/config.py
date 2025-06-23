@@ -17,7 +17,7 @@ class OllamaImplConfig(BaseModel):
 
     @classmethod
     def sample_run_config(
-        cls, url: str = "${env.OLLAMA_URL:http://localhost:11434}", raise_on_connect_error: bool = True, **kwargs
+        cls, url: str = "${env.OLLAMA_URL:=http://localhost:11434}", raise_on_connect_error: bool = True, **kwargs
     ) -> dict[str, Any]:
         return {
             "url": url,

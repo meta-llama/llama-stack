@@ -22,8 +22,8 @@ class PGVectorVectorIOConfig(BaseModel):
     @classmethod
     def sample_run_config(
         cls,
-        host: str = "${env.PGVECTOR_HOST:localhost}",
-        port: int = "${env.PGVECTOR_PORT:5432}",
+        host: str = "${env.PGVECTOR_HOST:=localhost}",
+        port: int = "${env.PGVECTOR_PORT:=5432}",
         db: str = "${env.PGVECTOR_DB}",
         user: str = "${env.PGVECTOR_USER}",
         password: str = "${env.PGVECTOR_PASSWORD}",

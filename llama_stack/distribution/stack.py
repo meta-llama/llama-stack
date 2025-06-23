@@ -127,7 +127,12 @@ class EnvVarError(Exception):
     def __init__(self, var_name: str, path: str = ""):
         self.var_name = var_name
         self.path = path
-        super().__init__(f"Environment variable '{var_name}' not set or empty{f' at {path}' if path else ''}")
+        super().__init__(
+            f"Environment variable '{var_name}' not set or empty {f'at {path}' if path else ''}. "
+            f"Use ${{env.{var_name}:=default_value}} to provide a default value, "
+            f"${{env.{var_name}:+value_if_set}} to make the field conditional, "
+            f"or ensure the environment variable is set."
+        )
 
 
 def replace_env_vars(config: Any, path: str = "") -> Any:
@@ -150,25 +155,27 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
         return result
 
     elif isinstance(config, str):
-        # Updated pattern to support both default values (:) and conditional values (+)
-        pattern = r"\${env\.([A-Z0-9_]+)(?:([:\+])([^}]*))?}"
+        # Pattern supports bash-like syntax: := for default and :+ for conditional and a optional value
+        pattern = r"\${env\.([A-Z0-9_]+)(?::([=+])([^}]*))?}"
 
-        def get_env_var(match):
+        def get_env_var(match: re.Match):
             env_var = match.group(1)
-            operator = match.group(2)  # ':' for default, '+' for conditional
+            operator = match.group(2)  # '=' for default, '+' for conditional
             value_expr = match.group(3)
 
             env_value = os.environ.get(env_var)
 
-            if operator == ":":  # Default value syntax: ${env.FOO:default}
+            if operator == "=":  # Default value syntax: ${env.FOO:=default}
                 if not env_value:
-                    if value_expr is None:
+                    # value_expr returns empty string (not None) when not matched
+                    # This means ${env.FOO:=} is an error
+                    if value_expr == "":
                         raise EnvVarError(env_var, path)
                     else:
                         value = value_expr
                 else:
                     value = env_value
-            elif operator == "+":  # Conditional value syntax: ${env.FOO+value_if_set}
+            elif operator == "+":  # Conditional value syntax: ${env.FOO:+value_if_set}
                 if env_value:
                     value = value_expr
                 else:
@@ -183,11 +190,40 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
             return os.path.expanduser(value)
 
         try:
-            return re.sub(pattern, get_env_var, config)
+            result = re.sub(pattern, get_env_var, config)
+            return _convert_string_to_proper_type(result)
         except EnvVarError as e:
             raise EnvVarError(e.var_name, e.path) from None
 
     return config
+
+
+def _convert_string_to_proper_type(value: str) -> Any:
+    # This might be tricky depending on what the config type is, if  'str | None' we are
+    # good, if 'str' we need to keep the empty string... 'str | None' is more common and
+    # providers config should be typed this way.
+    # TODO: we could try to load the config class and see if the config has a field with type 'str | None'
+    # and then convert the empty string to None or not
+    if value == "":
+        return None
+
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    elif lowered == "false":
+        return False
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    return value
 
 
 def validate_env_pair(env_pair: str) -> tuple[str, str]:
