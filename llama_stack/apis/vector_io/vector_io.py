@@ -19,17 +19,52 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 from llama_stack.strong_typing.schema import register_schema
 
 
+@json_schema_type
+class ChunkMetadata(BaseModel):
+    """
+    `ChunkMetadata` is backend metadata for a `Chunk` that is used to store additional information about the chunk that
+        will NOT be inserted into the context during inference, but is required for backend functionality.
+        Use `metadata` in `Chunk` for metadata that will be used during inference.
+    :param document_id: The ID of the document this chunk belongs to.
+    :param source: The source of the content, such as a URL or file path.
+    :param created_timestamp: An optional timestamp indicating when the chunk was created.
+    :param updated_timestamp: An optional timestamp indicating when the chunk was last updated.
+    :param chunk_window: The window of the chunk, which can be used to group related chunks together.
+    :param chunk_tokenizer: The tokenizer used to create the chunk. Default is Tiktoken.
+    :param chunk_embedding_model: The embedding model used to create the chunk's embedding.
+    :param chunk_embedding_dimension: The dimension of the embedding vector for the chunk.
+    :param content_token_count: The number of tokens in the content of the chunk.
+    :param metadata_token_count: The number of tokens in the metadata of the chunk.
+    """
+
+    document_id: str | None = None
+    chunk_id: str | None = None
+    source: str | None = None
+    created_timestamp: int | None = None
+    updated_timestamp: int | None = None
+    chunk_window: str | None = None
+    chunk_tokenizer: str | None = None
+    chunk_embedding_model: str | None = None
+    chunk_embedding_dimension: int | None = None
+    content_token_count: int | None = None
+    metadata_token_count: int | None = None
+
+
+@json_schema_type
 class Chunk(BaseModel):
     """
     A chunk of content that can be inserted into a vector database.
     :param content: The content of the chunk, which can be interleaved text, images, or other types.
     :param embedding: Optional embedding for the chunk. If not provided, it will be computed later.
-    :param metadata: Metadata associated with the chunk, such as document ID, source, or other relevant information.
+    :param metadata: Metadata associated with the chunk that will be used during inference.
+    :param chunk_metadata: Metadata for the chunk that will NOT be inserted into the context during inference
+        that is required backend functionality.
     """
 
     content: InterleavedContent
     metadata: dict[str, Any] = Field(default_factory=dict)
     embedding: list[float] | None = None
+    chunk_metadata: ChunkMetadata | None = None
 
 
 @json_schema_type

@@ -5,12 +5,10 @@
 # the root directory of this source tree.
 
 import asyncio
-import hashlib
 import json
 import logging
 import sqlite3
 import struct
-import uuid
 from typing import Any
 
 import numpy as np
@@ -33,6 +31,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+from llama_stack.providers.utils.vector_io.chunk_utils import extract_or_generate_chunk_id
 
 logger = logging.getLogger(__name__)
 
@@ -202,8 +201,7 @@ class SQLiteVecIndex(EmbeddingIndex):
 
                     # Insert metadata
                     metadata_data = [
-                        (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.model_dump_json())
-                        for chunk in batch_chunks
+                        (extract_or_generate_chunk_id(chunk), chunk.model_dump_json()) for chunk in batch_chunks
                     ]
                     cur.executemany(
                         f"""
@@ -218,7 +216,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     embedding_data = [
                         (
                             (
-                                generate_chunk_id(chunk.metadata["document_id"], chunk.content),
+                                extract_or_generate_chunk_id(chunk),
                                 serialize_vector(emb.tolist()),
                             )
                         )
@@ -230,10 +228,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     )
 
                     # Insert FTS content
-                    fts_data = [
-                        (generate_chunk_id(chunk.metadata["document_id"], chunk.content), chunk.content)
-                        for chunk in batch_chunks
-                    ]
+                    fts_data = [(extract_or_generate_chunk_id(chunk), chunk.content) for chunk in batch_chunks]
                     # DELETE existing entries with same IDs (FTS5 doesn't support ON CONFLICT)
                     cur.executemany(
                         f"DELETE FROM {self.fts_table} WHERE id = ?;",
@@ -383,11 +378,11 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         # Convert responses to score dictionaries using generate_chunk_id
         vector_scores = {
-            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            extract_or_generate_chunk_id(chunk): score
             for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
         }
         keyword_scores = {
-            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            extract_or_generate_chunk_id(chunk): score
             for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
         }
 
@@ -410,10 +405,10 @@ class SQLiteVecIndex(EmbeddingIndex):
         # Create a map of chunk_id to chunk for both responses
         chunk_map = {}
         for c in vector_response.chunks:
-            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_id = extract_or_generate_chunk_id(c)
             chunk_map[chunk_id] = c
         for c in keyword_response.chunks:
-            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_id = extract_or_generate_chunk_id(c)
             chunk_map[chunk_id] = c
 
         # Use the map to look up chunks by their IDs
@@ -757,9 +752,3 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
-
-
-def generate_chunk_id(document_id: str, chunk_text: str) -> str:
-    """Generate a unique chunk ID using a hash of document ID and chunk text."""
-    hash_input = f"{document_id}:{chunk_text}".encode()
-    return str(uuid.UUID(hashlib.md5(hash_input).hexdigest()))

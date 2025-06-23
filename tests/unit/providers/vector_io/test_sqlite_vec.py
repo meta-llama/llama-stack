@@ -15,7 +15,6 @@ from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
     SQLiteVecIndex,
     SQLiteVecVectorIOAdapter,
     _create_sqlite_connection,
-    generate_chunk_id,
 )
 
 # This test is a unit test for the SQLiteVecVectorIOAdapter class. This should only contain
@@ -148,21 +147,6 @@ async def sqlite_vec_adapter(sqlite_connection):
     await adapter.initialize()
     yield adapter
     await adapter.shutdown()
-
-
-def test_generate_chunk_id():
-    chunks = [
-        Chunk(content="test", metadata={"document_id": "doc-1"}),
-        Chunk(content="test ", metadata={"document_id": "doc-1"}),
-        Chunk(content="test 3", metadata={"document_id": "doc-1"}),
-    ]
-
-    chunk_ids = sorted([generate_chunk_id(chunk.metadata["document_id"], chunk.content) for chunk in chunks])
-    assert chunk_ids == [
-        "177a1368-f6a8-0c50-6e92-18677f2c3de3",
-        "bc744db3-1b25-0a9c-cdff-b6ba3df73c36",
-        "f68df25d-d9aa-ab4d-5684-64a233add20d",
-    ]
 
 
 @pytest.mark.asyncio
@@ -339,7 +323,7 @@ async def test_query_chunks_hybrid_mixed_results(sqlite_vec_index, sample_chunks
     # Verify scores are in descending order
     assert all(response.scores[i] >= response.scores[i + 1] for i in range(len(response.scores) - 1))
     # Verify we get results from both the vector-similar document and keyword-matched document
-    doc_ids = {chunk.metadata["document_id"] for chunk in response.chunks}
+    doc_ids = {chunk.metadata.get("document_id") or chunk.chunk_metadata.document_id for chunk in response.chunks}
     assert "document-0" in doc_ids  # From vector search
     assert "document-2" in doc_ids  # From keyword search
 
@@ -364,7 +348,11 @@ async def test_query_chunks_hybrid_weighted_reranker_parametrization(
         reranker_params={"alpha": 1.0},
     )
     assert len(response.chunks) > 0  # Should get at least one result
-    assert any("document-0" in chunk.metadata["document_id"] for chunk in response.chunks)
+    assert any(
+        "document-0"
+        in (chunk.metadata.get("document_id") or (chunk.chunk_metadata.document_id if chunk.chunk_metadata else ""))
+        for chunk in response.chunks
+    )
 
     # alpha=0.0 (should behave like pure vector)
     response = await sqlite_vec_index.query_hybrid(
@@ -389,7 +377,11 @@ async def test_query_chunks_hybrid_weighted_reranker_parametrization(
         reranker_params={"alpha": 0.7},
     )
     assert len(response.chunks) > 0  # Should get at least one result
-    assert any("document-0" in chunk.metadata["document_id"] for chunk in response.chunks)
+    assert any(
+        "document-0"
+        in (chunk.metadata.get("document_id") or (chunk.chunk_metadata.document_id if chunk.chunk_metadata else ""))
+        for chunk in response.chunks
+    )
 
 
 @pytest.mark.asyncio

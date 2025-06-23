@@ -9,7 +9,7 @@ import random
 import numpy as np
 import pytest
 
-from llama_stack.apis.vector_io import Chunk
+from llama_stack.apis.vector_io import Chunk, ChunkMetadata
 
 EMBEDDING_DIMENSION = 384
 
@@ -33,6 +33,20 @@ def sample_chunks():
         for j in range(k)
         for i in range(n)
     ]
+    sample.extend(
+        [
+            Chunk(
+                content=f"Sentence {i} from document {j + k}",
+                chunk_metadata=ChunkMetadata(
+                    document_id=f"document-{j + k}",
+                    chunk_id=f"document-{j}-chunk-{i}",
+                    source=f"example source-{j + k}-{i}",
+                ),
+            )
+            for j in range(k)
+            for i in range(n)
+        ]
+    )
     return sample
 
 

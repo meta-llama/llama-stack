@@ -11190,6 +11190,110 @@
                 ],
                 "title": "InsertRequest"
             },
+            "Chunk": {
+                "type": "object",
+                "properties": {
+                    "content": {
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The content of the chunk, which can be interleaved text, images, or other types."
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Metadata associated with the chunk that will be used during inference."
+                    },
+                    "embedding": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "description": "Optional embedding for the chunk. If not provided, it will be computed later."
+                    },
+                    "chunk_metadata": {
+                        "$ref": "#/components/schemas/ChunkMetadata",
+                        "description": "Metadata for the chunk that will NOT be inserted into the context during inference that is required backend functionality."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "content",
+                    "metadata"
+                ],
+                "title": "Chunk",
+                "description": "A chunk of content that can be inserted into a vector database."
+            },
+            "ChunkMetadata": {
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "type": "string",
+                        "description": "The ID of the document this chunk belongs to."
+                    },
+                    "chunk_id": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "The source of the content, such as a URL or file path."
+                    },
+                    "created_timestamp": {
+                        "type": "integer",
+                        "description": "An optional timestamp indicating when the chunk was created."
+                    },
+                    "updated_timestamp": {
+                        "type": "integer",
+                        "description": "An optional timestamp indicating when the chunk was last updated."
+                    },
+                    "chunk_window": {
+                        "type": "string",
+                        "description": "The window of the chunk, which can be used to group related chunks together."
+                    },
+                    "chunk_tokenizer": {
+                        "type": "string",
+                        "description": "The tokenizer used to create the chunk. Default is Tiktoken."
+                    },
+                    "chunk_embedding_model": {
+                        "type": "string",
+                        "description": "The embedding model used to create the chunk's embedding."
+                    },
+                    "chunk_embedding_dimension": {
+                        "type": "integer",
+                        "description": "The dimension of the embedding vector for the chunk."
+                    },
+                    "content_token_count": {
+                        "type": "integer",
+                        "description": "The number of tokens in the content of the chunk."
+                    },
+                    "metadata_token_count": {
+                        "type": "integer",
+                        "description": "The number of tokens in the metadata of the chunk."
+                    }
+                },
+                "additionalProperties": false,
+                "title": "ChunkMetadata",
+                "description": "`ChunkMetadata` is backend metadata for a `Chunk` that is used to store additional information about the chunk that     will NOT be inserted into the context during inference, but is required for backend functionality.     Use `metadata` in `Chunk` for metadata that will be used during inference."
+            },
             "InsertChunksRequest": {
                 "type": "object",
                 "properties": {
@@ -11200,53 +11304,7 @@
                     "chunks": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "content": {
-                                    "$ref": "#/components/schemas/InterleavedContent",
-                                    "description": "The content of the chunk, which can be interleaved text, images, or other types."
-                                },
-                                "metadata": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "null"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array"
-                                            },
-                                            {
-                                                "type": "object"
-                                            }
-                                        ]
-                                    },
-                                    "description": "Metadata associated with the chunk, such as document ID, source, or other relevant information."
-                                },
-                                "embedding": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "number"
-                                    },
-                                    "description": "Optional embedding for the chunk. If not provided, it will be computed later."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "content",
-                                "metadata"
-                            ],
-                            "title": "Chunk",
-                            "description": "A chunk of content that can be inserted into a vector database."
+                            "$ref": "#/components/schemas/Chunk"
                         },
                         "description": "The chunks to insert. Each `Chunk` should contain content which can be interleaved text, images, or other types. `metadata`: `dict[str, Any]` and `embedding`: `List[float]` are optional. If `metadata` is provided, you configure how Llama Stack formats the chunk during generation. If `embedding` is not provided, it will be computed later."
                     },
@@ -14667,53 +14725,7 @@
                     "chunks": {
                         "type": "array",
                         "items": {
-                            "type": "object",
-                            "properties": {
-                                "content": {
-                                    "$ref": "#/components/schemas/InterleavedContent",
-                                    "description": "The content of the chunk, which can be interleaved text, images, or other types."
-                                },
-                                "metadata": {
-                                    "type": "object",
-                                    "additionalProperties": {
-                                        "oneOf": [
-                                            {
-                                                "type": "null"
-                                            },
-                                            {
-                                                "type": "boolean"
-                                            },
-                                            {
-                                                "type": "number"
-                                            },
-                                            {
-                                                "type": "string"
-                                            },
-                                            {
-                                                "type": "array"
-                                            },
-                                            {
-                                                "type": "object"
-                                            }
-                                        ]
-                                    },
-                                    "description": "Metadata associated with the chunk, such as document ID, source, or other relevant information."
-                                },
-                                "embedding": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "number"
-                                    },
-                                    "description": "Optional embedding for the chunk. If not provided, it will be computed later."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "content",
-                                "metadata"
-                            ],
-                            "title": "Chunk",
-                            "description": "A chunk of content that can be inserted into a vector database."
+                            "$ref": "#/components/schemas/Chunk"
                         }
                     },
                     "scores": {

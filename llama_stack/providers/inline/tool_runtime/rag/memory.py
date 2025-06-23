@@ -148,6 +148,9 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
         ]
         for i, chunk in enumerate(chunks):
             metadata = chunk.metadata
+            # update chunk.metadata with the chunk.chunk_metadata if it exists
+            if chunk.chunk_metadata:
+                metadata = {**metadata, **chunk.chunk_metadata.dict()}
             tokens += metadata.get("token_count", 0)
             tokens += metadata.get("metadata_token_count", 0)
 
@@ -157,7 +160,19 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
                 )
                 break
 
-            metadata_subset = {k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]}
+            metadata_fields_to_exclude_from_context = [
+                "chunk_tokenizer",
+                "chunk_window",
+                "token_count",
+                "metadata_token_count",
+                "chunk_tokenizer",
+                "chunk_embedding_model",
+                "created_timestamp",
+                "updated_timestamp",
+                "chunk_window",
+                "content_token_count",
+            ]
+            metadata_subset = {k: v for k, v in metadata.items() if k not in metadata_fields_to_exclude_from_context}
             text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
             picked.append(TextContentItem(text=text_content))
 
