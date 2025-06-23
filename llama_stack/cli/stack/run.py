@@ -156,7 +156,7 @@ class StackRun(Subcommand):
                 if callable(getattr(args, arg)):
                     continue
                 if arg == "config" and template_name:
-                    server_args.config = str(config_file)
+                    server_args.template = str(template_name)
                 else:
                     setattr(server_args, arg, getattr(args, arg))
 
@@ -169,6 +169,8 @@ class StackRun(Subcommand):
 
             if config_file:
                 run_args.extend(["--config", str(config_file)])
+            if template_name:
+                run_args.extend(["--template", str(template_name)])
 
             if args.env:
                 for env_var in args.env:

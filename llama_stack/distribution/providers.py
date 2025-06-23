@@ -10,6 +10,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from llama_stack.apis.providers import ListProvidersResponse, ProviderInfo, Providers
+from llama_stack.distribution.distribution import resolve_config
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus
 
@@ -51,12 +52,13 @@ class ProviderImpl(Providers):
                 # Skip providers that are not enabled
                 if p.provider_id is None:
                     continue
+                config = resolve_config(provider=p, api=api)
                 ret.append(
                     ProviderInfo(
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
-                        config=p.config,
+                        config=dict(config),
                         health=providers_health.get(api, {}).get(
                             p.provider_id,
                             HealthResponse(

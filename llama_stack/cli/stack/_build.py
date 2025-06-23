@@ -37,9 +37,9 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import replace_env_vars
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.env import replace_env_vars
 from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
@@ -403,15 +403,27 @@ def _run_stack_build_command_from_build_config(
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
         template_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/run.yaml"
+        run_config_file: Path = None
+        provider_configs_new_dir: Path = None
         with importlib.resources.as_file(template_path) as path:
             run_config_file = build_dir / f"{template_name}-run.yaml"
             shutil.copy(path, run_config_file)
 
+        provider_configs_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/provider_configs"
+        with importlib.resources.as_file(provider_configs_path) as path:
+            provider_configs_new_dir = build_dir / "provider_configs"
+            os.makedirs(provider_configs_new_dir, exist_ok=True)
+            shutil.copytree(path, provider_configs_new_dir, dirs_exist_ok=True)
+
         cprint("Build Successful!", color="green", file=sys.stderr)
-        cprint(f"You can find the newly-built template here: {template_path}", color="blue", file=sys.stderr)
+        cprint(
+            f"You can find the newly-built template here: {run_config_file} and its provider configurations here {provider_configs_new_dir}",
+            color="blue",
+            file=sys.stderr,
+        )
         cprint(
             "You can run the new Llama Stack distro via: "
-            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "blue"),
+            + colored(f"llama stack run {run_config_file} --image-type {build_config.image_type}", "blue"),
             color="green",
             file=sys.stderr,
         )

@@ -42,11 +42,10 @@ from llama_stack.distribution.server.routes import (
 )
 from llama_stack.distribution.stack import (
     construct_stack,
-    replace_env_vars,
-    validate_env_pair,
 )
 from llama_stack.distribution.utils.config import redact_sensitive_fields
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
+from llama_stack.distribution.utils.env import replace_env_vars, validate_env_pair
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.config import TelemetryConfig
@@ -408,9 +407,10 @@ def main(args: argparse.Namespace | None = None):
         log_line = f"Using config file: {config_file}"
     elif args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
-        if not config_file.exists():
+        provider_configs = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "provider_configs"
+        if not config_file.exists() or not provider_configs.exists():
             raise ValueError(f"Template {args.template} does not exist")
-        log_line = f"Using template {args.template} config file: {config_file}"
+        log_line = f"Using template {args.template} config file: {config_file} and provider_config directory: {provider_configs}"
     else:
         raise ValueError("Either --config or --template must be provided")
 
