@@ -16,6 +16,7 @@ from llama_stack.distribution.datatypes import (
 from llama_stack.distribution.distribution import (
     builtin_automatically_routed_apis,
     get_provider_registry,
+    resolve_config,
 )
 from llama_stack.distribution.utils.config_dirs import EXTERNAL_PROVIDERS_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -30,7 +31,7 @@ def configure_single_provider(registry: dict[str, ProviderSpec], provider: Provi
     config_type = instantiate_class_type(provider_spec.config_class)
     try:
         if provider.config:
-            existing = config_type(**provider.config)
+            existing = resolve_config(provider=provider, provider_spec=provider_spec)
         else:
             existing = None
     except Exception:

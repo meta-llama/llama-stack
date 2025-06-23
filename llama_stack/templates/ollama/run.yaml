@@ -42,7 +42,7 @@ providers:
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/agents_store.db
       responses_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/responses_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -91,7 +91,7 @@ providers:
       storage_dir: ${env.FILES_STORAGE_DIR:=~/.llama/distributions/ollama/files}
       metadata_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/files_metadata.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/files_metadata.db
   post_training:
   - provider_id: huggingface
     provider_type: inline::huggingface
@@ -125,7 +125,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/registry.db
 inference_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/inference_store.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/inference_store.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}

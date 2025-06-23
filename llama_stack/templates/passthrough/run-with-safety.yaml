@@ -48,7 +48,7 @@ providers:
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/passthrough}/agents_store.db
       responses_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/passthrough}/responses_store.db
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/passthrough}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -116,7 +116,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/passthrough}/registry.db
 inference_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/passthrough}/inference_store.db
+  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/passthrough}/inference_store.db
 models:
 - metadata: {}
   model_id: meta-llama/Llama-3.1-8B-Instruct
