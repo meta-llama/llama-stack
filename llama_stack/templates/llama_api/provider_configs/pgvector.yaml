@@ -1,0 +1,5 @@
+host: ${env.PGVECTOR_HOST:=localhost}
+port: ${env.PGVECTOR_PORT:=5432}
+db: ${env.PGVECTOR_DB:+}
+user: ${env.PGVECTOR_USER:+}
+password: ${env.PGVECTOR_PASSWORD:+}

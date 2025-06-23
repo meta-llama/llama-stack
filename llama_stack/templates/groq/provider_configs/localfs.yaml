@@ -1,0 +1,4 @@
+kvstore:
+  type: sqlite
+  namespace: null
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/groq}/localfs_datasetio.db

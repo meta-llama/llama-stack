@@ -226,7 +226,8 @@ def get_distribution_template() -> DistributionTemplate:
 
     default_models = get_model_registry(available_models)
 
-    postgres_store = PostgresSqlStoreConfig.sample_run_config()
+    postgres_store_config = PostgresSqlStoreConfig.sample_run_config()
+    postgres_store = PostgresSqlStoreConfig(**postgres_store_config)
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",

@@ -43,7 +43,7 @@ providers:
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/groq}/agents_store.db
       responses_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/responses_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/groq}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -104,7 +104,7 @@ metadata_store:
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/groq}/registry.db
 inference_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/groq}/inference_store.db
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/groq}/inference_store.db
 models:
 - metadata: {}
   model_id: groq/llama3-8b-8192

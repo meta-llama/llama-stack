@@ -1,0 +1,7 @@
+model: ${env.INFERENCE_MODEL}
+checkpoint_dir: ${env.INFERENCE_CHECKPOINT_DIR:=null}
+quantization:
+  type: ${env.QUANTIZATION_TYPE:=bf16}
+model_parallel_size: ${env.MODEL_PARALLEL_SIZE:=0}
+max_batch_size: ${env.MAX_BATCH_SIZE:=1}
+max_seq_len: ${env.MAX_SEQ_LEN:=4096}

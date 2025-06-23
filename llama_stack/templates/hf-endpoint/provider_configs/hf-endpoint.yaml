@@ -1,0 +1,2 @@
+endpoint_name: ${env.INFERENCE_ENDPOINT_NAME}
+api_token: ${env.HF_API_TOKEN}

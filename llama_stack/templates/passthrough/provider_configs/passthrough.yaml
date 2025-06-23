@@ -1,0 +1,2 @@
+url: ${env.PASSTHROUGH_URL}
+api_key: ${env.PASSTHROUGH_API_KEY}

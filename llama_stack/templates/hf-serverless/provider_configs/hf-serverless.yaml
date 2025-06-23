@@ -1,0 +1,2 @@
+huggingface_repo: ${env.INFERENCE_MODEL}
+api_token: ${env.HF_API_TOKEN}

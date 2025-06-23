@@ -1,0 +1,7 @@
+persistence_store:
+  type: sqlite
+  namespace: null
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/remote-vllm}/agents_store.db
+responses_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/remote-vllm}/responses_store.db
