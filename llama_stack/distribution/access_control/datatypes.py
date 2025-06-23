@@ -5,9 +5,9 @@
 # the root directory of this source tree.
 
 from enum import Enum
+from typing import Self
 
 from pydantic import BaseModel, model_validator
-from typing_extensions import Self
 
 from .conditions import parse_conditions
 

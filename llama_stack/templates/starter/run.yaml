@@ -4,6 +4,7 @@ apis:
 - agents
 - datasetio
 - eval
+- files
 - inference
 - safety
 - scoring
@@ -75,6 +76,14 @@ providers:
       db: ${env.PGVECTOR_DB:}
       user: ${env.PGVECTOR_USER:}
       password: ${env.PGVECTOR_PASSWORD:}
+  files:
+  - provider_id: meta-reference-files
+    provider_type: inline::localfs
+    config:
+      storage_dir: ${env.FILES_STORAGE_DIR:~/.llama/distributions/starter/files}
+      metadata_store:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/files_metadata.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -721,6 +730,21 @@ models:
   model_id: gemini/gemini-1.5-pro
   provider_id: gemini
   provider_model_id: gemini/gemini-1.5-pro
+  model_type: llm
+- metadata: {}
+  model_id: gemini/gemini-2.0-flash
+  provider_id: gemini
+  provider_model_id: gemini/gemini-2.0-flash
+  model_type: llm
+- metadata: {}
+  model_id: gemini/gemini-2.5-flash
+  provider_id: gemini
+  provider_model_id: gemini/gemini-2.5-flash
+  model_type: llm
+- metadata: {}
+  model_id: gemini/gemini-2.5-pro
+  provider_id: gemini
+  provider_model_id: gemini/gemini-2.5-pro
   model_type: llm
 - metadata:
     embedding_dimension: 768

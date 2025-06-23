@@ -9,12 +9,12 @@ import time
 from abc import ABC, abstractmethod
 from asyncio import Lock
 from pathlib import Path
+from typing import Self
 from urllib.parse import parse_qs
 
 import httpx
 from jose import jwt
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing_extensions import Self
 
 from llama_stack.distribution.datatypes import AuthenticationConfig, AuthProviderType, User
 from llama_stack.log import get_logger
@@ -84,6 +84,7 @@ def get_attributes_from_claims(claims: dict[str, str], mapping: dict[str, str]) 
 class OAuth2JWKSConfig(BaseModel):
     # The JWKS URI for collecting public keys
     uri: str
+    token: str | None = Field(default=None, description="token to authorise access to jwks")
     key_recheck_period: int = Field(default=3600, description="The period to recheck the JWKS URI for key updates")
 
 
@@ -246,9 +247,12 @@ class OAuth2TokenAuthProvider(AuthProvider):
             if self.config.jwks is None:
                 raise ValueError("JWKS is not configured")
             if time.time() - self._jwks_at > self.config.jwks.key_recheck_period:
+                headers = {}
+                if self.config.jwks.token:
+                    headers["Authorization"] = f"Bearer {self.config.jwks.token}"
                 verify = self.config.tls_cafile.as_posix() if self.config.tls_cafile else self.config.verify_tls
                 async with httpx.AsyncClient(verify=verify) as client:
-                    res = await client.get(self.config.jwks.uri, timeout=5)
+                    res = await client.get(self.config.jwks.uri, timeout=5, headers=headers)
                     res.raise_for_status()
                     jwks_data = res.json()["keys"]
                     updated = {}

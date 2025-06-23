@@ -46,13 +46,13 @@ def client_with_empty_registry(client_with_models):
     clear_registry()
 
 
-def test_vector_db_retrieve(client_with_empty_registry, embedding_model_id):
+def test_vector_db_retrieve(client_with_empty_registry, embedding_model_id, embedding_dimension):
     # Register a memory bank first
     vector_db_id = "test_vector_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     # Retrieve the memory bank and validate its properties
@@ -63,12 +63,12 @@ def test_vector_db_retrieve(client_with_empty_registry, embedding_model_id):
     assert response.provider_resource_id == vector_db_id
 
 
-def test_vector_db_register(client_with_empty_registry, embedding_model_id):
+def test_vector_db_register(client_with_empty_registry, embedding_model_id, embedding_dimension):
     vector_db_id = "test_vector_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     vector_dbs_after_register = [vector_db.identifier for vector_db in client_with_empty_registry.vector_dbs.list()]
@@ -90,12 +90,12 @@ def test_vector_db_register(client_with_empty_registry, embedding_model_id):
         ("How does machine learning improve over time?", "doc2"),
     ],
 )
-def test_insert_chunks(client_with_empty_registry, embedding_model_id, sample_chunks, test_case):
+def test_insert_chunks(client_with_empty_registry, embedding_model_id, embedding_dimension, sample_chunks, test_case):
     vector_db_id = "test_vector_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     client_with_empty_registry.vector_io.insert(
@@ -122,19 +122,19 @@ def test_insert_chunks(client_with_empty_registry, embedding_model_id, sample_ch
     assert top_match.metadata["document_id"] == expected_doc_id, f"Query '{query}' should match {expected_doc_id}"
 
 
-def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, embedding_model_id):
+def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, embedding_model_id, embedding_dimension):
     vector_db_id = "test_precomputed_embeddings_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
-        embedding_dimension=384,
+        embedding_dimension=embedding_dimension,
     )
 
     chunks_with_embeddings = [
         Chunk(
             content="This is a test chunk with precomputed embedding.",
             metadata={"document_id": "doc1", "source": "precomputed"},
-            embedding=[0.1] * 384,
+            embedding=[0.1] * int(embedding_dimension),
         ),
     ]
 
@@ -147,6 +147,41 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="precomputed embedding test",
+    )
+
+    # Verify the top result is the expected document
+    assert response is not None
+    assert len(response.chunks) > 0
+    assert response.chunks[0].metadata["document_id"] == "doc1"
+    assert response.chunks[0].metadata["source"] == "precomputed"
+
+
+def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
+    client_with_empty_registry, embedding_model_id, embedding_dimension
+):
+    vector_db_id = "test_precomputed_embeddings_db"
+    client_with_empty_registry.vector_dbs.register(
+        vector_db_id=vector_db_id,
+        embedding_model=embedding_model_id,
+        embedding_dimension=embedding_dimension,
+    )
+
+    chunks_with_embeddings = [
+        Chunk(
+            content="duplicate",
+            metadata={"document_id": "doc1", "source": "precomputed"},
+            embedding=[0.1] * int(embedding_dimension),
+        ),
+    ]
+
+    client_with_empty_registry.vector_io.insert(
+        vector_db_id=vector_db_id,
+        chunks=chunks_with_embeddings,
+    )
+
+    response = client_with_empty_registry.vector_io.query(
+        vector_db_id=vector_db_id,
+        query="duplicate",
     )
 
     # Verify the top result is the expected document

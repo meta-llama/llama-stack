@@ -30,6 +30,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
+from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
@@ -144,7 +145,7 @@ async def shutdown(app):
                 await asyncio.wait_for(impl.shutdown(), timeout=5)
             else:
                 logger.warning("No shutdown method for %s", impl_name)
-        except (asyncio.TimeoutError, TimeoutError):
+        except TimeoutError:
             logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
         except (Exception, asyncio.CancelledError) as e:
             logger.exception("Failed to shutdown %s: %s", impl_name, {e})
@@ -230,7 +231,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                     return StreamingResponse(gen, media_type="text/event-stream")
                 else:
                     value = func(**kwargs)
-                    return await maybe_await(value)
+                    result = await maybe_await(value)
+                    if isinstance(result, PaginatedResponse) and result.url is None:
+                        result.url = route
+                    return result
             except Exception as e:
                 logger.exception(f"Error executing endpoint {route=} {method=}")
                 raise translate_exception(e) from e

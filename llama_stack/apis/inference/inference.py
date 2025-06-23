@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import sys
 from collections.abc import AsyncIterator
 from enum import Enum
 from typing import (
@@ -37,15 +36,7 @@ register_schema(ToolCall)
 register_schema(ToolParamDefinition)
 register_schema(ToolDefinition)
 
-# TODO: use enum.StrEnum when we drop support for python 3.10
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-
-    class StrEnum(str, Enum):
-        """Backport of StrEnum for Python 3.10 and below."""
-
-        pass
+from enum import StrEnum
 
 
 @json_schema_type
@@ -1038,6 +1029,8 @@ class InferenceProvider(Protocol):
         # vLLM-specific parameters
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        # for fill-in-the-middle type completion
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         """Generate an OpenAI-compatible completion for the given prompt using the specified model.
 
@@ -1058,6 +1051,7 @@ class InferenceProvider(Protocol):
         :param temperature: (Optional) The temperature to use.
         :param top_p: (Optional) The top p to use.
         :param user: (Optional) The user to use.
+        :param suffix: (Optional) The suffix that should be appended to the completion.
         :returns: An OpenAICompletion.
         """
         ...

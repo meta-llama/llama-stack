@@ -23,6 +23,8 @@ distribution_spec:
     - inline::basic
     - inline::llm-as-judge
     - inline::braintrust
+    files:
+    - inline::localfs
     post_training:
     - inline::huggingface
     tool_runtime:

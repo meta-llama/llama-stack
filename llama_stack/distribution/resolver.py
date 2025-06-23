@@ -335,7 +335,7 @@ async def instantiate_provider(
         method = "get_auto_router_impl"
 
         config = None
-        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps, run_config]
+        args = [provider_spec.api, deps[provider_spec.routing_table_api], deps, run_config, policy]
     elif isinstance(provider_spec, RoutingTableProviderSpec):
         method = "get_routing_table_impl"
 
@@ -394,9 +394,13 @@ def check_protocol_compliance(obj: Any, protocol: Any) -> None:
                     logger.error(f"Method {name} incompatible proto: {proto_params} vs. obj: {obj_params}")
                     missing_methods.append((name, "signature_mismatch"))
                 else:
-                    # Check if the method is actually implemented in the class
-                    method_owner = next((cls for cls in mro if name in cls.__dict__), None)
-                    if method_owner is None or method_owner.__name__ == protocol.__name__:
+                    # Check if the method has a concrete implementation (not just a protocol stub)
+                    # Find all classes in MRO that define this method
+                    method_owners = [cls for cls in mro if name in cls.__dict__]
+
+                    # Allow methods from mixins/parents, only reject if ONLY the protocol defines it
+                    if len(method_owners) == 1 and method_owners[0].__name__ == protocol.__name__:
+                        # Only reject if the method is ONLY defined in the protocol itself (abstract stub)
                         missing_methods.append((name, "not_actually_implemented"))
 
     if missing_methods:

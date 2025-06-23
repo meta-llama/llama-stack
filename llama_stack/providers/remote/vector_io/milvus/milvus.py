@@ -16,7 +16,22 @@ from pymilvus import MilvusClient
 
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.apis.vector_io import (
+    Chunk,
+    QueryChunksResponse,
+    SearchRankingOptions,
+    VectorIO,
+    VectorStoreDeleteResponse,
+    VectorStoreListResponse,
+    VectorStoreObject,
+    VectorStoreSearchResponsePage,
+)
+from llama_stack.apis.vector_io.vector_io import (
+    VectorStoreChunkingStrategy,
+    VectorStoreFileContentsResponse,
+    VectorStoreFileObject,
+    VectorStoreListFilesResponse,
+)
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -93,6 +108,17 @@ class MilvusIndex(EmbeddingIndex):
         score_threshold: float,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Milvus")
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in Milvus")
 
 
 class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
@@ -176,6 +202,105 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
         return await index.query_chunks(query, params)
+
+    async def openai_create_vector_store(
+        self,
+        name: str,
+        file_ids: list[str] | None = None,
+        expires_after: dict[str, Any] | None = None,
+        chunking_strategy: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+        embedding_model: str | None = None,
+        embedding_dimension: int | None = 384,
+        provider_id: str | None = None,
+        provider_vector_db_id: str | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_list_vector_stores(
+        self,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+    ) -> VectorStoreListResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_retrieve_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_update_vector_store(
+        self,
+        vector_store_id: str,
+        name: str | None = None,
+        expires_after: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> VectorStoreObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_delete_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreDeleteResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_search_vector_store(
+        self,
+        vector_store_id: str,
+        query: str | list[str],
+        filters: dict[str, Any] | None = None,
+        max_num_results: int | None = 10,
+        ranking_options: SearchRankingOptions | None = None,
+        rewrite_query: bool | None = False,
+    ) -> VectorStoreSearchResponsePage:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreListFilesResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
+
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
 
 
 def generate_chunk_id(document_id: str, chunk_text: str) -> str:

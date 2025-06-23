@@ -6,6 +6,7 @@
 
 import asyncio
 import hashlib
+import json
 import logging
 import sqlite3
 import struct
@@ -16,18 +17,30 @@ import numpy as np
 import sqlite_vec
 from numpy.typing import NDArray
 
+from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
+from llama_stack.apis.vector_io import (
+    Chunk,
+    QueryChunksResponse,
+    VectorIO,
+)
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
-from llama_stack.providers.utils.memory.vector_store import EmbeddingIndex, VectorDBWithIndex
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
+from llama_stack.providers.utils.memory.vector_store import (
+    RERANKER_TYPE_RRF,
+    RERANKER_TYPE_WEIGHTED,
+    EmbeddingIndex,
+    VectorDBWithIndex,
+)
 
 logger = logging.getLogger(__name__)
 
 # Specifying search mode is dependent on the VectorIO provider.
 VECTOR_SEARCH = "vector"
 KEYWORD_SEARCH = "keyword"
-SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH}
+HYBRID_SEARCH = "hybrid"
+SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH, HYBRID_SEARCH}
 
 
 def serialize_vector(vector: list[float]) -> bytes:
@@ -42,6 +55,59 @@ def _create_sqlite_connection(db_path):
     sqlite_vec.load(connection)
     connection.enable_load_extension(False)
     return connection
+
+
+def _normalize_scores(scores: dict[str, float]) -> dict[str, float]:
+    """Normalize scores to [0,1] range using min-max normalization."""
+    if not scores:
+        return {}
+    min_score = min(scores.values())
+    max_score = max(scores.values())
+    score_range = max_score - min_score
+    if score_range > 0:
+        return {doc_id: (score - min_score) / score_range for doc_id, score in scores.items()}
+    return {doc_id: 1.0 for doc_id in scores}
+
+
+def _weighted_rerank(
+    vector_scores: dict[str, float],
+    keyword_scores: dict[str, float],
+    alpha: float = 0.5,
+) -> dict[str, float]:
+    """ReRanker that uses weighted average of scores."""
+    all_ids = set(vector_scores.keys()) | set(keyword_scores.keys())
+    normalized_vector_scores = _normalize_scores(vector_scores)
+    normalized_keyword_scores = _normalize_scores(keyword_scores)
+
+    return {
+        doc_id: (alpha * normalized_keyword_scores.get(doc_id, 0.0))
+        + ((1 - alpha) * normalized_vector_scores.get(doc_id, 0.0))
+        for doc_id in all_ids
+    }
+
+
+def _rrf_rerank(
+    vector_scores: dict[str, float],
+    keyword_scores: dict[str, float],
+    impact_factor: float = 60.0,
+) -> dict[str, float]:
+    """ReRanker that uses Reciprocal Rank Fusion."""
+    # Convert scores to ranks
+    vector_ranks = {
+        doc_id: i + 1 for i, (doc_id, _) in enumerate(sorted(vector_scores.items(), key=lambda x: x[1], reverse=True))
+    }
+    keyword_ranks = {
+        doc_id: i + 1 for i, (doc_id, _) in enumerate(sorted(keyword_scores.items(), key=lambda x: x[1], reverse=True))
+    }
+
+    all_ids = set(vector_scores.keys()) | set(keyword_scores.keys())
+    rrf_scores = {}
+    for doc_id in all_ids:
+        vector_rank = vector_ranks.get(doc_id, float("inf"))
+        keyword_rank = keyword_ranks.get(doc_id, float("inf"))
+        # RRF formula: score = 1/(k + r) where k is impact_factor and r is the rank
+        rrf_scores[doc_id] = (1.0 / (impact_factor + vector_rank)) + (1.0 / (impact_factor + keyword_rank))
+    return rrf_scores
 
 
 class SQLiteVecIndex(EmbeddingIndex):
@@ -248,8 +314,6 @@ class SQLiteVecIndex(EmbeddingIndex):
         """
         Performs keyword-based search using SQLite FTS5 for relevance-ranked full-text search.
         """
-        if query_string is None:
-            raise ValueError("query_string is required for keyword search.")
 
         def _execute_query():
             connection = _create_sqlite_connection(self.db_path)
@@ -287,18 +351,95 @@ class SQLiteVecIndex(EmbeddingIndex):
             scores.append(score)
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str = RERANKER_TYPE_RRF,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        """
+        Hybrid search using a configurable re-ranking strategy.
 
-class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+        Args:
+            embedding: The query embedding vector
+            query_string: The text query for keyword search
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+            reranker_type: Type of reranker to use ("rrf" or "weighted")
+            reranker_params: Parameters for the reranker
+
+        Returns:
+            QueryChunksResponse with combined results
+        """
+        if reranker_params is None:
+            reranker_params = {}
+
+        # Get results from both search methods
+        vector_response = await self.query_vector(embedding, k, score_threshold)
+        keyword_response = await self.query_keyword(query_string, k, score_threshold)
+
+        # Convert responses to score dictionaries using generate_chunk_id
+        vector_scores = {
+            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
+        }
+        keyword_scores = {
+            generate_chunk_id(chunk.metadata["document_id"], str(chunk.content)): score
+            for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
+        }
+
+        # Combine scores using the specified reranker
+        if reranker_type == RERANKER_TYPE_WEIGHTED:
+            alpha = reranker_params.get("alpha", 0.5)
+            combined_scores = _weighted_rerank(vector_scores, keyword_scores, alpha)
+        else:
+            # Default to RRF for None, RRF, or any unknown types
+            impact_factor = reranker_params.get("impact_factor", 60.0)
+            combined_scores = _rrf_rerank(vector_scores, keyword_scores, impact_factor)
+
+        # Sort by combined score and get top k results
+        sorted_items = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
+        top_k_items = sorted_items[:k]
+
+        # Filter by score threshold
+        filtered_items = [(doc_id, score) for doc_id, score in top_k_items if score >= score_threshold]
+
+        # Create a map of chunk_id to chunk for both responses
+        chunk_map = {}
+        for c in vector_response.chunks:
+            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_map[chunk_id] = c
+        for c in keyword_response.chunks:
+            chunk_id = generate_chunk_id(c.metadata["document_id"], str(c.content))
+            chunk_map[chunk_id] = c
+
+        # Use the map to look up chunks by their IDs
+        chunks = []
+        scores = []
+        for doc_id, score in filtered_items:
+            if doc_id in chunk_map:
+                chunks.append(chunk_map[doc_id])
+                scores.append(score)
+
+        return QueryChunksResponse(chunks=chunks, scores=scores)
+
+
+class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     """
     A VectorIO implementation using SQLite + sqlite_vec.
     This class handles vector database registration (with metadata stored in a table named `vector_dbs`)
     and creates a cache of VectorDBWithIndex instances (each wrapping a SQLiteVecIndex).
     """
 
-    def __init__(self, config, inference_api: Inference) -> None:
+    def __init__(self, config, inference_api: Inference, files_api: Files | None) -> None:
         self.config = config
         self.inference_api = inference_api
+        self.files_api = files_api
         self.cache: dict[str, VectorDBWithIndex] = {}
+        self.openai_vector_stores: dict[str, dict[str, Any]] = {}
 
     async def initialize(self) -> None:
         def _setup_connection():
@@ -313,23 +454,54 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
                         metadata TEXT
                     );
                 """)
+                # Create a table to persist OpenAI vector stores.
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS openai_vector_stores (
+                        id TEXT PRIMARY KEY,
+                        metadata TEXT
+                    );
+                """)
+                # Create a table to persist OpenAI vector store files.
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files (
+                        store_id TEXT,
+                        file_id TEXT,
+                        metadata TEXT,
+                        PRIMARY KEY (store_id, file_id)
+                    );
+                """)
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files_contents (
+                        store_id TEXT,
+                        file_id TEXT,
+                        contents TEXT,
+                        PRIMARY KEY (store_id, file_id)
+                    );
+                """)
                 connection.commit()
                 # Load any existing vector DB registrations.
                 cur.execute("SELECT metadata FROM vector_dbs")
-                rows = cur.fetchall()
-                return rows
+                vector_db_rows = cur.fetchall()
+                return vector_db_rows
             finally:
                 cur.close()
                 connection.close()
 
-        rows = await asyncio.to_thread(_setup_connection)
-        for row in rows:
+        vector_db_rows = await asyncio.to_thread(_setup_connection)
+
+        # Load existing vector DBs
+        for row in vector_db_rows:
             vector_db_data = row[0]
             vector_db = VectorDB.model_validate_json(vector_db_data)
             index = await SQLiteVecIndex.create(
-                vector_db.embedding_dimension, self.config.db_path, vector_db.identifier
+                vector_db.embedding_dimension,
+                self.config.db_path,
+                vector_db.identifier,
             )
             self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
+
+        # Load existing OpenAI vector stores using the mixin method
+        self.openai_vector_stores = await self._load_openai_vector_stores()
 
     async def shutdown(self) -> None:
         # nothing to do since we don't maintain a persistent connection
@@ -350,7 +522,11 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
                 connection.close()
 
         await asyncio.to_thread(_register_db)
-        index = await SQLiteVecIndex.create(vector_db.embedding_dimension, self.config.db_path, vector_db.identifier)
+        index = await SQLiteVecIndex.create(
+            vector_db.embedding_dimension,
+            self.config.db_path,
+            vector_db.identifier,
+        )
         self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
     async def list_vector_dbs(self) -> list[VectorDB]:
@@ -374,6 +550,199 @@ class SQLiteVecVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
                 connection.close()
 
         await asyncio.to_thread(_delete_vector_db_from_registry)
+
+    # OpenAI Vector Store Mixin abstract method implementations
+    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Save vector store metadata to SQLite database."""
+
+        def _store():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "INSERT OR REPLACE INTO openai_vector_stores (id, metadata) VALUES (?, ?)",
+                    (store_id, json.dumps(store_info)),
+                )
+                connection.commit()
+            except Exception as e:
+                logger.error(f"Error saving openai vector store {store_id}: {e}")
+                raise
+            finally:
+                cur.close()
+                connection.close()
+
+        try:
+            await asyncio.to_thread(_store)
+        except Exception as e:
+            logger.error(f"Error saving openai vector store {store_id}: {e}")
+            raise
+
+    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
+        """Load all vector store metadata from SQLite database."""
+
+        def _load():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute("SELECT metadata FROM openai_vector_stores")
+                rows = cur.fetchall()
+                return rows
+            finally:
+                cur.close()
+                connection.close()
+
+        rows = await asyncio.to_thread(_load)
+        stores = {}
+        for row in rows:
+            store_data = row[0]
+            store_info = json.loads(store_data)
+            stores[store_info["id"]] = store_info
+        return stores
+
+    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Update vector store metadata in SQLite database."""
+
+        def _update():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "UPDATE openai_vector_stores SET metadata = ? WHERE id = ?",
+                    (json.dumps(store_info), store_id),
+                )
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_update)
+
+    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
+        """Delete vector store metadata from SQLite database."""
+
+        def _delete():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute("DELETE FROM openai_vector_stores WHERE id = ?", (store_id,))
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_delete)
+
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to SQLite database."""
+
+        def _store():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "INSERT OR REPLACE INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (?, ?, ?)",
+                    (store_id, file_id, json.dumps(file_info)),
+                )
+                cur.execute(
+                    "INSERT OR REPLACE INTO openai_vector_store_files_contents (store_id, file_id, contents) VALUES (?, ?, ?)",
+                    (store_id, file_id, json.dumps(file_contents)),
+                )
+                connection.commit()
+            except Exception as e:
+                logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
+                raise
+            finally:
+                cur.close()
+                connection.close()
+
+        try:
+            await asyncio.to_thread(_store)
+        except Exception as e:
+            logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
+            raise
+
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from SQLite database."""
+
+        def _load():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "SELECT metadata FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    return None
+                (metadata,) = row
+                return metadata
+            finally:
+                cur.close()
+                connection.close()
+
+        stored_data = await asyncio.to_thread(_load)
+        return json.loads(stored_data) if stored_data else {}
+
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from SQLite database."""
+
+        def _load():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "SELECT contents FROM openai_vector_store_files_contents WHERE store_id = ? AND file_id = ?",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                if row is None:
+                    return None
+                (contents,) = row
+                return contents
+            finally:
+                cur.close()
+                connection.close()
+
+        stored_contents = await asyncio.to_thread(_load)
+        return json.loads(stored_contents) if stored_contents else []
+
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in SQLite database."""
+
+        def _update():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "UPDATE openai_vector_store_files SET metadata = ? WHERE store_id = ? AND file_id = ?",
+                    (json.dumps(file_info), store_id, file_id),
+                )
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_update)
+
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from SQLite database."""
+
+        def _delete():
+            connection = _create_sqlite_connection(self.config.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute(
+                    "DELETE FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?", (store_id, file_id)
+                )
+                connection.commit()
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_delete)
 
     async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
         if vector_db_id not in self.cache:

@@ -1,0 +1,45 @@
+name: Python Package Build Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@445689ea25e0de0a23313031f5fe577c74ae45a1 # v6.3.0
+      with:
+        python-version: ${{ matrix.python-version }}
+        activate-environment: true
+        version: 0.7.6
+
+    - name: Build Llama Stack package
+      run: |
+        uv build
+
+    - name: Install Llama Stack package
+      run: |
+        uv pip install dist/*.whl
+
+    - name: Verify Llama Stack package
+      run: |
+        uv pip list
+        uv pip show llama-stack
+        command -v llama
+        llama model prompt-format -m Llama3.2-90B-Vision-Instruct
+        llama model list
+        llama stack list-apis
+        llama stack list-providers inference

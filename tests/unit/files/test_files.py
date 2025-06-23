@@ -328,7 +328,24 @@ class TestOpenAIFilesAPI:
         assert uploaded_file.filename == "uploaded_file"  # Default filename
 
     @pytest.mark.asyncio
-    async def test_after_pagination_not_implemented(self, files_provider):
-        """Test that 'after' pagination raises NotImplementedError."""
-        with pytest.raises(NotImplementedError, match="After pagination not yet implemented"):
-            await files_provider.openai_list_files(after="file-some-id")
+    async def test_after_pagination_works(self, files_provider, sample_text_file):
+        """Test that 'after' pagination works correctly."""
+        # Upload multiple files to test pagination
+        uploaded_files = []
+        for _ in range(5):
+            file = await files_provider.openai_upload_file(file=sample_text_file, purpose=OpenAIFilePurpose.ASSISTANTS)
+            uploaded_files.append(file)
+
+        # Get first page without 'after' parameter
+        first_page = await files_provider.openai_list_files(limit=2, order=Order.desc)
+        assert len(first_page.data) == 2
+        assert first_page.has_more is True
+
+        # Get second page using 'after' parameter
+        second_page = await files_provider.openai_list_files(after=first_page.data[-1].id, limit=2, order=Order.desc)
+        assert len(second_page.data) <= 2
+
+        # Verify no overlap between pages
+        first_page_ids = {f.id for f in first_page.data}
+        second_page_ids = {f.id for f in second_page.data}
+        assert first_page_ids.isdisjoint(second_page_ids)

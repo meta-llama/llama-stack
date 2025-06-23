@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.9"
+version = "0.2.12"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { "text" = "MIT" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -22,13 +22,13 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
-    "fastapi",
+    "fastapi>=0.115.0,<1.0",
     "fire",
     "httpx",
-    "huggingface-hub",
+    "huggingface-hub>=0.30.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.9",
+    "llama-stack-client>=0.2.12",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -49,7 +49,7 @@ dependencies = [
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.9",
+    "llama-stack-client>=0.2.12",
     "streamlit-option-menu",
 ]
 
@@ -84,6 +84,7 @@ unit = [
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
     "blobfile",
+    "faiss-cpu"
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment

@@ -9,6 +9,7 @@ from typing import Annotated, Any, Literal
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
+from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
 # NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
@@ -82,6 +83,15 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
 
 
 @json_schema_type
+class OpenAIResponseOutputMessageFileSearchToolCall(BaseModel):
+    id: str
+    queries: list[str]
+    status: str
+    type: Literal["file_search_call"] = "file_search_call"
+    results: list[dict[str, Any]] | None = None
+
+
+@json_schema_type
 class OpenAIResponseOutputMessageFunctionToolCall(BaseModel):
     call_id: str
     name: str
@@ -119,6 +129,7 @@ class OpenAIResponseOutputMessageMCPListTools(BaseModel):
 OpenAIResponseOutput = Annotated[
     OpenAIResponseMessage
     | OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFileSearchToolCall
     | OpenAIResponseOutputMessageFunctionToolCall
     | OpenAIResponseOutputMessageMCPCall
     | OpenAIResponseOutputMessageMCPListTools,
@@ -362,6 +373,7 @@ class OpenAIResponseInputFunctionToolCallOutput(BaseModel):
 OpenAIResponseInput = Annotated[
     # Responses API allows output messages to be passed in as input
     OpenAIResponseOutputMessageWebSearchToolCall
+    | OpenAIResponseOutputMessageFileSearchToolCall
     | OpenAIResponseOutputMessageFunctionToolCall
     | OpenAIResponseInputFunctionToolCallOutput
     |
@@ -389,17 +401,13 @@ class OpenAIResponseInputToolFunction(BaseModel):
     strict: bool | None = None
 
 
-class FileSearchRankingOptions(BaseModel):
-    ranker: str | None = None
-    score_threshold: float | None = Field(default=0.0, ge=0.0, le=1.0)
-
-
 @json_schema_type
 class OpenAIResponseInputToolFileSearch(BaseModel):
     type: Literal["file_search"] = "file_search"
-    vector_store_id: list[str]
+    vector_store_ids: list[str]
+    filters: dict[str, Any] | None = None
+    max_num_results: int | None = Field(default=10, ge=1, le=50)
     ranking_options: FileSearchRankingOptions | None = None
-    # TODO: add filters
 
 
 class ApprovalFilter(BaseModel):

@@ -5,8 +5,7 @@
 # the root directory of this source tree.
 
 # TODO: use enum.StrEnum when we drop support for python 3.10
-import sys
-from enum import Enum
+from enum import StrEnum
 from typing import (
     Annotated,
     Any,
@@ -20,15 +19,6 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.common.type_system import ParamType
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
-
-if sys.version_info >= (3, 11):
-    from enum import StrEnum
-else:
-
-    class StrEnum(str, Enum):
-        """Backport of StrEnum for Python 3.10 and below."""
-
-        pass
 
 
 # Perhaps more structure can be imposed on these functions. Maybe they could be associated

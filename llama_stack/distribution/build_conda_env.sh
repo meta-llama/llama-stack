@@ -49,7 +49,7 @@ ensure_conda_env_python310() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
-  local python_version="3.10"
+  local python_version="3.11"
 
   # Check if conda command is available
   if ! is_command_available conda; then

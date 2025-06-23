@@ -7,7 +7,7 @@
 import logging
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -537,7 +537,7 @@ class LoraFinetuningSingleDevice:
             checkpoint_path = await self.save_checkpoint(epoch=curr_epoch)
             checkpoint = Checkpoint(
                 identifier=f"{self.model_id}-sft-{curr_epoch}",
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(UTC),
                 epoch=curr_epoch,
                 post_training_job_id=self.job_uuid,
                 path=checkpoint_path,

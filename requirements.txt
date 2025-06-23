@@ -14,8 +14,6 @@ anyio==4.8.0
     #   llama-stack-client
     #   openai
     #   starlette
-async-timeout==5.0.1 ; python_full_version < '3.11'
-    # via aiohttp
 attrs==25.1.0
     # via
     #   aiohttp
@@ -40,8 +38,6 @@ distro==1.9.0
     #   openai
 ecdsa==0.19.1
     # via python-jose
-exceptiongroup==1.2.2 ; python_full_version < '3.11'
-    # via anyio
 fastapi==0.115.8
     # via llama-stack
 filelock==3.17.0
@@ -58,6 +54,8 @@ h11==0.16.0
     # via
     #   httpcore
     #   llama-stack
+hf-xet==1.1.5 ; platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+    # via huggingface-hub
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
@@ -65,7 +63,7 @@ httpx==0.28.1
     #   llama-stack
     #   llama-stack-client
     #   openai
-huggingface-hub==0.29.0
+huggingface-hub==0.33.0
     # via llama-stack
 idna==3.10
     # via
@@ -81,7 +79,7 @@ jsonschema==4.23.0
     # via llama-stack
 jsonschema-specifications==2024.10.1
     # via jsonschema
-llama-stack-client==0.2.9
+llama-stack-client==0.2.12
     # via llama-stack
 markdown-it-py==3.0.0
     # via rich
@@ -147,7 +145,7 @@ referencing==0.36.2
     #   jsonschema-specifications
 regex==2024.11.6
     # via tiktoken
-requests==2.32.3
+requests==2.32.4
     # via
     #   huggingface-hub
     #   llama-stack
@@ -195,12 +193,10 @@ typing-extensions==4.12.2
     #   fastapi
     #   huggingface-hub
     #   llama-stack-client
-    #   multidict
     #   openai
     #   pydantic
     #   pydantic-core
     #   referencing
-    #   rich
 tzdata==2025.1
     # via pandas
 urllib3==2.3.0

@@ -38,7 +38,9 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -56,7 +58,11 @@ from llama_stack.apis.inference.inference import (
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
-from llama_stack.providers.datatypes import ModelsProtocolPrivate
+from llama_stack.providers.datatypes import (
+    HealthResponse,
+    HealthStatus,
+    ModelsProtocolPrivate,
+)
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
     build_hf_repo_model_entry,
@@ -298,6 +304,22 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     async def unregister_model(self, model_id: str) -> None:
         pass
 
+    async def health(self) -> HealthResponse:
+        """
+        Performs a health check by verifying connectivity to the remote vLLM server.
+        This method is used by the Provider API to verify
+        that the service is running correctly.
+        Returns:
+
+            HealthResponse: A dictionary containing the health status.
+        """
+        try:
+            client = self._create_client() if self.client is None else self.client
+            _ = [m async for m in client.models.list()]  # Ensure the client is initialized
+            return HealthResponse(status=HealthStatus.OK)
+        except Exception as e:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
+
     async def _get_model(self, model_id: str) -> Model:
         if not self.model_store:
             raise ValueError("Model store not set")
@@ -516,7 +538,39 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         dimensions: int | None = None,
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
-        raise NotImplementedError()
+        self._lazy_initialize_client()
+        assert self.client is not None
+        model_obj = await self._get_model(model)
+        assert model_obj.model_type == ModelType.embedding
+
+        # Convert input to list if it's a string
+        input_list = [input] if isinstance(input, str) else input
+
+        # Call vLLM embeddings endpoint with encoding_format
+        response = await self.client.embeddings.create(
+            model=model_obj.provider_resource_id,
+            input=input_list,
+            dimensions=dimensions,
+            encoding_format=encoding_format,
+        )
+
+        # Convert response to OpenAI format
+        data = [
+            OpenAIEmbeddingData(
+                embedding=embedding_data.embedding,
+                index=i,
+            )
+            for i, embedding_data in enumerate(response.data)
+        ]
+
+        # Not returning actual token usage since vLLM doesn't provide it
+        usage = OpenAIEmbeddingUsage(prompt_tokens=-1, total_tokens=-1)
+
+        return OpenAIEmbeddingsResponse(
+            data=data,
+            model=model_obj.provider_resource_id,
+            usage=usage,
+        )
 
     async def openai_completion(
         self,
@@ -539,6 +593,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         user: str | None = None,
         guided_choice: list[str] | None = None,
         prompt_logprobs: int | None = None,
+        suffix: str | None = None,
     ) -> OpenAICompletion:
         self._lazy_initialize_client()
         model_obj = await self._get_model(model)

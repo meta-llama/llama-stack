@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import json
 import time
 import uuid
@@ -24,6 +25,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
+    OpenAIResponseInputToolFileSearch,
     OpenAIResponseInputToolMCP,
     OpenAIResponseMessage,
     OpenAIResponseObject,
@@ -34,12 +36,14 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutput,
     OpenAIResponseOutputMessageContent,
     OpenAIResponseOutputMessageContentOutputText,
+    OpenAIResponseOutputMessageFileSearchToolCall,
     OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
 )
+from llama_stack.apis.common.content_types import TextContentItem
 from llama_stack.apis.inference.inference import (
     Inference,
     OpenAIAssistantMessageParam,
@@ -62,7 +66,8 @@ from llama_stack.apis.inference.inference import (
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
 )
-from llama_stack.apis.tools.tools import ToolGroups, ToolRuntime
+from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
+from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
@@ -198,7 +203,8 @@ class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
 class ChatCompletionContext(BaseModel):
     model: str
     messages: list[OpenAIMessageParam]
-    tools: list[ChatCompletionToolParam] | None = None
+    response_tools: list[OpenAIResponseInputTool] | None = None
+    chat_tools: list[ChatCompletionToolParam] | None = None
     mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP]
     temperature: float | None
     response_format: OpenAIResponseFormatParam
@@ -211,11 +217,13 @@ class OpenAIResponsesImpl:
         tool_groups_api: ToolGroups,
         tool_runtime_api: ToolRuntime,
         responses_store: ResponsesStore,
+        vector_io_api: VectorIO,  # VectorIO
     ):
         self.inference_api = inference_api
         self.tool_groups_api = tool_groups_api
         self.tool_runtime_api = tool_runtime_api
         self.responses_store = responses_store
+        self.vector_io_api = vector_io_api
 
     async def _prepend_previous_response(
         self, input: str | list[OpenAIResponseInput], previous_response_id: str | None = None
@@ -388,7 +396,8 @@ class OpenAIResponsesImpl:
         ctx = ChatCompletionContext(
             model=model,
             messages=messages,
-            tools=chat_tools,
+            response_tools=tools,
+            chat_tools=chat_tools,
             mcp_tool_to_server=mcp_tool_to_server,
             temperature=temperature,
             response_format=response_format,
@@ -417,7 +426,7 @@ class OpenAIResponsesImpl:
             completion_result = await self.inference_api.openai_chat_completion(
                 model=ctx.model,
                 messages=messages,
-                tools=ctx.tools,
+                tools=ctx.chat_tools,
                 stream=True,
                 temperature=ctx.temperature,
                 response_format=ctx.response_format,
@@ -606,6 +615,12 @@ class OpenAIResponsesImpl:
                 if not tool:
                     raise ValueError(f"Tool {tool_name} not found")
                 chat_tools.append(make_openai_tool(tool_name, tool))
+            elif input_tool.type == "file_search":
+                tool_name = "knowledge_search"
+                tool = await self.tool_groups_api.get_tool(tool_name)
+                if not tool:
+                    raise ValueError(f"Tool {tool_name} not found")
+                chat_tools.append(make_openai_tool(tool_name, tool))
             elif input_tool.type == "mcp":
                 always_allowed = None
                 never_allowed = None
@@ -656,6 +671,71 @@ class OpenAIResponsesImpl:
                 raise ValueError(f"Llama Stack OpenAI Responses does not yet support tool type: {input_tool.type}")
         return chat_tools, mcp_tool_to_server, mcp_list_message
 
+    async def _execute_knowledge_search_via_vector_store(
+        self,
+        query: str,
+        response_file_search_tool: OpenAIResponseInputToolFileSearch,
+    ) -> ToolInvocationResult:
+        """Execute knowledge search using vector_stores.search API with filters support."""
+        search_results = []
+
+        # Create search tasks for all vector stores
+        async def search_single_store(vector_store_id):
+            try:
+                search_response = await self.vector_io_api.openai_search_vector_store(
+                    vector_store_id=vector_store_id,
+                    query=query,
+                    filters=response_file_search_tool.filters,
+                    max_num_results=response_file_search_tool.max_num_results,
+                    ranking_options=response_file_search_tool.ranking_options,
+                    rewrite_query=False,
+                )
+                return search_response.data
+            except Exception as e:
+                logger.warning(f"Failed to search vector store {vector_store_id}: {e}")
+                return []
+
+        # Run all searches in parallel using gather
+        search_tasks = [search_single_store(vid) for vid in response_file_search_tool.vector_store_ids]
+        all_results = await asyncio.gather(*search_tasks)
+
+        # Flatten results
+        for results in all_results:
+            search_results.extend(results)
+
+        # Convert search results to tool result format matching memory.py
+        # Format the results as interleaved content similar to memory.py
+        content_items = []
+        content_items.append(
+            TextContentItem(
+                text=f"knowledge_search tool found {len(search_results)} chunks:\nBEGIN of knowledge_search tool results.\n"
+            )
+        )
+
+        for i, result_item in enumerate(search_results):
+            chunk_text = result_item.content[0].text if result_item.content else ""
+            metadata_text = f"document_id: {result_item.file_id}, score: {result_item.score}"
+            if result_item.attributes:
+                metadata_text += f", attributes: {result_item.attributes}"
+            text_content = f"[{i + 1}] {metadata_text}\n{chunk_text}\n"
+            content_items.append(TextContentItem(text=text_content))
+
+        content_items.append(TextContentItem(text="END of knowledge_search tool results.\n"))
+        content_items.append(
+            TextContentItem(
+                text=f'The above results were retrieved to help answer the user\'s query: "{query}". Use them as supporting information only in answering this query.\n',
+            )
+        )
+
+        return ToolInvocationResult(
+            content=content_items,
+            metadata={
+                "document_ids": [r.file_id for r in search_results],
+                "chunks": [r.content[0].text if r.content else "" for r in search_results],
+                "scores": [r.score for r in search_results],
+            },
+        )
+
     async def _execute_tool_call(
         self,
         tool_call: OpenAIChatCompletionToolCall,
@@ -667,6 +747,7 @@ class OpenAIResponsesImpl:
 
         tool_call_id = tool_call.id
         function = tool_call.function
+        tool_kwargs = json.loads(function.arguments) if function.arguments else {}
 
         if not function or not tool_call_id or not function.name:
             return None, None
@@ -680,12 +761,24 @@ class OpenAIResponsesImpl:
                     endpoint=mcp_tool.server_url,
                     headers=mcp_tool.headers or {},
                     tool_name=function.name,
-                    kwargs=json.loads(function.arguments) if function.arguments else {},
+                    kwargs=tool_kwargs,
                 )
+            elif function.name == "knowledge_search":
+                response_file_search_tool = next(
+                    (t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)), None
+                )
+                if response_file_search_tool:
+                    # Use vector_stores.search API instead of knowledge_search tool
+                    # to support filters and ranking_options
+                    query = tool_kwargs.get("query", "")
+                    result = await self._execute_knowledge_search_via_vector_store(
+                        query=query,
+                        response_file_search_tool=response_file_search_tool,
+                    )
             else:
                 result = await self.tool_runtime_api.invoke_tool(
                     tool_name=function.name,
-                    kwargs=json.loads(function.arguments) if function.arguments else {},
+                    kwargs=tool_kwargs,
                 )
         except Exception as e:
             error_exc = e
@@ -711,6 +804,27 @@ class OpenAIResponsesImpl:
                     id=tool_call_id,
                     status="completed",
                 )
+                if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
+                    message.status = "failed"
+            elif function.name == "knowledge_search":
+                message = OpenAIResponseOutputMessageFileSearchToolCall(
+                    id=tool_call_id,
+                    queries=[tool_kwargs.get("query", "")],
+                    status="completed",
+                )
+                if "document_ids" in result.metadata:
+                    message.results = []
+                    for i, doc_id in enumerate(result.metadata["document_ids"]):
+                        text = result.metadata["chunks"][i] if "chunks" in result.metadata else None
+                        score = result.metadata["scores"][i] if "scores" in result.metadata else None
+                        message.results.append(
+                            {
+                                "file_id": doc_id,
+                                "filename": doc_id,
+                                "text": text,
+                                "score": score,
+                            }
+                        )
                 if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
                     message.status = "failed"
             else:

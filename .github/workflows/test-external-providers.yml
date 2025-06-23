@@ -45,20 +45,22 @@ jobs:
 
       - name: Build distro from config file
         run: |
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config tests/external-provider/llama-stack-provider-ollama/custom-distro.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. llama stack build --config tests/external-provider/llama-stack-provider-ollama/custom-distro.yaml
 
       - name: Start Llama Stack server in background
         if: ${{ matrix.image-type }} == 'venv'
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
         run: |
-          uv run pip list
-          nohup uv run --active llama stack run tests/external-provider/llama-stack-provider-ollama/run.yaml --image-type ${{ matrix.image-type }} > server.log 2>&1 &
+          # Use the virtual environment created by the build step (name comes from build config)
+          source ci-test/bin/activate
+          uv pip list
+          nohup llama stack run tests/external-provider/llama-stack-provider-ollama/run.yaml --image-type ${{ matrix.image-type }} > server.log 2>&1 &
 
       - name: Wait for Llama Stack server to be ready
         run: |
           for i in {1..30}; do
-            if ! grep -q "remote::custom_ollama from /home/runner/.llama/providers.d/remote/inference/custom_ollama.yaml" server.log; then
+            if ! grep -q "Successfully loaded external provider remote::custom_ollama" server.log; then
               echo "Waiting for Llama Stack server to load the provider..."
               sleep 1
             else

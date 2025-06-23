@@ -112,6 +112,14 @@ repos:
         require_serial: true
         always_run: true
         files: ^\.github/workflows/.*\.ya?ml$
+      - id: check-init-py
+        name: Check for missing __init__.py files
+        entry: ./scripts/check-init-py.sh
+        language: system
+        pass_filenames: false
+        require_serial: true
+        always_run: true
+        files: ^llama_stack/.*$
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

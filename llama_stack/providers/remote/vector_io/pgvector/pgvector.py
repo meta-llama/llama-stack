@@ -116,7 +116,7 @@ class PGVectorIndex(EmbeddingIndex):
             scores = []
             for doc, dist in results:
                 chunks.append(Chunk(**doc))
-                scores.append(1.0 / float(dist))
+                scores.append(1.0 / float(dist) if dist != 0 else float("inf"))
 
             return QueryChunksResponse(chunks=chunks, scores=scores)
 
@@ -127,6 +127,17 @@ class PGVectorIndex(EmbeddingIndex):
         score_threshold: float,
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in PGVector")
+
+    async def query_hybrid(
+        self,
+        embedding: NDArray,
+        query_string: str,
+        k: int,
+        score_threshold: float,
+        reranker_type: str,
+        reranker_params: dict[str, Any] | None = None,
+    ) -> QueryChunksResponse:
+        raise NotImplementedError("Hybrid search is not supported in PGVector")
 
     async def delete(self):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:

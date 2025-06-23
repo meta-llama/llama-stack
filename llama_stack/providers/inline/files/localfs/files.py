@@ -114,18 +114,18 @@ class LocalfsFilesImpl(Files):
         if not self.sql_store:
             raise RuntimeError("Files provider not initialized")
 
-        # TODO: Implement 'after' pagination properly
-        if after:
-            raise NotImplementedError("After pagination not yet implemented")
+        if not order:
+            order = Order.desc
 
-        where = None
+        where_conditions = {}
         if purpose:
-            where = {"purpose": purpose.value}
+            where_conditions["purpose"] = purpose.value
 
-        rows = await self.sql_store.fetch_all(
-            "openai_files",
-            where=where,
-            order_by=[("created_at", order.value if order else Order.desc.value)],
+        paginated_result = await self.sql_store.fetch_all(
+            table="openai_files",
+            where=where_conditions if where_conditions else None,
+            order_by=[("created_at", order.value)],
+            cursor=("id", after) if after else None,
             limit=limit,
         )
 
@@ -138,12 +138,12 @@ class LocalfsFilesImpl(Files):
                 created_at=row["created_at"],
                 expires_at=row["expires_at"],
             )
-            for row in rows
+            for row in paginated_result.data
         ]
 
         return ListOpenAIFileResponse(
             data=files,
-            has_more=False,  # TODO: Implement proper pagination
+            has_more=paginated_result.has_more,
             first_id=files[0].id if files else "",
             last_id=files[-1].id if files else "",
         )

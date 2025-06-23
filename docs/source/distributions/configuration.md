@@ -56,10 +56,10 @@ shields: []
 server:
   port: 8321
   auth:
-    provider_type: "kubernetes"
+    provider_type: "oauth2_token"
     config:
-      api_server_url: "https://kubernetes.default.svc"
-      ca_cert_path: "/path/to/ca.crt"
+      jwks:
+        uri: "https://my-token-issuing-svc.com/jwks"
 ```
 
 Let's break this down into the different sections. The first section specifies the set of APIs that the stack server will serve:
@@ -132,16 +132,52 @@ The server supports multiple authentication providers:
 
 #### OAuth 2.0/OpenID Connect Provider with Kubernetes
 
-The Kubernetes cluster must be configured to use a service account for authentication.
+The server can be configured to use service account tokens for authorization, validating these against the Kubernetes API server, e.g.:
+```yaml
+server:
+  auth:
+    provider_type: "oauth2_token"
+    config:
+      jwks:
+        uri: "https://kubernetes.default.svc:8443/openid/v1/jwks"
+        token: "${env.TOKEN:}"
+        key_recheck_period: 3600
+      tls_cafile: "/path/to/ca.crt"
+      issuer: "https://kubernetes.default.svc"
+      audience: "https://kubernetes.default.svc"
+```
+
+To find your cluster's jwks uri (from which the public key(s) to verify the token signature are obtained), run:
+```
+kubectl get --raw /.well-known/openid-configuration| jq -r .jwks_uri
+```
+
+For the tls_cafile, you can use the CA certificate of the OIDC provider:
+```bash
+kubectl config view --minify -o jsonpath='{.clusters[0].cluster.certificate-authority}'
+```
+
+For the issuer, you can use the OIDC provider's URL:
+```bash
+kubectl get --raw /.well-known/openid-configuration| jq .issuer
+```
+
+The audience can be obtained from a token, e.g. run:
+```bash
+kubectl create token default --duration=1h | cut -d. -f2 | base64 -d | jq .aud
+```
+
+The jwks token is used to authorize access to the jwks endpoint. You can obtain a token by running:
 
 ```bash
 kubectl create namespace llama-stack
 kubectl create serviceaccount llama-stack-auth -n llama-stack
-kubectl create rolebinding llama-stack-auth-rolebinding --clusterrole=admin --serviceaccount=llama-stack:llama-stack-auth -n llama-stack
 kubectl create token llama-stack-auth -n llama-stack > llama-stack-auth-token
+export TOKEN=$(cat llama-stack-auth-token)
 ```
 
-Make sure the `kube-apiserver` runs with `--anonymous-auth=true` to allow unauthenticated requests
+Alternatively, you can configure the jwks endpoint to allow anonymous access. To do this, make sure
+the `kube-apiserver` runs with `--anonymous-auth=true` to allow unauthenticated requests
 and that the correct RoleBinding is created to allow the service account to access the necessary
 resources. If that is not the case, you can create a RoleBinding for the service account to access
 the necessary resources:
@@ -173,35 +209,6 @@ subjects:
 And then apply the configuration:
 ```bash
 kubectl apply -f allow-anonymous-openid.yaml
-```
-
-Validates tokens against the Kubernetes API server through the OIDC provider:
-```yaml
-server:
-  auth:
-    provider_type: "oauth2_token"
-    config:
-      jwks:
-        uri: "https://kubernetes.default.svc"
-        key_recheck_period: 3600
-      tls_cafile: "/path/to/ca.crt"
-      issuer: "https://kubernetes.default.svc"
-      audience: "https://kubernetes.default.svc"
-```
-
-To find your cluster's audience, run:
-```bash
-kubectl create token default --duration=1h | cut -d. -f2 | base64 -d | jq .aud
-```
-
-For the issuer, you can use the OIDC provider's URL:
-```bash
-kubectl get --raw /.well-known/openid-configuration| jq .issuer
-```
-
-For the tls_cafile, you can use the CA certificate of the OIDC provider:
-```bash
-kubectl config view --minify -o jsonpath='{.clusters[0].cluster.certificate-authority}'
 ```
 
 The provider extracts user information from the JWT token:

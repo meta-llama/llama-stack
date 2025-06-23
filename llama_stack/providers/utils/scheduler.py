@@ -9,7 +9,7 @@ import asyncio
 import functools
 import threading
 from collections.abc import Callable, Coroutine, Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any, TypeAlias
 
@@ -61,7 +61,7 @@ class Job:
         self._handler = handler
         self._artifacts: list[JobArtifact] = []
         self._logs: list[LogMessage] = []
-        self._state_transitions: list[tuple[datetime, JobStatus]] = [(datetime.now(timezone.utc), JobStatus.new)]
+        self._state_transitions: list[tuple[datetime, JobStatus]] = [(datetime.now(UTC), JobStatus.new)]
 
     @property
     def handler(self) -> JobHandler:
@@ -77,7 +77,7 @@ class Job:
             raise ValueError(f"Job is already in a completed state ({self.status})")
         if self.status == status:
             return
-        self._state_transitions.append((datetime.now(timezone.utc), status))
+        self._state_transitions.append((datetime.now(UTC), status))
 
     @property
     def artifacts(self) -> list[JobArtifact]:
@@ -157,10 +157,14 @@ class _NaiveSchedulerBackend(_SchedulerBackend):
         asyncio.set_event_loop(self._loop)
         self._loop.run_forever()
 
-        # When stopping the loop, give tasks a chance to finish
+        # TODO: When stopping the loop, give tasks a chance to finish
         # TODO: should we explicitly inform jobs of pending stoppage?
+
+        # cancel all tasks
         for task in asyncio.all_tasks(self._loop):
-            self._loop.run_until_complete(task)
+            if not task.done():
+                task.cancel()
+
         self._loop.close()
 
     async def shutdown(self) -> None:
@@ -215,7 +219,7 @@ class Scheduler:
         self._backend = _get_backend_impl(backend)
 
     def _on_log_message_cb(self, job: Job, message: str) -> None:
-        msg = (datetime.now(timezone.utc), message)
+        msg = (datetime.now(UTC), message)
         # At least for the time being, until there's a better way to expose
         # logs to users, log messages on console
         logger.info(f"Job {job.id}: {message}")
