@@ -800,6 +800,7 @@ class ChatAgent(ShieldRunnerMixin):
                     )
                     for param in tool_def.parameters
                 },
+                annotations=tool_def.annotations,
             )
         for toolgroup_name_with_maybe_tool_name in agent_config_toolgroups:
             toolgroup_name, input_tool_name = self._parse_toolgroup_name(toolgroup_name_with_maybe_tool_name)
@@ -843,6 +844,7 @@ class ChatAgent(ShieldRunnerMixin):
                             )
                             for param in tool_def.parameters
                         },
+                        annotations=tool_def.annotations,
                     )
                     tool_name_to_args[tool_def.identifier] = toolgroup_to_args.get(toolgroup_name, {})
 
