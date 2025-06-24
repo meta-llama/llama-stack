@@ -21,16 +21,15 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     SearchRankingOptions,
     VectorIO,
+    VectorStoreChunkingStrategy,
     VectorStoreDeleteResponse,
+    VectorStoreFileContentsResponse,
+    VectorStoreFileObject,
+    VectorStoreFileStatus,
+    VectorStoreListFilesResponse,
     VectorStoreListResponse,
     VectorStoreObject,
     VectorStoreSearchResponsePage,
-)
-from llama_stack.apis.vector_io.vector_io import (
-    VectorStoreChunkingStrategy,
-    VectorStoreFileContentsResponse,
-    VectorStoreFileObject,
-    VectorStoreListFilesResponse,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
@@ -270,6 +269,11 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     async def openai_list_files_in_vector_store(
         self,
         vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
     ) -> VectorStoreListFilesResponse:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Milvus")
 
