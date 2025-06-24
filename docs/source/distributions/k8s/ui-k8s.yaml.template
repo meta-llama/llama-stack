@@ -17,6 +17,8 @@ spec:
         app.kubernetes.io/name: llama-stack
         app.kubernetes.io/component: ui
     spec:
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: cpu
       containers:
       - name: llama-stack-ui
         image: node:18-alpine

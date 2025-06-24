@@ -5,6 +5,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: gp2
   resources:
     requests:
       storage: 1Gi
@@ -25,9 +26,11 @@ spec:
         app.kubernetes.io/name: llama-stack
         app.kubernetes.io/component: server
     spec:
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: cpu
       containers:
       - name: llama-stack
-        image: llamastack/distribution-remote-vllm:latest
+        image: llamastack/distribution-postgres-demo:latest
         imagePullPolicy: Always # since we have specified latest instead of a version
         env:
         - name: ENABLE_CHROMADB
