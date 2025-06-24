@@ -8,7 +8,7 @@ version = "0.2.12"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { "text" = "MIT" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -84,7 +84,7 @@ unit = [
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
     "blobfile",
-    "faiss-cpu"
+    "faiss-cpu",
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment

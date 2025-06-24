@@ -101,7 +101,7 @@ def build_image(
     template_or_config: str,
     run_config: str | None = None,
 ):
-    container_base = build_config.distribution_spec.container_image or "python:3.11-slim"
+    container_base = build_config.distribution_spec.container_image or "python:3.12-slim"
 
     normal_deps, special_deps = get_provider_dependencies(build_config)
     normal_deps += SERVER_DEPENDENCIES
