@@ -128,12 +128,12 @@ ensure_conda_env_python310() {
 
     # Install pip dependencies
     printf "Installing pip dependencies\n"
-    uv pip install "$pip_dependencies"
+    uv pip install $pip_dependencies
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
-        uv pip install "$part"
+        uv pip install $part
       done
     fi
   fi
