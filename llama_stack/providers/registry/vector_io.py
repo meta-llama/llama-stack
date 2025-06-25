@@ -460,6 +460,7 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
             module="llama_stack.providers.inline.vector_io.qdrant",
             config_class="llama_stack.providers.inline.vector_io.qdrant.QdrantVectorIOConfig",
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
             description=r"""
 [Qdrant](https://qdrant.tech/documentation/) is an inline and remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.

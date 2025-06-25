@@ -264,8 +264,18 @@ class OpenAIVectorStoreMixin(ABC):
 
         # Now that our vector store is created, attach any files that were provided
         file_ids = file_ids or []
-        tasks = [self.openai_attach_file_to_vector_store(vector_db_id, file_id) for file_id in file_ids]
-        await asyncio.gather(*tasks)
+
+        # Try concurrent processing first, fall back to sequential if it fails
+        if file_ids:
+            try:
+                # Process files concurrently for better performance
+                tasks = [self.openai_attach_file_to_vector_store(vector_db_id, file_id) for file_id in file_ids]
+                await asyncio.gather(*tasks)
+            except Exception as e:
+                logger.warning(f"Concurrent file processing failed: {e}. Falling back to sequential processing.")
+                # Fall back to sequential processing if concurrent processing fails
+                for file_id in file_ids:
+                    await self.openai_attach_file_to_vector_store(vector_db_id, file_id)
 
         # Get the updated store info and return it
         store_info = self.openai_vector_stores[vector_db_id]
