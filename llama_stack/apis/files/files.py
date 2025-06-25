@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated, Literal, Protocol, runtime_checkable
 
 from fastapi import File, Form, Response, UploadFile
@@ -16,7 +16,7 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 # OpenAI Files API Models
-class OpenAIFilePurpose(str, Enum):
+class OpenAIFilePurpose(StrEnum):
     """
     Valid purpose values for OpenAI Files API.
     """
