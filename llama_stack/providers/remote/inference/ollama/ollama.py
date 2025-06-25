@@ -56,6 +56,7 @@ from llama_stack.providers.datatypes import (
     HealthStatus,
     ModelsProtocolPrivate,
 )
+from llama_stack.providers.remote.inference.ollama.config import OllamaImplConfig
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -89,10 +90,10 @@ class OllamaInferenceAdapter(
     InferenceProvider,
     ModelsProtocolPrivate,
 ):
-    def __init__(self, url: str, raise_on_connect_error: bool = True) -> None:
+    def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
-        self.url = url
-        self.raise_on_connect_error = raise_on_connect_error
+        self.url = config.url
+        self.raise_on_connect_error = config.raise_on_connect_error
 
     @property
     def client(self) -> AsyncClient:
