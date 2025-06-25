@@ -45,7 +45,7 @@ def skip_if_model_doesnt_support_suffix(client_with_models, model_id):
     # To test `fim` ( fill in the middle ) completion, we need to use a model that supports suffix.
     # Use this to specifically test this API functionality.
 
-    # pytest -sv --stack-config="inference=ollama" \
+    # pytest -sv --stack-config="inference=starter" \
     # tests/integration/inference/test_openai_completion.py \
     # --text-model qwen2.5-coder:1.5b \
     # -k test_openai_completion_non_streaming_suffix

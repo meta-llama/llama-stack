@@ -98,6 +98,10 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
+            # Do not register models on disabled providers
+            if hasattr(obj, "provider_id") and obj.provider_id is not None and obj.provider_id == "__disabled__":
+                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
+                continue
             # In complex templates, like our starter template, we may have dynamic model ids
             # given by environment variables. This allows those environment variables to have
             # a default value of __disabled__ to skip registration of the model if not set.
@@ -106,6 +110,7 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
                 and obj.provider_model_id is not None
                 and "__disabled__" in obj.provider_model_id
             ):
+                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled model.")
                 continue
             # we want to maintain the type information in arguments to method.
             # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,

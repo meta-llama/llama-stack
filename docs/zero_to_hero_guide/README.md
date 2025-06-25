@@ -83,7 +83,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 1. **Build the Llama Stack**:
    Build the Llama Stack using the `ollama` template:
    ```bash
-   llama stack build --template ollama --image-type conda
+   llama stack build --template starter --image-type conda
    ```
    **Expected Output:**
    ```bash
