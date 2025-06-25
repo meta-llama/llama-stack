@@ -51,6 +51,7 @@ from llama_stack.apis.inference.inference import (
     OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.exceptions import UnsupportedModelError
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     HealthResponse,
@@ -374,9 +375,7 @@ class OllamaInferenceAdapter(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
                 return model
-            raise ValueError(
-                f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
-            )
+            raise UnsupportedModelError(model.provider_resource_id, available_models)
         model.provider_resource_id = provider_resource_id
 
         return model

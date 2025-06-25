@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.models.models import ModelType
+from llama_stack.exceptions import UnsupportedModelError
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
@@ -81,9 +82,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
 
     async def register_model(self, model: Model) -> Model:
         if not (supported_model_id := self.get_provider_model_id(model.provider_resource_id)):
-            raise ValueError(
-                f"Model '{model.provider_resource_id}' is not supported. Supported models are: {', '.join(self.alias_to_provider_id_map.keys())}"
-            )
+            raise UnsupportedModelError(model.provider_resource_id, self.alias_to_provider_id_map.keys())
         provider_resource_id = self.get_provider_model_id(model.model_id)
         if model.model_type == ModelType.embedding:
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
