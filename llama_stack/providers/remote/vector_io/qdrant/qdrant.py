@@ -71,12 +71,8 @@ class QdrantIndex(EmbeddingIndex):
             )
 
         points = []
-        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
-            chunk_id = (
-                f"{chunk.metadata.get('document_id')}:chunk-{i}"
-                if chunk.metadata
-                else f"{chunk.chunk_metadata.document_id}:chunk-{i}"
-            )
+        for _i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
+            chunk_id = chunk.chunk_id
             points.append(
                 PointStruct(
                     id=convert_id(chunk_id),

@@ -41,7 +41,7 @@ class ChunkMetadata(BaseModel):
     :param metadata_token_count: The number of tokens in the metadata of the chunk.
     """
 
-    chunk_id: str = None
+    chunk_id: str | None = None
     document_id: str | None = None
     source: str | None = None
     created_timestamp: int | None = None

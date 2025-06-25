@@ -7960,8 +7960,6 @@ components:
           description: >-
             The number of tokens in the metadata of the chunk.
       additionalProperties: false
-      required:
-        - chunk_id
       title: ChunkMetadata
       description: >-
         `ChunkMetadata` is backend metadata for a `Chunk` that is used to store additional
