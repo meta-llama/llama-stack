@@ -542,6 +542,12 @@ models:
   provider_id: ollama
   provider_model_id: ${env.OLLAMA_INFERENCE_MODEL:__disabled__}
   model_type: llm
+- metadata:
+    embedding_dimension: ${env.OLLAMA_EMBEDDING_DIMENSION:384}
+  model_id: ollama/${env.OLLAMA_EMBEDDING_MODEL:__disabled__}
+  provider_id: ollama
+  provider_model_id: ${env.OLLAMA_EMBEDDING_MODEL:__disabled__}
+  model_type: embedding
 - metadata: {}
   model_id: anthropic/claude-3-5-sonnet-latest
   provider_id: anthropic

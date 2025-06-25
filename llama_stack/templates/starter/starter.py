@@ -88,6 +88,13 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
                     provider_model_id="${env.OLLAMA_INFERENCE_MODEL:__disabled__}",
                     model_type=ModelType.llm,
                 ),
+                ProviderModelEntry(
+                    provider_model_id="${env.OLLAMA_EMBEDDING_MODEL:__disabled__}",
+                    model_type=ModelType.embedding,
+                    metadata={
+                        "embedding_dimension": "${env.OLLAMA_EMBEDDING_DIMENSION:384}",
+                    },
+                ),
             ],
             OllamaImplConfig.sample_run_config(
                 url="${env.OLLAMA_URL:http://localhost:11434}", raise_on_connect_error=False
@@ -285,6 +292,14 @@ def get_distribution_template() -> DistributionTemplate:
             "OLLAMA_INFERENCE_MODEL": (
                 "",
                 "Optional Ollama Inference Model to register on startup",
+            ),
+            "OLLAMA_EMBEDDING_MODEL": (
+                "",
+                "Optional Ollama Embedding Model to register on startup",
+            ),
+            "OLLAMA_EMBEDDING_DIMENSION": (
+                "384",
+                "Ollama Embedding Dimension",
             ),
         },
     )
