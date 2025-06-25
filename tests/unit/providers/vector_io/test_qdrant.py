@@ -81,7 +81,7 @@ __QUERY = "Sample query"
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("max_query_chunks, expected_chunks", [(2, 2), (100, 30)])
+@pytest.mark.parametrize("max_query_chunks, expected_chunks", [(2, 2), (100, 60)])
 async def test_qdrant_adapter_returns_expected_chunks(
     qdrant_adapter: QdrantVectorIOAdapter,
     vector_db_id,
