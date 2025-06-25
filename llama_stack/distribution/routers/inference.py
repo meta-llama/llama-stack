@@ -30,7 +30,13 @@ from llama_stack.apis.inference import (
     ListOpenAIChatCompletionResponse,
     LogProbConfig,
     Message,
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
     OpenAICompletionWithInputMessages,
+    OpenAIEmbeddingsResponse,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
     Order,
     ResponseFormat,
     SamplingParams,
@@ -40,14 +46,6 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
-)
-from llama_stack.apis.inference.inference import (
-    OpenAIChatCompletion,
-    OpenAIChatCompletionChunk,
-    OpenAICompletion,
-    OpenAIEmbeddingsResponse,
-    OpenAIMessageParam,
-    OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.telemetry import MetricEvent, MetricInResponse, Telemetry

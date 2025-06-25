@@ -28,7 +28,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseText,
     OpenAIResponseTextFormat,
 )
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIDeveloperMessageParam,

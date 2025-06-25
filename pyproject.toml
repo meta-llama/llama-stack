@@ -204,6 +204,9 @@ unfixable = [
     "RUF001",
     "PLE2515",
 ]
+"llama_stack/apis/**/__init__.py" = [
+    "F403",
+] # Using import * is acceptable (or at least tolerated) in an __init__.py of a package API
 
 [tool.mypy]
 mypy_path = ["llama_stack"]

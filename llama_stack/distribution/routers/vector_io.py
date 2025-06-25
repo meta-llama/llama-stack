@@ -16,17 +16,15 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     SearchRankingOptions,
     VectorIO,
-    VectorStoreDeleteResponse,
-    VectorStoreListResponse,
-    VectorStoreObject,
-    VectorStoreSearchResponsePage,
-)
-from llama_stack.apis.vector_io.vector_io import (
     VectorStoreChunkingStrategy,
+    VectorStoreDeleteResponse,
     VectorStoreFileContentsResponse,
     VectorStoreFileDeleteResponse,
     VectorStoreFileObject,
     VectorStoreFileStatus,
+    VectorStoreListResponse,
+    VectorStoreObject,
+    VectorStoreSearchResponsePage,
 )
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable

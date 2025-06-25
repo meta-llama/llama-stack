@@ -95,27 +95,25 @@ from llama_stack.apis.inference import (
     CompletionResponse,
     CompletionResponseStreamChunk,
     GreedySamplingStrategy,
-    Message,
-    SamplingParams,
-    SystemMessage,
-    TokenLogProbs,
-    ToolChoice,
-    ToolResponseMessage,
-    TopKSamplingStrategy,
-    TopPSamplingStrategy,
-    UserMessage,
-)
-from llama_stack.apis.inference.inference import (
     JsonSchemaResponseFormat,
+    Message,
     OpenAIChatCompletion,
     OpenAICompletion,
     OpenAICompletionChoice,
     OpenAIEmbeddingData,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
+    SamplingParams,
+    SystemMessage,
+    TokenLogProbs,
+    ToolChoice,
     ToolConfig,
+    ToolResponseMessage,
+    TopKSamplingStrategy,
+    TopPSamplingStrategy,
+    UserMessage,
 )
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     OpenAIChoice as OpenAIChatCompletionChoice,
 )
 from llama_stack.models.llama.datatypes import (

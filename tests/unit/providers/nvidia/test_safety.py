@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from llama_stack.apis.inference.inference import CompletionMessage, UserMessage
+from llama_stack.apis.inference import CompletionMessage, UserMessage
 from llama_stack.apis.safety import RunShieldResponse, ViolationLevel
 from llama_stack.apis.shields import Shield
 from llama_stack.providers.remote.safety.nvidia.config import NVIDIASafetyConfig

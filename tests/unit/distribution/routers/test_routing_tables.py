@@ -13,7 +13,7 @@ import pytest
 from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.datasets.datasets import Dataset, DatasetPurpose, URIDataSource
 from llama_stack.apis.datatypes import Api
-from llama_stack.apis.models.models import Model, ModelType
+from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.shields.shields import Shield
 from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolGroup, ToolParameter
 from llama_stack.apis.vector_dbs.vector_dbs import VectorDB
