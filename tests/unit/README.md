@@ -13,7 +13,7 @@ Any additional arguments are passed to pytest. For example, you can specify a te
 ./scripts/unit-tests.sh tests/unit/registry/test_registry.py -vvv
 ```
 
-If you'd like to run for a non-default version of Python (currently 3.11), pass `PYTHON_VERSION` variable as follows:
+If you'd like to run for a non-default version of Python (currently 3.12), pass `PYTHON_VERSION` variable as follows:
 
 ```
 source .venv/bin/activate

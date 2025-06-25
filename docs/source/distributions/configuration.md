@@ -109,6 +109,18 @@ A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and i
 
 What's with the `provider_model_id` field? This is an identifier for the model inside the provider's model catalog. Contrast it with `model_id` which is the identifier for the same model for Llama Stack's purposes. For example, you may want to name "llama3.2:vision-11b" as "image_captioning_model" when you use it in your Stack interactions. When omitted, the server will set `provider_model_id` to be the same as `model_id`.
 
+If you need to conditionally register a model in the configuration, such as only when specific environment variable(s) are set, this can be accomplished by utilizing a special `__disabled__` string as the default value of an environment variable substitution, as shown below:
+
+```yaml
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL:__disabled__}
+  provider_id: ollama
+  provider_model_id: ${env.INFERENCE_MODEL:__disabled__}
+```
+
+The snippet above will only register this model if the environment variable `INFERENCE_MODEL` is set and non-empty. If the environment variable is not set, the model will not get registered at all.
+
 ## Server Configuration
 
 The `server` section configures the HTTP server that serves the Llama Stack APIs:

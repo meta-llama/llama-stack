@@ -33,10 +33,6 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
 
-      - name: Build Llama Stack
-        run: |
-          llama stack build --template ollama --image-type venv
-
       - name: Install minikube
         if: ${{ matrix.auth-provider == 'kubernetes' }}
         uses: medyagh/setup-minikube@cea33675329b799adccc9526aa5daccc26cd5052 # v0.0.19

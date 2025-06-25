@@ -49,7 +49,7 @@ ensure_conda_env_python310() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
-  local python_version="3.11"
+  local python_version="3.12"
 
   # Check if conda command is available
   if ! is_command_available conda; then
@@ -81,19 +81,19 @@ ensure_conda_env_python310() {
   eval "$(conda shell.bash hook)"
   conda deactivate && conda activate "${env_name}"
 
-  $CONDA_PREFIX/bin/pip install uv
+  "$CONDA_PREFIX"/bin/pip install uv
 
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     uv pip install fastapi libcst
     uv pip install --extra-index-url https://test.pypi.org/simple/ \
-      llama-stack==$TEST_PYPI_VERSION \
-      $pip_dependencies
+      llama-stack=="$TEST_PYPI_VERSION" \
+      "$pip_dependencies"
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
         echo "$part"
-        uv pip install $part
+        uv pip install "$part"
       done
     fi
   else
@@ -113,7 +113,7 @@ ensure_conda_env_python310() {
       else
         SPEC_VERSION="llama-stack"
       fi
-      uv pip install --no-cache-dir $SPEC_VERSION
+      uv pip install --no-cache-dir "$SPEC_VERSION"
     fi
 
     if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
@@ -138,7 +138,7 @@ ensure_conda_env_python310() {
     fi
   fi
 
-  mv $build_file_path $CONDA_PREFIX/llamastack-build.yaml
+  mv "$build_file_path" "$CONDA_PREFIX"/llamastack-build.yaml
   echo "Build spec configuration saved at $CONDA_PREFIX/llamastack-build.yaml"
 }
 

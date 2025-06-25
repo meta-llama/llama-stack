@@ -432,6 +432,7 @@ class VectorIO(Protocol):
         max_num_results: int | None = 10,
         ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
+        search_mode: str | None = "vector",  # Using str instead of Literal due to OpenAPI schema generator limitations
     ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store.
 
@@ -443,6 +444,7 @@ class VectorIO(Protocol):
         :param max_num_results: Maximum number of results to return (1 to 50 inclusive, default 10).
         :param ranking_options: Ranking options for fine-tuning the search results.
         :param rewrite_query: Whether to rewrite the natural language query for vector search (default false)
+        :param search_mode: The search mode to use - "keyword", "vector", or "hybrid" (default "vector")
         :returns: A VectorStoreSearchResponse containing the search results.
         """
         ...

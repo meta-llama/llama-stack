@@ -16,20 +16,14 @@ from llama_stack.apis.files import Files
 from llama_stack.apis.files.files import OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
+    Chunk,
     QueryChunksResponse,
     SearchRankingOptions,
-    VectorStoreContent,
-    VectorStoreDeleteResponse,
-    VectorStoreListResponse,
-    VectorStoreObject,
-    VectorStoreSearchResponse,
-    VectorStoreSearchResponsePage,
-)
-from llama_stack.apis.vector_io.vector_io import (
-    Chunk,
     VectorStoreChunkingStrategy,
     VectorStoreChunkingStrategyAuto,
     VectorStoreChunkingStrategyStatic,
+    VectorStoreContent,
+    VectorStoreDeleteResponse,
     VectorStoreFileContentsResponse,
     VectorStoreFileCounts,
     VectorStoreFileDeleteResponse,
@@ -37,6 +31,10 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreFileObject,
     VectorStoreFileStatus,
     VectorStoreListFilesResponse,
+    VectorStoreListResponse,
+    VectorStoreObject,
+    VectorStoreSearchResponse,
+    VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
 
@@ -339,12 +337,15 @@ class OpenAIVectorStoreMixin(ABC):
         max_num_results: int | None = 10,
         ranking_options: SearchRankingOptions | None = None,
         rewrite_query: bool | None = False,
-        # search_mode: Literal["keyword", "vector", "hybrid"] = "vector",
+        search_mode: str | None = "vector",  # Using str instead of Literal due to OpenAPI schema generator limitations
     ) -> VectorStoreSearchResponsePage:
         """Search for chunks in a vector store."""
-        # TODO: Add support in the API for this
-        search_mode = "vector"
         max_num_results = max_num_results or 10
+
+        # Validate search_mode
+        valid_modes = {"keyword", "vector", "hybrid"}
+        if search_mode not in valid_modes:
+            raise ValueError(f"search_mode must be one of {valid_modes}, got {search_mode}")
 
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")

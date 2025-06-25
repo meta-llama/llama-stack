@@ -31,6 +31,7 @@ providers:
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:http://localhost:11434}
+      raise_on_connect_error: false
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
@@ -60,7 +61,14 @@ providers:
     provider_type: inline::sentence-transformers
     config: {}
   vector_io:
-  - provider_id: sqlite-vec
+  - provider_id: faiss
+    provider_type: inline::faiss
+    config:
+      kvstore:
+        type: sqlite
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/faiss_store.db
+  - provider_id: ${env.ENABLE_SQLITE_VEC+sqlite-vec}
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/starter}/sqlite_vec.db
@@ -530,160 +538,15 @@ models:
   provider_model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
   model_type: llm
 - metadata: {}
-  model_id: ollama/llama3.1:8b-instruct-fp16
+  model_id: ollama/${env.OLLAMA_INFERENCE_MODEL:__disabled__}
   provider_id: ollama
-  provider_model_id: llama3.1:8b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.1-8B-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.1:8b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.1:8b
-  provider_id: ollama
-  provider_model_id: llama3.1:8b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.1:70b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.1:70b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.1-70B-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.1:70b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.1:70b
-  provider_id: ollama
-  provider_model_id: llama3.1:70b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.1:405b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.1:405b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.1-405B-Instruct-FP8
-  provider_id: ollama
-  provider_model_id: llama3.1:405b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.1:405b
-  provider_id: ollama
-  provider_model_id: llama3.1:405b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2:1b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.2:1b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.2-1B-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.2:1b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2:1b
-  provider_id: ollama
-  provider_model_id: llama3.2:1b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2:3b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.2:3b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.2-3B-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.2:3b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2:3b
-  provider_id: ollama
-  provider_model_id: llama3.2:3b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2-vision:11b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:11b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.2-11B-Vision-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:11b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2-vision:latest
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:latest
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2-vision:90b-instruct-fp16
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:90b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.2-90B-Vision-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:90b-instruct-fp16
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.2-vision:90b
-  provider_id: ollama
-  provider_model_id: llama3.2-vision:90b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama3.3:70b
-  provider_id: ollama
-  provider_model_id: llama3.3:70b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-3.3-70B-Instruct
-  provider_id: ollama
-  provider_model_id: llama3.3:70b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama-guard3:8b
-  provider_id: ollama
-  provider_model_id: llama-guard3:8b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-Guard-3-8B
-  provider_id: ollama
-  provider_model_id: llama-guard3:8b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/llama-guard3:1b
-  provider_id: ollama
-  provider_model_id: llama-guard3:1b
-  model_type: llm
-- metadata: {}
-  model_id: ollama/meta-llama/Llama-Guard-3-1B
-  provider_id: ollama
-  provider_model_id: llama-guard3:1b
+  provider_model_id: ${env.OLLAMA_INFERENCE_MODEL:__disabled__}
   model_type: llm
 - metadata:
-    embedding_dimension: 384
-    context_length: 512
-  model_id: ollama/all-minilm:latest
+    embedding_dimension: ${env.OLLAMA_EMBEDDING_DIMENSION:384}
+  model_id: ollama/${env.OLLAMA_EMBEDDING_MODEL:__disabled__}
   provider_id: ollama
-  provider_model_id: all-minilm:latest
-  model_type: embedding
-- metadata:
-    embedding_dimension: 384
-    context_length: 512
-  model_id: ollama/all-minilm
-  provider_id: ollama
-  provider_model_id: all-minilm:latest
-  model_type: embedding
-- metadata:
-    embedding_dimension: 768
-    context_length: 8192
-  model_id: ollama/nomic-embed-text
-  provider_id: ollama
-  provider_model_id: nomic-embed-text
+  provider_model_id: ${env.OLLAMA_EMBEDDING_MODEL:__disabled__}
   model_type: embedding
 - metadata: {}
   model_id: anthropic/claude-3-5-sonnet-latest
@@ -937,6 +800,11 @@ models:
   model_id: sambanova/meta-llama/Llama-Guard-3-8B
   provider_id: sambanova
   provider_model_id: sambanova/Meta-Llama-Guard-3-8B
+  model_type: llm
+- metadata: {}
+  model_id: vllm/${env.VLLM_INFERENCE_MODEL:__disabled__}
+  provider_id: vllm
+  provider_model_id: ${env.VLLM_INFERENCE_MODEL:__disabled__}
   model_type: llm
 - metadata:
     embedding_dimension: 384

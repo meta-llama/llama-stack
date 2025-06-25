@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         python:
-          - "3.11"
           - "3.12"
           - "3.13"
     steps:
