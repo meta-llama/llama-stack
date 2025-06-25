@@ -31,7 +31,6 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
-from llama_stack.providers.utils.vector_io.chunk_utils import extract_or_generate_chunk_id
 
 logger = logging.getLogger(__name__)
 
@@ -200,9 +199,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     batch_embeddings = embeddings[i : i + batch_size]
 
                     # Insert metadata
-                    metadata_data = [
-                        (extract_or_generate_chunk_id(chunk), chunk.model_dump_json()) for chunk in batch_chunks
-                    ]
+                    metadata_data = [(chunk.chunk_id, chunk.model_dump_json()) for chunk in batch_chunks]
                     cur.executemany(
                         f"""
                         INSERT INTO {self.metadata_table} (id, chunk)
@@ -216,7 +213,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     embedding_data = [
                         (
                             (
-                                extract_or_generate_chunk_id(chunk),
+                                chunk.chunk_id,
                                 serialize_vector(emb.tolist()),
                             )
                         )
@@ -228,7 +225,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     )
 
                     # Insert FTS content
-                    fts_data = [(extract_or_generate_chunk_id(chunk), chunk.content) for chunk in batch_chunks]
+                    fts_data = [(chunk.chunk_id, chunk.content) for chunk in batch_chunks]
                     # DELETE existing entries with same IDs (FTS5 doesn't support ON CONFLICT)
                     cur.executemany(
                         f"DELETE FROM {self.fts_table} WHERE id = ?;",
@@ -376,13 +373,12 @@ class SQLiteVecIndex(EmbeddingIndex):
         vector_response = await self.query_vector(embedding, k, score_threshold)
         keyword_response = await self.query_keyword(query_string, k, score_threshold)
 
-        # Convert responses to score dictionaries using generate_chunk_id
+        # Convert responses to score dictionaries using chunk_id
         vector_scores = {
-            extract_or_generate_chunk_id(chunk): score
-            for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
+            chunk.chunk_id: score for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
         }
         keyword_scores = {
-            extract_or_generate_chunk_id(chunk): score
+            chunk.chunk_id: score
             for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
         }
 
@@ -405,10 +401,10 @@ class SQLiteVecIndex(EmbeddingIndex):
         # Create a map of chunk_id to chunk for both responses
         chunk_map = {}
         for c in vector_response.chunks:
-            chunk_id = extract_or_generate_chunk_id(c)
+            chunk_id = c.chunk_id
             chunk_map[chunk_id] = c
         for c in keyword_response.chunks:
-            chunk_id = extract_or_generate_chunk_id(c)
+            chunk_id = c.chunk_id
             chunk_map[chunk_id] = c
 
         # Use the map to look up chunks by their IDs

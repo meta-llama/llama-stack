@@ -64,6 +64,14 @@ async def test_query_chunks_vector(sqlite_vec_index, sample_chunks, sample_embed
     assert len(response.chunks) == 2
 
 
+@pytest.mark.xfail(reason="Chunk Metadata not yet supported for SQLite-vec", strict=True)
+async def test_query_chunk_metadata(sqlite_vec_index, sample_chunks, sample_embeddings):
+    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
+    query_embedding = sample_embeddings[0]
+    response = await sqlite_vec_index.query_vector(query_embedding, k=2, score_threshold=0.0)
+    assert response.chunks[-1].chunk_metadata == sample_chunks[-1].chunk_metadata
+
+
 @pytest.mark.asyncio
 async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sample_embeddings):
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)

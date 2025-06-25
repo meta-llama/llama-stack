@@ -7886,7 +7886,8 @@ components:
               - type: array
               - type: object
           description: >-
-            Metadata associated with the chunk that will be used during inference.
+            Metadata associated with the chunk that will be used in the model context
+            during inference.
         embedding:
           type: array
           items:
@@ -7894,11 +7895,15 @@ components:
           description: >-
             Optional embedding for the chunk. If not provided, it will be computed
             later.
+        stored_chunk_id:
+          type: string
+          description: >-
+            The chunk ID that is stored in the vector database. Used for backend functionality.
         chunk_metadata:
           $ref: '#/components/schemas/ChunkMetadata'
           description: >-
-            Metadata for the chunk that will NOT be inserted into the context during
-            inference that is required backend functionality.
+            Metadata for the chunk that will NOT be used in the context during inference.
+            The `chunk_metadata` is required backend functionality.
       additionalProperties: false
       required:
         - content
@@ -7909,16 +7914,19 @@ components:
     ChunkMetadata:
       type: object
       properties:
+        chunk_id:
+          type: string
+          description: >-
+            The ID of the chunk. If not set, it will be generated based on the document
+            ID and content.
         document_id:
           type: string
           description: >-
             The ID of the document this chunk belongs to.
-        chunk_id:
-          type: string
         source:
           type: string
           description: >-
-            The source of the content, such as a URL or file path.
+            The source of the content, such as a URL, file path, or other identifier.
         created_timestamp:
           type: integer
           description: >-
@@ -7952,12 +7960,16 @@ components:
           description: >-
             The number of tokens in the metadata of the chunk.
       additionalProperties: false
+      required:
+        - chunk_id
       title: ChunkMetadata
       description: >-
         `ChunkMetadata` is backend metadata for a `Chunk` that is used to store additional
-        information about the chunk that     will NOT be inserted into the context
-        during inference, but is required for backend functionality.     Use `metadata`
-        in `Chunk` for metadata that will be used during inference.
+        information about the chunk that     will not be used in the context during
+        inference, but is required for backend functionality. The `ChunkMetadata`     is
+        set during chunk creation in `MemoryToolRuntimeImpl().insert()`and is not
+        expected to change after.     Use `Chunk.metadata` for metadata that will
+        be used in the context during inference.
     InsertChunksRequest:
       type: object
       properties:

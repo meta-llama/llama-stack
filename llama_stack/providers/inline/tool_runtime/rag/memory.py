@@ -81,6 +81,7 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
         chunks = []
         for doc in documents:
             content = await content_from_doc(doc)
+            # TODO: we should add enrichment here as URLs won't be added to the metadata by default
             chunks.extend(
                 make_overlapped_chunks(
                     doc.document_id,
@@ -161,18 +162,19 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
                 break
 
             metadata_fields_to_exclude_from_context = [
-                "chunk_tokenizer",
-                "chunk_window",
-                "token_count",
-                "metadata_token_count",
-                "chunk_tokenizer",
-                "chunk_embedding_model",
                 "created_timestamp",
                 "updated_timestamp",
                 "chunk_window",
+                "chunk_tokenizer",
+                "chunk_embedding_model",
+                "chunk_embedding_dimension",
+                "token_count",
                 "content_token_count",
+                "metadata_token_count",
             ]
-            metadata_subset = {k: v for k, v in metadata.items() if k not in metadata_fields_to_exclude_from_context}
+            metadata_subset = {
+                k: v for k, v in metadata.items() if k not in metadata_fields_to_exclude_from_context and v
+            }
             text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
             picked.append(TextContentItem(text=text_content))
 

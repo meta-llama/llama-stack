@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata
-from llama_stack.providers.utils.vector_io.chunk_utils import extract_or_generate_chunk_id, generate_chunk_id
+from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 # This test is a unit test for the chunk_utils.py helpers. This should only contain
 # tests which are specific to this file. More general (API-level) tests should be placed in
@@ -24,7 +24,7 @@ def test_generate_chunk_id():
         Chunk(content="test 3", metadata={"document_id": "doc-1"}),
     ]
 
-    chunk_ids = sorted([generate_chunk_id(chunk.metadata["document_id"], chunk.content) for chunk in chunks])
+    chunk_ids = sorted([chunk.chunk_id for chunk in chunks])
     assert chunk_ids == [
         "177a1368-f6a8-0c50-6e92-18677f2c3de3",
         "bc744db3-1b25-0a9c-cdff-b6ba3df73c36",
@@ -32,22 +32,35 @@ def test_generate_chunk_id():
     ]
 
 
-def test_extract_or_generate_chunk_id():
+def test_chunk_id():
     # Test with existing chunk ID
     chunk_with_id = Chunk(content="test", metadata={"document_id": "existing-id"})
-    assert extract_or_generate_chunk_id(chunk_with_id) == "84ededcc-b80b-a83e-1a20-ca6515a11350"
+    assert chunk_with_id.chunk_id == "84ededcc-b80b-a83e-1a20-ca6515a11350"
 
     # Test with document ID in metadata
     chunk_with_doc_id = Chunk(content="test", metadata={"document_id": "doc-1"})
-    assert extract_or_generate_chunk_id(chunk_with_doc_id) == generate_chunk_id("doc-1", "test")
+    assert chunk_with_doc_id.chunk_id == generate_chunk_id("doc-1", "test")
 
     # Test chunks with ChunkMetadata
     chunk_with_metadata = Chunk(
-        content="test", metadata={"document_id": "existing-id"}, chunk_metadata=ChunkMetadata(chunk_id="chunk-id-1")
+        content="test",
+        metadata={"document_id": "existing-id", "chunk_id": "chunk-id-1"},
+        chunk_metadata=ChunkMetadata(document_id="document_1"),
     )
-    assert extract_or_generate_chunk_id(chunk_with_metadata) == "chunk-id-1"
+    assert chunk_with_metadata.chunk_id == "chunk-id-1"
 
     # Test with no ID or document ID
     chunk_without_id = Chunk(content="test")
-    generated_id = extract_or_generate_chunk_id(chunk_without_id)
+    generated_id = chunk_without_id.chunk_id
     assert isinstance(generated_id, str) and len(generated_id) == 36  # Should be a valid UUID
+
+
+def test_stored_chunk_id_alias():
+    # Test with existing chunk ID alias
+    chunk_with_alias = Chunk(content="test", metadata={"document_id": "existing-id", "chunk_id": "chunk-id-1"})
+    assert chunk_with_alias.chunk_id == "chunk-id-1"
+    serialized_chunk = chunk_with_alias.model_dump()
+    assert serialized_chunk["stored_chunk_id"] == "chunk-id-1"
+    # showing chunk_id is not serialized (i.e., a computed field)
+    assert "chunk_id" not in serialized_chunk
+    assert chunk_with_alias.stored_chunk_id == "chunk-id-1"
