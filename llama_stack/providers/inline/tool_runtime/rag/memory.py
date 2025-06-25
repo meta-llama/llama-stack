@@ -149,9 +149,6 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
         ]
         for i, chunk in enumerate(chunks):
             metadata = chunk.metadata
-            # update chunk.metadata with the chunk.chunk_metadata if it exists
-            if chunk.chunk_metadata:
-                metadata = {**metadata, **chunk.chunk_metadata.dict()}
             tokens += metadata.get("token_count", 0)
             tokens += metadata.get("metadata_token_count", 0)
 
@@ -161,21 +158,24 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
                 )
                 break
 
-            metadata_fields_to_exclude_from_context = [
-                "created_timestamp",
-                "updated_timestamp",
-                "chunk_window",
-                "chunk_tokenizer",
-                "chunk_embedding_model",
-                "chunk_embedding_dimension",
+            # Add useful keys from chunk_metadata to metadata and remove some from metadata
+            chunk_metadata_keys_to_include_from_context = [
+                "chunk_id",
+                "document_id",
+                "source",
+            ]
+            metadata_keys_to_exclude_from_context = [
                 "token_count",
-                "content_token_count",
                 "metadata_token_count",
             ]
-            metadata_subset = {
-                k: v for k, v in metadata.items() if k not in metadata_fields_to_exclude_from_context and v
-            }
-            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
+            metadata_for_context = {}
+            for k in chunk_metadata_keys_to_include_from_context:
+                metadata_for_context[k] = getattr(chunk.chunk_metadata, k)
+            for k in metadata:
+                if k not in metadata_keys_to_exclude_from_context:
+                    metadata_for_context[k] = metadata[k]
+
+            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_for_context)
             picked.append(TextContentItem(text=text_content))
 
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))

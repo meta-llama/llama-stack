@@ -399,13 +399,7 @@ class SQLiteVecIndex(EmbeddingIndex):
         filtered_items = [(doc_id, score) for doc_id, score in top_k_items if score >= score_threshold]
 
         # Create a map of chunk_id to chunk for both responses
-        chunk_map = {}
-        for c in vector_response.chunks:
-            chunk_id = c.chunk_id
-            chunk_map[chunk_id] = c
-        for c in keyword_response.chunks:
-            chunk_id = c.chunk_id
-            chunk_map[chunk_id] = c
+        chunk_map = {c.chunk_id: c for c in vector_response.chunks + keyword_response.chunks}
 
         # Use the map to look up chunks by their IDs
         chunks = []

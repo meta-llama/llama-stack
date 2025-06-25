@@ -56,7 +56,7 @@ class TestRagQuery:
 
         assert result is not None
         expected_metadata_string = (
-            "Metadata: {'key1': 'value1', 'document_id': 'doc1', 'chunk_id': 'chunk1', 'source': 'test_source'}"
+            "Metadata: {'chunk_id': 'chunk1', 'document_id': 'doc1', 'source': 'test_source', 'key1': 'value1'}"
         )
         assert expected_metadata_string in result.content[1].text
         assert result.content is not None
