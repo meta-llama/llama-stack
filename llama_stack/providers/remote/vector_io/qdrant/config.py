@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -23,7 +23,6 @@ class QdrantVectorIOConfig(BaseModel):
     prefix: str | None = None
     timeout: int | None = None
     host: str | None = None
-    distance_metric: Literal["COSINE", "DOT", "EUCLID", "MANHATTAN"] = "COSINE"
 
     @classmethod
     def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
