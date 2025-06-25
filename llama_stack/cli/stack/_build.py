@@ -403,7 +403,7 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
-        run_config=str(run_config_file) if run_config_file else None,
+        run_config=run_config_file.as_posix() if run_config_file else None,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
