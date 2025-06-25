@@ -1026,7 +1026,9 @@ def openai_messages_to_messages(
     return converted_messages
 
 
-def openai_content_to_content(content: str | Iterable[OpenAIChatCompletionContentPartParam]):
+def openai_content_to_content(content: str | Iterable[OpenAIChatCompletionContentPartParam] | None):
+    if content is None:
+        return ""
     if isinstance(content, str):
         return content
     elif isinstance(content, list):
