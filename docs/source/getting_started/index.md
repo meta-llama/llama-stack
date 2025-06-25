@@ -19,7 +19,7 @@ ollama run llama3.2:3b --keepalive 60m
 #### Step 2: Run the Llama Stack server
 We will use `uv` to run the Llama Stack server.
 ```bash
-INFERENCE_MODEL=llama3.2:3b uv run --with llama-stack llama stack build --template ollama --image-type venv --run
+INFERENCE_MODEL=llama3.2:3b uv run --with llama-stack llama stack build --template starter --image-type venv --run
 ```
 #### Step 3: Run the demo
 Now open up a new terminal and copy the following script into a file named `demo_script.py`.
