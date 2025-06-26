@@ -81,6 +81,7 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
         chunks = []
         for doc in documents:
             content = await content_from_doc(doc)
+            # TODO: we should add enrichment here as URLs won't be added to the metadata by default
             chunks.extend(
                 make_overlapped_chunks(
                     doc.document_id,
@@ -157,8 +158,24 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
                 )
                 break
 
-            metadata_subset = {k: v for k, v in metadata.items() if k not in ["token_count", "metadata_token_count"]}
-            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_subset)
+            # Add useful keys from chunk_metadata to metadata and remove some from metadata
+            chunk_metadata_keys_to_include_from_context = [
+                "chunk_id",
+                "document_id",
+                "source",
+            ]
+            metadata_keys_to_exclude_from_context = [
+                "token_count",
+                "metadata_token_count",
+            ]
+            metadata_for_context = {}
+            for k in chunk_metadata_keys_to_include_from_context:
+                metadata_for_context[k] = getattr(chunk.chunk_metadata, k)
+            for k in metadata:
+                if k not in metadata_keys_to_exclude_from_context:
+                    metadata_for_context[k] = metadata[k]
+
+            text_content = query_config.chunk_template.format(index=i + 1, chunk=chunk, metadata=metadata_for_context)
             picked.append(TextContentItem(text=text_content))
 
         picked.append(TextContentItem(text="END of knowledge_search tool results.\n"))

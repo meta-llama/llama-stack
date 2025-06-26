@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 distribution_spec:
   description: Quick start template for running Llama Stack with several popular providers
   providers:

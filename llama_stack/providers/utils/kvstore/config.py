@@ -45,8 +45,8 @@ class RedisKVStoreConfig(CommonConfig):
         return {
             "type": "redis",
             "namespace": None,
-            "host": "${env.REDIS_HOST:localhost}",
-            "port": "${env.REDIS_PORT:6379}",
+            "host": "${env.REDIS_HOST:=localhost}",
+            "port": "${env.REDIS_PORT:=6379}",
         }
 
 
@@ -66,7 +66,7 @@ class SqliteKVStoreConfig(CommonConfig):
         return {
             "type": "sqlite",
             "namespace": None,
-            "db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + db_name,
+            "db_path": "${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
         }
 
 
@@ -84,12 +84,12 @@ class PostgresKVStoreConfig(CommonConfig):
         return {
             "type": "postgres",
             "namespace": None,
-            "host": "${env.POSTGRES_HOST:localhost}",
-            "port": "${env.POSTGRES_PORT:5432}",
-            "db": "${env.POSTGRES_DB:llamastack}",
-            "user": "${env.POSTGRES_USER:llamastack}",
-            "password": "${env.POSTGRES_PASSWORD:llamastack}",
-            "table_name": "${env.POSTGRES_TABLE_NAME:" + table_name + "}",
+            "host": "${env.POSTGRES_HOST:=localhost}",
+            "port": "${env.POSTGRES_PORT:=5432}",
+            "db": "${env.POSTGRES_DB:=llamastack}",
+            "user": "${env.POSTGRES_USER:=llamastack}",
+            "password": "${env.POSTGRES_PASSWORD:=llamastack}",
+            "table_name": "${env.POSTGRES_TABLE_NAME:=" + table_name + "}",
         }
 
     @classmethod
@@ -131,12 +131,12 @@ class MongoDBKVStoreConfig(CommonConfig):
         return {
             "type": "mongodb",
             "namespace": None,
-            "host": "${env.MONGODB_HOST:localhost}",
-            "port": "${env.MONGODB_PORT:5432}",
+            "host": "${env.MONGODB_HOST:=localhost}",
+            "port": "${env.MONGODB_PORT:=5432}",
             "db": "${env.MONGODB_DB}",
             "user": "${env.MONGODB_USER}",
             "password": "${env.MONGODB_PASSWORD}",
-            "collection_name": "${env.MONGODB_COLLECTION_NAME:" + collection_name + "}",
+            "collection_name": "${env.MONGODB_COLLECTION_NAME:=" + collection_name + "}",
         }
 
 

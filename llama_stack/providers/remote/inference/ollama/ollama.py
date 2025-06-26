@@ -9,7 +9,6 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
-import httpx
 from ollama import AsyncClient  # type: ignore[attr-defined]
 from openai import AsyncOpenAI
 
@@ -33,15 +32,6 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
-    ResponseFormat,
-    SamplingParams,
-    TextTruncation,
-    ToolChoice,
-    ToolConfig,
-    ToolDefinition,
-    ToolPromptFormat,
-)
-from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
@@ -49,6 +39,13 @@ from llama_stack.apis.inference.inference import (
     OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
+    ResponseFormat,
+    SamplingParams,
+    TextTruncation,
+    ToolChoice,
+    ToolConfig,
+    ToolDefinition,
+    ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.exceptions import UnsupportedModelError
@@ -58,6 +55,7 @@ from llama_stack.providers.datatypes import (
     HealthStatus,
     ModelsProtocolPrivate,
 )
+from llama_stack.providers.remote.inference.ollama.config import OllamaImplConfig
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
 )
@@ -91,9 +89,10 @@ class OllamaInferenceAdapter(
     InferenceProvider,
     ModelsProtocolPrivate,
 ):
-    def __init__(self, url: str) -> None:
+    def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
-        self.url = url
+        self.url = config.url
+        self.raise_on_connect_error = config.raise_on_connect_error
 
     @property
     def client(self) -> AsyncClient:
@@ -104,8 +103,13 @@ class OllamaInferenceAdapter(
         return AsyncOpenAI(base_url=f"{self.url}/v1", api_key="ollama")
 
     async def initialize(self) -> None:
-        logger.info(f"checking connectivity to Ollama at `{self.url}`...")
-        await self.health()
+        logger.debug(f"checking connectivity to Ollama at `{self.url}`...")
+        health_response = await self.health()
+        if health_response["status"] == HealthStatus.ERROR:
+            if self.raise_on_connect_error:
+                raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
+            else:
+                logger.warning("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
 
     async def health(self) -> HealthResponse:
         """
@@ -118,10 +122,8 @@ class OllamaInferenceAdapter(
         try:
             await self.client.ps()
             return HealthResponse(status=HealthStatus.OK)
-        except httpx.ConnectError as e:
-            raise RuntimeError(
-                "Ollama Server is not running, start it using `ollama serve` in a separate terminal"
-            ) from e
+        except Exception as e:
+            return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def shutdown(self) -> None:
         pass

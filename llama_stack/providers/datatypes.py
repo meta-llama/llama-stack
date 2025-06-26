@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
@@ -225,7 +225,7 @@ def remote_provider_spec(
     )
 
 
-class HealthStatus(str, Enum):
+class HealthStatus(StrEnum):
     OK = "OK"
     ERROR = "Error"
     NOT_IMPLEMENTED = "Not Implemented"

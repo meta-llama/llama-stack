@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
@@ -50,9 +50,9 @@ def get_distribution_template() -> DistributionTemplate:
 
     vector_io_providers = [
         Provider(
-            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:+}"),
         ),
     ]
     default_tool_groups = [
@@ -114,9 +114,9 @@ def get_distribution_template() -> DistributionTemplate:
                             provider_id="meta-reference",
                             provider_type="inline::meta-reference",
                             config=dict(
-                                service_name="${env.OTEL_SERVICE_NAME:}",
-                                sinks="${env.TELEMETRY_SINKS:console,otel_trace}",
-                                otel_trace_endpoint="${env.OTEL_TRACE_ENDPOINT:http://localhost:4318/v1/traces}",
+                                service_name="${env.OTEL_SERVICE_NAME:+}",
+                                sinks="${env.TELEMETRY_SINKS:=console,otel_trace}",
+                                otel_trace_endpoint="${env.OTEL_TRACE_ENDPOINT:=http://localhost:4318/v1/traces}",
                             ),
                         )
                     ],

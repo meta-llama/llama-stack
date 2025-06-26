@@ -35,6 +35,6 @@ class NVIDIASafetyConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
-            "guardrails_service_url": "${env.GUARDRAILS_SERVICE_URL:http://localhost:7331}",
-            "config_id": "${env.NVIDIA_GUARDRAILS_CONFIG_ID:self-check}",
+            "guardrails_service_url": "${env.GUARDRAILS_SERVICE_URL:=http://localhost:7331}",
+            "config_id": "${env.NVIDIA_GUARDRAILS_CONFIG_ID:=self-check}",
         }

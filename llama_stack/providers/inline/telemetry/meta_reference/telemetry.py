@@ -87,12 +87,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
             trace.set_tracer_provider(provider)
             _TRACER_PROVIDER = provider
             if TelemetrySink.OTEL_TRACE in self.config.sinks:
+                if self.config.otel_trace_endpoint is None:
+                    raise ValueError("otel_trace_endpoint is required when OTEL_TRACE is enabled")
                 span_exporter = OTLPSpanExporter(
                     endpoint=self.config.otel_trace_endpoint,
                 )
                 span_processor = BatchSpanProcessor(span_exporter)
                 trace.get_tracer_provider().add_span_processor(span_processor)
             if TelemetrySink.OTEL_METRIC in self.config.sinks:
+                if self.config.otel_metric_endpoint is None:
+                    raise ValueError("otel_metric_endpoint is required when OTEL_METRIC is enabled")
                 metric_reader = PeriodicExportingMetricReader(
                     OTLPMetricExporter(
                         endpoint=self.config.otel_metric_endpoint,

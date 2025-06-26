@@ -9,7 +9,7 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
 import httpx
-from openai import AsyncOpenAI
+from openai import APIConnectionError, AsyncOpenAI
 from openai.types.chat.chat_completion_chunk import (
     ChatCompletionChunk as OpenAIChatCompletionChunk,
 )
@@ -38,9 +38,13 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIChatCompletion,
+    OpenAICompletion,
     OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
     OpenAIEmbeddingUsage,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -48,12 +52,6 @@ from llama_stack.apis.inference import (
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
-)
-from llama_stack.apis.inference.inference import (
-    OpenAIChatCompletion,
-    OpenAICompletion,
-    OpenAIMessageParam,
-    OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
@@ -461,7 +459,12 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             model = await self.register_helper.register_model(model)
         except ValueError:
             pass  # Ignore statically unknown model, will check live listing
-        res = await client.models.list()
+        try:
+            res = await client.models.list()
+        except APIConnectionError as e:
+            raise ValueError(
+                f"Failed to connect to vLLM at {self.config.url}. Please check if vLLM is running and accessible at that URL."
+            ) from e
         available_models = [m.id async for m in res]
         if model.provider_resource_id not in available_models:
             raise ValueError(

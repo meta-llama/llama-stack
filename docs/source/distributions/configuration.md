@@ -18,7 +18,7 @@ providers:
   - provider_id: ollama
     provider_type: remote::ollama
     config:
-      url: ${env.OLLAMA_URL:http://localhost:11434}
+      url: ${env.OLLAMA_URL:=http://localhost:11434}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -26,7 +26,7 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/faiss_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -38,7 +38,7 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/agents_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -46,7 +46,7 @@ providers:
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/ollama}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/registry.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
@@ -85,7 +85,7 @@ providers:
     # config is a dictionary that contains the configuration for the provider.
     # in this case, the configuration is the url of the ollama server
     config:
-      url: ${env.OLLAMA_URL:http://localhost:11434}
+      url: ${env.OLLAMA_URL:=http://localhost:11434}
 ```
 A few things to note:
 - A _provider instance_ is identified with an (id, type, configuration) triplet.
@@ -93,6 +93,95 @@ A few things to note:
 - You can instantiate any number of provider instances of the same type.
 - The configuration dictionary is provider-specific.
 - Notice that configuration can reference environment variables (with default values), which are expanded at runtime. When you run a stack server (via docker or via `llama stack run`), you can specify `--env OLLAMA_URL=http://my-server:11434` to override the default value.
+
+### Environment Variable Substitution
+
+Llama Stack supports environment variable substitution in configuration values using the
+`${env.VARIABLE_NAME}` syntax. This allows you to externalize configuration values and provide
+different settings for different environments. The syntax is inspired by [bash parameter expansion](https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html)
+and follows similar patterns.
+
+#### Basic Syntax
+
+The basic syntax for environment variable substitution is:
+
+```yaml
+config:
+  api_key: ${env.API_KEY}
+  url: ${env.SERVICE_URL}
+```
+
+If the environment variable is not set, the server will raise an error during startup.
+
+#### Default Values
+
+You can provide default values using the `:=` operator:
+
+```yaml
+config:
+  url: ${env.OLLAMA_URL:=http://localhost:11434}
+  port: ${env.PORT:=8321}
+  timeout: ${env.TIMEOUT:=60}
+```
+
+If the environment variable is not set, the default value `http://localhost:11434` will be used.
+Empty defaults are not allowed so `url: ${env.OLLAMA_URL:=}` will raise an error if the environment variable is not set.
+
+#### Conditional Values
+
+You can use the `:+` operator to provide a value only when the environment variable is set:
+
+```yaml
+config:
+  # Only include this field if ENVIRONMENT is set
+  environment: ${env.ENVIRONMENT:+production}
+```
+
+If the environment variable is set, the value after `:+` will be used. If it's not set, the field
+will be omitted with a `None` value.
+So `${env.ENVIRONMENT:+}` is supported, it means that the field will be omitted if the environment
+variable is not set. It can be used to make a field optional and then enabled at runtime when desired.
+
+#### Examples
+
+Here are some common patterns:
+
+```yaml
+# Required environment variable (will error if not set)
+api_key: ${env.OPENAI_API_KEY}
+
+# Optional with default
+base_url: ${env.API_BASE_URL:=https://api.openai.com/v1}
+
+# Conditional field
+debug_mode: ${env.DEBUG:+true}
+
+# Optional field that becomes None if not set
+optional_token: ${env.OPTIONAL_TOKEN:+}
+```
+
+#### Runtime Override
+
+You can override environment variables at runtime when starting the server:
+
+```bash
+# Override specific environment variables
+llama stack run --config run.yaml --env API_KEY=sk-123 --env BASE_URL=https://custom-api.com
+
+# Or set them in your shell
+export API_KEY=sk-123
+export BASE_URL=https://custom-api.com
+llama stack run --config run.yaml
+```
+
+#### Type Safety
+
+The environment variable substitution system is type-safe:
+
+- String values remain strings
+- Empty defaults (`${env.VAR:+}`) are converted to `None` for fields that accept `str | None`
+- Numeric defaults are properly typed (e.g., `${env.PORT:=8321}` becomes an integer)
+- Boolean defaults work correctly (e.g., `${env.DEBUG:=false}` becomes a boolean)
 
 ## Resources
 
@@ -108,6 +197,18 @@ models:
 A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to always register models before using them, some Stack servers may come up a list of "already known and available" models.
 
 What's with the `provider_model_id` field? This is an identifier for the model inside the provider's model catalog. Contrast it with `model_id` which is the identifier for the same model for Llama Stack's purposes. For example, you may want to name "llama3.2:vision-11b" as "image_captioning_model" when you use it in your Stack interactions. When omitted, the server will set `provider_model_id` to be the same as `model_id`.
+
+If you need to conditionally register a model in the configuration, such as only when specific environment variable(s) are set, this can be accomplished by utilizing a special `__disabled__` string as the default value of an environment variable substitution, as shown below:
+
+```yaml
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL:__disabled__}
+  provider_id: ollama
+  provider_model_id: ${env.INFERENCE_MODEL:__disabled__}
+```
+
+The snippet above will only register this model if the environment variable `INFERENCE_MODEL` is set and non-empty. If the environment variable is not set, the model will not get registered at all.
 
 ## Server Configuration
 
@@ -140,7 +241,7 @@ server:
     config:
       jwks:
         uri: "https://kubernetes.default.svc:8443/openid/v1/jwks"
-        token: "${env.TOKEN:}"
+        token: "${env.TOKEN:+}"
         key_recheck_period: 3600
       tls_cafile: "/path/to/ca.crt"
       issuer: "https://kubernetes.default.svc"
@@ -384,12 +485,12 @@ providers:
   - provider_id: vllm-0
     provider_type: remote::vllm
     config:
-      url: ${env.VLLM_URL:http://localhost:8000}
+      url: ${env.VLLM_URL:=http://localhost:8000}
   # this vLLM server serves the llama-guard model (e.g., llama-guard:3b)
   - provider_id: vllm-1
     provider_type: remote::vllm
     config:
-      url: ${env.SAFETY_VLLM_URL:http://localhost:8001}
+      url: ${env.SAFETY_VLLM_URL:=http://localhost:8001}
 ...
 models:
 - metadata: {}

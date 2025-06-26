@@ -42,9 +42,10 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
+    WebSearchToolTypes,
 )
 from llama_stack.apis.common.content_types import TextContentItem
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     Inference,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletion,
@@ -583,7 +584,7 @@ class OpenAIResponsesImpl:
         from llama_stack.apis.agents.openai_responses import (
             MCPListToolsTool,
         )
-        from llama_stack.apis.tools.tools import Tool
+        from llama_stack.apis.tools import Tool
 
         mcp_tool_to_server = {}
 
@@ -609,7 +610,7 @@ class OpenAIResponsesImpl:
             # TODO: Handle other tool types
             if input_tool.type == "function":
                 chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
-            elif input_tool.type == "web_search":
+            elif input_tool.type in WebSearchToolTypes:
                 tool_name = "web_search"
                 tool = await self.tool_groups_api.get_tool(tool_name)
                 if not tool:

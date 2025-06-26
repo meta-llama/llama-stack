@@ -221,3 +221,56 @@ def test_list_response_input_items_with_limit_and_order(openai_client, client_wi
             assert hasattr(item, "type")
             assert item.type == "message"
             assert item.role in ["user", "assistant"]
+
+
+@pytest.mark.skip(reason="Tool calling is not reliable.")
+def test_function_call_output_response(openai_client, client_with_models, text_model_id):
+    """Test handling of function call outputs in responses."""
+    if isinstance(client_with_models, LlamaStackAsLibraryClient):
+        pytest.skip("OpenAI responses are not supported when testing with library client yet.")
+
+    client = openai_client
+
+    # First create a response that triggers a function call
+    response = client.responses.create(
+        model=text_model_id,
+        input=[
+            {
+                "role": "user",
+                "content": "what's the weather in tokyo? You MUST call the `get_weather` function to find out.",
+            }
+        ],
+        tools=[
+            {
+                "type": "function",
+                "name": "get_weather",
+                "description": "Get the weather in a given city",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "city": {"type": "string", "description": "The city to get the weather for"},
+                    },
+                },
+            }
+        ],
+        stream=False,
+    )
+
+    # Verify we got a function call
+    assert response.output[0].type == "function_call"
+    call_id = response.output[0].call_id
+
+    # Now send the function call output as a follow-up
+    response2 = client.responses.create(
+        model=text_model_id,
+        input=[{"type": "function_call_output", "call_id": call_id, "output": "sunny and warm"}],
+        previous_response_id=response.id,
+        stream=False,
+    )
+
+    # Verify the second response processed successfully
+    assert response2.id is not None
+    assert response2.output[0].type == "message"
+    assert (
+        "sunny" in response2.output[0].content[0].text.lower() or "warm" in response2.output[0].content[0].text.lower()
+    )

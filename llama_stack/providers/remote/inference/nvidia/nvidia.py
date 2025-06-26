@@ -29,19 +29,17 @@ from llama_stack.apis.inference import (
     Inference,
     LogProbConfig,
     Message,
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
     OpenAIEmbeddingsResponse,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
     ToolChoice,
     ToolConfig,
-)
-from llama_stack.apis.inference.inference import (
-    OpenAIChatCompletion,
-    OpenAIChatCompletionChunk,
-    OpenAICompletion,
-    OpenAIMessageParam,
-    OpenAIResponseFormatParam,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolPromptFormat

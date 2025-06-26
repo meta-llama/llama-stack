@@ -12,8 +12,7 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
-from llama_stack.apis.files import Files
-from llama_stack.apis.files.files import OpenAIFileObject
+from llama_stack.apis.files import Files, OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,

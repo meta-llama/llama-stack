@@ -7,6 +7,7 @@ import base64
 import io
 import logging
 import re
+import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -23,12 +24,13 @@ from llama_stack.apis.common.content_types import (
 )
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
+from llama_stack.apis.vector_io import Chunk, ChunkMetadata, QueryChunksResponse
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
+from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 log = logging.getLogger(__name__)
 
@@ -148,6 +150,7 @@ async def content_from_doc(doc: RAGDocument) -> str:
 def make_overlapped_chunks(
     document_id: str, text: str, window_len: int, overlap_len: int, metadata: dict[str, Any]
 ) -> list[Chunk]:
+    default_tokenizer = "DEFAULT_TIKTOKEN_TOKENIZER"
     tokenizer = Tokenizer.get_instance()
     tokens = tokenizer.encode(text, bos=False, eos=False)
     try:
@@ -161,16 +164,32 @@ def make_overlapped_chunks(
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
+        chunk_id = generate_chunk_id(chunk, text)
         chunk_metadata = metadata.copy()
+        chunk_metadata["chunk_id"] = chunk_id
         chunk_metadata["document_id"] = document_id
         chunk_metadata["token_count"] = len(toks)
         chunk_metadata["metadata_token_count"] = len(metadata_tokens)
+
+        backend_chunk_metadata = ChunkMetadata(
+            chunk_id=chunk_id,
+            document_id=document_id,
+            source=metadata.get("source", None),
+            created_timestamp=metadata.get("created_timestamp", int(time.time())),
+            updated_timestamp=int(time.time()),
+            chunk_window=f"{i}-{i + len(toks)}",
+            chunk_tokenizer=default_tokenizer,
+            chunk_embedding_model=None,  # This will be set in `VectorDBWithIndex.insert_chunks`
+            content_token_count=len(toks),
+            metadata_token_count=len(metadata_tokens),
+        )
 
         # chunk is a string
         chunks.append(
             Chunk(
                 content=chunk,
                 metadata=chunk_metadata,
+                chunk_metadata=backend_chunk_metadata,
             )
         )
 
@@ -237,6 +256,9 @@ class VectorDBWithIndex:
         for i, c in enumerate(chunks):
             if c.embedding is None:
                 chunks_to_embed.append(c)
+                if c.chunk_metadata:
+                    c.chunk_metadata.chunk_embedding_model = self.vector_db.embedding_model
+                    c.chunk_metadata.chunk_embedding_dimension = self.vector_db.embedding_dimension
             else:
                 _validate_embedding(c.embedding, i, self.vector_db.embedding_dimension)
 
