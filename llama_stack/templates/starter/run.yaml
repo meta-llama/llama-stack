@@ -68,7 +68,7 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/faiss_store.db
-  - provider_id: ${env.ENABLE_SQLITE_VEC+sqlite-vec}
+  - provider_id: ${env.ENABLE_SQLITE_VEC:+sqlite-vec}
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/sqlite_vec.db

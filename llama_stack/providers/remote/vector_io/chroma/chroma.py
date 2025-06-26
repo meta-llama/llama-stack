@@ -137,6 +137,9 @@ class ChromaVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
     async def initialize(self) -> None:
         if isinstance(self.config, RemoteChromaVectorIOConfig):
+            if not self.config.url:
+                raise ValueError("URL is a required parameter for the remote Chroma provider's config")
+
             log.info(f"Connecting to Chroma server at: {self.config.url}")
             url = self.config.url.rstrip("/")
             parsed = urlparse(url)
