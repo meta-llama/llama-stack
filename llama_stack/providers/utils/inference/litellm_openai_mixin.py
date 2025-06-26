@@ -23,6 +23,13 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    OpenAIChatCompletion,
+    OpenAIChatCompletionChunk,
+    OpenAICompletion,
+    OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
+    OpenAIMessageParam,
+    OpenAIResponseFormatParam,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -31,16 +38,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.inference.inference import (
-    OpenAIChatCompletion,
-    OpenAIChatCompletionChunk,
-    OpenAICompletion,
-    OpenAIEmbeddingsResponse,
-    OpenAIEmbeddingUsage,
-    OpenAIMessageParam,
-    OpenAIResponseFormatParam,
-)
-from llama_stack.apis.models.models import Model
+from llama_stack.apis.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper

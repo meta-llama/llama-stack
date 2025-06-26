@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 image_name: postgres-demo
 apis:
 - agents
@@ -13,17 +13,17 @@ providers:
     provider_type: remote::vllm
     config:
       url: ${env.VLLM_URL:http://localhost:8000/v1}
-      max_tokens: ${env.VLLM_MAX_TOKENS:4096}
-      api_token: ${env.VLLM_API_TOKEN:fake}
-      tls_verify: ${env.VLLM_TLS_VERIFY:true}
+      max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
+      api_token: ${env.VLLM_API_TOKEN:=fake}
+      tls_verify: ${env.VLLM_TLS_VERIFY:=true}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
   vector_io:
-  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+  - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:}
+      url: ${env.CHROMADB_URL:+}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -35,35 +35,35 @@ providers:
     config:
       persistence_store:
         type: postgres
-        host: ${env.POSTGRES_HOST:localhost}
-        port: ${env.POSTGRES_PORT:5432}
-        db: ${env.POSTGRES_DB:llamastack}
-        user: ${env.POSTGRES_USER:llamastack}
-        password: ${env.POSTGRES_PASSWORD:llamastack}
+        host: ${env.POSTGRES_HOST:=localhost}
+        port: ${env.POSTGRES_PORT:=5432}
+        db: ${env.POSTGRES_DB:=llamastack}
+        user: ${env.POSTGRES_USER:=llamastack}
+        password: ${env.POSTGRES_PASSWORD:=llamastack}
       responses_store:
         type: postgres
-        host: ${env.POSTGRES_HOST:localhost}
-        port: ${env.POSTGRES_PORT:5432}
-        db: ${env.POSTGRES_DB:llamastack}
-        user: ${env.POSTGRES_USER:llamastack}
-        password: ${env.POSTGRES_PASSWORD:llamastack}
+        host: ${env.POSTGRES_HOST:=localhost}
+        port: ${env.POSTGRES_PORT:=5432}
+        db: ${env.POSTGRES_DB:=llamastack}
+        user: ${env.POSTGRES_USER:=llamastack}
+        password: ${env.POSTGRES_PASSWORD:=llamastack}
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:}
-      sinks: ${env.TELEMETRY_SINKS:console,otel_trace}
-      otel_trace_endpoint: ${env.OTEL_TRACE_ENDPOINT:http://localhost:4318/v1/traces}
+      service_name: ${env.OTEL_SERVICE_NAME:+}
+      sinks: ${env.TELEMETRY_SINKS:=console,otel_trace}
+      otel_trace_endpoint: ${env.OTEL_TRACE_ENDPOINT:=http://localhost:4318/v1/traces}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
@@ -73,19 +73,19 @@ providers:
     config: {}
 metadata_store:
   type: postgres
-  host: ${env.POSTGRES_HOST:localhost}
-  port: ${env.POSTGRES_PORT:5432}
-  db: ${env.POSTGRES_DB:llamastack}
-  user: ${env.POSTGRES_USER:llamastack}
-  password: ${env.POSTGRES_PASSWORD:llamastack}
-  table_name: ${env.POSTGRES_TABLE_NAME:llamastack_kvstore}
+  host: ${env.POSTGRES_HOST:=localhost}
+  port: ${env.POSTGRES_PORT:=5432}
+  db: ${env.POSTGRES_DB:=llamastack}
+  user: ${env.POSTGRES_USER:=llamastack}
+  password: ${env.POSTGRES_PASSWORD:=llamastack}
+  table_name: ${env.POSTGRES_TABLE_NAME:=llamastack_kvstore}
 inference_store:
   type: postgres
-  host: ${env.POSTGRES_HOST:localhost}
-  port: ${env.POSTGRES_PORT:5432}
-  db: ${env.POSTGRES_DB:llamastack}
-  user: ${env.POSTGRES_USER:llamastack}
-  password: ${env.POSTGRES_PASSWORD:llamastack}
+  host: ${env.POSTGRES_HOST:=localhost}
+  port: ${env.POSTGRES_PORT:=5432}
+  db: ${env.POSTGRES_DB:=llamastack}
+  user: ${env.POSTGRES_USER:=llamastack}
+  password: ${env.POSTGRES_PASSWORD:=llamastack}
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}

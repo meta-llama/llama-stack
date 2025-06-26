@@ -7,7 +7,7 @@
 import pytest
 
 from llama_stack.apis.common.content_types import TextContentItem
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     CompletionMessage,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,

@@ -20,7 +20,7 @@ from typing_extensions import TypedDict
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.common.responses import Order
 from llama_stack.apis.models import Model
-from llama_stack.apis.telemetry.telemetry import MetricResponseMixin
+from llama_stack.apis.telemetry import MetricResponseMixin
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,

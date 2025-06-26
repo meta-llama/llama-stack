@@ -16,8 +16,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from llama_stack.apis.files import Files
-from llama_stack.apis.inference import InterleavedContent
-from llama_stack.apis.inference.inference import Inference
+from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
