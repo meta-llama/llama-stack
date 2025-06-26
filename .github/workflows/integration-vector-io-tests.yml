@@ -49,7 +49,7 @@ jobs:
         run: |
           echo "Waiting for ChromaDB to be ready..."
           for i in {1..30}; do
-            if curl -s http://localhost:8000/api/v1/heartbeat | grep -q "nanosecond heartbeat"; then
+            if curl -s http://localhost:8000/api/v2/heartbeat | grep -q "nanosecond heartbeat"; then
               echo "ChromaDB is ready!"
               exit 0
             fi
@@ -85,6 +85,11 @@ jobs:
           free -h
           df -h
 
+      - name: Create sanitized provider name
+        if: ${{ always() }}
+        run: |
+          echo "SANITIZED_PROVIDER=${matrix.vector-io-provider//:/_}" >> $GITHUB_ENV
+
       - name: Write ChromaDB logs to file
         if: ${{ always() }}
         run: |
@@ -94,7 +99,7 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: vector-io-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.vector-io-provider }}-${{ matrix.python-version }}
+          name: vector-io-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SANITIZED_PROVIDER }}-${{ matrix.python-version }}
           path: |
             *.log
           retention-days: 1
