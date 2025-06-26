@@ -35,6 +35,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Setup ollama
+        uses: ./.github/actions/setup-ollama
+
       - name: Setup Chroma
         run: |
           docker run --rm -d --pull always \
@@ -71,13 +74,13 @@ jobs:
 
       - name: Run Vector IO Integration Tests
         env:
-          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
           ENABLE_CHROMADB: true
           CHROMADB_URL: http://localhost:8000
+          OLLAMA_URL: "http://0.0.0.0:11434"
         run: |
-          uv run pytest -sv --stack-config="inference=fireworks,vector_io=${{ matrix.vector-io-provider }}" \
+          uv run pytest -sv --stack-config="inference=ollama,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
-            --embedding-model nomic-ai/nomic-embed-text-v1.5
+            --embedding-model all-MiniLM-L6-v2
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}
