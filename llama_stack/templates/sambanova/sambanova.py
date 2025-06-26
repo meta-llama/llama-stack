@@ -73,17 +73,17 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         ),
         Provider(
-            provider_id="${env.ENABLE_CHROMADB+chromadb}",
+            provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:}"),
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:+}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_PGVECTOR+pgvector}",
+            provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
-                db="${env.PGVECTOR_DB:}",
-                user="${env.PGVECTOR_USER:}",
-                password="${env.PGVECTOR_PASSWORD:}",
+                db="${env.PGVECTOR_DB:+}",
+                user="${env.PGVECTOR_USER:+}",
+                password="${env.PGVECTOR_PASSWORD:+}",
             ),
         ),
     ]
