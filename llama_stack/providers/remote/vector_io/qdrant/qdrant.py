@@ -370,12 +370,7 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         if params is not None:
             distance_metric = params.get("distance_metric")
 
-        # Create metadata dict with distance_metric if provided
-        metadata = None
-        if distance_metric is not None:
-            metadata = {"distance_metric": distance_metric}
-
-        await index.insert_chunks(chunks, metadata=metadata)
+        await index.insert_chunks(chunks, distance_metric=distance_metric)
 
     async def query_chunks(
         self,
