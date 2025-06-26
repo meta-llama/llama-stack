@@ -25,7 +25,7 @@ class LlamaStackApi:
     def run_scoring(self, row, scoring_function_ids: list[str], scoring_params: dict | None):
         """Run scoring on a single row"""
         if not scoring_params:
-            scoring_params = {fn_id: None for fn_id in scoring_function_ids}
+            scoring_params = dict.fromkeys(scoring_function_ids)
         return self.client.scoring.score(input_rows=[row], scoring_functions=scoring_params)
 
 

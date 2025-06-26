@@ -180,7 +180,7 @@ async def start_trace(name: str, attributes: dict[str, Any] = None) -> TraceCont
 
     trace_id = generate_trace_id()
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
-    attributes = {marker: True for marker in ROOT_SPAN_MARKERS} | (attributes or {})
+    attributes = dict.fromkeys(ROOT_SPAN_MARKERS, True) | (attributes or {})
     context.push_span(name, attributes)
 
     CURRENT_TRACE_CONTEXT.set(context)

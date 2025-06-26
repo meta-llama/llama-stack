@@ -8,7 +8,7 @@ from collections.abc import AsyncGenerator
 from openai import OpenAI
 
 from llama_stack.apis.inference import *  # noqa: F403
-from llama_stack.apis.inference.inference import OpenAIEmbeddingsResponse
+from llama_stack.apis.inference import OpenAIEmbeddingsResponse
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper

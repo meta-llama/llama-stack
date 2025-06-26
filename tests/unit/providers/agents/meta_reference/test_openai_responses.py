@@ -29,7 +29,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseTextFormat,
     WebSearchToolTypes,
 )
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIDeveloperMessageParam,

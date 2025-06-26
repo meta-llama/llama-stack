@@ -45,7 +45,7 @@ from llama_stack.apis.agents.openai_responses import (
     WebSearchToolTypes,
 )
 from llama_stack.apis.common.content_types import TextContentItem
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     Inference,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletion,
@@ -584,7 +584,7 @@ class OpenAIResponsesImpl:
         from llama_stack.apis.agents.openai_responses import (
             MCPListToolsTool,
         )
-        from llama_stack.apis.tools.tools import Tool
+        from llama_stack.apis.tools import Tool
 
         mcp_tool_to_server = {}
 

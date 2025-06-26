@@ -15,8 +15,8 @@ import numpy as np
 import sqlite_vec
 from numpy.typing import NDArray
 
-from llama_stack.apis.files.files import Files
-from llama_stack.apis.inference.inference import Inference
+from llama_stack.apis.files import Files
+from llama_stack.apis.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
@@ -64,7 +64,7 @@ def _normalize_scores(scores: dict[str, float]) -> dict[str, float]:
     score_range = max_score - min_score
     if score_range > 0:
         return {doc_id: (score - min_score) / score_range for doc_id, score in scores.items()}
-    return {doc_id: 1.0 for doc_id in scores}
+    return dict.fromkeys(scores, 1.0)
 
 
 def _weighted_rerank(
