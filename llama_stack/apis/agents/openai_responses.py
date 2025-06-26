@@ -45,9 +45,54 @@ register_schema(OpenAIResponseInputMessageContent, name="OpenAIResponseInputMess
 
 
 @json_schema_type
+class OpenAIResponseAnnotationFileCitation(BaseModel):
+    type: Literal["file_citation"] = "file_citation"
+    file_id: str
+    filename: str
+    index: int
+
+
+@json_schema_type
+class OpenAIResponseAnnotationCitation(BaseModel):
+    type: Literal["url_citation"] = "url_citation"
+    end_index: int
+    start_index: int
+    title: str
+    url: str
+
+
+@json_schema_type
+class OpenAIResponseAnnotationContainerFileCitation(BaseModel):
+    type: Literal["container_file_citation"] = "container_file_citation"
+    container_id: str
+    end_index: int
+    file_id: str
+    filename: str
+    start_index: int
+
+
+@json_schema_type
+class OpenAIResponseAnnotationFilePath(BaseModel):
+    type: Literal["file_path"] = "file_path"
+    file_id: str
+    index: int
+
+
+OpenAIResponseAnnotations = Annotated[
+    OpenAIResponseAnnotationFileCitation
+    | OpenAIResponseAnnotationCitation
+    | OpenAIResponseAnnotationContainerFileCitation
+    | OpenAIResponseAnnotationFilePath,
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseAnnotations, name="OpenAIResponseAnnotations")
+
+
+@json_schema_type
 class OpenAIResponseOutputMessageContentOutputText(BaseModel):
     text: str
     type: Literal["output_text"] = "output_text"
+    annotations: list[OpenAIResponseAnnotations] = Field(default_factory=list)
 
 
 OpenAIResponseOutputMessageContent = Annotated[
@@ -384,9 +429,16 @@ OpenAIResponseInput = Annotated[
 register_schema(OpenAIResponseInput, name="OpenAIResponseInput")
 
 
+# Must match type Literals of OpenAIResponseInputToolWebSearch below
+WebSearchToolTypes = ["web_search", "web_search_preview", "web_search_preview_2025_03_11"]
+
+
 @json_schema_type
 class OpenAIResponseInputToolWebSearch(BaseModel):
-    type: Literal["web_search"] | Literal["web_search_preview_2025_03_11"] = "web_search"
+    # Must match values of WebSearchToolTypes above
+    type: Literal["web_search"] | Literal["web_search_preview"] | Literal["web_search_preview_2025_03_11"] = (
+        "web_search"
+    )
     # TODO: actually use search_context_size somewhere...
     search_context_size: str | None = Field(default="medium", pattern="^low|medium|high$")
     # TODO: add user_location
