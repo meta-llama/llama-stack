@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
-class TelemetrySink(str, Enum):
+class TelemetrySink(StrEnum):
     OTEL_TRACE = "otel_trace"
     OTEL_METRIC = "otel_metric"
     SQLITE = "sqlite"

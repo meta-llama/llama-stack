@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -159,7 +159,7 @@ class LoggingConfig(BaseModel):
     )
 
 
-class AuthProviderType(str, Enum):
+class AuthProviderType(StrEnum):
     """Supported authentication provider types."""
 
     OAUTH2_TOKEN = "oauth2_token"
@@ -182,7 +182,7 @@ class AuthenticationRequiredError(Exception):
     pass
 
 
-class QuotaPeriod(str, Enum):
+class QuotaPeriod(StrEnum):
     DAY = "day"
 
 
