@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vector-io-provider: ["remote::chromadb", "inline::faiss"]
+        vector-io-provider: ["remote::chromadb", "inline::faiss", "inline::sqlite-vec"]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -76,7 +76,7 @@ jobs:
           ENABLE_CHROMADB: ${{ matrix.vector-io-provider == 'remote::chromadb' && 'true' || '' }}
           CHROMADB_URL: ${{ matrix.vector-io-provider == 'remote::chromadb' && 'http://localhost:8000' || '' }}
         run: |
-          uv run pytest -sv --stack-config="inference=sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
+          uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
             --embedding-model all-MiniLM-L6-v2
 
