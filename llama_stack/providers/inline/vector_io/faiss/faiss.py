@@ -73,7 +73,7 @@ class FaissIndex(EmbeddingIndex):
             self.chunk_by_index = {int(k): Chunk.model_validate_json(v) for k, v in data["chunk_by_index"].items()}
 
             buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
-            self.index = faiss.deserialize_index(np.loadtxt(buffer, dtype=np.uint8))
+            self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
 
     async def _save_index(self):
         if not self.kvstore or not self.bank_id:
@@ -81,7 +81,7 @@ class FaissIndex(EmbeddingIndex):
 
         np_index = faiss.serialize_index(self.index)
         buffer = io.BytesIO()
-        np.savetxt(buffer, np_index)
+        np.save(buffer, np_index, allow_pickle=False)
         data = {
             "chunk_by_index": {k: v.model_dump_json() for k, v in self.chunk_by_index.items()},
             "faiss_index": base64.b64encode(buffer.getvalue()).decode("utf-8"),
