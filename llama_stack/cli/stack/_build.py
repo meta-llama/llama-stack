@@ -335,7 +335,7 @@ def _generate_run_config(
             run_config.providers[api].append(p_spec)
 
     run_config_file = build_dir / f"{image_name}-run.yaml"
-    
+
     # Create the directory structure for the run config file
     os.makedirs(run_config_file.parent, exist_ok=True)
 
