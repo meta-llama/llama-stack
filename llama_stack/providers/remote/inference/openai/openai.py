@@ -10,7 +10,7 @@ from typing import Any
 
 from openai import AsyncOpenAI
 
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,

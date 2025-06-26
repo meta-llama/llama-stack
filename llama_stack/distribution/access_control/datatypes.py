@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Self
 
 from pydantic import BaseModel, model_validator
@@ -12,7 +12,7 @@ from pydantic import BaseModel, model_validator
 from .conditions import parse_conditions
 
 
-class Action(str, Enum):
+class Action(StrEnum):
     CREATE = "create"
     READ = "read"
     UPDATE = "update"

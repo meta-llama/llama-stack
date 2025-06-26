@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
 
 
-class TelemetrySink(str, Enum):
+class TelemetrySink(StrEnum):
     OTEL_TRACE = "otel_trace"
     OTEL_METRIC = "otel_metric"
     SQLITE = "sqlite"
@@ -20,12 +20,12 @@ class TelemetrySink(str, Enum):
 
 
 class TelemetryConfig(BaseModel):
-    otel_trace_endpoint: str = Field(
-        default="http://localhost:4318/v1/traces",
+    otel_trace_endpoint: str | None = Field(
+        default=None,
         description="The OpenTelemetry collector endpoint URL for traces",
     )
-    otel_metric_endpoint: str = Field(
-        default="http://localhost:4318/v1/metrics",
+    otel_metric_endpoint: str | None = Field(
+        default=None,
         description="The OpenTelemetry collector endpoint URL for metrics",
     )
     service_name: str = Field(
@@ -52,7 +52,7 @@ class TelemetryConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "trace_store.db") -> dict[str, Any]:
         return {
-            "service_name": "${env.OTEL_SERVICE_NAME:\u200b}",
-            "sinks": "${env.TELEMETRY_SINKS:console,sqlite}",
-            "sqlite_db_path": "${env.SQLITE_STORE_DIR:" + __distro_dir__ + "}/" + db_name,
+            "service_name": "${env.OTEL_SERVICE_NAME:=\u200b}",
+            "sinks": "${env.TELEMETRY_SINKS:=console,sqlite}",
+            "sqlite_db_path": "${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
         }

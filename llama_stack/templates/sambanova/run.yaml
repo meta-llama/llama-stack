@@ -1,4 +1,4 @@
-version: '2'
+version: 2
 image_name: sambanova
 apis:
 - agents
@@ -24,19 +24,19 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/faiss_store.db
-  - provider_id: ${env.ENABLE_CHROMADB+chromadb}
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/faiss_store.db
+  - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:}
-  - provider_id: ${env.ENABLE_PGVECTOR+pgvector}
+      url: ${env.CHROMADB_URL:+}
+  - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
-      host: ${env.PGVECTOR_HOST:localhost}
-      port: ${env.PGVECTOR_PORT:5432}
-      db: ${env.PGVECTOR_DB:}
-      user: ${env.PGVECTOR_USER:}
-      password: ${env.PGVECTOR_PASSWORD:}
+      host: ${env.PGVECTOR_HOST:=localhost}
+      port: ${env.PGVECTOR_PORT:=5432}
+      db: ${env.PGVECTOR_DB:+}
+      user: ${env.PGVECTOR_USER:+}
+      password: ${env.PGVECTOR_PASSWORD:+}
   safety:
   - provider_id: sambanova
     provider_type: remote::sambanova
@@ -50,27 +50,27 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/agents_store.db
       responses_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/responses_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/responses_store.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: "${env.OTEL_SERVICE_NAME:\u200B}"
-      sinks: ${env.TELEMETRY_SINKS:console,sqlite}
-      sqlite_db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/trace_store.db
+      service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
+      sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
+      sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/trace_store.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
@@ -81,13 +81,13 @@ providers:
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
     config:
-      api_key: ${env.WOLFRAM_ALPHA_API_KEY:}
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:+}
 metadata_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/registry.db
 inference_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/sambanova}/inference_store.db
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/inference_store.db
 models:
 - metadata: {}
   model_id: sambanova/Meta-Llama-3.1-8B-Instruct

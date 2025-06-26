@@ -33,7 +33,7 @@ CATEGORIES = [
 ]
 
 # Initialize category levels with default level
-_category_levels: dict[str, int] = {category: DEFAULT_LOG_LEVEL for category in CATEGORIES}
+_category_levels: dict[str, int] = dict.fromkeys(CATEGORIES, DEFAULT_LOG_LEVEL)
 
 
 def config_to_category_levels(category: str, level: str):

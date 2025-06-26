@@ -13,7 +13,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetPurpose
-from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
     Api,
     BenchmarkInput,

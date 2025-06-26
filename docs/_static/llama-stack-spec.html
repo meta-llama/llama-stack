@@ -7390,6 +7390,147 @@
                 ],
                 "title": "AgentTurnResponseTurnStartPayload"
             },
+            "OpenAIResponseAnnotationCitation": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "url_citation",
+                        "default": "url_citation"
+                    },
+                    "end_index": {
+                        "type": "integer"
+                    },
+                    "start_index": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "end_index",
+                    "start_index",
+                    "title",
+                    "url"
+                ],
+                "title": "OpenAIResponseAnnotationCitation"
+            },
+            "OpenAIResponseAnnotationContainerFileCitation": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "container_file_citation",
+                        "default": "container_file_citation"
+                    },
+                    "container_id": {
+                        "type": "string"
+                    },
+                    "end_index": {
+                        "type": "integer"
+                    },
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "start_index": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "container_id",
+                    "end_index",
+                    "file_id",
+                    "filename",
+                    "start_index"
+                ],
+                "title": "OpenAIResponseAnnotationContainerFileCitation"
+            },
+            "OpenAIResponseAnnotationFileCitation": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "file_citation",
+                        "default": "file_citation"
+                    },
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "index": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "file_id",
+                    "filename",
+                    "index"
+                ],
+                "title": "OpenAIResponseAnnotationFileCitation"
+            },
+            "OpenAIResponseAnnotationFilePath": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "file_path",
+                        "default": "file_path"
+                    },
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "index": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "file_id",
+                    "index"
+                ],
+                "title": "OpenAIResponseAnnotationFilePath"
+            },
+            "OpenAIResponseAnnotations": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseAnnotationFileCitation"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseAnnotationCitation"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseAnnotationContainerFileCitation"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseAnnotationFilePath"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "file_citation": "#/components/schemas/OpenAIResponseAnnotationFileCitation",
+                        "url_citation": "#/components/schemas/OpenAIResponseAnnotationCitation",
+                        "container_file_citation": "#/components/schemas/OpenAIResponseAnnotationContainerFileCitation",
+                        "file_path": "#/components/schemas/OpenAIResponseAnnotationFilePath"
+                    }
+                }
+            },
             "OpenAIResponseInput": {
                 "oneOf": [
                     {
@@ -7766,6 +7907,10 @@
                             },
                             {
                                 "type": "string",
+                                "const": "web_search_preview"
+                            },
+                            {
+                                "type": "string",
                                 "const": "web_search_preview_2025_03_11"
                             }
                         ],
@@ -7855,12 +8000,19 @@
                         "type": "string",
                         "const": "output_text",
                         "default": "output_text"
+                    },
+                    "annotations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OpenAIResponseAnnotations"
+                        }
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "text",
-                    "type"
+                    "type",
+                    "annotations"
                 ],
                 "title": "OpenAIResponseOutputMessageContentOutputText"
             },

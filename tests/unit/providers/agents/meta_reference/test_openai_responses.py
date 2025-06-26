@@ -27,8 +27,9 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
+    WebSearchToolTypes,
 )
-from llama_stack.apis.inference.inference import (
+from llama_stack.apis.inference import (
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionContentPartTextParam,
     OpenAIDeveloperMessageParam,
@@ -161,11 +162,6 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
     input_text = "What is the capital of Ireland?"
     model = "meta-llama/Llama-3.1-8B-Instruct"
 
-    mock_inference_api.openai_chat_completion.side_effect = [
-        fake_stream("tool_call_completion.yaml"),
-        fake_stream(),
-    ]
-
     openai_responses_impl.tool_groups_api.get_tool.return_value = Tool(
         identifier="web_search",
         provider_id="client",
@@ -182,39 +178,50 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
     )
 
     # Execute
-    result = await openai_responses_impl.create_openai_response(
-        input=input_text,
-        model=model,
-        temperature=0.1,
-        tools=[
-            OpenAIResponseInputToolWebSearch(
-                name="web_search",
-            )
-        ],
-    )
+    for tool_name in WebSearchToolTypes:
+        # Reset mock states as we loop through each tool type
+        mock_inference_api.openai_chat_completion.side_effect = [
+            fake_stream("tool_call_completion.yaml"),
+            fake_stream(),
+        ]
+        openai_responses_impl.tool_groups_api.get_tool.reset_mock()
+        openai_responses_impl.tool_runtime_api.invoke_tool.reset_mock()
+        openai_responses_impl.responses_store.store_response_object.reset_mock()
 
-    # Verify
-    first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
-    assert first_call.kwargs["messages"][0].content == "What is the capital of Ireland?"
-    assert first_call.kwargs["tools"] is not None
-    assert first_call.kwargs["temperature"] == 0.1
+        result = await openai_responses_impl.create_openai_response(
+            input=input_text,
+            model=model,
+            temperature=0.1,
+            tools=[
+                OpenAIResponseInputToolWebSearch(
+                    name=tool_name,
+                )
+            ],
+        )
 
-    second_call = mock_inference_api.openai_chat_completion.call_args_list[1]
-    assert second_call.kwargs["messages"][-1].content == "Dublin"
-    assert second_call.kwargs["temperature"] == 0.1
+        # Verify
+        first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
+        assert first_call.kwargs["messages"][0].content == "What is the capital of Ireland?"
+        assert first_call.kwargs["tools"] is not None
+        assert first_call.kwargs["temperature"] == 0.1
 
-    openai_responses_impl.tool_groups_api.get_tool.assert_called_once_with("web_search")
-    openai_responses_impl.tool_runtime_api.invoke_tool.assert_called_once_with(
-        tool_name="web_search",
-        kwargs={"query": "What is the capital of Ireland?"},
-    )
+        second_call = mock_inference_api.openai_chat_completion.call_args_list[1]
+        assert second_call.kwargs["messages"][-1].content == "Dublin"
+        assert second_call.kwargs["temperature"] == 0.1
 
-    openai_responses_impl.responses_store.store_response_object.assert_called_once()
+        openai_responses_impl.tool_groups_api.get_tool.assert_called_once_with("web_search")
+        openai_responses_impl.tool_runtime_api.invoke_tool.assert_called_once_with(
+            tool_name="web_search",
+            kwargs={"query": "What is the capital of Ireland?"},
+        )
 
-    # Check that we got the content from our mocked tool execution result
-    assert len(result.output) >= 1
-    assert isinstance(result.output[1], OpenAIResponseMessage)
-    assert result.output[1].content[0].text == "Dublin"
+        openai_responses_impl.responses_store.store_response_object.assert_called_once()
+
+        # Check that we got the content from our mocked tool execution result
+        assert len(result.output) >= 1
+        assert isinstance(result.output[1], OpenAIResponseMessage)
+        assert result.output[1].content[0].text == "Dublin"
+        assert result.output[1].content[0].annotations == []
 
 
 @pytest.mark.asyncio

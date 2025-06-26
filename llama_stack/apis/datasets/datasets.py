@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
@@ -13,7 +13,7 @@ from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.schema_utils import json_schema_type, register_schema, webmethod
 
 
-class DatasetPurpose(str, Enum):
+class DatasetPurpose(StrEnum):
     """
     Purpose of the dataset. Each purpose has a required input data schema.
 

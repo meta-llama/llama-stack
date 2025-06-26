@@ -7,7 +7,7 @@ from typing import Any
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
-from llama_stack.apis.inference.inference import Inference
+from llama_stack.apis.inference import Inference
 from llama_stack.apis.scoring import (
     ScoreBatchResponse,
     ScoreResponse,
