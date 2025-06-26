@@ -22,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
-    "fastapi>=0.115.0,<1.0",
-    "fire",
+    "fastapi>=0.115.0,<1.0",                  # server
+    "fire",                                   # for MCP in LLS client
     "httpx",
     "huggingface-hub>=0.30.0,<1.0",
     "jinja2>=3.1.6",
@@ -34,15 +34,18 @@ dependencies = [
     "python-dotenv",
     "python-jose",
     "pydantic>=2",
-    "requests",
     "rich",
-    "setuptools",
     "starlette",
     "termcolor",
     "tiktoken",
     "pillow",
     "h11>=0.16.0",
-    "python-multipart>=0.0.20",
+    "python-multipart>=0.0.20",               # For fastapi Form
+    "uvicorn>=0.34.0",                        # server
+    "opentelemetry-sdk",                      # server
+    "opentelemetry-exporter-otlp-proto-http", # server
+    "aiosqlite>=0.21.0",                      # server - for metadata store
+    "asyncpg",                                # for metadata store
 ]
 
 [project.optional-dependencies]
@@ -67,7 +70,6 @@ dev = [
     "types-requests",
     "types-setuptools",
     "pre-commit",
-    "uvicorn",
     "ruamel.yaml",        # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
@@ -80,7 +82,6 @@ unit = [
     "mcp",
     "chardet",
     "qdrant-client",
-    "opentelemetry-exporter-otlp-proto-http",
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
     "blobfile",
@@ -96,8 +97,6 @@ test = [
     "aiohttp",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
-    "opentelemetry-sdk",
-    "opentelemetry-exporter-otlp-proto-http",
     "chardet",
     "pypdf",
     "mcp",
@@ -106,6 +105,7 @@ test = [
     "transformers",
     "sqlalchemy",
     "sqlalchemy[asyncio]>=2.0.41",
+    "requests",
 ]
 docs = [
     "sphinx-autobuild",
@@ -122,6 +122,7 @@ docs = [
     "tomli",
     "linkify",
     "sphinxcontrib.openapi",
+    "requests",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
 
