@@ -35,6 +35,9 @@ INVALID_SPAN_ID = 0x0000000000000000
 INVALID_TRACE_ID = 0x00000000000000000000000000000000
 
 ROOT_SPAN_MARKERS = ["__root__", "__root_span__"]
+# The logical root span may not be visible to this process if a parent context
+# is passed in. The local root span is the first local span in a trace.
+LOCAL_ROOT_SPAN_MARKER = "__local_root_span__"
 
 
 def trace_id_to_str(trace_id: int) -> str:
@@ -180,7 +183,13 @@ async def start_trace(name: str, attributes: dict[str, Any] = None) -> TraceCont
 
     trace_id = generate_trace_id()
     context = TraceContext(BACKGROUND_LOGGER, trace_id)
-    attributes = {marker: True for marker in ROOT_SPAN_MARKERS} | (attributes or {})
+    # Mark this span as the root for the trace for now. The processing of
+    # traceparent context if supplied comes later and will result in the
+    # ROOT_SPAN_MARKERS being removed. Also mark this is the 'local' root,
+    # i.e. the root of the spans originating in this process as this is
+    # needed to ensure that we insert this 'local' root span's id into
+    # the trace record in sqlite store.
+    attributes = dict.fromkeys(ROOT_SPAN_MARKERS, True) | {LOCAL_ROOT_SPAN_MARKER: True} | (attributes or {})
     context.push_span(name, attributes)
 
     CURRENT_TRACE_CONTEXT.set(context)

@@ -26,39 +26,44 @@ class TestReplaceEnvVars(unittest.TestCase):
         self.assertEqual(replace_env_vars("${env.TEST_VAR}"), "test_value")
 
     def test_default_value_when_not_set(self):
-        self.assertEqual(replace_env_vars("${env.NOT_SET:default}"), "default")
+        self.assertEqual(replace_env_vars("${env.NOT_SET:=default}"), "default")
 
     def test_default_value_when_set(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR:default}"), "test_value")
+        self.assertEqual(replace_env_vars("${env.TEST_VAR:=default}"), "test_value")
 
     def test_default_value_when_empty(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:default}"), "default")
+        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:=default}"), "default")
+
+    def test_empty_var_no_default(self):
+        self.assertEqual(replace_env_vars("${env.EMPTY_VAR_NO_DEFAULT:+}"), None)
 
     def test_conditional_value_when_set(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR+conditional}"), "conditional")
+        self.assertEqual(replace_env_vars("${env.TEST_VAR:+conditional}"), "conditional")
 
     def test_conditional_value_when_not_set(self):
-        self.assertEqual(replace_env_vars("${env.NOT_SET+conditional}"), "")
+        self.assertEqual(replace_env_vars("${env.NOT_SET:+conditional}"), None)
 
     def test_conditional_value_when_empty(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR+conditional}"), "")
+        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:+conditional}"), None)
 
     def test_conditional_value_with_zero(self):
-        self.assertEqual(replace_env_vars("${env.ZERO_VAR+conditional}"), "conditional")
+        self.assertEqual(replace_env_vars("${env.ZERO_VAR:+conditional}"), "conditional")
 
     def test_mixed_syntax(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR:default} and ${env.NOT_SET+conditional}"), "test_value and ")
         self.assertEqual(
-            replace_env_vars("${env.NOT_SET:default} and ${env.TEST_VAR+conditional}"), "default and conditional"
+            replace_env_vars("${env.TEST_VAR:=default} and ${env.NOT_SET:+conditional}"), "test_value and "
+        )
+        self.assertEqual(
+            replace_env_vars("${env.NOT_SET:=default} and ${env.TEST_VAR:+conditional}"), "default and conditional"
         )
 
     def test_nested_structures(self):
         data = {
-            "key1": "${env.TEST_VAR:default}",
-            "key2": ["${env.NOT_SET:default}", "${env.TEST_VAR+conditional}"],
-            "key3": {"nested": "${env.NOT_SET+conditional}"},
+            "key1": "${env.TEST_VAR:=default}",
+            "key2": ["${env.NOT_SET:=default}", "${env.TEST_VAR:+conditional}"],
+            "key3": {"nested": "${env.NOT_SET:+conditional}"},
         }
-        expected = {"key1": "test_value", "key2": ["default", "conditional"], "key3": {"nested": ""}}
+        expected = {"key1": "test_value", "key2": ["default", "conditional"], "key3": {"nested": None}}
         self.assertEqual(replace_env_vars(data), expected)
 
 

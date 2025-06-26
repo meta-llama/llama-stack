@@ -6,7 +6,7 @@
 
 from dataclasses import dataclass
 
-from llama_stack.apis.models.models import ModelType
+from llama_stack.apis.models import ModelType
 from llama_stack.providers.utils.inference.model_registry import (
     ProviderModelEntry,
 )

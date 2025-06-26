@@ -13,7 +13,7 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.scoring,
             provider_type="inline::basic",
-            pip_packages=[],
+            pip_packages=["requests"],
             module="llama_stack.providers.inline.scoring.basic",
             config_class="llama_stack.providers.inline.scoring.basic.BasicScoringConfig",
             api_dependencies=[

@@ -14,6 +14,8 @@ from opentelemetry.sdk.trace import SpanProcessor
 from opentelemetry.trace import Span
 from opentelemetry.trace.span import format_span_id, format_trace_id
 
+from llama_stack.providers.utils.telemetry.tracing import LOCAL_ROOT_SPAN_MARKER
+
 
 class SQLiteSpanProcessor(SpanProcessor):
     def __init__(self, conn_string):
@@ -124,7 +126,7 @@ class SQLiteSpanProcessor(SpanProcessor):
                 (
                     trace_id,
                     service_name,
-                    (span_id if span.attributes.get("__root_span__") == "true" else None),
+                    (span_id if span.attributes.get(LOCAL_ROOT_SPAN_MARKER) else None),
                     datetime.fromtimestamp(span.start_time / 1e9, UTC).isoformat(),
                     datetime.fromtimestamp(span.end_time / 1e9, UTC).isoformat(),
                 ),

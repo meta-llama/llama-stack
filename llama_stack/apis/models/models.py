@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,7 +22,7 @@ class CommonModelFields(BaseModel):
 
 
 @json_schema_type
-class ModelType(str, Enum):
+class ModelType(StrEnum):
     llm = "llm"
     embedding = "embedding"
 

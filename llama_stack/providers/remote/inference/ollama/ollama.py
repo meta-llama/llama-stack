@@ -32,15 +32,6 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
-    ResponseFormat,
-    SamplingParams,
-    TextTruncation,
-    ToolChoice,
-    ToolConfig,
-    ToolDefinition,
-    ToolPromptFormat,
-)
-from llama_stack.apis.inference.inference import (
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAICompletion,
@@ -48,6 +39,13 @@ from llama_stack.apis.inference.inference import (
     OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
+    ResponseFormat,
+    SamplingParams,
+    TextTruncation,
+    ToolChoice,
+    ToolConfig,
+    ToolDefinition,
+    ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
 from llama_stack.log import get_logger
