@@ -1,0 +1,100 @@
+name: Vector IO Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'llama_stack/**'
+      - 'tests/integration/vector_io/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/integration-vector-io-tests.yml' # This workflow
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vector-io-provider: ["remote::chromadb", "inline::faiss"]
+        python-version: ["3.12", "3.13"]
+      fail-fast: false # we want to run all tests regardless of failure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup-runner
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Setup Chroma
+        run: |
+          docker run --rm -d --pull always \
+            --name chromadb \
+            -p 8000:8000 \
+            -v ~/chroma:/chroma/chroma \
+            -e IS_PERSISTENT=TRUE \
+            -e ANONYMIZED_TELEMETRY=FALSE \
+            chromadb/chroma:latest
+
+      - name: Wait for ChromaDB to be ready
+        run: |
+          echo "Waiting for ChromaDB to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/api/v1/heartbeat | grep -q "nanosecond heartbeat"; then
+              echo "ChromaDB is ready!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "ChromaDB failed to start"
+          docker logs chromadb
+          exit 1
+
+      - name: Build Llama Stack
+        run: |
+          uv run llama stack build --template starter --image-type venv
+
+      - name: Check Storage and Memory Available Before Tests
+        if: ${{ always() }}
+        run: |
+          free -h
+          df -h
+
+      - name: Run Vector IO Integration Tests
+        env:
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+          ENABLE_CHROMADB: true
+          CHROMADB_URL: http://localhost:8000
+        run: |
+          uv run pytest -sv --stack-config="inference=fireworks,vector_io=${{ matrix.vector-io-provider }}" \
+            tests/integration/vector_io \
+            --embedding-model nomic-ai/nomic-embed-text-v1.5
+
+      - name: Check Storage and Memory Available After Tests
+        if: ${{ always() }}
+        run: |
+          free -h
+          df -h
+
+      - name: Write ChromaDB logs to file
+        if: ${{ always() }}
+        run: |
+          docker logs chromadb > chromadb.log
+
+      - name: Upload all logs to artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: vector-io-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.vector-io-provider }}-${{ matrix.python-version }}
+          path: |
+            *.log
+          retention-days: 1
