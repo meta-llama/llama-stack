@@ -188,6 +188,7 @@ class WeaviateVectorIOAdapter(
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
+        params: dict[str, Any] | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
