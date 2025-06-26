@@ -7,7 +7,7 @@ import {
 } from "@/lib/types";
 import { LogsTable, LogTableRow } from "@/components/logs/logs-table";
 import { usePagination } from "@/hooks/usePagination";
-import { client } from "@/lib/client";
+import { getClient } from "@/lib/client";
 import type { ResponseListResponse } from "llama-stack-client/resources/responses/responses";
 import {
   isMessageInput,
@@ -131,7 +131,7 @@ export function ResponsesTable({ paginationOptions }: ResponsesTableProps) {
     model?: string;
     order?: string;
   }) => {
-    const response = await client.responses.list({
+    const response = await getClient().responses.list({
       after: params.after,
       limit: params.limit,
       ...(params.model && { model: params.model }),

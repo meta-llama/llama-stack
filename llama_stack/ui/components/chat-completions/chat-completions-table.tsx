@@ -11,7 +11,7 @@ import {
   extractDisplayableText,
 } from "@/lib/format-message-content";
 import { usePagination } from "@/hooks/usePagination";
-import { client } from "@/lib/client";
+import { getClient } from "@/lib/client";
 
 interface ChatCompletionsTableProps {
   /** Optional pagination configuration */
@@ -38,7 +38,7 @@ export function ChatCompletionsTable({
     model?: string;
     order?: string;
   }) => {
-    const response = await client.chat.completions.list({
+    const response = await getClient().chat.completions.list({
       after: params.after,
       limit: params.limit,
       ...(params.model && { model: params.model }),

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { PaginationStatus, UsePaginationOptions } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { AuthenticationError } from "llama-stack-client";
 
 interface PaginationState<T> {
   data: T[];
@@ -51,6 +53,7 @@ export function usePagination<T>({
     error: null,
     lastId: null,
   });
+  const router = useRouter();
 
   // Use refs to avoid stale closures
   const stateRef = useRef(state);
@@ -91,6 +94,12 @@ export function usePagination<T>({
           status: "idle",
         }));
       } catch (err) {
+        // Handle authentication errors by redirecting to login
+        if (err instanceof AuthenticationError) {
+          router.push("/login");
+          return;
+        }
+
         const errorMessage = isInitialLoad
           ? `Failed to load ${errorMessagePrefix}. Please try refreshing the page.`
           : `Failed to load more ${errorMessagePrefix}. Please try again.`;
@@ -107,7 +116,7 @@ export function usePagination<T>({
         }));
       }
     },
-    [limit, model, order, fetchFunction, errorMessagePrefix],
+    [limit, model, order, fetchFunction, errorMessagePrefix, router],
   );
 
   /**

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { AuthProvider } from "@/contexts/auth-context";
+import { UserMenu } from "@/components/auth/user-menu";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,22 +35,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="flex flex-col flex-1">
-              {/* Header with aligned elements */}
-              <div className="flex items-center p-4 border-b">
-                <div className="flex-none">
-                  <SidebarTrigger />
+          <AuthProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <main className="flex flex-col flex-1">
+                {/* Header with aligned elements */}
+                <div className="flex items-center p-4 border-b">
+                  <div className="flex-none">
+                    <SidebarTrigger />
+                  </div>
+                  <div className="flex-1 text-center"></div>
+                  <div className="flex-none flex items-center gap-2">
+                    <ModeToggle />
+                    <UserMenu />
+                  </div>
                 </div>
-                <div className="flex-1 text-center"></div>
-                <div className="flex-none">
-                  <ModeToggle />
-                </div>
-              </div>
-              <div className="flex flex-col flex-1 p-4">{children}</div>
-            </main>
-          </SidebarProvider>
+                <div className="flex flex-col flex-1 p-4">{children}</div>
+              </main>
+            </SidebarProvider>
+          </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import type { ResponseObject } from "llama-stack-client/resources/responses/responses";
 import { OpenAIResponse, InputItemListResponse } from "@/lib/types";
 import { ResponseDetailView } from "@/components/responses/responses-detail";
-import { client } from "@/lib/client";
+import { getClient } from "@/lib/client";
 
 export default function ResponseDetailPage() {
   const params = useParams();
@@ -58,6 +58,8 @@ export default function ResponseDetailPage() {
       setInputItemsError(null);
       setResponseDetail(null);
       setInputItems(null);
+
+      const client = getClient();
 
       try {
         const [responseResult, inputItemsResult] = await Promise.allSettled([

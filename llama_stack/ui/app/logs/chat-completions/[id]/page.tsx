@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ChatCompletion } from "@/lib/types";
 import { ChatCompletionDetailView } from "@/components/chat-completions/chat-completion-detail";
-import { client } from "@/lib/client";
+import { getClient } from "@/lib/client";
 
 export default function ChatCompletionDetailPage() {
   const params = useParams();
@@ -27,7 +27,7 @@ export default function ChatCompletionDetailPage() {
       setError(null);
       setCompletionDetail(null);
       try {
-        const response = await client.chat.completions.retrieve(id);
+        const response = await getClient().chat.completions.retrieve(id);
         setCompletionDetail(response as ChatCompletion);
       } catch (err) {
         console.error(
