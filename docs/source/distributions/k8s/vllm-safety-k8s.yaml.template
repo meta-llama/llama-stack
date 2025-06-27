@@ -26,16 +26,8 @@ spec:
         app.kubernetes.io/name: vllm-safety
         workload-type: inference
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: workload-type
-                operator: In
-                values:
-                - inference
-            topologyKey: kubernetes.io/hostname  # Ensures no two inference pods on same node
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: gpu
       containers:
       - name: vllm-safety
         image: vllm/vllm-openai:latest

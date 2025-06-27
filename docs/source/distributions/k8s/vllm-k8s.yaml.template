@@ -6,6 +6,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem
+  storageClassName: gp2
   resources:
     requests:
       storage: 50Gi
@@ -25,16 +26,8 @@ spec:
         app.kubernetes.io/name: vllm
         workload-type: inference
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: workload-type
-                operator: In
-                values:
-                - inference
-            topologyKey: kubernetes.io/hostname  # Ensures no two inference pods on same node
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: gpu
       containers:
       - name: vllm
         image: vllm/vllm-openai:latest
@@ -49,6 +42,11 @@ spec:
               key: token
         ports:
           - containerPort: 8000
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+          limits:
+            nvidia.com/gpu: 1
         volumeMounts:
           - name: llama-storage
             mountPath: /root/.cache/huggingface
