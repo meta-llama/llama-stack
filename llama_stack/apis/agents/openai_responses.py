@@ -230,6 +230,13 @@ class OpenAIResponseObject(BaseModel):
 
 
 @json_schema_type
+class OpenAIDeleteResponseObject(BaseModel):
+    id: str
+    object: Literal["response"] = "response"
+    deleted: bool = True
+
+
+@json_schema_type
 class OpenAIResponseObjectStreamResponseCreated(BaseModel):
     response: OpenAIResponseObject
     type: Literal["response.created"] = "response.created"

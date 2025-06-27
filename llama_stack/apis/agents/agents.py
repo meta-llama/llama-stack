@@ -32,6 +32,7 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 from .openai_responses import (
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
+    OpenAIDeleteResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
@@ -645,5 +646,14 @@ class Agents(Protocol):
         :param limit: A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
         :param order: The order to return the input items in. Default is desc.
         :returns: An ListOpenAIResponseInputItem.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/responses/{response_id}", method="DELETE")
+    async def delete_openai_response(self, response_id: str) -> OpenAIDeleteResponseObject:
+        """Delete an OpenAI response by its ID.
+
+        :param response_id: The ID of the OpenAI response to delete.
+        :returns: An OpenAIDeleteResponseObject
         """
         ...

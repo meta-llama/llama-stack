@@ -558,6 +558,64 @@ paths:
           required: true
           schema:
             type: string
+  /v1/openai/v1/responses/{response_id}:
+    get:
+      responses:
+        '200':
+          description: An OpenAIResponseObject.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIResponseObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Retrieve an OpenAI response by its ID.
+      parameters:
+        - name: response_id
+          in: path
+          description: >-
+            The ID of the OpenAI response to retrieve.
+          required: true
+          schema:
+            type: string
+    delete:
+      responses:
+        '200':
+          description: An OpenAIDeleteResponseObject
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIDeleteResponseObject'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Agents
+      description: Delete an OpenAI response by its ID.
+      parameters:
+        - name: response_id
+          in: path
+          description: The ID of the OpenAI response to delete.
+          required: true
+          schema:
+            type: string
   /v1/inference/embeddings:
     post:
       responses:
@@ -880,36 +938,6 @@ paths:
           in: path
           description: >-
             The identifier of the model to unregister.
-          required: true
-          schema:
-            type: string
-  /v1/openai/v1/responses/{response_id}:
-    get:
-      responses:
-        '200':
-          description: An OpenAIResponseObject.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OpenAIResponseObject'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          $ref: >-
-            #/components/responses/TooManyRequests429
-        '500':
-          $ref: >-
-            #/components/responses/InternalServerError500
-        default:
-          $ref: '#/components/responses/DefaultError'
-      tags:
-        - Agents
-      description: Retrieve an OpenAI response by its ID.
-      parameters:
-        - name: response_id
-          in: path
-          description: >-
-            The ID of the OpenAI response to retrieve.
           required: true
           schema:
             type: string
@@ -6404,6 +6432,24 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseWebSearchCallSearching
+    OpenAIDeleteResponseObject:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+          const: response
+          default: response
+        deleted:
+          type: boolean
+          default: true
+      additionalProperties: false
+      required:
+        - id
+        - object
+        - deleted
+      title: OpenAIDeleteResponseObject
     EmbeddingsRequest:
       type: object
       properties:
