@@ -7,6 +7,7 @@
 import inspect
 import os
 import tempfile
+from urllib.parse import urlparse
 
 import pytest
 import yaml
@@ -122,12 +123,17 @@ def llama_stack_client(request, provider_data):
     if not config:
         raise ValueError("You must specify either --stack-config or LLAMA_STACK_CONFIG")
 
-    # check if this looks like a URL
-    if config.startswith("http") or "//" in config:
-        return LlamaStackClient(
-            base_url=config,
-            provider_data=provider_data,
-        )
+    # check if this looks like a URL using proper URL parsing
+    try:
+        parsed_url = urlparse(config)
+        if parsed_url.scheme and parsed_url.netloc:
+            return LlamaStackClient(
+                base_url=config,
+                provider_data=provider_data,
+            )
+    except Exception:
+        # If URL parsing fails, treat as non-URL config
+        pass
 
     if "=" in config:
         run_config = run_config_from_adhoc_config_spec(config)

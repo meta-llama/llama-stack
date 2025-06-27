@@ -12,6 +12,14 @@ distribution_spec:
     - remote::groq
     - remote::sambanova
     - remote::vllm
+    - remote::tgi
+    - remote::cerebras
+    - remote::llama-openai-compat
+    - remote::nvidia
+    - remote::hf::serverless
+    - remote::hf::endpoint
+    - remote::bedrock
+    - remote::passthrough
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec
@@ -25,6 +33,8 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
+    post_training:
+    - inline::huggingface
     eval:
     - inline::meta-reference
     datasetio:
