@@ -24,6 +24,7 @@ from llama_stack.providers.inline.vector_io.qdrant.config import (
 from llama_stack.providers.remote.vector_io.qdrant.qdrant import (
     QdrantVectorIOAdapter,
 )
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 # This test is a unit test for the QdrantVectorIOAdapter class. This should only contain
 # tests which are specific to this class. More general (API-level) tests should be placed in
@@ -37,7 +38,9 @@ from llama_stack.providers.remote.vector_io.qdrant.qdrant import (
 
 @pytest.fixture
 def qdrant_config(tmp_path) -> InlineQdrantVectorIOConfig:
-    return InlineQdrantVectorIOConfig(path=os.path.join(tmp_path, "qdrant.db"))
+    kvstore_config = SqliteKVStoreConfig(db_name=os.path.join(tmp_path, "test_kvstore.db"))
+
+    return InlineQdrantVectorIOConfig(path=os.path.join(tmp_path, "qdrant.db"), kvstore=kvstore_config)
 
 
 @pytest.fixture(scope="session")
