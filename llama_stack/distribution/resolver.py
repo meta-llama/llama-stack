@@ -255,6 +255,10 @@ async def instantiate_providers(
     impls: dict[Api, Any] = {}
     inner_impls_by_provider_id: dict[str, dict[str, Any]] = {f"inner-{x.value}": {} for x in router_apis}
     for api_str, provider in sorted_providers:
+        # Skip providers that are not enabled
+        if provider.provider_id is None:
+            continue
+
         deps = {a: impls[a] for a in provider.spec.api_dependencies}
         for a in provider.spec.optional_api_dependencies:
             if a in impls:

@@ -1,5 +1,28 @@
 # Changelog
 
+# v0.2.12
+Published on: 2025-06-20T22:52:12Z
+
+## Highlights
+* Filter support in file search
+* Support auth attributes in inference and response stores
+
+
+---
+
+# v0.2.11
+Published on: 2025-06-17T20:26:26Z
+
+## Highlights
+* OpenAI-compatible vector store APIs
+* Hybrid Search in Sqlite-vec
+* File search tool in Responses API
+* Pagination in inference and response stores
+* Added `suffix` to completions API for fill-in-the-middle tasks
+
+
+---
+
 # v0.2.10.1
 Published on: 2025-06-06T20:11:02Z
 
@@ -479,53 +502,6 @@ Published on: 2024-12-10T20:50:33Z
 # v0.0.55
 Published on: 2024-11-23T17:14:07Z
 
-
-
----
-
-# v0.0.54
-Published on: 2024-11-22T00:36:09Z
-
-
-
----
-
-# v0.0.53
-Published on: 2024-11-20T22:18:00Z
-
-🚀  Initial Release Notes for Llama Stack!
-
-### Added
-- Resource-oriented design for models, shields, memory banks, datasets and eval tasks
-- Persistence for registered objects with distribution
-- Ability to persist memory banks created for FAISS
-- PostgreSQL KVStore implementation
-- Environment variable placeholder support in run.yaml files
-- Comprehensive Zero-to-Hero notebooks and quickstart guides
-- Support for quantized models in Ollama
-- Vision models support for Together, Fireworks, Meta-Reference, and Ollama, and vLLM
-- Bedrock distribution with safety shields support
-- Evals API with task registration and scoring functions
-- MMLU and SimpleQA benchmark scoring functions
-- Huggingface dataset provider integration for benchmarks
-- Support for custom dataset registration from local paths
-- Benchmark evaluation CLI tools with visualization tables
-- RAG evaluation scoring functions and metrics
-- Local persistence for datasets and eval tasks
-
-### Changed
-- Split safety into distinct providers (llama-guard, prompt-guard, code-scanner)
-- Changed provider naming convention (`impls` → `inline`, `adapters` → `remote`)
-- Updated API signatures for dataset and eval task registration
-- Restructured folder organization for providers
-- Enhanced Docker build configuration
-- Added version prefixing for REST API routes
-- Enhanced evaluation task registration workflow
-- Improved benchmark evaluation output formatting
-- Restructured evals folder organization for better modularity
-
-### Removed
-- `llama stack configure` command
 
 
 ---

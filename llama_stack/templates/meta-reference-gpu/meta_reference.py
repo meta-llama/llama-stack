@@ -46,7 +46,7 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="inline::meta-reference",
         config=MetaReferenceInferenceConfig.sample_run_config(
             model="${env.INFERENCE_MODEL}",
-            checkpoint_dir="${env.INFERENCE_CHECKPOINT_DIR:null}",
+            checkpoint_dir="${env.INFERENCE_CHECKPOINT_DIR:=null}",
         ),
     )
     embedding_provider = Provider(
@@ -112,7 +112,7 @@ def get_distribution_template() -> DistributionTemplate:
                             provider_type="inline::meta-reference",
                             config=MetaReferenceInferenceConfig.sample_run_config(
                                 model="${env.SAFETY_MODEL}",
-                                checkpoint_dir="${env.SAFETY_CHECKPOINT_DIR:null}",
+                                checkpoint_dir="${env.SAFETY_CHECKPOINT_DIR:=null}",
                             ),
                         ),
                     ],
