@@ -18,6 +18,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContentItem,
     TextContentItem,
 )
+from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -48,7 +49,6 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
-from llama_stack.exceptions import UnsupportedModelError
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     HealthResponse,

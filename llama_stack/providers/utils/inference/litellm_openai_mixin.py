@@ -13,6 +13,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
+from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -40,7 +41,6 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.models import Model
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.exceptions import UnsupportedModelError
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (

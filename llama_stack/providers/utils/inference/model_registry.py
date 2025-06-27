@@ -8,8 +8,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.models import ModelType
-from llama_stack.exceptions import UnsupportedModelError
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
