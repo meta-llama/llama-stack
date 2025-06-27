@@ -1209,7 +1209,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/65/c6/246100fa3967074d9
 
 [[package]]
 name = "llama-stack"
-version = "0.2.12"
+version = "0.2.13"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -1328,8 +1328,8 @@ requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.30.0,<1.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema" },
-    { name = "llama-stack-client", specifier = ">=0.2.12" },
-    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.12" },
+    { name = "llama-stack-client", specifier = ">=0.2.13" },
+    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.13" },
     { name = "openai", specifier = ">=1.66" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
@@ -1421,26 +1421,28 @@ unit = [
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.12"
+version = "0.2.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "click" },
     { name = "distro" },
+    { name = "fire" },
     { name = "httpx" },
     { name = "pandas" },
     { name = "prompt-toolkit" },
     { name = "pyaml" },
     { name = "pydantic" },
+    { name = "requests" },
     { name = "rich" },
     { name = "sniffio" },
     { name = "termcolor" },
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/d5/0d3b1bfa342c1983c277d05eaf51214f9cf4b77345d416cff576e8f0172a/llama_stack_client-0.2.12.tar.gz", hash = "sha256:47260284f36ef40dbf4f04d2c2e6f4dfd407cf090930810617ccb9a690e029c3", size = 289939, upload-time = "2025-06-20T21:05:36.008Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/a6/272b9a522df3580df763627c4bf74447aec02d44b9218fe192efc8721a46/llama_stack_client-0.2.13.tar.gz", hash = "sha256:af4a6cff681126e9a42d4c5c9522bc5946d5ad6e2d620e8e6727dc0c8cc82989", size = 252548, upload-time = "2025-06-27T23:55:48.395Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/eb/23c10e3a7d7a49a316e05ddcca8cd712a5a474eb6f904d08f7d3ae10d668/llama_stack_client-0.2.12-py3-none-any.whl", hash = "sha256:807145450e5f6bea9e20ab890d8327d07b45b1bbde712e3fcca54c298c792874", size = 340187, upload-time = "2025-06-20T21:05:33.561Z" },
+    { url = "https://files.pythonhosted.org/packages/59/c2/74bd3f28a4537fc3e5edd4cb00fd50941479f5b6d5c5cb278a24857551f2/llama_stack_client-0.2.13-py3-none-any.whl", hash = "sha256:cec627ce58a6a42ccfcd29f6329f6cd891170ae012dac676bfc25ae1440d6769", size = 343112, upload-time = "2025-06-27T23:55:46.927Z" },
 ]
 
 [[package]]

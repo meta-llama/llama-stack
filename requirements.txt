@@ -54,7 +54,9 @@ fastapi==0.115.8
 filelock==3.17.0
     # via huggingface-hub
 fire==0.7.0
-    # via llama-stack
+    # via
+    #   llama-stack
+    #   llama-stack-client
 frozenlist==1.5.0
     # via
     #   aiohttp
@@ -95,7 +97,7 @@ jsonschema==4.23.0
     # via llama-stack
 jsonschema-specifications==2024.10.1
     # via jsonschema
-llama-stack-client==0.2.12
+llama-stack-client==0.2.13
     # via llama-stack
 markdown-it-py==3.0.0
     # via rich
@@ -187,6 +189,7 @@ regex==2024.11.6
 requests==2.32.4
     # via
     #   huggingface-hub
+    #   llama-stack-client
     #   opentelemetry-exporter-otlp-proto-http
     #   tiktoken
 rich==13.9.4
