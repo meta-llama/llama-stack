@@ -53,7 +53,7 @@ class MilvusIndex(EmbeddingIndex):
         if await asyncio.to_thread(self.client.has_collection, self.collection_name):
             await asyncio.to_thread(self.client.drop_collection, collection_name=self.collection_name)
 
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
@@ -183,6 +183,7 @@ class MilvusVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
+        params: dict[str, Any] | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
