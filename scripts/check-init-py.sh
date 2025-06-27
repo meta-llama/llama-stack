@@ -29,6 +29,7 @@ mapfile -t py_dirs < <(
         -type f \
         -name "*.py" ! -name "__init__.py" \
         ! -path "*/.venv/*" \
+        ! -path "*/node_modules/*" \
         -exec dirname {} \; | sort -u
 )
 
