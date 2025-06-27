@@ -6,7 +6,7 @@ Llama Stack is a stateful service with REST APIs to support the seamless transit
 environments. You can build and test using a local server first and deploy to a hosted endpoint for production.
 
 In this guide, we'll walk through how to build a RAG application locally using Llama Stack with [Ollama](https://ollama.com/)
-as the inference [provider](../providers/index.md#inference) for a Llama Model.
+as the inference [provider](../providers/inference/index) for a Llama Model.
 
 #### Step 1: Install and setup
 1. Install [uv](https://docs.astral.sh/uv/)

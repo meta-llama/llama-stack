@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Chroma
+# inline::chromadb
+
+## Description
+
 
 [Chroma](https://www.trychroma.com/) is an inline and remote vector
 database provider for Llama Stack. It allows you to store and query vectors directly within a Chroma database.
@@ -34,3 +34,19 @@ pip install chromadb
 
 ## Documentation
 See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introduction) for more details about Chroma in general.
+
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `db_path` | `<class 'str'>` | No | PydanticUndefined |  |
+
+## Sample Configuration
+
+```yaml
+db_path: ${env.CHROMADB_PATH}
+
+```
+

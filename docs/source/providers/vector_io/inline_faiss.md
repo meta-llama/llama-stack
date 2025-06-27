@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Faiss
+# inline::faiss
+
+## Description
+
 
 [Faiss](https://github.com/facebookresearch/faiss) is an inline vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.
@@ -31,3 +31,21 @@ pip install faiss-cpu
 ## Documentation
 See [Faiss' documentation](https://faiss.ai/) or the [Faiss Wiki](https://github.com/facebookresearch/faiss/wiki) for
 more details about Faiss in general.
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite |  |
+
+## Sample Configuration
+
+```yaml
+kvstore:
+  type: sqlite
+  namespace: null
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/faiss_store.db
+
+```
+

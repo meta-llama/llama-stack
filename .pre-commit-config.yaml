@@ -14,7 +14,7 @@ repos:
     -   id: check-added-large-files
         args: ['--maxkb=1000']
     -   id: end-of-file-fixer
-        exclude: '^(.*\.svg)$'
+        exclude: '^(.*\.svg|.*\.md)$'
     -   id: no-commit-to-branch
     -   id: check-yaml
         args: ["--unsafe"]
@@ -95,6 +95,15 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^llama_stack/templates/.*$|^llama_stack/providers/.*/inference/.*/models\.py$
+      - id: provider-codegen
+        name: Provider Codegen
+        additional_dependencies:
+          - uv==0.7.8
+        entry: uv run --group codegen ./scripts/provider_codegen.py
+        language: python
+        pass_filenames: false
+        require_serial: true
+        files: ^llama_stack/providers/.*$
       - id: openapi-codegen
         name: API Spec Codegen
         additional_dependencies:

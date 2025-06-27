@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Qdrant
+# inline::qdrant
+
+## Description
+
 
 [Qdrant](https://qdrant.tech/documentation/) is an inline and remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.
@@ -44,3 +44,18 @@ docker pull qdrant/qdrant
 ```
 ## Documentation
 See the [Qdrant documentation](https://qdrant.tech/documentation/) for more details about Qdrant in general.
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `path` | `<class 'str'>` | No | PydanticUndefined |  |
+
+## Sample Configuration
+
+```yaml
+path: ${env.QDRANT_PATH:=~/.llama/~/.llama/dummy}/qdrant.db
+
+```
+

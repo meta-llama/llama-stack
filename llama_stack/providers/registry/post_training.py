@@ -20,6 +20,7 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasetio,
                 Api.datasets,
             ],
+            description="TorchTune-based post-training provider for fine-tuning and optimizing models using Meta's TorchTune framework.",
         ),
         InlineProviderSpec(
             api=Api.post_training,
@@ -31,6 +32,7 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasetio,
                 Api.datasets,
             ],
+            description="HuggingFace-based post-training provider for fine-tuning models using the HuggingFace ecosystem.",
         ),
         remote_provider_spec(
             api=Api.post_training,
@@ -39,6 +41,7 @@ def available_providers() -> list[ProviderSpec]:
                 pip_packages=["requests", "aiohttp"],
                 module="llama_stack.providers.remote.post_training.nvidia",
                 config_class="llama_stack.providers.remote.post_training.nvidia.NvidiaPostTrainingConfig",
+                description="NVIDIA's post-training provider for fine-tuning models on NVIDIA's platform.",
             ),
         ),
     ]
