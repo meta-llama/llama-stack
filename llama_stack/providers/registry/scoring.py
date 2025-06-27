@@ -20,6 +20,7 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasetio,
                 Api.datasets,
             ],
+            description="Basic scoring provider for simple evaluation metrics and scoring functions.",
         ),
         InlineProviderSpec(
             api=Api.scoring,
@@ -32,6 +33,7 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasets,
                 Api.inference,
             ],
+            description="LLM-as-judge scoring provider that uses language models to evaluate and score responses.",
         ),
         InlineProviderSpec(
             api=Api.scoring,
@@ -44,5 +46,6 @@ def available_providers() -> list[ProviderSpec]:
                 Api.datasets,
             ],
             provider_data_validator="llama_stack.providers.inline.scoring.braintrust.BraintrustProviderDataValidator",
+            description="Braintrust scoring provider for evaluation and scoring using the Braintrust platform.",
         ),
     ]

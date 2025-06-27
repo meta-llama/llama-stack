@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Milvus
+# remote::milvus
+
+## Description
+
 
 [Milvus](https://milvus.io/) is an inline and remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly within a Milvus database.
@@ -96,7 +96,7 @@ vector_io:
 #### Key Parameters for TLS Configuration
 
 - **`secure`**: Enables TLS encryption when set to `true`. Defaults to `false`.
-- **`server_pem_path`**: Path to the **server certificate** for verifying the server’s identity (used in one-way TLS).
+- **`server_pem_path`**: Path to the **server certificate** for verifying the server's identity (used in one-way TLS).
 - **`ca_pem_path`**: Path to the **Certificate Authority (CA) certificate** for validating the server certificate (required in mTLS).
 - **`client_pem_path`**: Path to the **client certificate** file (required for mTLS).
 - **`client_key_path`**: Path to the **client private key** file (required for mTLS).
@@ -105,3 +105,24 @@ vector_io:
 See the [Milvus documentation](https://milvus.io/docs/install-overview.md) for more details about Milvus in general.
 
 For more details on TLS configuration, refer to the [TLS setup guide](https://milvus.io/docs/tls.md).
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `uri` | `<class 'str'>` | No | PydanticUndefined | The URI of the Milvus server |
+| `token` | `str \| None` | No | PydanticUndefined | The token of the Milvus server |
+| `consistency_level` | `<class 'str'>` | No | Strong | The consistency level of the Milvus server |
+| `config` | `dict` | No | {} | This configuration allows additional fields to be passed through to the underlying Milvus client. See the [Milvus](https://milvus.io/docs/install-overview.md) documentation for more details about Milvus in general. |
+
+> **Note**: This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider.
+
+## Sample Configuration
+
+```yaml
+uri: ${env.MILVUS_ENDPOINT}
+token: ${env.MILVUS_TOKEN}
+
+```
+

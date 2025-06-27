@@ -141,6 +141,12 @@ Fully-qualified name of the module to import. The module is expected to have:
     provider_data_validator: str | None = Field(
         default=None,
     )
+    description: str | None = Field(
+        default=None,
+        description="""
+A description of the provider. This is used to display in the documentation.
+""",
+    )
 
 
 @json_schema_type
@@ -166,6 +172,12 @@ Fully-qualified name of the module to import. The module is expected to have:
     )
     provider_data_validator: str | None = Field(
         default=None,
+    )
+    description: str | None = Field(
+        default=None,
+        description="""
+A description of the provider. This is used to display in the documentation.
+""",
     )
 
 

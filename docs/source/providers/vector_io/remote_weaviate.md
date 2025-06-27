@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Weaviate
+# remote::weaviate
+
+## Description
+
 
 [Weaviate](https://weaviate.io/) is a vector database provider for Llama Stack.
 It allows you to store and query vectors directly within a Weaviate database.
@@ -31,3 +31,12 @@ To install Weaviate see the [Weaviate quickstart documentation](https://weaviate
 
 ## Documentation
 See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more details about Weaviate in general.
+
+
+## Sample Configuration
+
+```yaml
+{}
+
+```
+
