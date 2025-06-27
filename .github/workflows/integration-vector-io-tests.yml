@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vector-io-provider: ["remote::chromadb", "inline::faiss", "inline::sqlite-vec"]
+        vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "remote::chromadb", "remote::pgvector"]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -45,6 +45,36 @@ jobs:
             -e IS_PERSISTENT=TRUE \
             -e ANONYMIZED_TELEMETRY=FALSE \
             chromadb/chroma:latest
+
+      - name: Start PGVector DB
+        if: matrix.vector-io-provider == 'remote::pgvector'
+        run: |
+          docker run -d \
+            --name pgvector \
+            -e POSTGRES_USER=llamastack \
+            -e POSTGRES_PASSWORD=llamastack \
+            -e POSTGRES_DB=llamastack \
+            -p 5432:5432 \
+            pgvector/pgvector:pg17
+
+      - name: Wait for PGVector to be ready
+        if: matrix.vector-io-provider == 'remote::pgvector'
+        run: |
+          echo "Waiting for Postgres to be ready..."
+          for i in {1..30}; do
+            if docker exec pgvector pg_isready -U llamastack > /dev/null 2>&1; then
+              echo "Postgres is ready!"
+              break
+            fi
+            echo "Not ready yet... ($i)"
+            sleep 1
+          done
+
+      - name: Enable pgvector extension
+        if: matrix.vector-io-provider == 'remote::pgvector'
+        run: |
+          PGPASSWORD=llamastack psql -h localhost -U llamastack -d llamastack \
+            -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Wait for ChromaDB to be ready
         if: matrix.vector-io-provider == 'remote::chromadb'
@@ -75,6 +105,12 @@ jobs:
         env:
           ENABLE_CHROMADB: ${{ matrix.vector-io-provider == 'remote::chromadb' && 'true' || '' }}
           CHROMADB_URL: ${{ matrix.vector-io-provider == 'remote::chromadb' && 'http://localhost:8000' || '' }}
+          ENABLE_PGVECTOR: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'true' || '' }}
+          PGVECTOR_HOST: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'localhost' || '' }}
+          PGVECTOR_PORT: ${{ matrix.vector-io-provider == 'remote::pgvector' && '5432' || '' }}
+          PGVECTOR_DB: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
+          PGVECTOR_USER: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
+          PGVECTOR_PASSWORD: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
         run: |
           uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
