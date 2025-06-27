@@ -21,5 +21,6 @@ def available_providers() -> list[ProviderSpec]:
             pip_packages=sql_store_pip_packages,
             module="llama_stack.providers.inline.files.localfs",
             config_class="llama_stack.providers.inline.files.localfs.config.LocalfsFilesImplConfig",
+            description="Local filesystem-based file storage provider for managing files and documents locally.",
         ),
     ]

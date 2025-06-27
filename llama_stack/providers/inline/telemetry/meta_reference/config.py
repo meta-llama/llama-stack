@@ -38,7 +38,7 @@ class TelemetryConfig(BaseModel):
         description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
     )
     sqlite_db_path: str = Field(
-        default=(RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
+        default_factory=lambda: (RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
         description="The path to the SQLite database to use for storing traces",
     )
 

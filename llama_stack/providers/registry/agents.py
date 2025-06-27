@@ -35,5 +35,6 @@ def available_providers() -> list[ProviderSpec]:
                 Api.tool_runtime,
                 Api.tool_groups,
             ],
+            description="Meta's reference implementation of an agent system that can use tools, access vector databases, and perform complex reasoning tasks.",
         ),
     ]
