@@ -48,6 +48,9 @@ class ProviderImpl(Providers):
         ret = []
         for api, providers in safe_config.providers.items():
             for p in providers:
+                # Skip providers that are not enabled
+                if p.provider_id is None:
+                    continue
                 ret.append(
                     ProviderInfo(
                         api=api,

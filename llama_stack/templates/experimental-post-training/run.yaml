@@ -24,7 +24,7 @@ providers:
   - provider_id: ollama
     provider_type: remote::ollama
     config:
-      url: ${env.OLLAMA_URL:http://localhost:11434}
+      url: ${env.OLLAMA_URL:=http://localhost:11434}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -32,7 +32,7 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/meta-reference-gpu}/meta_reference_eval.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/meta_reference_eval.db
   scoring:
   - provider_id: basic
     provider_type: inline::basic
@@ -40,7 +40,7 @@ providers:
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
-      openai_api_key: ${env.OPENAI_API_KEY:}
+      openai_api_key: ${env.OPENAI_API_KEY:+}
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
@@ -48,14 +48,14 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/localfs_datasetio.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/localfs_datasetio.db
   - provider_id: huggingface
     provider_type: remote::huggingface
     config:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/huggingface}/huggingface_datasetio.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/huggingface}/huggingface_datasetio.db
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -74,7 +74,7 @@ providers:
       persistence_store:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/agents_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/agents_store.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -86,19 +86,19 @@ providers:
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/faiss_store.db
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
       max_results: 3
 
 
 metadata_store:
   namespace: null
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:~/.llama/distributions/experimental-post-training}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/registry.db
 models: []
 shields: []
 vector_dbs: []

@@ -175,7 +175,7 @@ def get_distribution_template() -> DistributionTemplate:
             config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
-            provider_id="${env.ENABLE_SQLITE_VEC+sqlite-vec}",
+            provider_id="${env.ENABLE_SQLITE_VEC:+sqlite-vec}",
             provider_type="inline::sqlite-vec",
             config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
