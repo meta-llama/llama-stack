@@ -238,7 +238,7 @@ typing-extensions==4.12.2
     #   referencing
 tzdata==2025.1
     # via pandas
-urllib3==2.3.0
+urllib3==2.5.0
     # via requests
 uvicorn==0.34.0
     # via llama-stack
