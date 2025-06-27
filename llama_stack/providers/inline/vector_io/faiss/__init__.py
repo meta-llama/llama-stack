@@ -16,6 +16,8 @@ async def get_provider_impl(config: FaissVectorIOConfig, deps: dict[Api, Any]):
 
     assert isinstance(config, FaissVectorIOConfig), f"Unexpected config type: {type(config)}"
 
-    impl = FaissVectorIOAdapter(config, deps[Api.inference], deps.get(Api.files, None))
+    impl = FaissVectorIOAdapter(
+        config, deps[Api.inference], deps.get(Api.files, None), deps.get(Api.tool_runtime, None)
+    )
     await impl.initialize()
     return impl

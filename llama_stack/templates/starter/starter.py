@@ -163,6 +163,7 @@ def get_distribution_template() -> DistributionTemplate:
             "remote::brave-search",
             "remote::tavily-search",
             "inline::rag-runtime",
+            "inline::synthetic-data-kit",
             "remote::model-context-protocol",
         ],
     }
@@ -213,6 +214,10 @@ def get_distribution_template() -> DistributionTemplate:
         ToolGroupInput(
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
+        ),
+        ToolGroupInput(
+            toolgroup_id="builtin::document_conversion",
+            provider_id="synthetic-data-kit",
         ),
     ]
     embedding_model = ModelInput(
