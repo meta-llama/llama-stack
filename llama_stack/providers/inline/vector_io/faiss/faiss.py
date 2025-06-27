@@ -73,7 +73,15 @@ class FaissIndex(EmbeddingIndex):
             self.chunk_by_index = {int(k): Chunk.model_validate_json(v) for k, v in data["chunk_by_index"].items()}
 
             buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
-            self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
+            try:
+                self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
+            except Exception as e:
+                logger.debug(e, exc_info=True)
+                raise ValueError(
+                    "Error deserializing Faiss index from storage. If you recently upgraded your Llama Stack, Faiss, "
+                    "or NumPy versions, you may need to delete the index and re-create it again or downgrade versions.\n"
+                    f"The problematic index is stored in the key value store {self.kvstore} under the key '{index_key}'."
+                ) from e
 
     async def _save_index(self):
         if not self.kvstore or not self.bank_id:
