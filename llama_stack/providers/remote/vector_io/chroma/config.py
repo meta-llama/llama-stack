@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 
 class ChromaVectorIOConfig(BaseModel):
-    url: str
+    url: str | None
 
     @classmethod
     def sample_run_config(cls, url: str = "${env.CHROMADB_URL}", **kwargs: Any) -> dict[str, Any]:

@@ -15,20 +15,20 @@ providers:
   - provider_id: openai
     provider_type: remote::openai
     config:
-      api_key: ${env.OPENAI_API_KEY:}
+      api_key: ${env.OPENAI_API_KEY:+}
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
-      api_key: ${env.ANTHROPIC_API_KEY:}
+      api_key: ${env.ANTHROPIC_API_KEY:+}
   - provider_id: gemini
     provider_type: remote::gemini
     config:
-      api_key: ${env.GEMINI_API_KEY:}
+      api_key: ${env.GEMINI_API_KEY:+}
   - provider_id: groq
     provider_type: remote::groq
     config:
       url: https://api.groq.com
-      api_key: ${env.GROQ_API_KEY:}
+      api_key: ${env.GROQ_API_KEY:+}
   - provider_id: together
     provider_type: remote::together
     config:
