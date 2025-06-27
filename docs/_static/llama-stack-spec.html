@@ -5547,6 +5547,31 @@
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ToolParamDefinition"
                         }
+                    },
+                    "annotations": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
                     }
                 },
                 "additionalProperties": false,
@@ -6424,6 +6449,31 @@
                         }
                     },
                     "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "annotations": {
                         "type": "object",
                         "additionalProperties": {
                             "oneOf": [
@@ -8461,6 +8511,31 @@
                                 },
                                 "description": {
                                     "type": "string"
+                                },
+                                "annotations": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
+                                    }
                                 }
                             },
                             "additionalProperties": false,
@@ -10939,6 +11014,31 @@
                         }
                     },
                     "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    },
+                    "annotations": {
                         "type": "object",
                         "additionalProperties": {
                             "oneOf": [
