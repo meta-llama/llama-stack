@@ -17,6 +17,9 @@ from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
+from llama_stack.providers.inline.vector_io.milvus.config import (
+    MilvusVectorIOConfig,
+)
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import (
     SQLiteVectorIOConfig,
 )
@@ -151,7 +154,7 @@ def get_distribution_template() -> DistributionTemplate:
     inference_providers, available_models = get_inference_providers()
     providers = {
         "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
-        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
+        "vector_io": ["inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector"],
         "files": ["inline::localfs"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -178,6 +181,11 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="${env.ENABLE_SQLITE_VEC:+sqlite-vec}",
             provider_type="inline::sqlite-vec",
             config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        ),
+        Provider(
+            provider_id="${env.ENABLE_MILVUS:+milvus}",
+            provider_type="inline::milvus",
+            config=MilvusVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
         ),
         Provider(
             provider_id="${env.ENABLE_CHROMADB:+chromadb}",

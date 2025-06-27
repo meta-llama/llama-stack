@@ -15,6 +15,7 @@ distribution_spec:
     - inline::sentence-transformers
     vector_io:
     - inline::sqlite-vec
+    - inline::milvus
     - remote::chromadb
     - remote::pgvector
     files:
