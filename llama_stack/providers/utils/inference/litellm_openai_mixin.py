@@ -13,6 +13,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
+from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -92,7 +93,7 @@ class LiteLLMOpenAIMixin(
     async def register_model(self, model: Model) -> Model:
         model_id = self.get_provider_model_id(model.provider_resource_id)
         if model_id is None:
-            raise ValueError(f"Unsupported model: {model.provider_resource_id}")
+            raise UnsupportedModelError(model.provider_resource_id, self.alias_to_provider_id_map.keys())
         return model
 
     def get_litellm_model_name(self, model_id: str) -> str:

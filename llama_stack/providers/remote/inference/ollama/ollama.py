@@ -18,6 +18,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContentItem,
     TextContentItem,
 )
+from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -376,9 +377,7 @@ class OllamaInferenceAdapter(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
                 return model
-            raise ValueError(
-                f"Model '{model.provider_resource_id}' is not available in Ollama. Available models: {', '.join(available_models)}"
-            )
+            raise UnsupportedModelError(model.provider_resource_id, available_models)
         model.provider_resource_id = provider_resource_id
 
         return model
