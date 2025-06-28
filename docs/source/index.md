@@ -109,5 +109,6 @@ distributions/index
 building_applications/index
 playground/index
 contributing/index
+community/index
 references/index
 ```
