@@ -108,6 +108,7 @@ test = [
     "requests",
 ]
 docs = [
+    "setuptools",
     "sphinx-autobuild",
     "myst-parser",
     "sphinx",
