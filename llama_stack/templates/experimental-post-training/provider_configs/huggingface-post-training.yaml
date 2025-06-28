@@ -1,0 +1,3 @@
+checkpoint_format: huggingface
+distributed_backend: null
+device: cpu

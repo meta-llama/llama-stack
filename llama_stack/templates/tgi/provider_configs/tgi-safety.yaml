@@ -1,0 +1,1 @@
+url: ${env.TGI_SAFETY_URL}

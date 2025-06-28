@@ -37,9 +37,9 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import replace_env_vars
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.env import replace_env_vars
 from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api

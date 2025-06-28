@@ -1,0 +1,2 @@
+base_url: https://api.cerebras.ai
+api_key: ${env.CEREBRAS_API_KEY}

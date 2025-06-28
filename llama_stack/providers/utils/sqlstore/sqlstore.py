@@ -48,10 +48,10 @@ class SqliteSqlStoreConfig(SqlAlchemySqlStoreConfig):
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, db_name: str = "sqlstore.db"):
-        return cls(
-            type="sqlite",
-            db_path="${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
-        )
+        return {
+            "type": "sqlite",
+            "db_path": "${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
+        }
 
     @property
     def pip_packages(self) -> list[str]:
@@ -76,14 +76,14 @@ class PostgresSqlStoreConfig(SqlAlchemySqlStoreConfig):
 
     @classmethod
     def sample_run_config(cls, **kwargs):
-        return cls(
-            type="postgres",
-            host="${env.POSTGRES_HOST:=localhost}",
-            port="${env.POSTGRES_PORT:=5432}",
-            db="${env.POSTGRES_DB:=llamastack}",
-            user="${env.POSTGRES_USER:=llamastack}",
-            password="${env.POSTGRES_PASSWORD:=llamastack}",
-        )
+        return {
+            "type": "postgres",
+            "host": "${env.POSTGRES_HOST:=localhost}",
+            "port": "${env.POSTGRES_PORT:=5432}",
+            "db": "${env.POSTGRES_DB:=llamastack}",
+            "user": "${env.POSTGRES_USER:=llamastack}",
+            "password": "${env.POSTGRES_PASSWORD:=llamastack}",
+        }
 
 
 SqlStoreConfig = Annotated[

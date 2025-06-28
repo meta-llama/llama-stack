@@ -1,0 +1,2 @@
+openai_compat_api_base: https://api.llama.com/compat/v1/
+api_key: ${env.LLAMA_API_KEY:+}
