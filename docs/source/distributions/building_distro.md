@@ -64,10 +64,9 @@ options:
   --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates (default: None)
   --list-templates      Show the available templates for building a Llama Stack distribution (default: False)
   --image-type {conda,container,venv}
-                        Image Type to use for the build. This can be either conda or container or venv. If not specified, will use the image type from the template config. (default:
-                        conda)
+                        Image Type to use for the build. If not specified, will use the image type from the template config. (default: None)
   --image-name IMAGE_NAME
-                        [for image-type=conda|container|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active Conda environment will be used if
+                        [for image-type=conda|container|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active environment will be used if
                         found. (default: None)
   --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
   --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)
@@ -89,31 +88,52 @@ llama stack build --list-templates
 ------------------------------+-----------------------------------------------------------------------------+
 | Template Name                | Description                                                                 |
 +------------------------------+-----------------------------------------------------------------------------+
-| hf-serverless                | Use (an external) Hugging Face Inference Endpoint for running LLM inference |
-+------------------------------+-----------------------------------------------------------------------------+
-| together                     | Use Together.AI for running LLM inference                                   |
+| watsonx                      | Use watsonx for running LLM inference                                       |
 +------------------------------+-----------------------------------------------------------------------------+
 | vllm-gpu                     | Use a built-in vLLM engine for running LLM inference                        |
 +------------------------------+-----------------------------------------------------------------------------+
-| experimental-post-training   | Experimental template for post training                                     |
-+------------------------------+-----------------------------------------------------------------------------+
-| remote-vllm                  | Use (an external) vLLM server for running LLM inference                     |
-+------------------------------+-----------------------------------------------------------------------------+
-| fireworks                    | Use Fireworks.AI for running LLM inference                                  |
+| together                     | Use Together.AI for running LLM inference                                   |
 +------------------------------+-----------------------------------------------------------------------------+
 | tgi                          | Use (an external) TGI server for running LLM inference                      |
 +------------------------------+-----------------------------------------------------------------------------+
-| bedrock                      | Use AWS Bedrock for running LLM inference and safety                        |
+| starter                      | Quick start template for running Llama Stack with several popular providers |
 +------------------------------+-----------------------------------------------------------------------------+
-| meta-reference-gpu           | Use Meta Reference for running LLM inference                                |
+| sambanova                    | Use SambaNova for running LLM inference and safety                          |
 +------------------------------+-----------------------------------------------------------------------------+
-| nvidia                       | Use NVIDIA NIM for running LLM inference                                    |
+| remote-vllm                  | Use (an external) vLLM server for running LLM inference                     |
 +------------------------------+-----------------------------------------------------------------------------+
-| cerebras                     | Use Cerebras for running LLM inference                                      |
+| postgres-demo                | Quick start template for running Llama Stack with several popular providers |
++------------------------------+-----------------------------------------------------------------------------+
+| passthrough                  | Use Passthrough hosted llama-stack endpoint for LLM inference               |
++------------------------------+-----------------------------------------------------------------------------+
+| open-benchmark               | Distribution for running open benchmarks                                    |
 +------------------------------+-----------------------------------------------------------------------------+
 | ollama                       | Use (an external) Ollama server for running LLM inference                   |
 +------------------------------+-----------------------------------------------------------------------------+
+| nvidia                       | Use NVIDIA NIM for running LLM inference, evaluation and safety             |
++------------------------------+-----------------------------------------------------------------------------+
+| meta-reference-gpu           | Use Meta Reference for running LLM inference                                |
++------------------------------+-----------------------------------------------------------------------------+
+| llama_api                    | Distribution for running e2e tests in CI                                    |
++------------------------------+-----------------------------------------------------------------------------+
+| hf-serverless                | Use (an external) Hugging Face Inference Endpoint for running LLM inference |
++------------------------------+-----------------------------------------------------------------------------+
 | hf-endpoint                  | Use (an external) Hugging Face Inference Endpoint for running LLM inference |
++------------------------------+-----------------------------------------------------------------------------+
+| groq                         | Use Groq for running LLM inference                                          |
++------------------------------+-----------------------------------------------------------------------------+
+| fireworks                    | Use Fireworks.AI for running LLM inference                                  |
++------------------------------+-----------------------------------------------------------------------------+
+| experimental-post-training   | Experimental template for post training                                     |
++------------------------------+-----------------------------------------------------------------------------+
+| dell                         | Dell's distribution of Llama Stack. TGI inference via Dell's custom         |
+|                              | container                                                                   |
++------------------------------+-----------------------------------------------------------------------------+
+| ci-tests                     | Distribution for running e2e tests in CI                                    |
++------------------------------+-----------------------------------------------------------------------------+
+| cerebras                     | Use Cerebras for running LLM inference                                      |
++------------------------------+-----------------------------------------------------------------------------+
+| bedrock                      | Use AWS Bedrock for running LLM inference and safety                        |
 +------------------------------+-----------------------------------------------------------------------------+
 ```
 
@@ -256,6 +276,7 @@ $ llama stack build --template ollama --image-type container
 ...
 Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM python:3.10-slim
 ...
+```
 
 You can now edit ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml and run `llama stack run ~/meta-llama/llama-stack/tmp/configs/ollama-run.yaml`
 ```
@@ -305,29 +326,27 @@ Now, let's start the Llama Stack Distribution Server. You will need the YAML con
 
 ```
 llama stack run -h
-usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--env KEY=VALUE] [--tls-keyfile TLS_KEYFILE] [--tls-certfile TLS_CERTFILE]
-                       [--image-type {conda,container,venv}]
-                       config
+usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--env KEY=VALUE]
+                       [--image-type {conda,venv}] [--enable-ui]
+                       [config | template]
 
 Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
 
 positional arguments:
-  config                Path to config file to use for the run
+  config | template     Path to config file to use for the run or name of known template (`llama stack list` for a list). (default: None)
 
 options:
   -h, --help            show this help message and exit
   --port PORT           Port to run the server on. It can also be passed via the env var LLAMA_STACK_PORT. (default: 8321)
   --image-name IMAGE_NAME
                         Name of the image to run. Defaults to the current environment (default: None)
-  --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: [])
-  --tls-keyfile TLS_KEYFILE
-                        Path to TLS key file for HTTPS (default: None)
-  --tls-certfile TLS_CERTFILE
-                        Path to TLS certificate file for HTTPS (default: None)
-  --image-type {conda,container,venv}
-                        Image Type used during the build. This can be either conda or container or venv. (default: conda)
-
+  --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: None)
+  --image-type {conda,venv}
+                        Image Type used during the build. This can be either conda or venv. (default: None)
+  --enable-ui           Start the UI server (default: False)
 ```
+
+**Note:** Container images built with `llama stack build --image-type container` cannot be run using `llama stack run`. Instead, they must be run directly using Docker or Podman commands as shown in the container building section above.
 
 ```
 # Start using template name
@@ -372,6 +391,7 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://['::', '0.0.0.0']:8321 (Press CTRL+C to quit)
 INFO:     2401:db00:35c:2d2b:face:0:c9:0:54678 - "GET /models/list HTTP/1.1" 200 OK
 ```
+
 ### Listing Distributions
 Using the list command, you can view all existing Llama Stack distributions, including stacks built from templates, from scratch, or using custom configuration files.
 
@@ -389,6 +409,20 @@ Example Usage
 
 ```
 llama stack list
+```
+
+```
+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+| Stack Name                  | Path                                                                        | Build Config | Run Config |
++------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+| together                    | /home/wenzhou/.llama/distributions/together                                 | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+| bedrock                     | /home/wenzhou/.llama/distributions/bedrock                                  | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+| starter                     | /home/wenzhou/.llama/distributions/starter                                  | No           | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+| remote-vllm                 | /home/wenzhou/.llama/distributions/remote-vllm                              | Yes          | Yes        |
++------------------------------+-----------------------------------------------------------------------------+--------------+------------+
 ```
 
 ### Removing a Distribution
@@ -413,7 +447,7 @@ Example
 llama stack rm llamastack-test
 ```
 
-To keep your environment organized and avoid clutter, consider using `llama stack list` to review old or unused distributions and `llama stack rm <name>` to delete them when they’re no longer needed.
+To keep your environment organized and avoid clutter, consider using `llama stack list` to review old or unused distributions and `llama stack rm <name>` to delete them when they're no longer needed.
 
 ### Troubleshooting
 

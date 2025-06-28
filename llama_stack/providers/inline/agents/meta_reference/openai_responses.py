@@ -19,6 +19,7 @@ from llama_stack.apis.agents.openai_responses import (
     AllowedToolsFilter,
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
+    OpenAIDeleteResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputMessageContent,
@@ -573,6 +574,9 @@ class OpenAIResponsesImpl:
                 response=final_response,
                 input=input,
             )
+
+    async def delete_openai_response(self, response_id: str) -> OpenAIDeleteResponseObject:
+        return await self.responses_store.delete_response_object(response_id)
 
     async def _convert_response_tools_to_chat_tools(
         self, tools: list[OpenAIResponseInputTool]

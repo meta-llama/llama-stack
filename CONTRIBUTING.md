@@ -139,6 +139,8 @@ uv sync
   justification for bypassing the check.
 * Don't use unicode characters in the codebase. ASCII-only is preferred for compatibility or
   readability reasons.
+* Providers configuration class should be Pydantic Field class. It should have a `description` field
+  that describes the configuration. These descriptions will be used to generate the provider documentation.
 
 ## Common Tasks
 
@@ -157,10 +159,19 @@ cd llama-stack
 LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --template <...>
 ```
 
+### Updating distribution configurations
 
-### Updating Provider Configurations
+If you have made changes to a provider's configuration in any form (introducing a new config key, or
+changing models, etc.), you should run `./scripts/distro_codegen.py` to re-generate various YAML
+files as well as the documentation. You should not change `docs/source/.../distributions/` files
+manually as they are auto-generated.
 
-If you have made changes to a provider's configuration in any form (introducing a new config key, or changing models, etc.), you should run `./scripts/distro_codegen.py` to re-generate various YAML files as well as the documentation. You should not change `docs/source/.../distributions/` files manually as they are auto-generated.
+### Updating the provider documentation
+
+If you have made changes to a provider's configuration, you should run `./scripts/distro_codegen.py`
+to re-generate the documentation. You should not change `docs/source/.../providers/` files manually
+as they are auto-generated.
+Note that the provider "description" field will be used to generate the provider documentation.
 
 ### Building the Documentation
 

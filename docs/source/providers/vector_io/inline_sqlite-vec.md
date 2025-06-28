@@ -1,7 +1,7 @@
----
-orphan: true
----
-# SQLite-Vec
+# inline::sqlite-vec
+
+## Description
+
 
 [SQLite-Vec](https://github.com/asg017/sqlite-vec) is an inline vector database provider for Llama Stack. It
 allows you to store and query vectors directly within an SQLite database.
@@ -199,3 +199,18 @@ pip install sqlite-vec
 See [sqlite-vec's GitHub repo](https://github.com/asg017/sqlite-vec/tree/main) for more details about sqlite-vec in general.
 
 [^1]: Cormack, G. V., Clarke, C. L., & Buettcher, S. (2009). [Reciprocal rank fusion outperforms condorcet and individual rank learning methods](https://dl.acm.org/doi/10.1145/1571941.1572114). In Proceedings of the 32nd international ACM SIGIR conference on Research and development in information retrieval (pp. 758-759).
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `db_path` | `<class 'str'>` | No | PydanticUndefined |  |
+
+## Sample Configuration
+
+```yaml
+db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/sqlite_vec.db
+
+```
+

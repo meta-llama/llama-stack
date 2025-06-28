@@ -1,7 +1,7 @@
----
-orphan: true
----
-# Postgres PGVector
+# remote::pgvector
+
+## Description
+
 
 [PGVector](https://github.com/pgvector/pgvector) is a remote vector database provider for Llama Stack. It
 allows you to store and query vectors directly in memory.
@@ -29,3 +29,26 @@ docker pull pgvector/pgvector:pg17
 ```
 ## Documentation
 See [PGVector's documentation](https://github.com/pgvector/pgvector) for more details about PGVector in general.
+
+
+## Configuration
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `host` | `str \| None` | No | localhost |  |
+| `port` | `int \| None` | No | 5432 |  |
+| `db` | `str \| None` | No | postgres |  |
+| `user` | `str \| None` | No | postgres |  |
+| `password` | `str \| None` | No | mysecretpassword |  |
+
+## Sample Configuration
+
+```yaml
+host: ${env.PGVECTOR_HOST:=localhost}
+port: ${env.PGVECTOR_PORT:=5432}
+db: ${env.PGVECTOR_DB}
+user: ${env.PGVECTOR_USER}
+password: ${env.PGVECTOR_PASSWORD}
+
+```
+
