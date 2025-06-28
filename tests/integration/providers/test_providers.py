@@ -21,3 +21,20 @@ class TestProviders:
             pid = provider.provider_id
             provider = llama_stack_client.providers.retrieve(pid)
             assert provider is not None
+
+    @pytest.mark.asyncio
+    def test_providers_update(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
+        new_cfg = {"url": "http://localhost:12345"}
+
+        _ = llama_stack_client.providers.retrieve("ollama")
+
+        llama_stack_client.providers.update(
+            api="inference",
+            provider_id="ollama",
+            provider_type="remote::ollama",
+            config=new_cfg,
+        )
+
+        new_provider = llama_stack_client.providers.retrieve("ollama")
+
+        assert new_provider.config == new_cfg
