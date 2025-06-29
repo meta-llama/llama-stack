@@ -6,9 +6,9 @@
 
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal, Self
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from llama_stack.apis.benchmarks import Benchmark, BenchmarkInput
 from llama_stack.apis.datasetio import DatasetIO
@@ -161,23 +161,114 @@ class LoggingConfig(BaseModel):
     )
 
 
+class OAuth2JWKSConfig(BaseModel):
+    # The JWKS URI for collecting public keys
+    uri: str
+    token: str | None = Field(default=None, description="token to authorise access to jwks")
+    key_recheck_period: int = Field(default=3600, description="The period to recheck the JWKS URI for key updates")
+
+
+class OAuth2IntrospectionConfig(BaseModel):
+    url: str
+    client_id: str
+    client_secret: str
+    send_secret_in_body: bool = False
+
+
 class AuthProviderType(StrEnum):
     """Supported authentication provider types."""
 
     OAUTH2_TOKEN = "oauth2_token"
+    GITHUB_TOKEN = "github_token"
     CUSTOM = "custom"
 
 
+class OAuth2TokenAuthConfig(BaseModel):
+    """Configuration for OAuth2 token authentication."""
+
+    type: Literal[AuthProviderType.OAUTH2_TOKEN] = AuthProviderType.OAUTH2_TOKEN
+    audience: str = Field(default="llama-stack")
+    verify_tls: bool = Field(default=True)
+    tls_cafile: Path | None = Field(default=None)
+    issuer: str | None = Field(default=None, description="The OIDC issuer URL.")
+    claims_mapping: dict[str, str] = Field(
+        default_factory=lambda: {
+            "sub": "roles",
+            "username": "roles",
+            "groups": "teams",
+            "team": "teams",
+            "project": "projects",
+            "tenant": "namespaces",
+            "namespace": "namespaces",
+        },
+    )
+    jwks: OAuth2JWKSConfig | None = Field(default=None, description="JWKS configuration")
+    introspection: OAuth2IntrospectionConfig | None = Field(
+        default=None, description="OAuth2 introspection configuration"
+    )
+
+    @classmethod
+    @field_validator("claims_mapping")
+    def validate_claims_mapping(cls, v):
+        for key, value in v.items():
+            if not value:
+                raise ValueError(f"claims_mapping value cannot be empty: {key}")
+        return v
+
+    @model_validator(mode="after")
+    def validate_mode(self) -> Self:
+        if not self.jwks and not self.introspection:
+            raise ValueError("One of jwks or introspection must be configured")
+        if self.jwks and self.introspection:
+            raise ValueError("At present only one of jwks or introspection should be configured")
+        return self
+
+
+class CustomAuthConfig(BaseModel):
+    """Configuration for custom authentication."""
+
+    type: Literal[AuthProviderType.CUSTOM] = AuthProviderType.CUSTOM
+    endpoint: str = Field(
+        ...,
+        description="Custom authentication endpoint URL",
+    )
+
+
+class GitHubTokenAuthConfig(BaseModel):
+    """Configuration for GitHub token authentication."""
+
+    type: Literal[AuthProviderType.GITHUB_TOKEN] = AuthProviderType.GITHUB_TOKEN
+    github_api_base_url: str = Field(
+        default="https://api.github.com",
+        description="Base URL for GitHub API (use https://api.github.com for public GitHub)",
+    )
+    claims_mapping: dict[str, str] = Field(
+        default_factory=lambda: {
+            "login": "username",
+            "id": "user_id",
+            "organizations": "teams",
+        },
+        description="Mapping from GitHub user fields to access attributes",
+    )
+
+
+AuthProviderConfig = Annotated[
+    OAuth2TokenAuthConfig | GitHubTokenAuthConfig | CustomAuthConfig,
+    Field(discriminator="type"),
+]
+
+
 class AuthenticationConfig(BaseModel):
-    provider_type: AuthProviderType = Field(
+    """Top-level authentication configuration."""
+
+    provider_config: AuthProviderConfig = Field(
         ...,
-        description="Type of authentication provider",
+        description="Authentication provider configuration",
     )
-    config: dict[str, Any] = Field(
-        ...,
-        description="Provider-specific configuration",
+    access_policy: list[AccessRule] = Field(
+        default=[],
+        description="Rules for determining access to resources",
     )
-    access_policy: list[AccessRule] = Field(default=[], description="Rules for determining access to resources")
 
 
 class AuthenticationRequiredError(Exception):

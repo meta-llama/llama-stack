@@ -31,7 +31,11 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
+from llama_stack.distribution.datatypes import (
+    AuthenticationRequiredError,
+    LoggingConfig,
+    StackRunConfig,
+)
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -215,7 +219,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
         principal = request.scope.get("principal", "")
-        user = User(principal, user_attributes)
+        user = User(principal=principal, attributes=user_attributes)
 
         await log_request_pre_validation(request)
 
@@ -450,7 +454,7 @@ def main(args: argparse.Namespace | None = None):
 
     # Add authentication middleware if configured
     if config.server.auth:
-        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
     else:
         if config.server.quota:
