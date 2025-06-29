@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { truncateText } from "@/lib/truncate-text";
 import { PaginationStatus } from "@/lib/types";
-import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import {
   Table,
   TableBody,
