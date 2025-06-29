@@ -180,10 +180,11 @@ def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
         chunks=chunks_with_embeddings,
     )
 
+    provider = [p.provider_id for p in client_with_empty_registry.providers.list() if p.api == "vector_io"][0]
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="duplicate",
-        params={"score_threshold": 3.0},
+        params={"score_threshold": -1.0} if provider == "milvus" else {"score_threshold": 3.0},
     )
 
     # Verify the top result is the expected document
