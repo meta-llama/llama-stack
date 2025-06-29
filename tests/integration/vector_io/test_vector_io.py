@@ -133,7 +133,7 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
     chunks_with_embeddings = [
         Chunk(
             content="This is a test chunk with precomputed embedding.",
-            metadata={"document_id": "doc1", "source": "precomputed"},
+            metadata={"document_id": "doc1", "source": "precomputed", "chunk_id": "chunk1"},
             embedding=[0.1] * int(embedding_dimension),
         ),
     ]
@@ -143,10 +143,11 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
         chunks=chunks_with_embeddings,
     )
 
-    # Query for the first document
+    provider = [p.provider_id for p in client_with_empty_registry.providers.list() if p.api == "vector_io"][0]
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="precomputed embedding test",
+        params={"score_threshold": -1.0} if provider == "milvus" else None,
     )
 
     # Verify the top result is the expected document
@@ -179,9 +180,11 @@ def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
         chunks=chunks_with_embeddings,
     )
 
+    provider = [p.provider_id for p in client_with_empty_registry.providers.list() if p.api == "vector_io"][0]
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="duplicate",
+        params={"score_threshold": -1.0} if provider == "milvus" else {"score_threshold": 3.0},
     )
 
     # Verify the top result is the expected document
