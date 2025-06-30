@@ -503,7 +503,7 @@ class OllamaInferenceAdapter(
         async def _convert_message(m: OpenAIMessageParam) -> OpenAIMessageParam:
             if isinstance(m.content, list):
                 for c in m.content:
-                    if c.type == "image_url" and c.image_url.url:
+                    if c.type == "image_url" and c.image_url and c.image_url.url:
                         localize_result = await localize_image_content(c.image_url.url)
                         if localize_result is None:
                             raise ValueError(f"Failed to localize image content from {c.image_url.url}")
