@@ -51,18 +51,22 @@ class ProviderImpl(Providers):
                 # Skip providers that are not enabled
                 if p.provider_id is None:
                     continue
+                # Filter out "metrics" to be shown in config duplicated
+                metrics_url = p.config.get("metrics")
+                config = {k: v for k, v in p.config.items() if k != "metrics"}
                 ret.append(
                     ProviderInfo(
                         api=api,
                         provider_id=p.provider_id,
                         provider_type=p.provider_type,
-                        config=p.config,
+                        config=config,
                         health=providers_health.get(api, {}).get(
                             p.provider_id,
                             HealthResponse(
                                 status=HealthStatus.NOT_IMPLEMENTED, message="Provider does not implement health check"
                             ),
                         ),
+                        metrics=metrics_url,
                     )
                 )
 
