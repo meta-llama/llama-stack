@@ -197,6 +197,8 @@ def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
 
     # Verify the top result is the expected document
     assert response is not None
-    assert len(response.chunks) > 0
+    assert len(response.chunks) > 0, (
+        f"provider params for {provider} = {vector_io_provider_params_dict.get(provider, None)}"
+    )
     assert response.chunks[0].metadata["document_id"] == "doc1"
     assert response.chunks[0].metadata["source"] == "precomputed"
