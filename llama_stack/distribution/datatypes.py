@@ -166,6 +166,7 @@ class AuthProviderType(StrEnum):
 
     OAUTH2_TOKEN = "oauth2_token"
     CUSTOM = "custom"
+    OPENSHIFT_OAUTH = "openshift_oauth"
 
 
 class AuthenticationConfig(BaseModel):

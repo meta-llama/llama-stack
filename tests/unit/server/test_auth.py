@@ -593,3 +593,127 @@ def test_valid_introspection_with_custom_mapping_authentication(
     )
     assert response.status_code == 200
     assert response.json() == {"message": "Authentication successful"}
+
+
+# OpenShift OAuth tests
+
+
+@pytest.fixture
+def mock_openshift_api_server():
+    return "https://api.cluster.example.com:6443"
+
+
+@pytest.fixture
+def openshift_oauth_app(mock_openshift_api_server):
+    app = FastAPI()
+    auth_config = AuthenticationConfig(
+        provider_type=AuthProviderType.OPENSHIFT_OAUTH,
+        config={
+            "api_server_url": mock_openshift_api_server,
+            "verify_tls": False,
+            "claims_mapping": {
+                "username": "roles",
+                "groups": "teams",
+                "uid": "uid_attr",
+            },
+        },
+    )
+    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
+
+    @app.get("/test")
+    def test_endpoint():
+        return {"message": "Authentication successful"}
+
+    return app
+
+
+@pytest.fixture
+def openshift_oauth_client(openshift_oauth_app):
+    return TestClient(openshift_oauth_app)
+
+
+def test_missing_auth_header_openshift_oauth(openshift_oauth_client):
+    response = openshift_oauth_client.get("/test")
+    assert response.status_code == 401
+    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+
+
+def test_invalid_auth_header_format_openshift_oauth(openshift_oauth_client):
+    response = openshift_oauth_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
+    assert response.status_code == 401
+    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+
+
+async def mock_openshift_user_api_success(*args, **kwargs):
+    return MockResponse(
+        200,
+        {
+            "apiVersion": "user.openshift.io/v1",
+            "kind": "User",
+            "metadata": {
+                "name": "alice",
+                "uid": "alice-uid-123",
+            },
+            "groups": ["system:authenticated", "developers", "admins"],
+            "identities": ["anyuid:alice"],
+        },
+    )
+
+
+async def mock_openshift_user_api_failure(*args, **kwargs):
+    return MockResponse(401, {"message": "Unauthorized"})
+
+
+async def mock_openshift_user_api_http_error(*args, **kwargs):
+    return MockResponse(500, {"message": "Internal Server Error"})
+
+
+@patch("httpx.AsyncClient.get", new=mock_openshift_user_api_success)
+def test_valid_openshift_oauth_authentication(openshift_oauth_client, valid_token):
+    response = openshift_oauth_client.get("/test", headers={"Authorization": f"Bearer {valid_token}"})
+    assert response.status_code == 200
+    assert response.json() == {"message": "Authentication successful"}
+
+
+@patch("httpx.AsyncClient.get", new=mock_openshift_user_api_failure)
+def test_invalid_openshift_oauth_authentication(openshift_oauth_client, invalid_token):
+    response = openshift_oauth_client.get("/test", headers={"Authorization": f"Bearer {invalid_token}"})
+    assert response.status_code == 401
+    assert "Invalid token" in response.json()["error"]["message"]
+
+
+@patch("httpx.AsyncClient.get", new=mock_openshift_user_api_http_error)
+def test_openshift_oauth_http_error(openshift_oauth_client, valid_token):
+    response = openshift_oauth_client.get("/test", headers={"Authorization": f"Bearer {valid_token}"})
+    assert response.status_code == 401
+    assert "Token validation failed" in response.json()["error"]["message"]
+
+
+def test_openshift_oauth_request_payload(openshift_oauth_client, valid_token, mock_openshift_api_server):
+    with patch("httpx.AsyncClient.get") as mock_get:
+        mock_response = MockResponse(
+            200,
+            {
+                "apiVersion": "user.openshift.io/v1",
+                "kind": "User",
+                "metadata": {
+                    "name": "test-user",
+                    "uid": "test-uid",
+                },
+                "groups": ["test-group"],
+            },
+        )
+        mock_get.return_value = mock_response
+
+        openshift_oauth_client.get("/test", headers={"Authorization": f"Bearer {valid_token}"})
+
+        # Verify the request was made with correct parameters
+        mock_get.assert_called_once()
+        call_args = mock_get.call_args
+
+        # Check URL (passed as positional argument)
+        assert call_args[0][0] == f"{mock_openshift_api_server}/apis/user.openshift.io/v1/users/~"
+
+        # Check headers (passed as keyword argument)
+        headers = call_args[1]["headers"]
+        assert headers["Authorization"] == f"Bearer {valid_token}"

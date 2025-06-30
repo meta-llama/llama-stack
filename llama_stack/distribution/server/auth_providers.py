@@ -339,6 +339,134 @@ class CustomAuthProvider(AuthProvider):
             self._client = None
 
 
+class OpenShiftOAuthAuthProviderConfig(BaseModel):
+    api_server_url: str = Field(description="OpenShift API server URL (e.g., https://api.cluster.domain:6443)")
+    verify_tls: bool = Field(default=True, description="Whether to verify TLS certificates")
+    tls_cafile: Path | None = Field(default=None, description="Path to CA certificate file for TLS verification")
+    claims_mapping: dict[str, str] = Field(
+        default_factory=lambda: {
+            "username": "roles",
+            "groups": "teams",
+            "uid": "roles",
+        },
+        description="Mapping of OpenShift user claims to access attributes",
+    )
+
+    @field_validator("claims_mapping")
+    @classmethod
+    def validate_claims_mapping(cls, v):
+        for key, value in v.items():
+            if not value:
+                raise ValueError(f"claims_mapping value cannot be empty: {key}")
+        return v
+
+
+class OpenShiftOAuthAuthProvider(AuthProvider):
+    """
+    OpenShift OAuth authentication provider that validates tokens using the OpenShift user API.
+    This provider integrates with OpenShift's built-in OAuth server by using the
+    /apis/user.openshift.io/v1/users/~ endpoint to validate tokens and extract user information.
+    """
+
+    def __init__(self, config: OpenShiftOAuthAuthProviderConfig):
+        self.config = config
+
+    async def validate_token(self, token: str, scope: dict | None = None) -> User:
+        """Validate a token using OpenShift's user API endpoint."""
+
+        # Configure SSL context
+        ssl_ctxt = None
+        if self.config.tls_cafile:
+            ssl_ctxt = ssl.create_default_context(cafile=self.config.tls_cafile.as_posix())
+        elif not self.config.verify_tls:
+            ssl_ctxt = ssl.create_default_context()
+            ssl_ctxt.check_hostname = False
+            ssl_ctxt.verify_mode = ssl.CERT_NONE
+
+        # Build the OpenShift user API endpoint URL
+        user_api_url = f"{self.config.api_server_url.rstrip('/')}/apis/user.openshift.io/v1/users/~"
+
+        try:
+            async with httpx.AsyncClient(verify=ssl_ctxt if ssl_ctxt else self.config.verify_tls) as client:
+                response = await client.get(
+                    user_api_url,
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                    },
+                    timeout=10.0,
+                )
+
+                if response.status_code == 401:
+                    raise ValueError("Invalid token")
+                elif response.status_code != 200:
+                    logger.warning(f"OpenShift user API failed with status code: {response.status_code}")
+                    raise ValueError(f"Token validation failed: {response.status_code}")
+
+                user_response = response.json()
+
+                # Extract user information from OpenShift user object
+                metadata = user_response.get("metadata", {})
+                if not metadata:
+                    raise ValueError("No metadata found in user response")
+
+                username = metadata.get("name")
+                if not username:
+                    raise ValueError("No username found in user response")
+
+                uid = metadata.get("uid")
+
+                # Extract groups from the user object
+                groups = user_response.get("groups", [])
+
+                # Build user attributes from OpenShift user info
+                user_attributes = {}
+
+                # Map username
+                if "username" in self.config.claims_mapping:
+                    attr_key = self.config.claims_mapping["username"]
+                    user_attributes[attr_key] = [username]
+
+                # Map groups
+                if groups and "groups" in self.config.claims_mapping:
+                    attr_key = self.config.claims_mapping["groups"]
+                    user_attributes[attr_key] = groups
+
+                # Map UID
+                if uid and "uid" in self.config.claims_mapping:
+                    attr_key = self.config.claims_mapping["uid"]
+                    user_attributes[attr_key] = [uid]
+
+                # Map any additional fields from metadata or top-level user object
+                for claim_key, attr_key in self.config.claims_mapping.items():
+                    if claim_key not in ["username", "groups", "uid"]:
+                        # Check in metadata first, then in user object root
+                        value = metadata.get(claim_key) or user_response.get(claim_key)
+                        if value:
+                            if isinstance(value, list):
+                                user_attributes[attr_key] = value
+                            else:
+                                user_attributes[attr_key] = [str(value)]
+
+                return User(
+                    principal=username,
+                    attributes=user_attributes,
+                )
+
+        except httpx.TimeoutException:
+            logger.exception("OpenShift user API request timed out")
+            raise ValueError("Token validation timeout") from None
+        except ValueError:
+            # Re-raise ValueError exceptions to preserve their message
+            raise
+        except Exception as e:
+            logger.exception("Error during token validation")
+            raise ValueError(f"Token validation error: {str(e)}") from e
+
+    async def close(self):
+        """Close any resources."""
+        pass
+
+
 def create_auth_provider(config: AuthenticationConfig) -> AuthProvider:
     """Factory function to create the appropriate auth provider."""
     provider_type = config.provider_type.lower()
@@ -347,6 +475,8 @@ def create_auth_provider(config: AuthenticationConfig) -> AuthProvider:
         return CustomAuthProvider(CustomAuthProviderConfig.model_validate(config.config))
     elif provider_type == "oauth2_token":
         return OAuth2TokenAuthProvider(OAuth2TokenAuthProviderConfig.model_validate(config.config))
+    elif provider_type == "openshift_oauth":
+        return OpenShiftOAuthAuthProvider(OpenShiftOAuthAuthProviderConfig.model_validate(config.config))
     else:
         supported_providers = ", ".join([t.value for t in AuthProviderType])
         raise ValueError(f"Unsupported auth provider type: {provider_type}. Supported types are: {supported_providers}")
