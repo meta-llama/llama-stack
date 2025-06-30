@@ -6,17 +6,19 @@
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from llama_stack.schema_utils import json_schema_type
 
 
 @json_schema_type
 class MilvusVectorIOConfig(BaseModel):
-    uri: str
-    token: str | None = None
-    consistency_level: str = "Strong"
+    uri: str = Field(description="The URI of the Milvus server")
+    token: str | None = Field(description="The token of the Milvus server")
+    consistency_level: str = Field(description="The consistency level of the Milvus server", default="Strong")
 
+    # This configuration allows additional fields to be passed through to the underlying Milvus client.
+    # See the [Milvus](https://milvus.io/docs/install-overview.md) documentation for more details about Milvus in general.
     model_config = ConfigDict(extra="allow")
 
     @classmethod
