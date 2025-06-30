@@ -50,7 +50,7 @@ class TestProviderMetrics:
 
     @pytest.mark.asyncio
     async def test_provider_with_invalid_metrics_in_config(self):
-        """Test that invalid metrics in config fails when access /providers."""
+        """Test invalid metrics in config fails when access /providers."""
         run_config = StackRunConfig(
             image_name="test_image",
             providers={
@@ -59,6 +59,27 @@ class TestProviderMetrics:
                         provider_id="test_provider",
                         provider_type="test_type",
                         config={"url": "http://localhost:8000", "metrics": "abcde-llama-stack"},
+                    )
+                ]
+            },
+        )
+        provider_config = ProviderImplConfig(run_config=run_config)
+        provider_impl = ProviderImpl(provider_config, {})
+
+        with pytest.raises(ValidationError):
+            await provider_impl.list_providers()
+
+    @pytest.mark.asyncio
+    async def test_provider_with_invalid_metrics_in_config2(self):
+        """Test invalid metrics2 in config fails when access /providers."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider",
+                        provider_type="test_type",
+                        config={"url": "http://localhost:8000", "metrics": 123},
                     )
                 ]
             },

@@ -26,9 +26,10 @@ class ProviderInfo(BaseModel):
     def validate_metrics_url(cls, v):
         if v is None:
             return None
-        if isinstance(v, str):
-            HttpUrl(v)
-            return v
+        if not isinstance(v, str):
+            raise ValueError("metrics must be a string URL or None")
+        HttpUrl(v)
+        return v
 
 
 class ListProvidersResponse(BaseModel):
