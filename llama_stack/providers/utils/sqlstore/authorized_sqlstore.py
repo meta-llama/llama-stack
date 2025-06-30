@@ -166,6 +166,10 @@ class AuthorizedSqlStore:
 
         return results.data[0] if results.data else None
 
+    async def delete(self, table: str, where: Mapping[str, Any]) -> None:
+        """Delete rows with automatic access control filtering."""
+        await self.sql_store.delete(table, where)
+
     def _build_access_control_where_clause(self, policy: list[AccessRule]) -> str:
         """Build SQL WHERE clause for access control filtering.
 
