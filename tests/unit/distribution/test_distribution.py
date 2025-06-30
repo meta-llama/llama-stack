@@ -13,7 +13,111 @@ from pydantic import BaseModel, Field, ValidationError
 
 from llama_stack.distribution.datatypes import Api, Provider, StackRunConfig
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.providers.datatypes import ProviderSpec
+
+
+class TestProviderMetrics:
+    """Test suite for provider metrics."""
+
+    @pytest.mark.asyncio
+    async def test_provider_with_valid_metrics_in_config(self):
+        """Test provider with valid metrics in config."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider",
+                        provider_type="test_type",
+                        config={"url": "http://localhost:8000", "metrics": "http://localhost:9090/metrics"},
+                    )
+                ]
+            },
+        )
+        provider_config = ProviderImplConfig(run_config=run_config)
+        provider_impl = ProviderImpl(provider_config, {})
+
+        response = await provider_impl.list_providers()
+        assert len(response.data) == 1
+
+        provider_info = response.data[0]
+        assert provider_info.provider_id == "test_provider"
+        assert provider_info.provider_type == "test_type"
+        assert provider_info.metrics == "http://localhost:9090/metrics"
+        assert "metrics" not in provider_info.config
+        assert provider_info.config["url"] == "http://localhost:8000"
+
+    @pytest.mark.asyncio
+    async def test_provider_with_invalid_metrics_in_config(self):
+        """Test that invalid metrics in config fails when access /providers."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider",
+                        provider_type="test_type",
+                        config={"url": "http://localhost:8000", "metrics": "abcde-llama-stack"},
+                    )
+                ]
+            },
+        )
+        provider_config = ProviderImplConfig(run_config=run_config)
+        provider_impl = ProviderImpl(provider_config, {})
+
+        with pytest.raises(ValidationError):
+            await provider_impl.list_providers()
+
+    @pytest.mark.asyncio
+    async def test_provider_without_metrics_in_config(self):
+        """Test provider without metrics in config returns None."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider", provider_type="test_type", config={"url": "http://localhost:8000"}
+                    )
+                ]
+            },
+        )
+        provider_config = ProviderImplConfig(run_config=run_config)
+        provider_impl = ProviderImpl(provider_config, {})
+
+        response = await provider_impl.list_providers()
+        assert len(response.data) == 1
+
+        provider_info = response.data[0]
+        assert provider_info.provider_id == "test_provider"
+        assert provider_info.provider_type == "test_type"
+        assert provider_info.metrics is None
+        assert "metrics" not in provider_info.config
+        assert provider_info.config["url"] == "http://localhost:8000"
+
+    @pytest.mark.asyncio
+    async def test_inspect_provider_with_metrics(self):
+        """Test inspect_provider returns correct metrics info."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider",
+                        provider_type="test_type",
+                        config={"url": "http://localhost:8000", "metrics": "http://localhost:9090/metrics"},
+                    )
+                ]
+            },
+        )
+        provider_config = ProviderImplConfig(run_config=run_config)
+        provider_impl = ProviderImpl(provider_config, {})
+
+        # Test the inspect_provider API
+        provider_info = await provider_impl.inspect_provider("test_provider")
+        assert provider_info.provider_id == "test_provider"
+        assert provider_info.metrics == "http://localhost:9090/metrics"
+        assert "metrics" not in provider_info.config
 
 
 class SampleConfig(BaseModel):

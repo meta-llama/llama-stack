@@ -6,7 +6,7 @@
 
 from typing import Any, Protocol, runtime_checkable
 
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl, field_validator
 
 from llama_stack.providers.datatypes import HealthResponse
 from llama_stack.schema_utils import json_schema_type, webmethod
@@ -19,6 +19,16 @@ class ProviderInfo(BaseModel):
     provider_type: str
     config: dict[str, Any]
     health: HealthResponse
+    metrics: str | None = None  # define as string type than httpurl for openapi compatibility
+
+    @field_validator("metrics")
+    @classmethod
+    def validate_metrics_url(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, str):
+            HttpUrl(v)
+            return v
 
 
 class ListProvidersResponse(BaseModel):
