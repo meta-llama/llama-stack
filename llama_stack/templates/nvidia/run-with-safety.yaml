@@ -19,11 +19,13 @@ providers:
       url: ${env.NVIDIA_BASE_URL:=https://integrate.api.nvidia.com}
       api_key: ${env.NVIDIA_API_KEY:=}
       append_api_version: ${env.NVIDIA_APPEND_API_VERSION:=True}
+    immutable: false
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
       guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:=http://localhost:7331}
       config_id: ${env.NVIDIA_GUARDRAILS_CONFIG_ID:=self-check}
+    immutable: false
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -32,12 +34,14 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/faiss_store.db
+    immutable: false
   safety:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
       guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:=http://localhost:7331}
       config_id: ${env.NVIDIA_GUARDRAILS_CONFIG_ID:=self-check}
+    immutable: false
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -49,6 +53,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/responses_store.db
+    immutable: false
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -56,11 +61,13 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/trace_store.db
+    immutable: false
   eval:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
       evaluator_url: ${env.NVIDIA_EVALUATOR_URL:=http://localhost:7331}
+    immutable: false
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -69,6 +76,7 @@ providers:
       dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
       project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
       customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:=http://nemo.test}
+    immutable: false
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
@@ -77,6 +85,7 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/localfs_datasetio.db
+    immutable: false
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
@@ -84,14 +93,17 @@ providers:
       dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
       project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
       datasets_url: ${env.NVIDIA_DATASETS_URL:=http://nemo.test}
+    immutable: false
   scoring:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+    immutable: false
   tool_runtime:
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    immutable: false
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/registry.db

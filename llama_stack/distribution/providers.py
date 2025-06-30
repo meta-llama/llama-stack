@@ -147,7 +147,10 @@ class ProviderImpl(Providers):
             if prov_api != api:
                 continue
             for p in providers:
+                # the provider needs to be mutable for us to update its config
                 if p.provider_id == provider_id:
+                    if p.immutable:
+                        raise ValueError(f"Provider {provider_id} is immutable, you can only update mutable providers.")
                     existing_provider = p
                     break
             if existing_provider is not None:

@@ -18,9 +18,11 @@ providers:
     config:
       url: https://api.fireworks.ai/inference/v1
       api_key: ${env.FIREWORKS_API_KEY}
+    immutable: false
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
+    immutable: false
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -29,11 +31,13 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/faiss_store.db
+    immutable: false
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+    immutable: false
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -45,6 +49,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/responses_store.db
+    immutable: false
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -52,6 +57,7 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/trace_store.db
+    immutable: false
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -60,6 +66,7 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/meta_reference_eval.db
+    immutable: false
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -68,6 +75,7 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/huggingface_datasetio.db
+    immutable: false
   - provider_id: localfs
     provider_type: inline::localfs
     config:
@@ -75,17 +83,21 @@ providers:
         type: sqlite
         namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/localfs_datasetio.db
+    immutable: false
   scoring:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+    immutable: false
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
     config: {}
+    immutable: false
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:=}
+    immutable: false
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
@@ -94,27 +106,33 @@ providers:
       metadata_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/files_metadata.db
+    immutable: false
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
       api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
     config:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
+    immutable: false
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    immutable: false
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+    immutable: false
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/fireworks}/registry.db
