@@ -36,11 +36,12 @@ log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
 
 # KV store prefixes for OpenAI vector stores
-OPENAI_VECTOR_STORES_PREFIX = "openai_vector_stores:"
-OPENAI_VECTOR_STORES_FILES_PREFIX = "openai_vector_stores_files:"
-OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = "openai_vector_stores_files_contents:"
+VERSION = "v3"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:qdrant:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:qdrant:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:qdrant:{VERSION}::"
 
-VECTOR_DBS_PREFIX = "vector_dbs:"
+VECTOR_DBS_PREFIX = f"vector_dbs:qdrant:{VERSION}::"
 
 
 def convert_id(_id: str) -> str:
