@@ -42,6 +42,7 @@ VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
+from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 
 def sanitize_collection_name(name: str) -> str:
