@@ -11,7 +11,7 @@ import os
 from typing import Any
 
 from numpy.typing import NDArray
-from pymilvus import MilvusClient
+from pymilvus import DataType, MilvusClient
 
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
@@ -41,6 +41,7 @@ VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
+from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 
 class MilvusIndex(EmbeddingIndex):
