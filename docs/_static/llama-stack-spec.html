@@ -6466,16 +6466,19 @@
                 "type": "object",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the tool"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) Human-readable description of what the tool does"
                     },
                     "parameters": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolParameter"
-                        }
+                        },
+                        "description": "(Optional) List of parameters this tool accepts"
                     },
                     "metadata": {
                         "type": "object",
@@ -6500,30 +6503,36 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Additional metadata about the tool"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "name"
                 ],
-                "title": "ToolDef"
+                "title": "ToolDef",
+                "description": "Tool definition used in runtime contexts."
             },
             "ToolParameter": {
                 "type": "object",
                 "properties": {
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the parameter"
                     },
                     "parameter_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Type of the parameter (e.g., string, integer)"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable description of what the parameter does"
                     },
                     "required": {
                         "type": "boolean",
-                        "default": true
+                        "default": true,
+                        "description": "Whether this parameter is required for tool invocation"
                     },
                     "default": {
                         "oneOf": [
@@ -6545,7 +6554,8 @@
                             {
                                 "type": "object"
                             }
-                        ]
+                        ],
+                        "description": "(Optional) Default value for the parameter if not provided"
                     }
                 },
                 "additionalProperties": false,
@@ -6555,7 +6565,8 @@
                     "description",
                     "required"
                 ],
-                "title": "ToolParameter"
+                "title": "ToolParameter",
+                "description": "Parameter definition for a tool."
             },
             "CreateAgentRequest": {
                 "type": "object",
@@ -10472,13 +10483,16 @@
                 "type": "object",
                 "properties": {
                     "identifier": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for this resource in llama stack"
                     },
                     "provider_resource_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for this resource in the provider"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the provider that owns this resource"
                     },
                     "type": {
                         "type": "string",
@@ -10492,9 +10506,9 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "model",
-                        "default": "model"
+                        "default": "model",
+                        "description": "The resource type, always 'model' for model resources"
                     },
                     "metadata": {
                         "type": "object",
@@ -10519,11 +10533,13 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Any additional metadata for this model"
                     },
                     "model_type": {
                         "$ref": "#/components/schemas/ModelType",
-                        "default": "llm"
+                        "default": "llm",
+                        "description": "The type of model (LLM or embedding model)"
                     }
                 },
                 "additionalProperties": false,
@@ -10534,7 +10550,8 @@
                     "metadata",
                     "model_type"
                 ],
-                "title": "Model"
+                "title": "Model",
+                "description": "A model resource representing an AI model registered in Llama Stack."
             },
             "ModelType": {
                 "type": "string",
@@ -10542,7 +10559,8 @@
                     "llm",
                     "embedding"
                 ],
-                "title": "ModelType"
+                "title": "ModelType",
+                "description": "Enumeration of supported model types in Llama Stack."
             },
             "AgentTurnInputType": {
                 "type": "object",
@@ -11064,21 +11082,24 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "tool",
-                        "default": "tool"
+                        "default": "tool",
+                        "description": "Type of resource, always 'tool'"
                     },
                     "toolgroup_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the tool group this tool belongs to"
                     },
                     "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable description of what the tool does"
                     },
                     "parameters": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolParameter"
-                        }
+                        },
+                        "description": "List of parameters this tool accepts"
                     },
                     "metadata": {
                         "type": "object",
@@ -11103,7 +11124,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Additional metadata about the tool"
                     }
                 },
                 "additionalProperties": false,
@@ -11115,7 +11137,8 @@
                     "description",
                     "parameters"
                 ],
-                "title": "Tool"
+                "title": "Tool",
+                "description": "A tool that can be invoked by agents."
             },
             "ToolGroup": {
                 "type": "object",
@@ -11141,12 +11164,13 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "tool_group",
-                        "default": "tool_group"
+                        "default": "tool_group",
+                        "description": "Type of resource, always 'tool_group'"
                     },
                     "mcp_endpoint": {
-                        "$ref": "#/components/schemas/URL"
+                        "$ref": "#/components/schemas/URL",
+                        "description": "(Optional) Model Context Protocol endpoint for remote tools"
                     },
                     "args": {
                         "type": "object",
@@ -11171,7 +11195,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Additional arguments for the tool group"
                     }
                 },
                 "additionalProperties": false,
@@ -11180,7 +11205,8 @@
                     "provider_id",
                     "type"
                 ],
-                "title": "ToolGroup"
+                "title": "ToolGroup",
+                "description": "A group of related tools managed together."
             },
             "Trace": {
                 "type": "object",
@@ -11737,13 +11763,16 @@
                 "type": "object",
                 "properties": {
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "(Optional) The output content from the tool execution"
                     },
                     "error_message": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) Error message if the tool execution failed"
                     },
                     "error_code": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) Numeric error code if the tool execution failed"
                     },
                     "metadata": {
                         "type": "object",
@@ -11768,11 +11797,13 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Additional metadata about the tool execution"
                     }
                 },
                 "additionalProperties": false,
-                "title": "ToolInvocationResult"
+                "title": "ToolInvocationResult",
+                "description": "Result of a tool invocation."
             },
             "PaginatedResponse": {
                 "type": "object",
@@ -12178,14 +12209,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolDef"
-                        }
+                        },
+                        "description": "List of tool definitions"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListToolDefsResponse"
+                "title": "ListToolDefsResponse",
+                "description": "Response containing a list of tool definitions."
             },
             "ListScoringFunctionsResponse": {
                 "type": "object",
@@ -12226,14 +12259,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ToolGroup"
-                        }
+                        },
+                        "description": "List of tool groups"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListToolGroupsResponse"
+                "title": "ListToolGroupsResponse",
+                "description": "Response containing a list of tool groups."
             },
             "ListToolsResponse": {
                 "type": "object",
@@ -12242,14 +12277,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Tool"
-                        }
+                        },
+                        "description": "List of tools"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListToolsResponse"
+                "title": "ListToolsResponse",
+                "description": "Response containing a list of tools."
             },
             "ListVectorDBsResponse": {
                 "type": "object",
