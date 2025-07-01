@@ -67,7 +67,7 @@ Let's break this down into the different sections. The first section specifies t
 apis:
 - agents
 - inference
-- memory
+- vector_io
 - safety
 - telemetry
 ```
