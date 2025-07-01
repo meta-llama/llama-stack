@@ -1,4 +1,4 @@
-# External Providers
+# External Providers Guide
 
 Llama Stack supports external providers that live outside of the main codebase. This allows you to:
 - Create and maintain your own providers independently
