@@ -123,6 +123,9 @@ def test_insert_chunks(client_with_empty_registry, embedding_model_id, embedding
 
 
 def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, embedding_model_id, embedding_dimension):
+    vector_io_provider_params_dict = {
+        "inline::milvus": {"score_threshold": -1.0},
+    }
     vector_db_id = "test_precomputed_embeddings_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
@@ -133,7 +136,7 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
     chunks_with_embeddings = [
         Chunk(
             content="This is a test chunk with precomputed embedding.",
-            metadata={"document_id": "doc1", "source": "precomputed"},
+            metadata={"document_id": "doc1", "source": "precomputed", "chunk_id": "chunk1"},
             embedding=[0.1] * int(embedding_dimension),
         ),
     ]
@@ -143,22 +146,29 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
         chunks=chunks_with_embeddings,
     )
 
-    # Query for the first document
+    provider = [p.provider_id for p in client_with_empty_registry.providers.list() if p.api == "vector_io"][0]
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="precomputed embedding test",
+        params=vector_io_provider_params_dict.get(provider, None),
     )
 
     # Verify the top result is the expected document
     assert response is not None
-    assert len(response.chunks) > 0
+    assert len(response.chunks) > 0, (
+        f"provider params for {provider} = {vector_io_provider_params_dict.get(provider, None)}"
+    )
     assert response.chunks[0].metadata["document_id"] == "doc1"
     assert response.chunks[0].metadata["source"] == "precomputed"
 
 
+# expect this test to fail
 def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
     client_with_empty_registry, embedding_model_id, embedding_dimension
 ):
+    vector_io_provider_params_dict = {
+        "inline::milvus": {"score_threshold": 0.0},
+    }
     vector_db_id = "test_precomputed_embeddings_db"
     client_with_empty_registry.vector_dbs.register(
         vector_db_id=vector_db_id,
@@ -179,9 +189,11 @@ def test_query_returns_valid_object_when_identical_to_embedding_in_vdb(
         chunks=chunks_with_embeddings,
     )
 
+    provider = [p.provider_id for p in client_with_empty_registry.providers.list() if p.api == "vector_io"][0]
     response = client_with_empty_registry.vector_io.query(
         vector_db_id=vector_db_id,
         query="duplicate",
+        params=vector_io_provider_params_dict.get(provider, None),
     )
 
     # Verify the top result is the expected document
