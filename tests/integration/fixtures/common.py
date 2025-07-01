@@ -6,9 +6,13 @@
 
 import inspect
 import os
+import socket
+import subprocess
 import tempfile
+import time
 
 import pytest
+import requests
 import yaml
 from llama_stack_client import LlamaStackClient
 from openai import OpenAI
@@ -16,6 +20,44 @@ from openai import OpenAI
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.distribution.stack import run_config_from_adhoc_config_spec
 from llama_stack.env import get_env_or_fail
+
+DEFAULT_PORT = 8321
+
+
+def is_port_available(port: int, host: str = "localhost") -> bool:
+    """Check if a port is available for binding."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind((host, port))
+            return True
+    except OSError:
+        return False
+
+
+def start_llama_stack_server(config_name: str) -> subprocess.Popen:
+    """Start a llama stack server with the given config."""
+    cmd = ["llama", "stack", "run", config_name]
+
+    # Start server in background
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    return process
+
+
+def wait_for_server_ready(base_url: str, timeout: int = 120) -> bool:
+    """Wait for the server to be ready by polling the health endpoint."""
+    health_url = f"{base_url}/v1/health"
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        try:
+            response = requests.get(health_url, timeout=5)
+            if response.status_code == 200:
+                return True
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            pass
+        time.sleep(0.5)
+
+    return False
 
 
 @pytest.fixture(scope="session")
@@ -121,6 +163,40 @@ def llama_stack_client(request, provider_data):
 
     if not config:
         raise ValueError("You must specify either --stack-config or LLAMA_STACK_CONFIG")
+
+    # Handle server:<config_name> format or server:<config_name>:<port>
+    if config.startswith("server:"):
+        parts = config.split(":")
+        config_name = parts[1]
+        port = int(parts[2]) if len(parts) > 2 else int(os.environ.get("LLAMA_STACK_PORT", DEFAULT_PORT))
+        base_url = f"http://localhost:{port}"
+
+        # Check if port is available
+        if is_port_available(port):
+            print(f"Starting llama stack server with config '{config_name}' on port {port}...")
+
+            # Start server
+            server_process = start_llama_stack_server(config_name)
+
+            # Wait for server to be ready
+            if not wait_for_server_ready(base_url, timeout=120):
+                print("Server failed to start within timeout")
+                server_process.terminate()
+                raise RuntimeError(
+                    f"Server failed to start within timeout. Check that config '{config_name}' exists and is valid."
+                )
+
+            print(f"Server is ready at {base_url}")
+
+            # Store process for potential cleanup (pytest will handle termination at session end)
+            request.session._llama_stack_server_process = server_process
+        else:
+            print(f"Port {port} is already in use, assuming server is already running...")
+
+        return LlamaStackClient(
+            base_url=base_url,
+            provider_data=provider_data,
+        )
 
     # check if this looks like a URL
     if config.startswith("http") or "//" in config:
