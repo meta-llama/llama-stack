@@ -7459,20 +7459,22 @@ components:
             - benchmark
             - tool
             - tool_group
-          title: ResourceType
           const: dataset
           default: dataset
+          description: >-
+            Type of resource, always 'dataset' for datasets
         purpose:
           type: string
           enum:
             - post-training/messages
             - eval/question-answer
             - eval/messages-answer
-          title: DatasetPurpose
           description: >-
-            Purpose of the dataset. Each purpose has a required input data schema.
+            Purpose of the dataset indicating its intended use
         source:
           $ref: '#/components/schemas/DataSource'
+          description: >-
+            Data source configuration for the dataset
         metadata:
           type: object
           additionalProperties:
@@ -7483,6 +7485,7 @@ components:
               - type: string
               - type: array
               - type: object
+          description: Additional metadata for the dataset
       additionalProperties: false
       required:
         - identifier
@@ -7492,6 +7495,8 @@ components:
         - source
         - metadata
       title: Dataset
+      description: >-
+        Dataset resource for storing and accessing training or evaluation data.
     RowsDataSource:
       type: object
       properties:
@@ -8606,10 +8611,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Dataset'
+          description: List of datasets
       additionalProperties: false
       required:
         - data
       title: ListDatasetsResponse
+      description: Response from listing datasets.
     ListModelsResponse:
       type: object
       properties:
@@ -10081,10 +10088,16 @@ components:
           description: List of file objects
         has_more:
           type: boolean
+          description: >-
+            Whether there are more files available beyond this page
         first_id:
           type: string
+          description: >-
+            ID of the first file in the list for pagination
         last_id:
           type: string
+          description: >-
+            ID of the last file in the list for pagination
         object:
           type: string
           const: list

@@ -10366,9 +10366,9 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "dataset",
-                        "default": "dataset"
+                        "default": "dataset",
+                        "description": "Type of resource, always 'dataset' for datasets"
                     },
                     "purpose": {
                         "type": "string",
@@ -10377,11 +10377,11 @@
                             "eval/question-answer",
                             "eval/messages-answer"
                         ],
-                        "title": "DatasetPurpose",
-                        "description": "Purpose of the dataset. Each purpose has a required input data schema."
+                        "description": "Purpose of the dataset indicating its intended use"
                     },
                     "source": {
-                        "$ref": "#/components/schemas/DataSource"
+                        "$ref": "#/components/schemas/DataSource",
+                        "description": "Data source configuration for the dataset"
                     },
                     "metadata": {
                         "type": "object",
@@ -10406,7 +10406,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata for the dataset"
                     }
                 },
                 "additionalProperties": false,
@@ -10418,7 +10419,8 @@
                     "source",
                     "metadata"
                 ],
-                "title": "Dataset"
+                "title": "Dataset",
+                "description": "Dataset resource for storing and accessing training or evaluation data."
             },
             "RowsDataSource": {
                 "type": "object",
@@ -12007,14 +12009,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Dataset"
-                        }
+                        },
+                        "description": "List of datasets"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListDatasetsResponse"
+                "title": "ListDatasetsResponse",
+                "description": "Response from listing datasets."
             },
             "ListModelsResponse": {
                 "type": "object",
@@ -14091,13 +14095,16 @@
                         "description": "List of file objects"
                     },
                     "has_more": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "Whether there are more files available beyond this page"
                     },
                     "first_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the first file in the list for pagination"
                     },
                     "last_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the last file in the list for pagination"
                     },
                     "object": {
                         "type": "string",

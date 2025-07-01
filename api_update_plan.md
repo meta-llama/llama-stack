@@ -227,8 +227,8 @@ Before finalizing documentation, verify:
 [x] 6. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/rag_tool.py` - RAG tool runtime
 [x] 7. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/vector_io/vector_io.py` - Vector database operations
 [x] 8. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/vector_dbs/vector_dbs.py` - Vector database management
-9. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/files/files.py` - File management
-10. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasets/datasets.py` - Dataset management
+[x] 9. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/files/files.py` - File management
+[x] 10. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasets/datasets.py` - Dataset management
 11. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasetio/datasetio.py` - Dataset I/O operations
 12. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/post_training/post_training.py` - Training and fine-tuning
 13. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/eval/eval.py` - Evaluation framework
