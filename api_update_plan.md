@@ -224,7 +224,7 @@ Before finalizing documentation, verify:
 [x] 3. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/safety/safety.py` - Safety and moderation
 [x] 4. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/models/models.py` - Model metadata and management
 [x] 5. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/tools.py` - Tool system APIs
-6. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/rag_tool.py` - RAG tool runtime
+[x] 6. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/rag_tool.py` - RAG tool runtime
 7. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/vector_io/vector_io.py` - Vector database operations
 8. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/vector_dbs/vector_dbs.py` - Vector database management
 9. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/files/files.py` - File management

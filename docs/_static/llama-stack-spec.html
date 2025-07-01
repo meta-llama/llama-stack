@@ -1973,7 +1973,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "description": "Index documents so they can be used by the RAG system",
+                "description": "Index documents so they can be used by the RAG system.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -4345,7 +4345,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "RAGQueryResult containing the retrieved content and metadata",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4370,7 +4370,7 @@
                 "tags": [
                     "ToolRuntime"
                 ],
-                "description": "Query the RAG system for context; typically invoked by the agent",
+                "description": "Query the RAG system for context; typically invoked by the agent.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -11493,13 +11493,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/RAGDocument"
-                        }
+                        },
+                        "description": "List of documents to index in the RAG system"
                     },
                     "vector_db_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the vector database to store the document embeddings"
                     },
                     "chunk_size_in_tokens": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) Size in tokens for document chunking during indexing"
                     }
                 },
                 "additionalProperties": false,
@@ -14813,11 +14816,13 @@
                     "type": {
                         "type": "string",
                         "const": "default",
-                        "default": "default"
+                        "default": "default",
+                        "description": "Type of query generator, always 'default'"
                     },
                     "separator": {
                         "type": "string",
-                        "default": " "
+                        "default": " ",
+                        "description": "String separator used to join query terms"
                     }
                 },
                 "additionalProperties": false,
@@ -14825,7 +14830,8 @@
                     "type",
                     "separator"
                 ],
-                "title": "DefaultRAGQueryGeneratorConfig"
+                "title": "DefaultRAGQueryGeneratorConfig",
+                "description": "Configuration for the default RAG query generator."
             },
             "LLMRAGQueryGeneratorConfig": {
                 "type": "object",
@@ -14833,13 +14839,16 @@
                     "type": {
                         "type": "string",
                         "const": "llm",
-                        "default": "llm"
+                        "default": "llm",
+                        "description": "Type of query generator, always 'llm'"
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the language model to use for query generation"
                     },
                     "template": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Template string for formatting the query generation prompt"
                     }
                 },
                 "additionalProperties": false,
@@ -14848,7 +14857,8 @@
                     "model",
                     "template"
                 ],
-                "title": "LLMRAGQueryGeneratorConfig"
+                "title": "LLMRAGQueryGeneratorConfig",
+                "description": "Configuration for the LLM-based RAG query generator."
             },
             "RAGQueryConfig": {
                 "type": "object",
@@ -14920,7 +14930,7 @@
                     "impact_factor": {
                         "type": "number",
                         "default": 60.0,
-                        "description": "The impact factor for RRF scoring. Higher values give more weight to higher-ranked results. Must be greater than 0. Default of 60 is from the original RRF paper (Cormack et al., 2009)."
+                        "description": "The impact factor for RRF scoring. Higher values give more weight to higher-ranked results. Must be greater than 0"
                     }
                 },
                 "additionalProperties": false,
@@ -14975,16 +14985,19 @@
                 "type": "object",
                 "properties": {
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "The query content to search for in the indexed documents"
                     },
                     "vector_db_ids": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "List of vector database IDs to search within"
                     },
                     "query_config": {
-                        "$ref": "#/components/schemas/RAGQueryConfig"
+                        "$ref": "#/components/schemas/RAGQueryConfig",
+                        "description": "(Optional) Configuration parameters for the query operation"
                     }
                 },
                 "additionalProperties": false,
@@ -14998,7 +15011,8 @@
                 "type": "object",
                 "properties": {
                     "content": {
-                        "$ref": "#/components/schemas/InterleavedContent"
+                        "$ref": "#/components/schemas/InterleavedContent",
+                        "description": "(Optional) The retrieved content from the query"
                     },
                     "metadata": {
                         "type": "object",
@@ -15023,14 +15037,16 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Additional metadata about the query result"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "metadata"
                 ],
-                "title": "RAGQueryResult"
+                "title": "RAGQueryResult",
+                "description": "Result of a RAG query containing retrieved content and metadata."
             },
             "QueryChunksRequest": {
                 "type": "object",
