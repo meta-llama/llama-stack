@@ -229,8 +229,8 @@ Before finalizing documentation, verify:
 [x] 8. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/vector_dbs/vector_dbs.py` - Vector database management
 [x] 9. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/files/files.py` - File management
 [x] 10. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasets/datasets.py` - Dataset management
-11. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasetio/datasetio.py` - Dataset I/O operations
-12. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/post_training/post_training.py` - Training and fine-tuning
+[x] 11. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasetio/datasetio.py` - Dataset I/O operations
+[x] 12. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/post_training/post_training.py` - Training and fine-tuning
 13. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/eval/eval.py` - Evaluation framework
 14. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring/scoring.py` - Scoring system
 15. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring_functions/scoring_functions.py` - Scoring function definitions
