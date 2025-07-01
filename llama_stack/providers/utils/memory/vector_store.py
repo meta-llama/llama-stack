@@ -92,7 +92,20 @@ def content_from_data_and_mime_type(data: bytes | str, mime_type: str | None, en
     mime_category = mime_type.split("/")[0] if mime_type else None
     if mime_category == "text":
         # For text-based files (including CSV, MD)
-        return data.decode(encoding)
+        encodings_to_try = [encoding]
+        if encoding != "utf-8":
+            encodings_to_try.append("utf-8")
+        first_exception = None
+        for encoding in encodings_to_try:
+            try:
+                return data.decode(encoding)
+            except UnicodeDecodeError as e:
+                if first_exception is None:
+                    first_exception = e
+                log.warning(f"Decoding failed with {encoding}: {e}")
+        # raise the origional exception, if we got here there was at least 1 exception
+        log.error(f"Could not decode data as any of {encodings_to_try}")
+        raise first_exception
 
     elif mime_type == "application/pdf":
         return parse_pdf(data)
