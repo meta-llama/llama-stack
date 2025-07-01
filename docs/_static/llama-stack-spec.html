@@ -3324,6 +3324,7 @@
                     {
                         "name": "limit",
                         "in": "query",
+                        "description": "(Optional) A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.",
                         "required": false,
                         "schema": {
                             "type": "integer"
@@ -3332,6 +3333,7 @@
                     {
                         "name": "order",
                         "in": "query",
+                        "description": "(Optional) Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -3340,6 +3342,7 @@
                     {
                         "name": "after",
                         "in": "query",
+                        "description": "(Optional) A cursor for use in pagination. `after` is an object ID that defines your place in the list.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -3348,6 +3351,7 @@
                     {
                         "name": "before",
                         "in": "query",
+                        "description": "(Optional) A cursor for use in pagination. `before` is an object ID that defines your place in the list.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -3356,6 +3360,7 @@
                     {
                         "name": "filter",
                         "in": "query",
+                        "description": "(Optional) Filter by file status to only return files with the specified status.",
                         "required": false,
                         "schema": {
                             "$ref": "#/components/schemas/VectorStoreFileStatus"
@@ -7826,15 +7831,18 @@
                         "type": "object",
                         "properties": {
                             "ranker": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "(Optional) Name of the ranking algorithm to use"
                             },
                             "score_threshold": {
                                 "type": "number",
-                                "default": 0.0
+                                "default": 0.0,
+                                "description": "(Optional) Minimum relevance score threshold for results"
                             }
                         },
                         "additionalProperties": false,
-                        "title": "SearchRankingOptions"
+                        "title": "SearchRankingOptions",
+                        "description": "Options for ranking and filtering search results."
                     }
                 },
                 "additionalProperties": false,
@@ -12638,14 +12646,16 @@
                     "type": {
                         "type": "string",
                         "const": "auto",
-                        "default": "auto"
+                        "default": "auto",
+                        "description": "Strategy type, always \"auto\" for automatic chunking"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "VectorStoreChunkingStrategyAuto"
+                "title": "VectorStoreChunkingStrategyAuto",
+                "description": "Automatic chunking strategy for vector store files."
             },
             "VectorStoreChunkingStrategyStatic": {
                 "type": "object",
@@ -12653,10 +12663,12 @@
                     "type": {
                         "type": "string",
                         "const": "static",
-                        "default": "static"
+                        "default": "static",
+                        "description": "Strategy type, always \"static\" for static chunking"
                     },
                     "static": {
-                        "$ref": "#/components/schemas/VectorStoreChunkingStrategyStaticConfig"
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategyStaticConfig",
+                        "description": "Configuration parameters for the static chunking strategy"
                     }
                 },
                 "additionalProperties": false,
@@ -12664,18 +12676,21 @@
                     "type",
                     "static"
                 ],
-                "title": "VectorStoreChunkingStrategyStatic"
+                "title": "VectorStoreChunkingStrategyStatic",
+                "description": "Static chunking strategy with configurable parameters."
             },
             "VectorStoreChunkingStrategyStaticConfig": {
                 "type": "object",
                 "properties": {
                     "chunk_overlap_tokens": {
                         "type": "integer",
-                        "default": 400
+                        "default": 400,
+                        "description": "Number of tokens to overlap between adjacent chunks"
                     },
                     "max_chunk_size_tokens": {
                         "type": "integer",
-                        "default": 800
+                        "default": 800,
+                        "description": "Maximum number of tokens per chunk, must be between 100 and 4096"
                     }
                 },
                 "additionalProperties": false,
@@ -12683,7 +12698,8 @@
                     "chunk_overlap_tokens",
                     "max_chunk_size_tokens"
                 ],
-                "title": "VectorStoreChunkingStrategyStaticConfig"
+                "title": "VectorStoreChunkingStrategyStaticConfig",
+                "description": "Configuration for static chunking strategy."
             },
             "OpenaiAttachFileToVectorStoreRequest": {
                 "type": "object",
@@ -12742,10 +12758,12 @@
                                 "type": "string",
                                 "const": "rate_limit_exceeded"
                             }
-                        ]
+                        ],
+                        "description": "Error code indicating the type of failure"
                     },
                     "message": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Human-readable error message describing the failure"
                     }
                 },
                 "additionalProperties": false,
@@ -12753,17 +12771,20 @@
                     "code",
                     "message"
                 ],
-                "title": "VectorStoreFileLastError"
+                "title": "VectorStoreFileLastError",
+                "description": "Error information for failed vector store file processing."
             },
             "VectorStoreFileObject": {
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the file"
                     },
                     "object": {
                         "type": "string",
-                        "default": "vector_store.file"
+                        "default": "vector_store.file",
+                        "description": "Object type identifier, always \"vector_store.file\""
                     },
                     "attributes": {
                         "type": "object",
@@ -12788,26 +12809,33 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Key-value attributes associated with the file"
                     },
                     "chunking_strategy": {
-                        "$ref": "#/components/schemas/VectorStoreChunkingStrategy"
+                        "$ref": "#/components/schemas/VectorStoreChunkingStrategy",
+                        "description": "Strategy used for splitting the file into chunks"
                     },
                     "created_at": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Timestamp when the file was added to the vector store"
                     },
                     "last_error": {
-                        "$ref": "#/components/schemas/VectorStoreFileLastError"
+                        "$ref": "#/components/schemas/VectorStoreFileLastError",
+                        "description": "(Optional) Error information if file processing failed"
                     },
                     "status": {
-                        "$ref": "#/components/schemas/VectorStoreFileStatus"
+                        "$ref": "#/components/schemas/VectorStoreFileStatus",
+                        "description": "Current processing status of the file"
                     },
                     "usage_bytes": {
                         "type": "integer",
-                        "default": 0
+                        "default": 0,
+                        "description": "Storage space used by this file in bytes"
                     },
                     "vector_store_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "ID of the vector store containing this file"
                     }
                 },
                 "additionalProperties": false,
@@ -13686,19 +13714,24 @@
                 "type": "object",
                 "properties": {
                     "completed": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of files that have been successfully processed"
                     },
                     "cancelled": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of files that had their processing cancelled"
                     },
                     "failed": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of files that failed to process"
                     },
                     "in_progress": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Number of files currently being processed"
                     },
                     "total": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Total number of files in the vector store"
                     }
                 },
                 "additionalProperties": false,
@@ -13709,34 +13742,42 @@
                     "in_progress",
                     "total"
                 ],
-                "title": "VectorStoreFileCounts"
+                "title": "VectorStoreFileCounts",
+                "description": "File processing status counts for a vector store."
             },
             "VectorStoreObject": {
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the vector store"
                     },
                     "object": {
                         "type": "string",
-                        "default": "vector_store"
+                        "default": "vector_store",
+                        "description": "Object type identifier, always \"vector_store\""
                     },
                     "created_at": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Timestamp when the vector store was created"
                     },
                     "name": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) Name of the vector store"
                     },
                     "usage_bytes": {
                         "type": "integer",
-                        "default": 0
+                        "default": 0,
+                        "description": "Storage space used by the vector store in bytes"
                     },
                     "file_counts": {
-                        "$ref": "#/components/schemas/VectorStoreFileCounts"
+                        "$ref": "#/components/schemas/VectorStoreFileCounts",
+                        "description": "File processing status counts for the vector store"
                     },
                     "status": {
                         "type": "string",
-                        "default": "completed"
+                        "default": "completed",
+                        "description": "Current status of the vector store"
                     },
                     "expires_after": {
                         "type": "object",
@@ -13761,13 +13802,16 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Expiration policy for the vector store"
                     },
                     "expires_at": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) Timestamp when the vector store will expire"
                     },
                     "last_active_at": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "(Optional) Timestamp of last activity on the vector store"
                     },
                     "metadata": {
                         "type": "object",
@@ -13792,7 +13836,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Set of key-value pairs that can be attached to the vector store"
                     }
                 },
                 "additionalProperties": false,
@@ -13839,15 +13884,18 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the deleted vector store"
                     },
                     "object": {
                         "type": "string",
-                        "default": "vector_store.deleted"
+                        "default": "vector_store.deleted",
+                        "description": "Object type identifier for the deletion response"
                     },
                     "deleted": {
                         "type": "boolean",
-                        "default": true
+                        "default": true,
+                        "description": "Whether the deletion operation was successful"
                     }
                 },
                 "additionalProperties": false,
@@ -13863,15 +13911,18 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the deleted file"
                     },
                     "object": {
                         "type": "string",
-                        "default": "vector_store.file.deleted"
+                        "default": "vector_store.file.deleted",
+                        "description": "Object type identifier for the deletion response"
                     },
                     "deleted": {
                         "type": "boolean",
-                        "default": true
+                        "default": true,
+                        "description": "Whether the deletion operation was successful"
                     }
                 },
                 "additionalProperties": false,
@@ -14116,23 +14167,28 @@
                 "properties": {
                     "object": {
                         "type": "string",
-                        "default": "list"
+                        "default": "list",
+                        "description": "Object type identifier, always \"list\""
                     },
                     "data": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorStoreFileObject"
-                        }
+                        },
+                        "description": "List of vector store file objects"
                     },
                     "first_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) ID of the first file in the list for pagination"
                     },
                     "last_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) ID of the last file in the list for pagination"
                     },
                     "has_more": {
                         "type": "boolean",
-                        "default": false
+                        "default": false,
+                        "description": "Whether there are more files available beyond this page"
                     }
                 },
                 "additionalProperties": false,
@@ -14142,7 +14198,7 @@
                     "has_more"
                 ],
                 "title": "VectorStoreListFilesResponse",
-                "description": "Response from listing vector stores."
+                "description": "Response from listing files in a vector store."
             },
             "OpenAIModel": {
                 "type": "object",
@@ -14193,23 +14249,28 @@
                 "properties": {
                     "object": {
                         "type": "string",
-                        "default": "list"
+                        "default": "list",
+                        "description": "Object type identifier, always \"list\""
                     },
                     "data": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorStoreObject"
-                        }
+                        },
+                        "description": "List of vector store objects"
                     },
                     "first_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) ID of the first vector store in the list for pagination"
                     },
                     "last_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) ID of the last vector store in the list for pagination"
                     },
                     "has_more": {
                         "type": "boolean",
-                        "default": false
+                        "default": false,
+                        "description": "Whether there are more vector stores available beyond this page"
                     }
                 },
                 "additionalProperties": false,
@@ -14230,10 +14291,12 @@
                 "properties": {
                     "type": {
                         "type": "string",
-                        "const": "text"
+                        "const": "text",
+                        "description": "Content type, currently only \"text\" is supported"
                     },
                     "text": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The actual text content"
                     }
                 },
                 "additionalProperties": false,
@@ -14241,16 +14304,19 @@
                     "type",
                     "text"
                 ],
-                "title": "VectorStoreContent"
+                "title": "VectorStoreContent",
+                "description": "Content item from a vector store file or search result."
             },
             "VectorStoreFileContentsResponse": {
                 "type": "object",
                 "properties": {
                     "file_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the file"
                     },
                     "filename": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the file"
                     },
                     "attributes": {
                         "type": "object",
@@ -14275,13 +14341,15 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Key-value attributes associated with the file"
                     },
                     "content": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorStoreContent"
-                        }
+                        },
+                        "description": "List of content items from the file"
                     }
                 },
                 "additionalProperties": false,
@@ -14345,11 +14413,13 @@
                         "type": "object",
                         "properties": {
                             "ranker": {
-                                "type": "string"
+                                "type": "string",
+                                "description": "(Optional) Name of the ranking algorithm to use"
                             },
                             "score_threshold": {
                                 "type": "number",
-                                "default": 0.0
+                                "default": 0.0,
+                                "description": "(Optional) Minimum relevance score threshold for results"
                             }
                         },
                         "additionalProperties": false,
@@ -14374,13 +14444,16 @@
                 "type": "object",
                 "properties": {
                     "file_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier of the file containing the result"
                     },
                     "filename": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the file containing the result"
                     },
                     "score": {
-                        "type": "number"
+                        "type": "number",
+                        "description": "Relevance score for this search result"
                     },
                     "attributes": {
                         "type": "object",
@@ -14396,13 +14469,15 @@
                                     "type": "boolean"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Key-value attributes associated with the file"
                     },
                     "content": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorStoreContent"
-                        }
+                        },
+                        "description": "List of content items matching the search query"
                     }
                 },
                 "additionalProperties": false,
@@ -14420,23 +14495,28 @@
                 "properties": {
                     "object": {
                         "type": "string",
-                        "default": "vector_store.search_results.page"
+                        "default": "vector_store.search_results.page",
+                        "description": "Object type identifier for the search results page"
                     },
                     "search_query": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The original search query that was executed"
                     },
                     "data": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorStoreSearchResponse"
-                        }
+                        },
+                        "description": "List of search result objects"
                     },
                     "has_more": {
                         "type": "boolean",
-                        "default": false
+                        "default": false,
+                        "description": "Whether there are more results available beyond this page"
                     },
                     "next_page": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) Token for retrieving the next page of results"
                     }
                 },
                 "additionalProperties": false,
@@ -14447,7 +14527,7 @@
                     "has_more"
                 ],
                 "title": "VectorStoreSearchResponsePage",
-                "description": "Response from searching a vector store."
+                "description": "Paginated response from searching a vector store."
             },
             "OpenaiUpdateVectorStoreRequest": {
                 "type": "object",
@@ -15100,13 +15180,15 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Chunk"
-                        }
+                        },
+                        "description": "List of content chunks returned from the query"
                     },
                     "scores": {
                         "type": "array",
                         "items": {
                             "type": "number"
-                        }
+                        },
+                        "description": "Relevance scores corresponding to each returned chunk"
                     }
                 },
                 "additionalProperties": false,
@@ -15114,7 +15196,8 @@
                     "chunks",
                     "scores"
                 ],
-                "title": "QueryChunksResponse"
+                "title": "QueryChunksResponse",
+                "description": "Response from querying chunks in a vector database."
             },
             "QueryMetricsRequest": {
                 "type": "object",
