@@ -219,9 +219,9 @@ Before finalizing documentation, verify:
 - Minimal code changes - primarily docstring additions only
 
 ### File Processing Order (Complete Absolute Paths)
-1. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/agents/agents.py` - Core agent system (start here, most complete)
-2. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/inference/inference.py` - Core LLM functionality 
-3. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/safety/safety.py` - Safety and moderation
+[x] 1. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/agents/agents.py` - Core agent system (start here, most complete)
+[x] 2. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/inference/inference.py` - Core LLM functionality 
+[x] 3. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/safety/safety.py` - Safety and moderation
 4. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/models/models.py` - Model metadata and management
 5. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/tools.py` - Tool system APIs
 6. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/tools/rag_tool.py` - RAG tool runtime

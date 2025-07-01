@@ -4888,8 +4888,11 @@ components:
       properties:
         violation_level:
           $ref: '#/components/schemas/ViolationLevel'
+          description: Severity level of the violation
         user_message:
           type: string
+          description: >-
+            (Optional) Message to convey to the user about the violation
         metadata:
           type: object
           additionalProperties:
@@ -4900,11 +4903,16 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            Additional metadata including specific violation codes for debugging and
+            telemetry
       additionalProperties: false
       required:
         - violation_level
         - metadata
       title: SafetyViolation
+      description: >-
+        Details of a safety violation detected by content moderation.
     ShieldCallStep:
       type: object
       properties:
@@ -5122,6 +5130,7 @@ components:
         - warn
         - error
       title: ViolationLevel
+      description: Severity level of a safety violation.
     AgentTurnResponseEvent:
       type: object
       properties:
@@ -11128,8 +11137,11 @@ components:
       properties:
         violation:
           $ref: '#/components/schemas/SafetyViolation'
+          description: >-
+            (Optional) Safety violation detected by the shield, if any
       additionalProperties: false
       title: RunShieldResponse
+      description: Response from running a safety shield.
     SaveSpansToDatasetRequest:
       type: object
       properties:
