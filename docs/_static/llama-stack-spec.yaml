@@ -8151,13 +8151,17 @@ components:
             - benchmark
             - tool
             - tool_group
-          title: ResourceType
           const: vector_db
           default: vector_db
+          description: >-
+            Type of resource, always 'vector_db' for vector databases
         embedding_model:
           type: string
+          description: >-
+            Name of the embedding model to use for vector generation
         embedding_dimension:
           type: integer
+          description: Dimension of the embedding vectors
       additionalProperties: false
       required:
         - identifier
@@ -8166,6 +8170,8 @@ components:
         - embedding_model
         - embedding_dimension
       title: VectorDB
+      description: >-
+        Vector database resource for storing and querying vector embeddings.
     HealthInfo:
       type: object
       properties:
@@ -8817,10 +8823,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VectorDB'
+          description: List of vector databases
       additionalProperties: false
       required:
         - data
       title: ListVectorDBsResponse
+      description: Response from listing vector databases.
     Event:
       oneOf:
         - $ref: '#/components/schemas/UnstructuredLogEvent'

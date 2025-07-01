@@ -11387,15 +11387,17 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "vector_db",
-                        "default": "vector_db"
+                        "default": "vector_db",
+                        "description": "Type of resource, always 'vector_db' for vector databases"
                     },
                     "embedding_model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Name of the embedding model to use for vector generation"
                     },
                     "embedding_dimension": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Dimension of the embedding vectors"
                     }
                 },
                 "additionalProperties": false,
@@ -11406,7 +11408,8 @@
                     "embedding_model",
                     "embedding_dimension"
                 ],
-                "title": "VectorDB"
+                "title": "VectorDB",
+                "description": "Vector database resource for storing and querying vector embeddings."
             },
             "HealthInfo": {
                 "type": "object",
@@ -12306,14 +12309,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/VectorDB"
-                        }
+                        },
+                        "description": "List of vector databases"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListVectorDBsResponse"
+                "title": "ListVectorDBsResponse",
+                "description": "Response from listing vector databases."
             },
             "Event": {
                 "oneOf": [
