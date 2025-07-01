@@ -4684,10 +4684,13 @@ components:
       properties:
         agent_id:
           type: string
+          description: Unique identifier for the created agent
       additionalProperties: false
       required:
         - agent_id
       title: AgentCreateResponse
+      description: >-
+        Response returned when creating a new agent.
     CreateAgentSessionRequest:
       type: object
       properties:
@@ -4703,10 +4706,14 @@ components:
       properties:
         session_id:
           type: string
+          description: >-
+            Unique identifier for the created session
       additionalProperties: false
       required:
         - session_id
       title: AgentSessionCreateResponse
+      description: >-
+        Response returned when creating a new agent session.
     CreateAgentTurnRequest:
       type: object
       properties:
@@ -4993,14 +5000,20 @@ components:
       properties:
         turn_id:
           type: string
+          description: >-
+            Unique identifier for the turn within a session
         session_id:
           type: string
+          description: >-
+            Unique identifier for the conversation session
         input_messages:
           type: array
           items:
             oneOf:
               - $ref: '#/components/schemas/UserMessage'
               - $ref: '#/components/schemas/ToolResponseMessage'
+          description: >-
+            List of messages that initiated this turn
         steps:
           type: array
           items:
@@ -5016,8 +5029,12 @@ components:
                 tool_execution: '#/components/schemas/ToolExecutionStep'
                 shield_call: '#/components/schemas/ShieldCallStep'
                 memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+          description: >-
+            Ordered list of processing steps executed during this turn
         output_message:
           $ref: '#/components/schemas/CompletionMessage'
+          description: >-
+            The model's generated response containing content and metadata
         output_attachments:
           type: array
           items:
@@ -5041,12 +5058,17 @@ components:
               - mime_type
             title: Attachment
             description: An attachment to an agent turn.
+          description: >-
+            (Optional) Files or media attached to the agent's response
         started_at:
           type: string
           format: date-time
+          description: Timestamp when the turn began
         completed_at:
           type: string
           format: date-time
+          description: >-
+            (Optional) Timestamp when the turn finished, if completed
       additionalProperties: false
       required:
         - turn_id
@@ -5070,10 +5092,14 @@ components:
       properties:
         payload:
           $ref: '#/components/schemas/AgentTurnResponseEventPayload'
+          description: >-
+            Event-specific payload containing event data
       additionalProperties: false
       required:
         - payload
       title: AgentTurnResponseEvent
+      description: >-
+        An event in an agent turn response stream.
     AgentTurnResponseEventPayload:
       oneOf:
         - $ref: '#/components/schemas/AgentTurnResponseStepStartPayload'
@@ -5103,9 +5129,9 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: step_complete
           default: step_complete
+          description: Type of event being reported
         step_type:
           type: string
           enum:
@@ -5113,10 +5139,11 @@ components:
             - tool_execution
             - shield_call
             - memory_retrieval
-          title: StepType
-          description: Type of the step in an agent turn.
+          description: Type of step being executed
         step_id:
           type: string
+          description: >-
+            Unique identifier for the step within a turn
         step_details:
           oneOf:
             - $ref: '#/components/schemas/InferenceStep'
@@ -5130,6 +5157,7 @@ components:
               tool_execution: '#/components/schemas/ToolExecutionStep'
               shield_call: '#/components/schemas/ShieldCallStep'
               memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+          description: Complete details of the executed step
       additionalProperties: false
       required:
         - event_type
@@ -5137,6 +5165,8 @@ components:
         - step_id
         - step_details
       title: AgentTurnResponseStepCompletePayload
+      description: >-
+        Payload for step completion events in agent turn responses.
     AgentTurnResponseStepProgressPayload:
       type: object
       properties:
@@ -5149,9 +5179,9 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: step_progress
           default: step_progress
+          description: Type of event being reported
         step_type:
           type: string
           enum:
@@ -5159,12 +5189,15 @@ components:
             - tool_execution
             - shield_call
             - memory_retrieval
-          title: StepType
-          description: Type of the step in an agent turn.
+          description: Type of step being executed
         step_id:
           type: string
+          description: >-
+            Unique identifier for the step within a turn
         delta:
           $ref: '#/components/schemas/ContentDelta'
+          description: >-
+            Incremental content changes during step execution
       additionalProperties: false
       required:
         - event_type
@@ -5172,6 +5205,8 @@ components:
         - step_id
         - delta
       title: AgentTurnResponseStepProgressPayload
+      description: >-
+        Payload for step progress events in agent turn responses.
     AgentTurnResponseStepStartPayload:
       type: object
       properties:
@@ -5184,9 +5219,9 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: step_start
           default: step_start
+          description: Type of event being reported
         step_type:
           type: string
           enum:
@@ -5194,10 +5229,11 @@ components:
             - tool_execution
             - shield_call
             - memory_retrieval
-          title: StepType
-          description: Type of the step in an agent turn.
+          description: Type of step being executed
         step_id:
           type: string
+          description: >-
+            Unique identifier for the step within a turn
         metadata:
           type: object
           additionalProperties:
@@ -5208,22 +5244,28 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Additional metadata for the step
       additionalProperties: false
       required:
         - event_type
         - step_type
         - step_id
       title: AgentTurnResponseStepStartPayload
+      description: >-
+        Payload for step start events in agent turn responses.
     AgentTurnResponseStreamChunk:
       type: object
       properties:
         event:
           $ref: '#/components/schemas/AgentTurnResponseEvent'
+          description: >-
+            Individual event in the agent turn response stream
       additionalProperties: false
       required:
         - event
       title: AgentTurnResponseStreamChunk
-      description: streamed agent turn completion response.
+      description: Streamed agent turn completion response.
     "AgentTurnResponseTurnAwaitingInputPayload":
       type: object
       properties:
@@ -5236,17 +5278,21 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: turn_awaiting_input
           default: turn_awaiting_input
+          description: Type of event being reported
         turn:
           $ref: '#/components/schemas/Turn'
+          description: >-
+            Turn data when waiting for external tool responses
       additionalProperties: false
       required:
         - event_type
         - turn
       title: >-
         AgentTurnResponseTurnAwaitingInputPayload
+      description: >-
+        Payload for turn awaiting input events in agent turn responses.
     AgentTurnResponseTurnCompletePayload:
       type: object
       properties:
@@ -5259,16 +5305,20 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: turn_complete
           default: turn_complete
+          description: Type of event being reported
         turn:
           $ref: '#/components/schemas/Turn'
+          description: >-
+            Complete turn data including all steps and results
       additionalProperties: false
       required:
         - event_type
         - turn
       title: AgentTurnResponseTurnCompletePayload
+      description: >-
+        Payload for turn completion events in agent turn responses.
     AgentTurnResponseTurnStartPayload:
       type: object
       properties:
@@ -5281,16 +5331,20 @@ components:
             - turn_start
             - turn_complete
             - turn_awaiting_input
-          title: AgentTurnResponseEventType
           const: turn_start
           default: turn_start
+          description: Type of event being reported
         turn_id:
           type: string
+          description: >-
+            Unique identifier for the turn within a session
       additionalProperties: false
       required:
         - event_type
         - turn_id
       title: AgentTurnResponseTurnStartPayload
+      description: >-
+        Payload for turn start events in agent turn responses.
     OpenAIResponseAnnotationCitation:
       type: object
       properties:
@@ -6779,31 +6833,42 @@ components:
       properties:
         agent_id:
           type: string
+          description: Unique identifier for the agent
         agent_config:
           $ref: '#/components/schemas/AgentConfig'
+          description: Configuration settings for the agent
         created_at:
           type: string
           format: date-time
+          description: Timestamp when the agent was created
       additionalProperties: false
       required:
         - agent_id
         - agent_config
         - created_at
       title: Agent
+      description: >-
+        An agent instance with configuration and metadata.
     Session:
       type: object
       properties:
         session_id:
           type: string
+          description: >-
+            Unique identifier for the conversation session
         session_name:
           type: string
+          description: Human-readable name for the session
         turns:
           type: array
           items:
             $ref: '#/components/schemas/Turn'
+          description: >-
+            List of all turns that have occurred in this session
         started_at:
           type: string
           format: date-time
+          description: Timestamp when the session was created
       additionalProperties: false
       required:
         - session_id
@@ -6829,10 +6894,14 @@ components:
               tool_execution: '#/components/schemas/ToolExecutionStep'
               shield_call: '#/components/schemas/ShieldCallStep'
               memory_retrieval: '#/components/schemas/MemoryRetrievalStep'
+          description: >-
+            The complete step data and execution details
       additionalProperties: false
       required:
         - step
       title: AgentStepResponse
+      description: >-
+        Response containing details of a specific agent step.
     Benchmark:
       type: object
       properties:

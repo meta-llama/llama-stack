@@ -48,8 +48,8 @@ class Attachment(BaseModel):
     :param mime_type: The MIME type of the attachment.
     """
 
-    content: InterleavedContent | URL
-    mime_type: str
+    content: InterleavedContent | URL = Field(description="The content of the attachment, which can be either interleaved content (text and images) or a URL pointing to the content.")
+    mime_type: str = Field(description="The MIME type of the attachment, specifying the format of the content (e.g., 'image/jpeg', 'text/plain').")
 
 
 class Document(BaseModel):
@@ -59,8 +59,8 @@ class Document(BaseModel):
     :param mime_type: The MIME type of the document.
     """
 
-    content: InterleavedContent | URL
-    mime_type: str
+    content: InterleavedContent | URL = Field(description="The content of the document, which can be either interleaved content (text and images) or a URL pointing to the content.")
+    mime_type: str = Field(description="The MIME type of the document, specifying the format of the content (e.g., 'application/pdf', 'text/plain').")
 
 
 class StepCommon(BaseModel):
@@ -72,10 +72,10 @@ class StepCommon(BaseModel):
     :param completed_at: The time the step completed.
     """
 
-    turn_id: str
-    step_id: str
-    started_at: datetime | None = None
-    completed_at: datetime | None = None
+    turn_id: str = Field(description="Unique identifier for the turn within a session.")
+    step_id: str = Field(description="Unique identifier for the step within a turn.")
+    started_at: datetime | None = Field(default=None, description="Timestamp when the operation began.")
+    completed_at: datetime | None = Field(default=None, description="Timestamp when the operation finished, if completed.")
 
 
 class StepType(StrEnum):
@@ -102,8 +102,8 @@ class InferenceStep(StepCommon):
 
     model_config = ConfigDict(protected_namespaces=())
 
-    step_type: Literal[StepType.inference] = StepType.inference
-    model_response: CompletionMessage
+    step_type: Literal[StepType.inference] = Field(StepType.inference, description="The type of the step, which is 'inference' for this model.")
+    model_response: CompletionMessage = Field(description="The response message from the language model for this inference step.")
 
 
 @json_schema_type
@@ -114,9 +114,9 @@ class ToolExecutionStep(StepCommon):
     :param tool_responses: The tool responses from the tool calls.
     """
 
-    step_type: Literal[StepType.tool_execution] = StepType.tool_execution
-    tool_calls: list[ToolCall]
-    tool_responses: list[ToolResponse]
+    step_type: Literal[StepType.tool_execution] = Field(StepType.tool_execution, description="The type of the step, which is 'tool_execution' for this model.")
+    tool_calls: list[ToolCall] = Field(description="A list of tool calls that were requested by the model during this step.")
+    tool_responses: list[ToolResponse] = Field(description="A list of responses obtained from executing the tool calls.")
 
 
 @json_schema_type
@@ -126,8 +126,8 @@ class ShieldCallStep(StepCommon):
     :param violation: The violation from the shield call.
     """
 
-    step_type: Literal[StepType.shield_call] = StepType.shield_call
-    violation: SafetyViolation | None
+    step_type: Literal[StepType.shield_call] = Field(StepType.shield_call, description="The type of the step, which is 'shield_call' for this model.")
+    violation: SafetyViolation | None = Field(description="If a safety violation was detected by the shield, this field contains details about the violation.")
 
 
 @json_schema_type
@@ -138,10 +138,10 @@ class MemoryRetrievalStep(StepCommon):
     :param inserted_context: The context retrieved from the vector databases.
     """
 
-    step_type: Literal[StepType.memory_retrieval] = StepType.memory_retrieval
+    step_type: Literal[StepType.memory_retrieval] = Field(StepType.memory_retrieval, description="The type of the step, which is 'memory_retrieval' for this model.")
     # TODO: should this be List[str]?
-    vector_db_ids: str
-    inserted_context: InterleavedContent
+    vector_db_ids: str = Field(description="The ID of the vector database used for retrieving context.")
+    inserted_context: InterleavedContent = Field(description="The context that was retrieved from the vector database and inserted into the conversation.")
 
 
 Step = Annotated[
@@ -152,48 +152,32 @@ Step = Annotated[
 
 @json_schema_type
 class Turn(BaseModel):
-    """A single turn in an interaction with an Agentic System.
+    """A single turn in an interaction with an Agentic System."""
 
-    :param turn_id: Unique identifier for the turn within a session
-    :param session_id: Unique identifier for the conversation session
-    :param input_messages: List of messages that initiated this turn
-    :param steps: Ordered list of processing steps executed during this turn
-    :param output_message: The model's generated response containing content and metadata
-    :param output_attachments: (Optional) Files or media attached to the agent's response
-    :param started_at: Timestamp when the turn began
-    :param completed_at: (Optional) Timestamp when the turn finished, if completed
-    """
+    turn_id: str = Field(description="Unique identifier for the turn within a session.")
+    session_id: str = Field(description="Unique identifier for the conversation session.")
+    input_messages: list[UserMessage | ToolResponseMessage] = Field(description="The list of input messages that initiated the turn, which can be from a user or a tool.")
+    steps: list[Step] = Field(description="An ordered list of processing steps (e.g., inference, tool execution) that occurred during this turn.")
+    output_message: CompletionMessage = Field(description="The final message generated by the agent at the end of the turn.")
+    output_attachments: list[Attachment] | None = Field(default_factory=lambda: [], description="A list of optional files or media attached to the agent's response.")
 
-    turn_id: str
-    session_id: str
-    input_messages: list[UserMessage | ToolResponseMessage]
-    steps: list[Step]
-    output_message: CompletionMessage
-    output_attachments: list[Attachment] | None = Field(default_factory=lambda: [])
-
-    started_at: datetime
-    completed_at: datetime | None = None
+    started_at: datetime = Field(description="Timestamp when the operation began.")
+    completed_at: datetime | None = Field(default=None, description="Timestamp when the operation finished, if completed.")
 
 
 @json_schema_type
 class Session(BaseModel):
-    """A single session of an interaction with an Agentic System.
+    """A single session of an interaction with an Agentic System."""
 
-    :param session_id: Unique identifier for the conversation session
-    :param session_name: Human-readable name for the session
-    :param turns: List of all turns that have occurred in this session
-    :param started_at: Timestamp when the session was created
-    """
-
-    session_id: str
-    session_name: str
-    turns: list[Turn]
-    started_at: datetime
+    session_id: str = Field(description="Unique identifier for the conversation session.")
+    session_name: str = Field(description="A user-defined name for the session for easier identification.")
+    turns: list[Turn] = Field(description="A list of all the turns that have occurred within this session.")
+    started_at: datetime = Field(description="Timestamp when the resource was created.")
 
 
 class AgentToolGroupWithArgs(BaseModel):
-    name: str
-    args: dict[str, Any]
+    name: str = Field(description="The name of the tool group.")
+    args: dict[str, Any] = Field(description="A dictionary of arguments to be passed to the tool group.")
 
 
 AgentToolGroup = str | AgentToolGroupWithArgs
@@ -201,17 +185,17 @@ register_schema(AgentToolGroup, name="AgentTool")
 
 
 class AgentConfigCommon(BaseModel):
-    sampling_params: SamplingParams | None = Field(default_factory=SamplingParams)
+    sampling_params: SamplingParams | None = Field(default_factory=SamplingParams, description="Parameters to control the sampling behavior of the model during generation.")
 
-    input_shields: list[str] | None = Field(default_factory=lambda: [])
-    output_shields: list[str] | None = Field(default_factory=lambda: [])
-    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [])
-    client_tools: list[ToolDef] | None = Field(default_factory=lambda: [])
-    tool_choice: ToolChoice | None = Field(default=None, deprecated="use tool_config instead")
-    tool_prompt_format: ToolPromptFormat | None = Field(default=None, deprecated="use tool_config instead")
-    tool_config: ToolConfig | None = Field(default=None)
+    input_shields: list[str] | None = Field(default_factory=lambda: [], description="A list of shield identifiers to be applied to the input.")
+    output_shields: list[str] | None = Field(default_factory=lambda: [], description="A list of shield identifiers to be applied to the output.")
+    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [], description="A list of tool groups available to the agent.")
+    client_tools: list[ToolDef] | None = Field(default_factory=lambda: [], description="A list of tool definitions provided by the client.")
+    tool_choice: ToolChoice | None = Field(default=None, deprecated="use tool_config instead", description="(Deprecated) The method for choosing which tools to use.")
+    tool_prompt_format: ToolPromptFormat | None = Field(default=None, deprecated="use tool_config instead", description="(Deprecated) The format for presenting tool prompts to the model.")
+    tool_config: ToolConfig | None = Field(default=None, description="Configuration for tool usage, including tool choice and prompt format.")
 
-    max_infer_iters: int | None = 10
+    max_infer_iters: int | None = Field(10, description="The maximum number of inference iterations allowed per turn.")
 
     def model_post_init(self, __context):
         if self.tool_config:
@@ -239,28 +223,22 @@ class AgentConfig(AgentConfigCommon):
     :param response_format: Optional response format configuration
     """
 
-    model: str
-    instructions: str
-    name: str | None = None
-    enable_session_persistence: bool | None = False
-    response_format: ResponseFormat | None = None
+    model: str = Field(description="The model identifier to use for the agent.")
+    instructions: str = Field(description="The system instructions for the agent.")
+    name: str | None = Field(default=None, description="An optional name for the agent, used for identification and telemetry.")
+    enable_session_persistence: bool | None = Field(False, description="If true, the agent's session data will be persisted across interactions.")
+    response_format: ResponseFormat | None = Field(default=None, description="The format for the response, such as JSON or text.")
 
 
 @json_schema_type
 class Agent(BaseModel):
-    """An agent instance with configuration and metadata.
-
-    :param agent_id: Unique identifier for the agent
-    :param agent_config: Configuration settings for the agent
-    :param created_at: Timestamp when the agent was created
-    """
-    agent_id: str
-    agent_config: AgentConfig
-    created_at: datetime
+    agent_id: str = Field(description="Unique identifier for the agent.")
+    agent_config: AgentConfig = Field(description="The configuration settings for this agent.")
+    created_at: datetime = Field(description="Timestamp when the resource was created.")
 
 
 class AgentConfigOverridablePerTurn(AgentConfigCommon):
-    instructions: str | None = None
+    instructions: str | None = Field(default=None, description="The system instructions for the agent, which can be overridden for a single turn.")
 
 
 class AgentTurnResponseEventType(StrEnum):
@@ -275,83 +253,47 @@ class AgentTurnResponseEventType(StrEnum):
 
 @json_schema_type
 class AgentTurnResponseStepStartPayload(BaseModel):
-    """Payload for step start events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param step_type: Type of step being executed
-    :param step_id: Unique identifier for the step within a turn
-    :param metadata: (Optional) Additional metadata for the step
-    """
-    event_type: Literal[AgentTurnResponseEventType.step_start] = AgentTurnResponseEventType.step_start
-    step_type: StepType
-    step_id: str
-    metadata: dict[str, Any] | None = Field(default_factory=lambda: {})
+    event_type: Literal[AgentTurnResponseEventType.step_start] = Field(AgentTurnResponseEventType.step_start, description="The type of the event, which is 'step_start' for this model.")
+    step_type: StepType = Field(description="The type of the step that is starting (e.g., 'inference', 'tool_execution').")
+    step_id: str = Field(description="Unique identifier for the step within a turn.")
+    metadata: dict[str, Any] | None = Field(default_factory=lambda: {}, description="A dictionary of metadata associated with the start of the step.")
 
 
 @json_schema_type
 class AgentTurnResponseStepCompletePayload(BaseModel):
-    """Payload for step completion events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param step_type: Type of step being executed
-    :param step_id: Unique identifier for the step within a turn
-    :param step_details: Complete details of the executed step
-    """
-    event_type: Literal[AgentTurnResponseEventType.step_complete] = AgentTurnResponseEventType.step_complete
-    step_type: StepType
-    step_id: str
-    step_details: Step
+    event_type: Literal[AgentTurnResponseEventType.step_complete] = Field(AgentTurnResponseEventType.step_complete, description="The type of the event, which is 'step_complete' for this model.")
+    step_type: StepType = Field(description="The type of the step that has completed (e.g., 'inference', 'tool_execution').")
+    step_id: str = Field(description="Unique identifier for the step within a turn.")
+    step_details: Step = Field(description="Detailed information about the step that has been completed.")
 
 
 @json_schema_type
 class AgentTurnResponseStepProgressPayload(BaseModel):
-    """Payload for step progress events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param step_type: Type of step being executed
-    :param step_id: Unique identifier for the step within a turn
-    :param delta: Incremental content changes during step execution
-    """
     model_config = ConfigDict(protected_namespaces=())
 
-    event_type: Literal[AgentTurnResponseEventType.step_progress] = AgentTurnResponseEventType.step_progress
-    step_type: StepType
-    step_id: str
+    event_type: Literal[AgentTurnResponseEventType.step_progress] = Field(AgentTurnResponseEventType.step_progress, description="The type of the event, which is 'step_progress' for this model.")
+    step_type: StepType = Field(description="The type of the step that is in progress, typically 'inference'.")
+    step_id: str = Field(description="Unique identifier for the step within a turn.")
 
-    delta: ContentDelta
+    delta: ContentDelta = Field(description="The incremental content delta generated during the step's progress.")
 
 
 @json_schema_type
 class AgentTurnResponseTurnStartPayload(BaseModel):
-    """Payload for turn start events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param turn_id: Unique identifier for the turn within a session
-    """
-    event_type: Literal[AgentTurnResponseEventType.turn_start] = AgentTurnResponseEventType.turn_start
-    turn_id: str
+    event_type: Literal[AgentTurnResponseEventType.turn_start] = Field(AgentTurnResponseEventType.turn_start, description="The type of the event, which is 'turn_start' for this model.")
+    turn_id: str = Field(description="Unique identifier for the turn within a session.")
 
 
 @json_schema_type
 class AgentTurnResponseTurnCompletePayload(BaseModel):
-    """Payload for turn completion events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param turn: Complete turn data including all steps and results
-    """
-    event_type: Literal[AgentTurnResponseEventType.turn_complete] = AgentTurnResponseEventType.turn_complete
-    turn: Turn
+    event_type: Literal[AgentTurnResponseEventType.turn_complete] = Field(AgentTurnResponseEventType.turn_complete, description="The type of the event, which is 'turn_complete' for this model.")
+    turn: Turn = Field(description="The complete turn object, containing all steps and messages for the turn.")
 
 
 @json_schema_type
 class AgentTurnResponseTurnAwaitingInputPayload(BaseModel):
-    """Payload for turn awaiting input events in agent turn responses.
-
-    :param event_type: Type of event being reported
-    :param turn: Turn data when waiting for external tool responses
-    """
-    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input] = AgentTurnResponseEventType.turn_awaiting_input
-    turn: Turn
+    event_type: Literal[AgentTurnResponseEventType.turn_awaiting_input] = Field(AgentTurnResponseEventType.turn_awaiting_input, description="The type of the event, which is 'turn_awaiting_input' for this model.")
+    turn: Turn = Field(description="The turn object that is awaiting user or tool input to proceed.")
 
 
 AgentTurnResponseEventPayload = Annotated[
@@ -368,92 +310,55 @@ register_schema(AgentTurnResponseEventPayload, name="AgentTurnResponseEventPaylo
 
 @json_schema_type
 class AgentTurnResponseEvent(BaseModel):
-    """An event in an agent turn response stream.
-
-    :param payload: Event-specific payload containing event data
-    """
-    payload: AgentTurnResponseEventPayload
+    payload: AgentTurnResponseEventPayload = Field(description="The payload of the event, containing the specific event data.")
 
 
 @json_schema_type
 class AgentCreateResponse(BaseModel):
-    """Response returned when creating a new agent.
-
-    :param agent_id: Unique identifier for the created agent
-    """
-    agent_id: str
+    agent_id: str = Field(description="Unique identifier for the newly created agent.")
 
 
 @json_schema_type
 class AgentSessionCreateResponse(BaseModel):
-    """Response returned when creating a new agent session.
-
-    :param session_id: Unique identifier for the created session
-    """
-    session_id: str
+    session_id: str = Field(description="Unique identifier for the newly created conversation session.")
 
 
 @json_schema_type
 class AgentTurnCreateRequest(AgentConfigOverridablePerTurn):
-    """Request to create a new turn for an agent.
-
-    :param agent_id: Unique identifier for the agent
-    :param session_id: Unique identifier for the conversation session
-    :param messages: List of messages to start the turn with
-    :param documents: (Optional) List of documents to provide to the agent
-    :param toolgroups: (Optional) List of tool groups to make available for this turn
-    :param stream: (Optional) Whether to stream the response
-    :param tool_config: (Optional) Tool configuration to override agent defaults
-    """
-    agent_id: str
-    session_id: str
+    agent_id: str = Field(description="Unique identifier for the agent.")
+    session_id: str = Field(description="Unique identifier for the conversation session.")
 
     # TODO: figure out how we can simplify this and make why
     # ToolResponseMessage needs to be here (it is function call
     # execution from outside the system)
-    messages: list[UserMessage | ToolResponseMessage]
+    messages: list[UserMessage | ToolResponseMessage] = Field(description="A list of messages that form the input for this turn.")
 
-    documents: list[Document] | None = None
-    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [])
+    documents: list[Document] | None = Field(default=None, description="A list of documents to be used as context for this turn.")
+    toolgroups: list[AgentToolGroup] | None = Field(default_factory=lambda: [], description="A list of tool groups to be used for this turn, in addition to the agent's default tool groups.")
 
-    stream: bool | None = False
-    tool_config: ToolConfig | None = None
+    stream: bool | None = Field(default=False, description="Whether to stream the response as a series of events.")
+    tool_config: ToolConfig | None = Field(default=None, description="Configuration for tool usage for this turn, overriding the agent's default tool configuration.")
 
 
 @json_schema_type
 class AgentTurnResumeRequest(BaseModel):
-    """Request to resume an agent turn with tool responses.
-
-    :param agent_id: Unique identifier for the agent
-    :param session_id: Unique identifier for the conversation session
-    :param turn_id: Unique identifier for the turn within a session
-    :param tool_responses: List of tool responses to submit to continue the turn
-    :param stream: (Optional) Whether to stream the response
-    """
-    agent_id: str
-    session_id: str
-    turn_id: str
-    tool_responses: list[ToolResponse]
-    stream: bool | None = False
+    agent_id: str = Field(description="Unique identifier for the agent.")
+    session_id: str = Field(description="Unique identifier for the conversation session.")
+    turn_id: str = Field(description="Unique identifier for the turn within a session that should be resumed.")
+    tool_responses: list[ToolResponse] = Field(description="A list of tool responses required to resume the turn.")
+    stream: bool | None = Field(default=False, description="Whether to stream the response as a series of events.")
 
 
 @json_schema_type
 class AgentTurnResponseStreamChunk(BaseModel):
-    """Streamed agent turn completion response.
+    """streamed agent turn completion response."""
 
-    :param event: Individual event in the agent turn response stream
-    """
-
-    event: AgentTurnResponseEvent
+    event: AgentTurnResponseEvent = Field(description="The event that occurred during the turn, sent as part of the stream.")
 
 
 @json_schema_type
 class AgentStepResponse(BaseModel):
-    """Response containing details of a specific agent step.
-
-    :param step: The complete step data and execution details
-    """
-    step: Step
+    step: Step = Field(description="The details of a specific step within a turn.")
 
 
 @runtime_checkable
