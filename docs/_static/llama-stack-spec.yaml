@@ -3636,10 +3636,15 @@ components:
           type: string
           const: greedy
           default: greedy
+          description: >-
+            Must be "greedy" to identify this sampling strategy
       additionalProperties: false
       required:
         - type
       title: GreedySamplingStrategy
+      description: >-
+        Greedy sampling strategy that selects the highest probability token at each
+        step.
     ImageContentItem:
       type: object
       properties:
@@ -3997,13 +4002,19 @@ components:
           type: string
           const: top_k
           default: top_k
+          description: >-
+            Must be "top_k" to identify this sampling strategy
         top_k:
           type: integer
+          description: >-
+            Number of top tokens to consider for sampling. Must be at least 1
       additionalProperties: false
       required:
         - type
         - top_k
       title: TopKSamplingStrategy
+      description: >-
+        Top-k sampling strategy that restricts sampling to the k most likely tokens.
     TopPSamplingStrategy:
       type: object
       properties:
@@ -4011,15 +4022,24 @@ components:
           type: string
           const: top_p
           default: top_p
+          description: >-
+            Must be "top_p" to identify this sampling strategy
         temperature:
           type: number
+          description: >-
+            Controls randomness in sampling. Higher values increase randomness
         top_p:
           type: number
           default: 0.95
+          description: >-
+            Cumulative probability threshold for nucleus sampling. Defaults to 0.95
       additionalProperties: false
       required:
         - type
       title: TopPSamplingStrategy
+      description: >-
+        Top-p (nucleus) sampling strategy that samples from the smallest set of tokens
+        with cumulative probability >= p.
     URL:
       type: object
       properties:
@@ -4111,10 +4131,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ChatCompletionResponse'
+          description: >-
+            List of chat completion responses, one for each conversation in the batch
       additionalProperties: false
       required:
         - batch
       title: BatchChatCompletionResponse
+      description: >-
+        Response from a batch chat completion request.
     ChatCompletionResponse:
       type: object
       properties:
@@ -4211,10 +4235,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CompletionResponse'
+          description: >-
+            List of completion responses, one for each input in the batch
       additionalProperties: false
       required:
         - batch
       title: BatchCompletionResponse
+      description: >-
+        Response from a batch completion request.
     CompletionResponse:
       type: object
       properties:
@@ -4967,6 +4995,8 @@ components:
       properties:
         call_id:
           type: string
+          description: >-
+            Unique identifier for the tool call this response is for
         tool_name:
           oneOf:
             - type: string
@@ -4977,8 +5007,10 @@ components:
                 - code_interpreter
               title: BuiltinTool
             - type: string
+          description: Name of the tool that was invoked
         content:
           $ref: '#/components/schemas/InterleavedContent'
+          description: The response content from the tool
         metadata:
           type: object
           additionalProperties:
@@ -4989,12 +5021,15 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Additional metadata about the tool response
       additionalProperties: false
       required:
         - call_id
         - tool_name
         - content
       title: ToolResponse
+      description: Response from a tool invocation.
     Turn:
       type: object
       properties:
@@ -6991,14 +7026,20 @@ components:
           type: string
           const: image_url
           default: image_url
+          description: >-
+            Must be "image_url" to identify this as image content
         image_url:
           $ref: '#/components/schemas/OpenAIImageURL'
+          description: >-
+            Image URL specification and processing details
       additionalProperties: false
       required:
         - type
         - image_url
       title: >-
         OpenAIChatCompletionContentPartImageParam
+      description: >-
+        Image content part for OpenAI-compatible chat completion messages.
     OpenAIChatCompletionContentPartParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
@@ -7015,39 +7056,58 @@ components:
           type: string
           const: text
           default: text
+          description: >-
+            Must be "text" to identify this as text content
         text:
           type: string
+          description: The text content of the message
       additionalProperties: false
       required:
         - type
         - text
       title: OpenAIChatCompletionContentPartTextParam
+      description: >-
+        Text content part for OpenAI-compatible chat completion messages.
     OpenAIChatCompletionToolCall:
       type: object
       properties:
         index:
           type: integer
+          description: >-
+            (Optional) Index of the tool call in the list
         id:
           type: string
+          description: >-
+            (Optional) Unique identifier for the tool call
         type:
           type: string
           const: function
           default: function
+          description: >-
+            Must be "function" to identify this as a function call
         function:
           $ref: '#/components/schemas/OpenAIChatCompletionToolCallFunction'
+          description: (Optional) Function call details
       additionalProperties: false
       required:
         - type
       title: OpenAIChatCompletionToolCall
+      description: >-
+        Tool call specification for OpenAI-compatible chat completion responses.
     OpenAIChatCompletionToolCallFunction:
       type: object
       properties:
         name:
           type: string
+          description: (Optional) Name of the function to call
         arguments:
           type: string
+          description: >-
+            (Optional) Arguments to pass to the function as a JSON string
       additionalProperties: false
       title: OpenAIChatCompletionToolCallFunction
+      description: >-
+        Function call details for OpenAI-compatible tool calls.
     OpenAIChoice:
       type: object
       properties:
@@ -7124,12 +7184,19 @@ components:
       properties:
         url:
           type: string
+          description: >-
+            URL of the image to include in the message
         detail:
           type: string
+          description: >-
+            (Optional) Level of detail for image processing. Can be "low", "high",
+            or "auto"
       additionalProperties: false
       required:
         - url
       title: OpenAIImageURL
+      description: >-
+        Image URL specification for OpenAI-compatible chat completion messages.
     OpenAIMessageParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIUserMessageParam'
@@ -8405,16 +8472,24 @@ components:
               - model
               - input_messages
             title: OpenAICompletionWithInputMessages
+          description: >-
+            List of chat completion objects with their input messages
         has_more:
           type: boolean
+          description: >-
+            Whether there are more completions available beyond this list
         first_id:
           type: string
+          description: ID of the first completion in this list
         last_id:
           type: string
+          description: ID of the last completion in this list
         object:
           type: string
           const: list
           default: list
+          description: >-
+            Must be "list" to identify this as a list response
       additionalProperties: false
       required:
         - data
@@ -8423,6 +8498,8 @@ components:
         - last_id
         - object
       title: ListOpenAIChatCompletionResponse
+      description: >-
+        Response from listing OpenAI-compatible chat completions.
     ListDatasetsResponse:
       type: object
       properties:
@@ -8989,10 +9066,14 @@ components:
       properties:
         name:
           type: string
+          description: Name of the schema
         description:
           type: string
+          description: (Optional) Description of the schema
         strict:
           type: boolean
+          description: >-
+            (Optional) Whether to enforce strict adherence to the schema
         schema:
           type: object
           additionalProperties:
@@ -9003,10 +9084,13 @@ components:
               - type: string
               - type: array
               - type: object
+          description: (Optional) The JSON schema definition
       additionalProperties: false
       required:
         - name
       title: OpenAIJSONSchema
+      description: >-
+        JSON schema specification for OpenAI-compatible structured response format.
     OpenAIResponseFormatJSONObject:
       type: object
       properties:
@@ -9014,10 +9098,14 @@ components:
           type: string
           const: json_object
           default: json_object
+          description: >-
+            Must be "json_object" to indicate generic JSON object response format
       additionalProperties: false
       required:
         - type
       title: OpenAIResponseFormatJSONObject
+      description: >-
+        JSON object response format for OpenAI-compatible chat completion requests.
     OpenAIResponseFormatJSONSchema:
       type: object
       properties:
@@ -9025,13 +9113,19 @@ components:
           type: string
           const: json_schema
           default: json_schema
+          description: >-
+            Must be "json_schema" to indicate structured JSON response format
         json_schema:
           $ref: '#/components/schemas/OpenAIJSONSchema'
+          description: >-
+            The JSON schema specification for the response
       additionalProperties: false
       required:
         - type
         - json_schema
       title: OpenAIResponseFormatJSONSchema
+      description: >-
+        JSON schema response format for OpenAI-compatible chat completion requests.
     OpenAIResponseFormatParam:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseFormatText'
@@ -9050,10 +9144,14 @@ components:
           type: string
           const: text
           default: text
+          description: >-
+            Must be "text" to indicate plain text response format
       additionalProperties: false
       required:
         - type
       title: OpenAIResponseFormatText
+      description: >-
+        Text response format for OpenAI-compatible chat completion requests.
     OpenaiChatCompletionRequest:
       type: object
       properties:
