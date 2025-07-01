@@ -2,9 +2,9 @@
 
 Llama Stack defines and standardizes the set of core building blocks needed to bring generative AI applications to market. These building blocks are presented in the form of interoperable APIs with a broad set of Providers providing their implementations. These building blocks are assembled into Distributions which are easy for developers to get from zero to production.
 
-This guide will walk you through an end-to-end workflow with Llama Stack with Ollama as the inference provider and ChromaDB as the memory provider. Please note the steps for configuring your provider and distribution will vary a little depending on the services you use. However, the user experience will remain universal - this is the power of Llama-Stack.
+This guide will walk you through an end-to-end workflow with Llama Stack with Ollama as the inference provider and ChromaDB as the VectorIO provider. Please note the steps for configuring your provider and distribution will vary depending on the services you use. However, the user experience will remain universal - this is the power of Llama-Stack.
 
-If you're looking for more specific topics, we have a [Zero to Hero Guide](#next-steps) that covers everything from Tool Calling to Agents in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
+If you're looking for more specific topics, we have a [Zero to Hero Guide](#next-steps) that covers everything from 'Tool Calling' to 'Agents' in detail. Feel free to skip to the end to explore the advanced topics you're interested in.
 
 > If you'd prefer not to set up a local server, explore our notebook on [tool calling with the Together API](Tool_Calling101_Using_Together_Llama_Stack_Server.ipynb). This notebook will show you how to leverage together.ai's Llama Stack Server API, allowing you to get started with Llama Stack without the need for a locally built and running server.
 
@@ -26,15 +26,15 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
    - Follow instructions based on the OS you are on. For example, if you are on a Mac, download and unzip `Ollama-darwin.zip`.
    - Run the `Ollama` application.
 
-1. **Download the Ollama CLI**:
+2. **Download the Ollama CLI**:
    Ensure you have the `ollama` command line tool by downloading and installing it from the same website.
 
-1. **Start ollama server**:
+3. **Start ollama server**:
    Open the terminal and run:
-   ```
+   ```bash
    ollama serve
    ```
-1. **Run the model**:
+4. **Run the model**:
    Open the terminal and run:
    ```bash
    ollama run llama3.2:3b-instruct-fp16 --keepalive -1m
@@ -48,9 +48,9 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 ## Install Dependencies and Set Up Environment
 
 1. **Create a Conda Environment**:
-   Create a new Conda environment with Python 3.10:
+   Create a new Conda environment with Python 3.12:
    ```bash
-   conda create -n ollama python=3.10
+   conda create -n ollama python=3.12
    ```
    Activate the environment:
    ```bash
