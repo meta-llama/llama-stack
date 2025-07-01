@@ -41,6 +41,6 @@ class WatsonXConfig(BaseModel):
     def sample_run_config(cls, **kwargs) -> dict[str, Any]:
         return {
             "url": "${env.WATSONX_BASE_URL:=https://us-south.ml.cloud.ibm.com}",
-            "api_key": "${env.WATSONX_API_KEY:+}",
-            "project_id": "${env.WATSONX_PROJECT_ID:+}",
+            "api_key": "${env.WATSONX_API_KEY:=}",
+            "project_id": "${env.WATSONX_PROJECT_ID:=}",
         }

@@ -14,7 +14,7 @@ Tavily Search tool for AI-optimized web search with structured results.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+api_key: ${env.TAVILY_SEARCH_API_KEY:=}
 max_results: 3
 
 ```

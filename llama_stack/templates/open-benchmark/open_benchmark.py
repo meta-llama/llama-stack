@@ -46,7 +46,7 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
                     model_type=ModelType.llm,
                 )
             ],
-            OpenAIConfig.sample_run_config(api_key="${env.OPENAI_API_KEY:+}"),
+            OpenAIConfig.sample_run_config(api_key="${env.OPENAI_API_KEY:=}"),
         ),
         (
             "anthropic",
@@ -56,7 +56,7 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
                     model_type=ModelType.llm,
                 )
             ],
-            AnthropicConfig.sample_run_config(api_key="${env.ANTHROPIC_API_KEY:+}"),
+            AnthropicConfig.sample_run_config(api_key="${env.ANTHROPIC_API_KEY:=}"),
         ),
         (
             "gemini",
@@ -66,17 +66,17 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
                     model_type=ModelType.llm,
                 )
             ],
-            GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:+}"),
+            GeminiConfig.sample_run_config(api_key="${env.GEMINI_API_KEY:=}"),
         ),
         (
             "groq",
             [],
-            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:+}"),
+            GroqConfig.sample_run_config(api_key="${env.GROQ_API_KEY:=}"),
         ),
         (
             "together",
             [],
-            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:+}"),
+            TogetherImplConfig.sample_run_config(api_key="${env.TOGETHER_API_KEY:=}"),
         ),
     ]
     inference_providers = []
@@ -122,15 +122,15 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:+}"),
+            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:=}"),
         ),
         Provider(
             provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
-                db="${env.PGVECTOR_DB:+}",
-                user="${env.PGVECTOR_USER:+}",
-                password="${env.PGVECTOR_PASSWORD:+}",
+                db="${env.PGVECTOR_DB:=}",
+                user="${env.PGVECTOR_USER:=}",
+                password="${env.PGVECTOR_PASSWORD:=}",
             ),
         ),
     ]

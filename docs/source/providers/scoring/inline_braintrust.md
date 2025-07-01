@@ -13,7 +13,7 @@ Braintrust scoring provider for evaluation and scoring using the Braintrust plat
 ## Sample Configuration
 
 ```yaml
-openai_api_key: ${env.OPENAI_API_KEY:+}
+openai_api_key: ${env.OPENAI_API_KEY:=}
 
 ```
 
