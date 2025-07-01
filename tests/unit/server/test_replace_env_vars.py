@@ -34,6 +34,12 @@ class TestReplaceEnvVars(unittest.TestCase):
     def test_default_value_when_empty(self):
         self.assertEqual(replace_env_vars("${env.EMPTY_VAR:=default}"), "default")
 
+    def test_none_value_when_empty(self):
+        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:=}"), None)
+
+    def test_value_when_set(self):
+        self.assertEqual(replace_env_vars("${env.TEST_VAR:=}"), "test_value")
+
     def test_empty_var_no_default(self):
         self.assertEqual(replace_env_vars("${env.EMPTY_VAR_NO_DEFAULT:+}"), None)
 

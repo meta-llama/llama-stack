@@ -28,15 +28,15 @@ providers:
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:+}
+      url: ${env.CHROMADB_URL:=}
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
       host: ${env.PGVECTOR_HOST:=localhost}
       port: ${env.PGVECTOR_PORT:=5432}
-      db: ${env.PGVECTOR_DB:+}
-      user: ${env.PGVECTOR_USER:+}
-      password: ${env.PGVECTOR_PASSWORD:+}
+      db: ${env.PGVECTOR_DB:=}
+      user: ${env.PGVECTOR_USER:=}
+      password: ${env.PGVECTOR_PASSWORD:=}
   safety:
   - provider_id: sambanova
     provider_type: remote::sambanova
@@ -65,12 +65,12 @@ providers:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
@@ -81,7 +81,7 @@ providers:
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
     config:
-      api_key: ${env.WOLFRAM_ALPHA_API_KEY:+}
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/registry.db

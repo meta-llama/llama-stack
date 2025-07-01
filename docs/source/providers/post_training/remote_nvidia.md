@@ -19,7 +19,7 @@ NVIDIA's post-training provider for fine-tuning models on NVIDIA's platform.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.NVIDIA_API_KEY:+}
+api_key: ${env.NVIDIA_API_KEY:=}
 dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
 project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
 customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:=http://nemo.test}

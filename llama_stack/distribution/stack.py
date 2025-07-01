@@ -166,20 +166,31 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
             env_value = os.environ.get(env_var)
 
             if operator == "=":  # Default value syntax: ${env.FOO:=default}
-                if not env_value:
+                # If the env is set like ${env.FOO:=default} then use the env value when set
+                if env_value:
+                    value = env_value
+                else:
+                    # If the env is not set, look for a default value
                     # value_expr returns empty string (not None) when not matched
-                    # This means ${env.FOO:=} is an error
+                    # This means ${env.FOO:=} and it's accepted and returns empty string - just like bash
                     if value_expr == "":
-                        raise EnvVarError(env_var, path)
+                        return ""
                     else:
                         value = value_expr
-                else:
-                    value = env_value
+
             elif operator == "+":  # Conditional value syntax: ${env.FOO:+value_if_set}
+                # If the env is set like ${env.FOO:+value_if_set} then use the value_if_set
                 if env_value:
-                    value = value_expr
+                    if value_expr:
+                        value = value_expr
+                    # This means ${env.FOO:+}
+                    else:
+                        # Just like bash, this doesn't care whether the env is set or not and applies
+                        # the value, in this case the empty string
+                        return ""
                 else:
-                    # If env var is not set, return empty string for the conditional case
+                    # Just like bash, this doesn't care whether the env is set or not, since it's not set
+                    # we return an empty string
                     value = ""
             else:  # No operator case: ${env.FOO}
                 if not env_value:

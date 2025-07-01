@@ -17,7 +17,7 @@ providers:
     provider_type: remote::nvidia
     config:
       url: ${env.NVIDIA_BASE_URL:=https://integrate.api.nvidia.com}
-      api_key: ${env.NVIDIA_API_KEY:+}
+      api_key: ${env.NVIDIA_API_KEY:=}
       append_api_version: ${env.NVIDIA_APPEND_API_VERSION:=True}
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -65,7 +65,7 @@ providers:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
-      api_key: ${env.NVIDIA_API_KEY:+}
+      api_key: ${env.NVIDIA_API_KEY:=}
       dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
       project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
       customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:=http://nemo.test}
@@ -80,7 +80,7 @@ providers:
   - provider_id: nvidia
     provider_type: remote::nvidia
     config:
-      api_key: ${env.NVIDIA_API_KEY:+}
+      api_key: ${env.NVIDIA_API_KEY:=}
       dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
       project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
       datasets_url: ${env.NVIDIA_DATASETS_URL:=http://nemo.test}

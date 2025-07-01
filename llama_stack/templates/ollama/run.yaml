@@ -83,7 +83,7 @@ providers:
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
-      openai_api_key: ${env.OPENAI_API_KEY:+}
+      openai_api_key: ${env.OPENAI_API_KEY:=}
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
@@ -103,12 +103,12 @@ providers:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
@@ -119,7 +119,7 @@ providers:
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
     config:
-      api_key: ${env.WOLFRAM_ALPHA_API_KEY:+}
+      api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/registry.db
