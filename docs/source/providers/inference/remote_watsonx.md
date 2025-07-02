@@ -17,8 +17,8 @@ IBM WatsonX inference provider for accessing AI models on IBM's WatsonX platform
 
 ```yaml
 url: ${env.WATSONX_BASE_URL:=https://us-south.ml.cloud.ibm.com}
-api_key: ${env.WATSONX_API_KEY:+}
-project_id: ${env.WATSONX_PROJECT_ID:+}
+api_key: ${env.WATSONX_API_KEY:=}
+project_id: ${env.WATSONX_PROJECT_ID:=}
 
 ```
 

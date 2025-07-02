@@ -16,17 +16,17 @@ providers:
   - provider_id: openai
     provider_type: remote::openai
     config:
-      api_key: ${env.OPENAI_API_KEY:+}
+      api_key: ${env.OPENAI_API_KEY:=}
   - provider_id: fireworks
     provider_type: remote::fireworks
     config:
       url: https://api.fireworks.ai/inference/v1
-      api_key: ${env.FIREWORKS_API_KEY:+}
+      api_key: ${env.FIREWORKS_API_KEY:=}
   - provider_id: together
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY:+}
+      api_key: ${env.TOGETHER_API_KEY:=}
   - provider_id: ollama
     provider_type: remote::ollama
     config:
@@ -35,21 +35,21 @@ providers:
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
-      api_key: ${env.ANTHROPIC_API_KEY:+}
+      api_key: ${env.ANTHROPIC_API_KEY:=}
   - provider_id: gemini
     provider_type: remote::gemini
     config:
-      api_key: ${env.GEMINI_API_KEY:+}
+      api_key: ${env.GEMINI_API_KEY:=}
   - provider_id: groq
     provider_type: remote::groq
     config:
       url: https://api.groq.com
-      api_key: ${env.GROQ_API_KEY:+}
+      api_key: ${env.GROQ_API_KEY:=}
   - provider_id: sambanova
     provider_type: remote::sambanova
     config:
       url: https://api.sambanova.ai/v1
-      api_key: ${env.SAMBANOVA_API_KEY:+}
+      api_key: ${env.SAMBANOVA_API_KEY:=}
   - provider_id: vllm
     provider_type: remote::vllm
     config:
@@ -75,23 +75,23 @@ providers:
   - provider_id: ${env.ENABLE_MILVUS:+milvus}
     provider_type: inline::milvus
     config:
-      db_path: ${env.MILVUS_DB_PATH:=~/.llama/distributions/starter/milvus.db}
+      db_path: ${env.MILVUS_DB_PATH:=~/.llama/distributions/starter}/milvus.db
       kvstore:
         type: sqlite
         namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/${env.MILVUS_KVSTORE_DB_PATH:=~/.llama/distributions/starter/milvus_registry.db}
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/milvus_registry.db
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:+}
+      url: ${env.CHROMADB_URL:=}
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
       host: ${env.PGVECTOR_HOST:=localhost}
       port: ${env.PGVECTOR_PORT:=5432}
-      db: ${env.PGVECTOR_DB:+}
-      user: ${env.PGVECTOR_USER:+}
-      password: ${env.PGVECTOR_PASSWORD:+}
+      db: ${env.PGVECTOR_DB:=}
+      user: ${env.PGVECTOR_USER:=}
+      password: ${env.PGVECTOR_PASSWORD:=}
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
@@ -156,17 +156,17 @@ providers:
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
-      openai_api_key: ${env.OPENAI_API_KEY:+}
+      openai_api_key: ${env.OPENAI_API_KEY:=}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime

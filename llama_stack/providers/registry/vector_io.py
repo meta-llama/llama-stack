@@ -520,7 +520,7 @@ Please refer to the inline provider documentation.
             Api.vector_io,
             AdapterSpec(
                 adapter_type="milvus",
-                pip_packages=["pymilvus"],
+                pip_packages=["pymilvus[marshmallow<3.13.0]"],
                 module="llama_stack.providers.remote.vector_io.milvus",
                 config_class="llama_stack.providers.remote.vector_io.milvus.MilvusVectorIOConfig",
                 description="""

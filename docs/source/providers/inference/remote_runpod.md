@@ -14,8 +14,8 @@ RunPod inference provider for running models on RunPod's cloud GPU platform.
 ## Sample Configuration
 
 ```yaml
-url: ${env.RUNPOD_URL:+}
-api_token: ${env.RUNPOD_API_TOKEN:+}
+url: ${env.RUNPOD_URL:=}
+api_token: ${env.RUNPOD_API_TOKEN:=}
 
 ```
 

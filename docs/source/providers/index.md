@@ -13,7 +13,13 @@ Importantly, Llama Stack always strives to provide at least one fully inline pro
 
 ## External Providers
 
-Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently. See the [External Providers Guide](external) for details.
+Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently.
+
+```{toctree}
+:maxdepth: 1
+
+external
+```
 
 ## Agents
 Run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.

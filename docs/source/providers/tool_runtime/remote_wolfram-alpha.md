@@ -13,7 +13,7 @@ Wolfram Alpha tool for computational knowledge and mathematical calculations.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.WOLFRAM_ALPHA_API_KEY:+}
+api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
 
 ```
 

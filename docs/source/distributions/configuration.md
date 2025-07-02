@@ -67,7 +67,7 @@ Let's break this down into the different sections. The first section specifies t
 apis:
 - agents
 - inference
-- memory
+- vector_io
 - safety
 - telemetry
 ```
@@ -125,7 +125,7 @@ config:
 ```
 
 If the environment variable is not set, the default value `http://localhost:11434` will be used.
-Empty defaults are not allowed so `url: ${env.OLLAMA_URL:=}` will raise an error if the environment variable is not set.
+Empty defaults are allowed so `url: ${env.OLLAMA_URL:=}` will be set to `None` if the environment variable is not set.
 
 #### Conditional Values
 
@@ -139,8 +139,10 @@ config:
 
 If the environment variable is set, the value after `:+` will be used. If it's not set, the field
 will be omitted with a `None` value.
-So `${env.ENVIRONMENT:+}` is supported, it means that the field will be omitted if the environment
-variable is not set. It can be used to make a field optional and then enabled at runtime when desired.
+
+Do not use conditional values (`${env.OLLAMA_URL:+}`) for empty defaults (`${env.OLLAMA_URL:=}`).
+This will be set to `None` if the environment variable is not set.
+Conditional must only be used when the environment variable is set.
 
 #### Examples
 

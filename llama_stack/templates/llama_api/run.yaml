@@ -16,7 +16,7 @@ providers:
     provider_type: remote::llama-openai-compat
     config:
       openai_compat_api_base: https://api.llama.com/compat/v1/
-      api_key: ${env.LLAMA_API_KEY:+}
+      api_key: ${env.LLAMA_API_KEY:=}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -28,15 +28,15 @@ providers:
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:+}
+      url: ${env.CHROMADB_URL:=}
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
       host: ${env.PGVECTOR_HOST:=localhost}
       port: ${env.PGVECTOR_PORT:=5432}
-      db: ${env.PGVECTOR_DB:+}
-      user: ${env.PGVECTOR_USER:+}
-      password: ${env.PGVECTOR_PASSWORD:+}
+      db: ${env.PGVECTOR_DB:=}
+      user: ${env.PGVECTOR_USER:=}
+      password: ${env.PGVECTOR_PASSWORD:=}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -93,17 +93,17 @@ providers:
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
-      openai_api_key: ${env.OPENAI_API_KEY:+}
+      openai_api_key: ${env.OPENAI_API_KEY:=}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime

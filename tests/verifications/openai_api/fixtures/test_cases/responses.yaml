@@ -8,6 +8,17 @@ test_response_basic:
     - case_id: "saturn"
       input: "Which planet has rings around it with a name starting with letter S?"
       output: "saturn"
+    - case_id: "image_input"
+      input:
+      - role: user
+        content:
+        - type: input_text
+          text: "what teams are playing in this image?"
+      - role: user
+        content:
+        - type: input_image
+          image_url: "https://upload.wikimedia.org/wikipedia/commons/3/3b/LeBron_James_Layup_%28Cleveland_vs_Brooklyn_2018%29.jpg"
+      output: "brooklyn nets"
 
 test_response_multi_turn:
   test_name: test_response_multi_turn

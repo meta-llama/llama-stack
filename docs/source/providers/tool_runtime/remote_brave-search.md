@@ -14,7 +14,7 @@ Brave Search tool for web search capabilities with privacy-focused results.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+api_key: ${env.BRAVE_SEARCH_API_KEY:=}
 max_results: 3
 
 ```

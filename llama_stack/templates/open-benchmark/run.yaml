@@ -15,25 +15,25 @@ providers:
   - provider_id: openai
     provider_type: remote::openai
     config:
-      api_key: ${env.OPENAI_API_KEY:+}
+      api_key: ${env.OPENAI_API_KEY:=}
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
-      api_key: ${env.ANTHROPIC_API_KEY:+}
+      api_key: ${env.ANTHROPIC_API_KEY:=}
   - provider_id: gemini
     provider_type: remote::gemini
     config:
-      api_key: ${env.GEMINI_API_KEY:+}
+      api_key: ${env.GEMINI_API_KEY:=}
   - provider_id: groq
     provider_type: remote::groq
     config:
       url: https://api.groq.com
-      api_key: ${env.GROQ_API_KEY:+}
+      api_key: ${env.GROQ_API_KEY:=}
   - provider_id: together
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY:+}
+      api_key: ${env.TOGETHER_API_KEY:=}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec
@@ -42,15 +42,15 @@ providers:
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:+}
+      url: ${env.CHROMADB_URL:=}
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
       host: ${env.PGVECTOR_HOST:=localhost}
       port: ${env.PGVECTOR_PORT:=5432}
-      db: ${env.PGVECTOR_DB:+}
-      user: ${env.PGVECTOR_USER:+}
-      password: ${env.PGVECTOR_PASSWORD:+}
+      db: ${env.PGVECTOR_DB:=}
+      user: ${env.PGVECTOR_USER:=}
+      password: ${env.PGVECTOR_PASSWORD:=}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -107,17 +107,17 @@ providers:
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
-      openai_api_key: ${env.OPENAI_API_KEY:+}
+      openai_api_key: ${env.OPENAI_API_KEY:=}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
+      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:+}
+      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
