@@ -4566,6 +4566,42 @@
                 }
             }
         },
+        "/v1/toolgroups/{toolgroup_id}/refresh": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "ToolGroups"
+                ],
+                "description": "Refresh tools for a specific toolgroup.",
+                "parameters": [
+                    {
+                        "name": "toolgroup_id",
+                        "in": "path",
+                        "description": "The ID of the toolgroup to refresh tools for.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ]
+            }
+        },
         "/v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume": {
             "post": {
                 "responses": {
@@ -5588,6 +5624,9 @@
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ToolParamDefinition"
                         }
+                    },
+                    "toolgroup_name": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
