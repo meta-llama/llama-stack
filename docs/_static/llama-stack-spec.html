@@ -4912,7 +4912,7 @@
             "post": {
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Response containing filtered synthetic data samples and optional statistics",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4937,7 +4937,7 @@
                 "tags": [
                     "SyntheticDataGeneration (Coming Soon)"
                 ],
-                "description": "",
+                "description": "Generate synthetic data based on input dialogs and apply filtering.",
                 "parameters": [],
                 "requestBody": {
                     "content": {
@@ -10888,9 +10888,9 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "shield",
-                        "default": "shield"
+                        "default": "shield",
+                        "description": "The resource type, always shield"
                     },
                     "params": {
                         "type": "object",
@@ -10915,7 +10915,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Configuration parameters for the shield"
                     }
                 },
                 "additionalProperties": false,
@@ -10925,7 +10926,7 @@
                     "type"
                 ],
                 "title": "Shield",
-                "description": "A safety shield resource that can be used to check content"
+                "description": "A safety shield resource that can be used to check content."
             },
             "Span": {
                 "type": "object",
@@ -16334,7 +16335,8 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Message"
-                        }
+                        },
+                        "description": "List of conversation messages to use as input for synthetic data generation"
                     },
                     "filtering_function": {
                         "type": "string",
@@ -16346,11 +16348,11 @@
                             "top_k_top_p",
                             "sigmoid"
                         ],
-                        "title": "FilteringFunction",
-                        "description": "The type of filtering function."
+                        "description": "Type of filtering to apply to generated synthetic data samples"
                     },
                     "model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) The identifier of the model to use. The model must be registered with Llama Stack and available via the /models endpoint"
                     }
                 },
                 "additionalProperties": false,
@@ -16389,7 +16391,8 @@
                                     }
                                 ]
                             }
-                        }
+                        },
+                        "description": "List of generated synthetic data samples that passed the filtering criteria"
                     },
                     "statistics": {
                         "type": "object",
@@ -16414,7 +16417,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "(Optional) Statistical information about the generation process and filtering results"
                     }
                 },
                 "additionalProperties": false,

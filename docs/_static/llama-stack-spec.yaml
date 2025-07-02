@@ -3475,7 +3475,8 @@ paths:
     post:
       responses:
         '200':
-          description: OK
+          description: >-
+            Response containing filtered synthetic data samples and optional statistics
           content:
             application/json:
               schema:
@@ -3492,7 +3493,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - SyntheticDataGeneration (Coming Soon)
-      description: ''
+      description: >-
+        Generate synthetic data based on input dialogs and apply filtering.
       parameters: []
       requestBody:
         content:
@@ -7851,9 +7853,9 @@ components:
             - benchmark
             - tool
             - tool_group
-          title: ResourceType
           const: shield
           default: shield
+          description: The resource type, always shield
         params:
           type: object
           additionalProperties:
@@ -7864,6 +7866,8 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Configuration parameters for the shield
       additionalProperties: false
       required:
         - identifier
@@ -7871,7 +7875,7 @@ components:
         - type
       title: Shield
       description: >-
-        A safety shield resource that can be used to check content
+        A safety shield resource that can be used to check content.
     Span:
       type: object
       properties:
@@ -11777,6 +11781,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Message'
+          description: >-
+            List of conversation messages to use as input for synthetic data generation
         filtering_function:
           type: string
           enum:
@@ -11786,10 +11792,13 @@ components:
             - top_p
             - top_k_top_p
             - sigmoid
-          title: FilteringFunction
-          description: The type of filtering function.
+          description: >-
+            Type of filtering to apply to generated synthetic data samples
         model:
           type: string
+          description: >-
+            (Optional) The identifier of the model to use. The model must be registered
+            with Llama Stack and available via the /models endpoint
       additionalProperties: false
       required:
         - dialogs
@@ -11810,6 +11819,8 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: >-
+            List of generated synthetic data samples that passed the filtering criteria
         statistics:
           type: object
           additionalProperties:
@@ -11820,6 +11831,9 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Statistical information about the generation process and filtering
+            results
       additionalProperties: false
       required:
         - synthetic_data
