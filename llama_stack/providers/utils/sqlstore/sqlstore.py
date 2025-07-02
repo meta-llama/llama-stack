@@ -30,8 +30,8 @@ class SqlAlchemySqlStoreConfig(BaseModel):
     def engine_str(self) -> str: ...
 
     # TODO: move this when we have a better way to specify dependencies with internal APIs
-    @property
-    def pip_packages(self) -> list[str]:
+    @classmethod
+    def pip_packages(cls) -> list[str]:
         return ["sqlalchemy[asyncio]"]
 
 
@@ -53,9 +53,9 @@ class SqliteSqlStoreConfig(SqlAlchemySqlStoreConfig):
             "db_path": "${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
         }
 
-    @property
-    def pip_packages(self) -> list[str]:
-        return super().pip_packages + ["aiosqlite"]
+    @classmethod
+    def pip_packages(cls) -> list[str]:
+        return super().pip_packages() + ["aiosqlite"]
 
 
 class PostgresSqlStoreConfig(SqlAlchemySqlStoreConfig):
@@ -70,9 +70,9 @@ class PostgresSqlStoreConfig(SqlAlchemySqlStoreConfig):
     def engine_str(self) -> str:
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
-    @property
-    def pip_packages(self) -> list[str]:
-        return super().pip_packages + ["asyncpg"]
+    @classmethod
+    def pip_packages(cls) -> list[str]:
+        return super().pip_packages() + ["asyncpg"]
 
     @classmethod
     def sample_run_config(cls, **kwargs):
