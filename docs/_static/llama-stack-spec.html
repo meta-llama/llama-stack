@@ -9301,7 +9301,8 @@
                     "categorical_count",
                     "accuracy"
                 ],
-                "title": "AggregationFunctionType"
+                "title": "AggregationFunctionType",
+                "description": "Types of aggregation functions for scoring results."
             },
             "BasicScoringFnParams": {
                 "type": "object",
@@ -9309,13 +9310,15 @@
                     "type": {
                         "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "basic",
-                        "default": "basic"
+                        "default": "basic",
+                        "description": "The type of scoring function parameters, always basic"
                     },
                     "aggregation_functions": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AggregationFunctionType"
-                        }
+                        },
+                        "description": "Aggregation functions to apply to the scores of each row"
                     }
                 },
                 "additionalProperties": false,
@@ -9323,7 +9326,8 @@
                     "type",
                     "aggregation_functions"
                 ],
-                "title": "BasicScoringFnParams"
+                "title": "BasicScoringFnParams",
+                "description": "Parameters for basic scoring function configuration."
             },
             "BenchmarkConfig": {
                 "type": "object",
@@ -9375,25 +9379,30 @@
                     "type": {
                         "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "llm_as_judge",
-                        "default": "llm_as_judge"
+                        "default": "llm_as_judge",
+                        "description": "The type of scoring function parameters, always llm_as_judge"
                     },
                     "judge_model": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Identifier of the LLM model to use as a judge for scoring"
                     },
                     "prompt_template": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) Custom prompt template for the judge model"
                     },
                     "judge_score_regexes": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "Regexes to extract the answer from generated response"
                     },
                     "aggregation_functions": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AggregationFunctionType"
-                        }
+                        },
+                        "description": "Aggregation functions to apply to the scores of each row"
                     }
                 },
                 "additionalProperties": false,
@@ -9403,7 +9412,8 @@
                     "judge_score_regexes",
                     "aggregation_functions"
                 ],
-                "title": "LLMAsJudgeScoringFnParams"
+                "title": "LLMAsJudgeScoringFnParams",
+                "description": "Parameters for LLM-as-judge scoring function configuration."
             },
             "ModelCandidate": {
                 "type": "object",
@@ -9441,19 +9451,22 @@
                     "type": {
                         "$ref": "#/components/schemas/ScoringFnParamsType",
                         "const": "regex_parser",
-                        "default": "regex_parser"
+                        "default": "regex_parser",
+                        "description": "The type of scoring function parameters, always regex_parser"
                     },
                     "parsing_regexes": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "Regex to extract the answer from generated response"
                     },
                     "aggregation_functions": {
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AggregationFunctionType"
-                        }
+                        },
+                        "description": "Aggregation functions to apply to the scores of each row"
                     }
                 },
                 "additionalProperties": false,
@@ -9462,7 +9475,8 @@
                     "parsing_regexes",
                     "aggregation_functions"
                 ],
-                "title": "RegexParserScoringFnParams"
+                "title": "RegexParserScoringFnParams",
+                "description": "Parameters for regex parser scoring function configuration."
             },
             "ScoringFnParams": {
                 "oneOf": [
@@ -9492,7 +9506,8 @@
                     "regex_parser",
                     "basic"
                 ],
-                "title": "ScoringFnParamsType"
+                "title": "ScoringFnParamsType",
+                "description": "Types of scoring function parameter configurations."
             },
             "EvaluateRowsRequest": {
                 "type": "object",
@@ -10765,9 +10780,9 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "scoring_function",
-                        "default": "scoring_function"
+                        "default": "scoring_function",
+                        "description": "The resource type, always scoring_function"
                     },
                     "description": {
                         "type": "string"
@@ -10812,7 +10827,8 @@
                     "metadata",
                     "return_type"
                 ],
-                "title": "ScoringFn"
+                "title": "ScoringFn",
+                "description": "A scoring function resource for evaluating model outputs."
             },
             "StringType": {
                 "type": "object",
@@ -16105,20 +16121,23 @@
                 "type": "object",
                 "properties": {
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "(Optional) The identifier of the dataset that was scored"
                     },
                     "results": {
                         "type": "object",
                         "additionalProperties": {
                             "$ref": "#/components/schemas/ScoringResult"
-                        }
+                        },
+                        "description": "A map of scoring function name to ScoringResult"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "results"
                 ],
-                "title": "ScoreBatchResponse"
+                "title": "ScoreBatchResponse",
+                "description": "Response from batch scoring operations on datasets."
             },
             "AlgorithmConfig": {
                 "oneOf": [

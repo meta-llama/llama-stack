@@ -231,9 +231,9 @@ Before finalizing documentation, verify:
 [x] 10. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasets/datasets.py` - Dataset management
 [x] 11. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/datasetio/datasetio.py` - Dataset I/O operations
 [x] 12. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/post_training/post_training.py` - Training and fine-tuning
-13. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/eval/eval.py` - Evaluation framework
-14. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring/scoring.py` - Scoring system
-15. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring_functions/scoring_functions.py` - Scoring function definitions
+[x] 13. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/eval/eval.py` - Evaluation framework
+[x] 14. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring/scoring.py` - Scoring system
+[x] 15. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring_functions/scoring_functions.py` - Scoring function definitions
 16. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/benchmarks/benchmarks.py` - Benchmarking framework
 17. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/shields/shields.py` - Safety shields
 18. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/batch_inference/batch_inference.py` - Batch inference operations

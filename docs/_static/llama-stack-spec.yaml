@@ -6681,6 +6681,8 @@ components:
         - categorical_count
         - accuracy
       title: AggregationFunctionType
+      description: >-
+        Types of aggregation functions for scoring results.
     BasicScoringFnParams:
       type: object
       properties:
@@ -6688,15 +6690,21 @@ components:
           $ref: '#/components/schemas/ScoringFnParamsType'
           const: basic
           default: basic
+          description: >-
+            The type of scoring function parameters, always basic
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            Aggregation functions to apply to the scores of each row
       additionalProperties: false
       required:
         - type
         - aggregation_functions
       title: BasicScoringFnParams
+      description: >-
+        Parameters for basic scoring function configuration.
     BenchmarkConfig:
       type: object
       properties:
@@ -6738,18 +6746,28 @@ components:
           $ref: '#/components/schemas/ScoringFnParamsType'
           const: llm_as_judge
           default: llm_as_judge
+          description: >-
+            The type of scoring function parameters, always llm_as_judge
         judge_model:
           type: string
+          description: >-
+            Identifier of the LLM model to use as a judge for scoring
         prompt_template:
           type: string
+          description: >-
+            (Optional) Custom prompt template for the judge model
         judge_score_regexes:
           type: array
           items:
             type: string
+          description: >-
+            Regexes to extract the answer from generated response
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            Aggregation functions to apply to the scores of each row
       additionalProperties: false
       required:
         - type
@@ -6757,6 +6775,8 @@ components:
         - judge_score_regexes
         - aggregation_functions
       title: LLMAsJudgeScoringFnParams
+      description: >-
+        Parameters for LLM-as-judge scoring function configuration.
     ModelCandidate:
       type: object
       properties:
@@ -6789,20 +6809,28 @@ components:
           $ref: '#/components/schemas/ScoringFnParamsType'
           const: regex_parser
           default: regex_parser
+          description: >-
+            The type of scoring function parameters, always regex_parser
         parsing_regexes:
           type: array
           items:
             type: string
+          description: >-
+            Regex to extract the answer from generated response
         aggregation_functions:
           type: array
           items:
             $ref: '#/components/schemas/AggregationFunctionType'
+          description: >-
+            Aggregation functions to apply to the scores of each row
       additionalProperties: false
       required:
         - type
         - parsing_regexes
         - aggregation_functions
       title: RegexParserScoringFnParams
+      description: >-
+        Parameters for regex parser scoring function configuration.
     ScoringFnParams:
       oneOf:
         - $ref: '#/components/schemas/LLMAsJudgeScoringFnParams'
@@ -6821,6 +6849,8 @@ components:
         - regex_parser
         - basic
       title: ScoringFnParamsType
+      description: >-
+        Types of scoring function parameter configurations.
     EvaluateRowsRequest:
       type: object
       properties:
@@ -7742,9 +7772,10 @@ components:
             - benchmark
             - tool
             - tool_group
-          title: ResourceType
           const: scoring_function
           default: scoring_function
+          description: >-
+            The resource type, always scoring_function
         description:
           type: string
         metadata:
@@ -7769,6 +7800,8 @@ components:
         - metadata
         - return_type
       title: ScoringFn
+      description: >-
+        A scoring function resource for evaluating model outputs.
     StringType:
       type: object
       properties:
@@ -11587,14 +11620,20 @@ components:
       properties:
         dataset_id:
           type: string
+          description: >-
+            (Optional) The identifier of the dataset that was scored
         results:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ScoringResult'
+          description: >-
+            A map of scoring function name to ScoringResult
       additionalProperties: false
       required:
         - results
       title: ScoreBatchResponse
+      description: >-
+        Response from batch scoring operations on datasets.
     AlgorithmConfig:
       oneOf:
         - $ref: '#/components/schemas/LoraFinetuningConfig'
