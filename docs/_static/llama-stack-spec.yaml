@@ -5470,14 +5470,22 @@ components:
           type: string
           const: url_citation
           default: url_citation
+          description: >-
+            Annotation type identifier, always "url_citation"
         end_index:
           type: integer
+          description: >-
+            End position of the citation span in the content
         start_index:
           type: integer
+          description: >-
+            Start position of the citation span in the content
         title:
           type: string
+          description: Title of the referenced web resource
         url:
           type: string
+          description: URL of the referenced web resource
       additionalProperties: false
       required:
         - type
@@ -5486,6 +5494,8 @@ components:
         - title
         - url
       title: OpenAIResponseAnnotationCitation
+      description: >-
+        URL citation annotation for referencing external web resources.
     "OpenAIResponseAnnotationContainerFileCitation":
       type: object
       properties:
@@ -5520,12 +5530,18 @@ components:
           type: string
           const: file_citation
           default: file_citation
+          description: >-
+            Annotation type identifier, always "file_citation"
         file_id:
           type: string
+          description: Unique identifier of the referenced file
         filename:
           type: string
+          description: Name of the referenced file
         index:
           type: integer
+          description: >-
+            Position index of the citation within the content
       additionalProperties: false
       required:
         - type
@@ -5533,6 +5549,8 @@ components:
         - filename
         - index
       title: OpenAIResponseAnnotationFileCitation
+      description: >-
+        File citation annotation for referencing specific files in response content.
     OpenAIResponseAnnotationFilePath:
       type: object
       properties:
@@ -5616,31 +5634,43 @@ components:
             - type: string
               const: auto
           default: auto
+          description: >-
+            Level of detail for image processing, can be "low", "high", or "auto"
         type:
           type: string
           const: input_image
           default: input_image
+          description: >-
+            Content type identifier, always "input_image"
         image_url:
           type: string
+          description: (Optional) URL of the image content
       additionalProperties: false
       required:
         - detail
         - type
       title: OpenAIResponseInputMessageContentImage
+      description: >-
+        Image content for input messages in OpenAI response format.
     OpenAIResponseInputMessageContentText:
       type: object
       properties:
         text:
           type: string
+          description: The text content of the input message
         type:
           type: string
           const: input_text
           default: input_text
+          description: >-
+            Content type identifier, always "input_text"
       additionalProperties: false
       required:
         - text
         - type
       title: OpenAIResponseInputMessageContentText
+      description: >-
+        Text content for input messages in OpenAI response format.
     OpenAIResponseInputTool:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseInputToolWebSearch'
@@ -5661,10 +5691,14 @@ components:
           type: string
           const: file_search
           default: file_search
+          description: >-
+            Tool type identifier, always "file_search"
         vector_store_ids:
           type: array
           items:
             type: string
+          description: >-
+            List of vector store identifiers to search within
         filters:
           type: object
           additionalProperties:
@@ -5675,9 +5709,13 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Additional filters to apply to the search
         max_num_results:
           type: integer
           default: 10
+          description: >-
+            (Optional) Maximum number of search results to return (1-50)
         ranking_options:
           type: object
           properties:
@@ -5691,14 +5729,15 @@ components:
               description: >-
                 (Optional) Minimum relevance score threshold for results
           additionalProperties: false
-          title: SearchRankingOptions
           description: >-
-            Options for ranking and filtering search results.
+            (Optional) Options for ranking and scoring search results
       additionalProperties: false
       required:
         - type
         - vector_store_ids
       title: OpenAIResponseInputToolFileSearch
+      description: >-
+        File search tool configuration for OpenAI response inputs.
     OpenAIResponseInputToolFunction:
       type: object
       properties:
@@ -5706,10 +5745,14 @@ components:
           type: string
           const: function
           default: function
+          description: Tool type identifier, always "function"
         name:
           type: string
+          description: Name of the function that can be called
         description:
           type: string
+          description: >-
+            (Optional) Description of what the function does
         parameters:
           type: object
           additionalProperties:
@@ -5720,13 +5763,19 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) JSON schema defining the function's parameters
         strict:
           type: boolean
+          description: >-
+            (Optional) Whether to enforce strict parameter validation
       additionalProperties: false
       required:
         - type
         - name
       title: OpenAIResponseInputToolFunction
+      description: >-
+        Function tool configuration for OpenAI response inputs.
     OpenAIResponseInputToolMCP:
       type: object
       properties:
@@ -5734,10 +5783,13 @@ components:
           type: string
           const: mcp
           default: mcp
+          description: Tool type identifier, always "mcp"
         server_label:
           type: string
+          description: Label to identify this MCP server
         server_url:
           type: string
+          description: URL endpoint of the MCP server
         headers:
           type: object
           additionalProperties:
@@ -5748,6 +5800,8 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) HTTP headers to include when connecting to the server
         require_approval:
           oneOf:
             - type: string
@@ -5760,13 +5814,21 @@ components:
                   type: array
                   items:
                     type: string
+                  description: >-
+                    (Optional) List of tool names that always require approval
                 never:
                   type: array
                   items:
                     type: string
+                  description: >-
+                    (Optional) List of tool names that never require approval
               additionalProperties: false
               title: ApprovalFilter
+              description: >-
+                Filter configuration for MCP tool approval requirements.
           default: never
+          description: >-
+            Approval requirement for tool calls ("always", "never", or filter)
         allowed_tools:
           oneOf:
             - type: array
@@ -5778,8 +5840,14 @@ components:
                   type: array
                   items:
                     type: string
+                  description: >-
+                    (Optional) List of specific tool names that are allowed
               additionalProperties: false
               title: AllowedToolsFilter
+              description: >-
+                Filter configuration for restricting which MCP tools can be used.
+          description: >-
+            (Optional) Restriction on which tools can be used from this server
       additionalProperties: false
       required:
         - type
@@ -5787,6 +5855,8 @@ components:
         - server_url
         - require_approval
       title: OpenAIResponseInputToolMCP
+      description: >-
+        Model Context Protocol (MCP) tool configuration for OpenAI response inputs.
     OpenAIResponseInputToolWebSearch:
       type: object
       properties:
@@ -5799,13 +5869,18 @@ components:
             - type: string
               const: web_search_preview_2025_03_11
           default: web_search
+          description: Web search tool type variant to use
         search_context_size:
           type: string
           default: medium
+          description: >-
+            (Optional) Size of search context, must be "low", "medium", or "high"
       additionalProperties: false
       required:
         - type
       title: OpenAIResponseInputToolWebSearch
+      description: >-
+        Web search tool configuration for OpenAI response inputs.
     OpenAIResponseMessage:
       type: object
       properties:
@@ -5871,16 +5946,22 @@ components:
       properties:
         id:
           type: string
+          description: Unique identifier for this tool call
         queries:
           type: array
           items:
             type: string
+          description: List of search queries executed
         status:
           type: string
+          description: >-
+            Current status of the file search operation
         type:
           type: string
           const: file_search_call
           default: file_search_call
+          description: >-
+            Tool call type identifier, always "file_search_call"
         results:
           type: array
           items:
@@ -5893,6 +5974,8 @@ components:
                 - type: string
                 - type: array
                 - type: object
+          description: >-
+            (Optional) Search results returned by the file search operation
       additionalProperties: false
       required:
         - id
@@ -5901,23 +5984,35 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageFileSearchToolCall
+      description: >-
+        File search tool call output message for OpenAI responses.
     "OpenAIResponseOutputMessageFunctionToolCall":
       type: object
       properties:
         call_id:
           type: string
+          description: Unique identifier for the function call
         name:
           type: string
+          description: Name of the function being called
         arguments:
           type: string
+          description: >-
+            JSON string containing the function arguments
         type:
           type: string
           const: function_call
           default: function_call
+          description: >-
+            Tool call type identifier, always "function_call"
         id:
           type: string
+          description: >-
+            (Optional) Additional identifier for the tool call
         status:
           type: string
+          description: >-
+            (Optional) Current status of the function call execution
       additionalProperties: false
       required:
         - call_id
@@ -5926,17 +6021,24 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageFunctionToolCall
+      description: >-
+        Function tool call output message for OpenAI responses.
     "OpenAIResponseOutputMessageWebSearchToolCall":
       type: object
       properties:
         id:
           type: string
+          description: Unique identifier for this tool call
         status:
           type: string
+          description: >-
+            Current status of the web search operation
         type:
           type: string
           const: web_search_call
           default: web_search_call
+          description: >-
+            Tool call type identifier, always "web_search_call"
       additionalProperties: false
       required:
         - id
@@ -5944,6 +6046,8 @@ components:
         - type
       title: >-
         OpenAIResponseOutputMessageWebSearchToolCall
+      description: >-
+        Web search tool call output message for OpenAI responses.
     OpenAIResponseText:
       type: object
       properties:
@@ -5990,11 +6094,12 @@ components:
           additionalProperties: false
           required:
             - type
-          title: OpenAIResponseTextFormat
           description: >-
-            Configuration for Responses API text format.
+            (Optional) Text format configuration specifying output format requirements
       additionalProperties: false
       title: OpenAIResponseText
+      description: >-
+        Text response configuration for OpenAI responses.
     CreateOpenaiResponseRequest:
       type: object
       properties:
@@ -6040,49 +6145,81 @@ components:
       properties:
         code:
           type: string
+          description: >-
+            Error code identifying the type of failure
         message:
           type: string
+          description: >-
+            Human-readable error message describing the failure
       additionalProperties: false
       required:
         - code
         - message
       title: OpenAIResponseError
+      description: >-
+        Error details for failed OpenAI response requests.
     OpenAIResponseObject:
       type: object
       properties:
         created_at:
           type: integer
+          description: >-
+            Unix timestamp when the response was created
         error:
           $ref: '#/components/schemas/OpenAIResponseError'
+          description: >-
+            (Optional) Error details if the response generation failed
         id:
           type: string
+          description: Unique identifier for this response
         model:
           type: string
+          description: Model identifier used for generation
         object:
           type: string
           const: response
           default: response
+          description: >-
+            Object type identifier, always "response"
         output:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseOutput'
+          description: >-
+            List of generated output items (messages, tool calls, etc.)
         parallel_tool_calls:
           type: boolean
           default: false
+          description: >-
+            Whether tool calls can be executed in parallel
         previous_response_id:
           type: string
+          description: >-
+            (Optional) ID of the previous response in a conversation
         status:
           type: string
+          description: >-
+            Current status of the response generation
         temperature:
           type: number
+          description: >-
+            (Optional) Sampling temperature used for generation
         text:
           $ref: '#/components/schemas/OpenAIResponseText'
+          description: >-
+            Text formatting configuration for the response
         top_p:
           type: number
+          description: >-
+            (Optional) Nucleus sampling parameter used for generation
         truncation:
           type: string
+          description: >-
+            (Optional) Truncation strategy applied to the response
         user:
           type: string
+          description: >-
+            (Optional) User identifier associated with the request
       additionalProperties: false
       required:
         - created_at
@@ -6094,6 +6231,8 @@ components:
         - status
         - text
       title: OpenAIResponseObject
+      description: >-
+        Complete OpenAI response object containing generation results and metadata.
     OpenAIResponseOutput:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseMessage'
@@ -6116,20 +6255,32 @@ components:
       properties:
         id:
           type: string
+          description: Unique identifier for this MCP call
         type:
           type: string
           const: mcp_call
           default: mcp_call
+          description: >-
+            Tool call type identifier, always "mcp_call"
         arguments:
           type: string
+          description: >-
+            JSON string containing the MCP call arguments
         name:
           type: string
+          description: Name of the MCP method being called
         server_label:
           type: string
+          description: >-
+            Label identifying the MCP server handling the call
         error:
           type: string
+          description: >-
+            (Optional) Error message if the MCP call failed
         output:
           type: string
+          description: >-
+            (Optional) Output result from the successful MCP call
       additionalProperties: false
       required:
         - id
@@ -6138,17 +6289,25 @@ components:
         - name
         - server_label
       title: OpenAIResponseOutputMessageMCPCall
+      description: >-
+        Model Context Protocol (MCP) call output message for OpenAI responses.
     OpenAIResponseOutputMessageMCPListTools:
       type: object
       properties:
         id:
           type: string
+          description: >-
+            Unique identifier for this MCP list tools operation
         type:
           type: string
           const: mcp_list_tools
           default: mcp_list_tools
+          description: >-
+            Tool call type identifier, always "mcp_list_tools"
         server_label:
           type: string
+          description: >-
+            Label identifying the MCP server providing the tools
         tools:
           type: array
           items:
@@ -6164,15 +6323,24 @@ components:
                     - type: string
                     - type: array
                     - type: object
+                description: >-
+                  JSON schema defining the tool's input parameters
               name:
                 type: string
+                description: Name of the tool
               description:
                 type: string
+                description: >-
+                  (Optional) Description of what the tool does
             additionalProperties: false
             required:
               - input_schema
               - name
             title: MCPListToolsTool
+            description: >-
+              Tool definition returned by MCP list tools operation.
+          description: >-
+            List of available tools provided by the MCP server
       additionalProperties: false
       required:
         - id
@@ -6180,6 +6348,8 @@ components:
         - server_label
         - tools
       title: OpenAIResponseOutputMessageMCPListTools
+      description: >-
+        MCP list tools output message containing available tools from an MCP server.
     OpenAIResponseObjectStream:
       oneOf:
         - $ref: '#/components/schemas/OpenAIResponseObjectStreamResponseCreated'
@@ -6228,46 +6398,66 @@ components:
       properties:
         response:
           $ref: '#/components/schemas/OpenAIResponseObject'
+          description: The completed response object
         type:
           type: string
           const: response.completed
           default: response.completed
+          description: >-
+            Event type identifier, always "response.completed"
       additionalProperties: false
       required:
         - response
         - type
       title: >-
         OpenAIResponseObjectStreamResponseCompleted
+      description: >-
+        Streaming event indicating a response has been completed.
     "OpenAIResponseObjectStreamResponseCreated":
       type: object
       properties:
         response:
           $ref: '#/components/schemas/OpenAIResponseObject'
+          description: The newly created response object
         type:
           type: string
           const: response.created
           default: response.created
+          description: >-
+            Event type identifier, always "response.created"
       additionalProperties: false
       required:
         - response
         - type
       title: >-
         OpenAIResponseObjectStreamResponseCreated
+      description: >-
+        Streaming event indicating a new response has been created.
     "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta":
       type: object
       properties:
         delta:
           type: string
+          description: >-
+            Incremental function call arguments being added
         item_id:
           type: string
+          description: >-
+            Unique identifier of the function call being updated
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.function_call_arguments.delta
           default: response.function_call_arguments.delta
+          description: >-
+            Event type identifier, always "response.function_call_arguments.delta"
       additionalProperties: false
       required:
         - delta
@@ -6277,21 +6467,33 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta
+      description: >-
+        Streaming event for incremental function call argument updates.
     "OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone":
       type: object
       properties:
         arguments:
           type: string
+          description: >-
+            Final complete arguments JSON string for the function call
         item_id:
           type: string
+          description: >-
+            Unique identifier of the completed function call
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.function_call_arguments.done
           default: response.function_call_arguments.done
+          description: >-
+            Event type identifier, always "response.function_call_arguments.done"
       additionalProperties: false
       required:
         - arguments
@@ -6301,6 +6503,8 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone
+      description: >-
+        Streaming event for when function call arguments are completed.
     "OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta":
       type: object
       properties:
@@ -6354,44 +6558,61 @@ components:
       properties:
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.mcp_call.completed
           default: response.mcp_call.completed
+          description: >-
+            Event type identifier, always "response.mcp_call.completed"
       additionalProperties: false
       required:
         - sequence_number
         - type
       title: >-
         OpenAIResponseObjectStreamResponseMcpCallCompleted
+      description: Streaming event for completed MCP calls.
     "OpenAIResponseObjectStreamResponseMcpCallFailed":
       type: object
       properties:
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.mcp_call.failed
           default: response.mcp_call.failed
+          description: >-
+            Event type identifier, always "response.mcp_call.failed"
       additionalProperties: false
       required:
         - sequence_number
         - type
       title: >-
         OpenAIResponseObjectStreamResponseMcpCallFailed
+      description: Streaming event for failed MCP calls.
     "OpenAIResponseObjectStreamResponseMcpCallInProgress":
       type: object
       properties:
         item_id:
           type: string
+          description: Unique identifier of the MCP call
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.mcp_call.in_progress
           default: response.mcp_call.in_progress
+          description: >-
+            Event type identifier, always "response.mcp_call.in_progress"
       additionalProperties: false
       required:
         - item_id
@@ -6400,6 +6621,8 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseMcpCallInProgress
+      description: >-
+        Streaming event for MCP calls in progress.
     "OpenAIResponseObjectStreamResponseMcpListToolsCompleted":
       type: object
       properties:
@@ -6450,16 +6673,26 @@ components:
       properties:
         response_id:
           type: string
+          description: >-
+            Unique identifier of the response containing this output
         item:
           $ref: '#/components/schemas/OpenAIResponseOutput'
+          description: >-
+            The output item that was added (message, tool call, etc.)
         output_index:
           type: integer
+          description: >-
+            Index position of this item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.output_item.added
           default: response.output_item.added
+          description: >-
+            Event type identifier, always "response.output_item.added"
       additionalProperties: false
       required:
         - response_id
@@ -6469,21 +6702,33 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseOutputItemAdded
+      description: >-
+        Streaming event for when a new output item is added to the response.
     "OpenAIResponseObjectStreamResponseOutputItemDone":
       type: object
       properties:
         response_id:
           type: string
+          description: >-
+            Unique identifier of the response containing this output
         item:
           $ref: '#/components/schemas/OpenAIResponseOutput'
+          description: >-
+            The completed output item (message, tool call, etc.)
         output_index:
           type: integer
+          description: >-
+            Index position of this item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.output_item.done
           default: response.output_item.done
+          description: >-
+            Event type identifier, always "response.output_item.done"
       additionalProperties: false
       required:
         - response_id
@@ -6493,23 +6738,35 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseOutputItemDone
+      description: >-
+        Streaming event for when an output item is completed.
     "OpenAIResponseObjectStreamResponseOutputTextDelta":
       type: object
       properties:
         content_index:
           type: integer
+          description: Index position within the text content
         delta:
           type: string
+          description: Incremental text content being added
         item_id:
           type: string
+          description: >-
+            Unique identifier of the output item being updated
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.output_text.delta
           default: response.output_text.delta
+          description: >-
+            Event type identifier, always "response.output_text.delta"
       additionalProperties: false
       required:
         - content_index
@@ -6520,23 +6777,36 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseOutputTextDelta
+      description: >-
+        Streaming event for incremental text content updates.
     "OpenAIResponseObjectStreamResponseOutputTextDone":
       type: object
       properties:
         content_index:
           type: integer
+          description: Index position within the text content
         text:
           type: string
+          description: >-
+            Final complete text content of the output item
         item_id:
           type: string
+          description: >-
+            Unique identifier of the completed output item
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.output_text.done
           default: response.output_text.done
+          description: >-
+            Event type identifier, always "response.output_text.done"
       additionalProperties: false
       required:
         - content_index
@@ -6547,19 +6817,29 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseOutputTextDone
+      description: >-
+        Streaming event for when text output is completed.
     "OpenAIResponseObjectStreamResponseWebSearchCallCompleted":
       type: object
       properties:
         item_id:
           type: string
+          description: >-
+            Unique identifier of the completed web search call
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.web_search_call.completed
           default: response.web_search_call.completed
+          description: >-
+            Event type identifier, always "response.web_search_call.completed"
       additionalProperties: false
       required:
         - item_id
@@ -6568,19 +6848,28 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseWebSearchCallCompleted
+      description: >-
+        Streaming event for completed web search calls.
     "OpenAIResponseObjectStreamResponseWebSearchCallInProgress":
       type: object
       properties:
         item_id:
           type: string
+          description: Unique identifier of the web search call
         output_index:
           type: integer
+          description: >-
+            Index position of the item in the output list
         sequence_number:
           type: integer
+          description: >-
+            Sequential number for ordering streaming events
         type:
           type: string
           const: response.web_search_call.in_progress
           default: response.web_search_call.in_progress
+          description: >-
+            Event type identifier, always "response.web_search_call.in_progress"
       additionalProperties: false
       required:
         - item_id
@@ -6589,6 +6878,8 @@ components:
         - type
       title: >-
         OpenAIResponseObjectStreamResponseWebSearchCallInProgress
+      description: >-
+        Streaming event for web search calls in progress.
     "OpenAIResponseObjectStreamResponseWebSearchCallSearching":
       type: object
       properties:
@@ -6615,19 +6906,26 @@ components:
       properties:
         id:
           type: string
+          description: >-
+            Unique identifier of the deleted response
         object:
           type: string
           const: response
           default: response
+          description: >-
+            Object type identifier, always "response"
         deleted:
           type: boolean
           default: true
+          description: Deletion confirmation flag, always True
       additionalProperties: false
       required:
         - id
         - object
         - deleted
       title: OpenAIDeleteResponseObject
+      description: >-
+        Response object confirming deletion of an OpenAI response.
     EmbeddingsRequest:
       type: object
       properties:
@@ -8815,15 +9113,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseInput'
+          description: List of input items
         object:
           type: string
           const: list
           default: list
+          description: Object type identifier, always "list"
       additionalProperties: false
       required:
         - data
         - object
       title: ListOpenAIResponseInputItem
+      description: >-
+        List container for OpenAI response input items.
     ListOpenAIResponseObject:
       type: object
       properties:
@@ -8831,16 +9133,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseObjectWithInput'
+          description: >-
+            List of response objects with their input context
         has_more:
           type: boolean
+          description: >-
+            Whether there are more results available beyond this page
         first_id:
           type: string
+          description: >-
+            Identifier of the first item in this page
         last_id:
           type: string
+          description: Identifier of the last item in this page
         object:
           type: string
           const: list
           default: list
+          description: Object type identifier, always "list"
       additionalProperties: false
       required:
         - data
@@ -8849,46 +9159,76 @@ components:
         - last_id
         - object
       title: ListOpenAIResponseObject
+      description: >-
+        Paginated list of OpenAI response objects with navigation metadata.
     OpenAIResponseObjectWithInput:
       type: object
       properties:
         created_at:
           type: integer
+          description: >-
+            Unix timestamp when the response was created
         error:
           $ref: '#/components/schemas/OpenAIResponseError'
+          description: >-
+            (Optional) Error details if the response generation failed
         id:
           type: string
+          description: Unique identifier for this response
         model:
           type: string
+          description: Model identifier used for generation
         object:
           type: string
           const: response
           default: response
+          description: >-
+            Object type identifier, always "response"
         output:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseOutput'
+          description: >-
+            List of generated output items (messages, tool calls, etc.)
         parallel_tool_calls:
           type: boolean
           default: false
+          description: >-
+            Whether tool calls can be executed in parallel
         previous_response_id:
           type: string
+          description: >-
+            (Optional) ID of the previous response in a conversation
         status:
           type: string
+          description: >-
+            Current status of the response generation
         temperature:
           type: number
+          description: >-
+            (Optional) Sampling temperature used for generation
         text:
           $ref: '#/components/schemas/OpenAIResponseText'
+          description: >-
+            Text formatting configuration for the response
         top_p:
           type: number
+          description: >-
+            (Optional) Nucleus sampling parameter used for generation
         truncation:
           type: string
+          description: >-
+            (Optional) Truncation strategy applied to the response
         user:
           type: string
+          description: >-
+            (Optional) User identifier associated with the request
         input:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseInput'
+          description: >-
+            List of input items that led to this response
       additionalProperties: false
       required:
         - created_at
@@ -8901,6 +9241,8 @@ components:
         - text
         - input
       title: OpenAIResponseObjectWithInput
+      description: >-
+        OpenAI response object extended with input context information.
     ListProvidersResponse:
       type: object
       properties:

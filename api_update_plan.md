@@ -210,7 +210,7 @@ Before finalizing documentation, verify:
 4. Move to next file
 
 **COMPLETION CRITERIA:**
-- All 22 files have been processed
+- All 29 files have been processed
 - All @json_schema_type classes have comprehensive docstrings with complete `:param` field documentation
 - All @webmethod functions have comprehensive docstrings with parameter and return documentation
 - All other BaseModel classes have comprehensive docstrings with `:param` field documentation
@@ -247,6 +247,7 @@ Before finalizing documentation, verify:
 [x] 26. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/training_types.py` - Training metrics and checkpoint types
 [x] 27. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/responses.py` - Generic response types (well documented)
 [x] 28. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/type_system.py` - Parameter type system definitions
+[x] 29. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/agents/openai_responses.py` - OpenAI Response API compatibility types
 
 **NOTE:** `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/errors.py` contains only Python exception classes (no @json_schema_type), so it's not included in the documentation update scope.
 
@@ -630,7 +631,7 @@ After processing all 22 files:
 4. Check that the documentation is comprehensive and consistent
 
 ## Success Indicators
-- [ ] All 22 API files processed
+- [ ] All 29 API files processed
 - [ ] All @json_schema_type classes have comprehensive docstrings with `:param` field documentation
 - [ ] All @webmethod functions have comprehensive docstrings with parameter and return documentation
 - [ ] OpenAPI spec contains comprehensive field descriptions
