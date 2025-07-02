@@ -22,35 +22,19 @@ providers:
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/faiss_store.db
+    config: ~/.llama/distributions/nvidia/provider_configs/vector_io/faiss.yaml
   safety:
   - provider_id: nvidia
     provider_type: remote::nvidia
-    config:
-      guardrails_service_url: ${env.GUARDRAILS_SERVICE_URL:=http://localhost:7331}
-      config_id: ${env.NVIDIA_GUARDRAILS_CONFIG_ID:=self-check}
+    config: ~/.llama/distributions/nvidia/provider_configs/safety/nvidia.yaml
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      persistence_store:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/agents_store.db
-      responses_store:
-        type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/responses_store.db
+    config: ~/.llama/distributions/nvidia/provider_configs/agents/meta-reference.yaml
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
-      sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
-      sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/trace_store.db
+    config: ~/.llama/distributions/nvidia/provider_configs/telemetry/meta-reference.yaml
   eval:
   - provider_id: nvidia
     provider_type: remote::nvidia
@@ -59,11 +43,7 @@ providers:
   post_training:
   - provider_id: nvidia
     provider_type: remote::nvidia
-    config:
-      api_key: ${env.NVIDIA_API_KEY:=}
-      dataset_namespace: ${env.NVIDIA_DATASET_NAMESPACE:=default}
-      project_id: ${env.NVIDIA_PROJECT_ID:=test-project}
-      customizer_url: ${env.NVIDIA_CUSTOMIZER_URL:=http://nemo.test}
+    config: ~/.llama/distributions/nvidia/provider_configs/post_training/nvidia.yaml
   datasetio:
   - provider_id: nvidia
     provider_type: remote::nvidia

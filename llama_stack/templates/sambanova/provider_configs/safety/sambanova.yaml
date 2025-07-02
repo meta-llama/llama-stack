@@ -1,0 +1,2 @@
+url: https://api.sambanova.ai/v1
+api_key: ${env.SAMBANOVA_API_KEY}

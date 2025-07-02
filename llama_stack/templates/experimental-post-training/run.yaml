@@ -17,82 +17,49 @@ providers:
   inference:
   - provider_id: meta-reference-inference
     provider_type: inline::meta-reference
-    config:
-      max_seq_len: 4096
-      checkpoint_dir: null
-      create_distributed_process_group: False
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/meta-reference-inference.yaml
   - provider_id: ollama
     provider_type: remote::ollama
-    config:
-      url: ${env.OLLAMA_URL:=http://localhost:11434}
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/ollama.yaml
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/meta_reference_eval.db
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/meta-reference-eval.yaml
   scoring:
   - provider_id: basic
     provider_type: inline::basic
-    config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
-    config:
-      openai_api_key: ${env.OPENAI_API_KEY:+}
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/braintrust.yaml
   datasetio:
   - provider_id: localfs
     provider_type: inline::localfs
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/localfs_datasetio.db
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/localfs.yaml
   - provider_id: huggingface
     provider_type: remote::huggingface
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/huggingface}/huggingface_datasetio.db
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/huggingface.yaml
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config: {}
   post_training:
   - provider_id: huggingface
     provider_type: inline::huggingface
-    config:
-      checkpoint_format: huggingface
-      distributed_backend: null
-      device: cpu
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/huggingface-post-training.yaml
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      persistence_store:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/agents_store.db
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/meta-reference-agents.yaml
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config: {}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
-    config:
-      kvstore:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/experimental-post-training}/faiss_store.db
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/faiss.yaml
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
-    config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:+}
-      max_results: 3
+    config: ~/.llama/distributions/experimental-post-training/provider_configs/brave-search.yaml
 
 
 metadata_store:

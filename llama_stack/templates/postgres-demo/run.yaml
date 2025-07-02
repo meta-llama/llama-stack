@@ -27,8 +27,7 @@ providers:
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
-    config:
-      excluded_categories: []
+    config: ~/.llama/distributions/postgres-demo/provider_configs/safety/llama-guard.yaml
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -57,14 +56,10 @@ providers:
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
-    config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
-      max_results: 3
+    config: ~/.llama/distributions/postgres-demo/provider_configs/tool_runtime/brave-search.yaml
   - provider_id: tavily-search
     provider_type: remote::tavily-search
-    config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
-      max_results: 3
+    config: ~/.llama/distributions/postgres-demo/provider_configs/tool_runtime/tavily-search.yaml
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
@@ -81,11 +76,11 @@ metadata_store:
   table_name: ${env.POSTGRES_TABLE_NAME:=llamastack_kvstore}
 inference_store:
   type: postgres
-  host: ${env.POSTGRES_HOST:localhost}
-  port: ${env.POSTGRES_PORT:5432}
-  db: ${env.POSTGRES_DB:llamastack}
-  user: ${env.POSTGRES_USER:llamastack}
-  password: ${env.POSTGRES_PASSWORD:llamastack}
+  host: ${env.POSTGRES_HOST:=localhost}
+  port: ${env.POSTGRES_PORT:=5432}
+  db: ${env.POSTGRES_DB:=llamastack}
+  user: ${env.POSTGRES_USER:=llamastack}
+  password: ${env.POSTGRES_PASSWORD:=llamastack}
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}

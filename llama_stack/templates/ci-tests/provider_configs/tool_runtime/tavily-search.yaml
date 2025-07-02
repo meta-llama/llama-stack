@@ -1,0 +1,2 @@
+api_key: ${env.TAVILY_SEARCH_API_KEY:=}
+max_results: 3
