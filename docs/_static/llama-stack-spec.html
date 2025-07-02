@@ -11694,13 +11694,16 @@
                 "type": "object",
                 "properties": {
                     "api": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The API name this provider implements"
                     },
                     "provider_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the provider"
                     },
                     "provider_type": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The type of provider implementation"
                     },
                     "config": {
                         "type": "object",
@@ -11725,7 +11728,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Configuration parameters for the provider"
                     },
                     "health": {
                         "type": "object",
@@ -11750,7 +11754,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Current health status of the provider"
                     }
                 },
                 "additionalProperties": false,
@@ -11761,7 +11766,8 @@
                     "config",
                     "health"
                 ],
-                "title": "ProviderInfo"
+                "title": "ProviderInfo",
+                "description": "Information about a registered provider including its configuration and health status."
             },
             "InvokeToolRequest": {
                 "type": "object",
@@ -12200,14 +12206,16 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/ProviderInfo"
-                        }
+                        },
+                        "description": "List of provider information objects"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "data"
                 ],
-                "title": "ListProvidersResponse"
+                "title": "ListProvidersResponse",
+                "description": "Response containing a list of all available providers."
             },
             "RouteInfo": {
                 "type": "object",

@@ -238,9 +238,9 @@ Before finalizing documentation, verify:
 [x] 17. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/shields/shields.py` - Safety shields
 [x] 18. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/batch_inference/batch_inference.py` - Batch inference operations
 [x] 19. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/synthetic_data_generation/synthetic_data_generation.py` - Data generation
-20. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/telemetry/telemetry.py` - Telemetry and monitoring
-21. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/providers/providers.py` - Provider management
-22. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/inspect/inspect.py` - System inspection
+[x] 20. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/providers/providers.py` - Provider management
+21. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/inspect/inspect.py` - System inspection
+22. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/telemetry/telemetry.py` - Telemetry and monitoring
 
 **Step 1: Existing Documentation Assessment**
 - **Priority**: Review all @json_schema_type classes and @webmethod functions for docstring completeness
