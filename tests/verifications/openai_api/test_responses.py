@@ -296,6 +296,7 @@ def test_response_non_streaming_file_search(
     if isinstance(openai_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
 
+    print(f"list models = {openai_client.models.list()}")
     test_name_base = get_base_test_name(request)
     if should_skip_test(verification_config, provider, model, test_name_base):
         pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")

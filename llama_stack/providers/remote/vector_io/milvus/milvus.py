@@ -41,7 +41,6 @@ VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
-from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
 
 
 class MilvusIndex(EmbeddingIndex):
@@ -252,16 +251,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
 
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        """Save vector store file metadata to Milvus database."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.set(key=key, value=json.dumps(file_info))
-        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.set(key=content_key, value=json.dumps(file_contents))
-
     async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
         """Load all vector store metadata from persistent storage."""
         assert self.kvstore is not None
@@ -274,6 +263,12 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
     ) -> None:
         """Save vector store file metadata to Milvus database."""
+        if store_id not in self.openai_vector_stores:
+            store_info = await self._load_openai_vector_stores(store_id)
+            if not store_info:
+                logger.error(f"OpenAI vector store {store_id} not found")
+                raise ValueError(f"No vector store found with id {store_id}")
+
         try:
             if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
                 file_schema = MilvusClient.create_schema(
@@ -314,7 +309,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
                     schema=content_schema,
                 )
 
-            # Save file metadata
             file_data = [
                 {
                     "store_file_id": f"{store_id}_{file_id}",
@@ -332,7 +326,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             # Save file contents
             contents_data = [
                 {
-                    "chunk_id": generate_chunk_id(file_id, content.get("chunk_id", None)),
+                    "chunk_id": content.get("chunk_metadata").get("chunk_id"),
                     "store_file_id": f"{store_id}_{file_id}",
                     "store_id": store_id,
                     "file_id": file_id,
@@ -355,7 +349,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
                 return {}
 
-            query_filter = f"store_id == '{store_id}' AND file_id == '{file_id}'"
+            query_filter = f"store_file_id == '{store_id}_{file_id}'"
             results = await asyncio.to_thread(
                 self.client.query,
                 collection_name="openai_vector_store_files",
@@ -380,14 +374,15 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files_contents"):
                 return []
 
-            query_filter = f"store_id == '{store_id}' AND file_id == '{file_id}'"
+            query_filter = (
+                f"store_id == '{store_id}' AND file_id == '{file_id}' AND store_file_id == '{store_id}_{file_id}'"
+            )
             results = await asyncio.to_thread(
                 self.client.query,
                 collection_name="openai_vector_store_files_contents",
                 filter=query_filter,
                 output_fields=["chunk_id", "store_id", "file_id", "content"],
             )
-            print(f"\nresults from milvus = {results}\n")
 
             contents = []
             for result in results:
@@ -398,8 +393,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
                     logger.error(f"Failed to decode content for store {store_id}, file {file_id}: {e}")
             return contents
         except Exception as e:
-            print(f"failed {e}")
-
             logger.error(f"Error loading openai vector store file contents for {file_id} in store {store_id}: {e}")
             return []
 
@@ -428,7 +421,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         """Delete vector store file metadata from Milvus database."""
-        print("milvus is trying to delete stuff")
         try:
             if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
                 return
