@@ -1323,7 +1323,8 @@ paths:
     get:
       responses:
         '200':
-          description: A HealthInfo.
+          description: >-
+            Health information indicating if the service is operational.
           content:
             application/json:
               schema:
@@ -1340,7 +1341,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
-      description: Get the health of the service.
+      description: >-
+        Get the current health status of the service.
       parameters: []
   /v1/tool-runtime/rag-tool/insert:
     post:
@@ -1984,7 +1986,8 @@ paths:
     get:
       responses:
         '200':
-          description: A ListRoutesResponse.
+          description: >-
+            Response containing information about all available routes.
           content:
             application/json:
               schema:
@@ -2001,7 +2004,8 @@ paths:
           $ref: '#/components/responses/DefaultError'
       tags:
         - Inspect
-      description: List all routes.
+      description: >-
+        List all available API routes with their methods and implementing providers.
       parameters: []
   /v1/tool-runtime/list-tools:
     get:
@@ -3506,7 +3510,8 @@ paths:
     get:
       responses:
         '200':
-          description: A VersionInfo.
+          description: >-
+            Version information containing the service version number.
           content:
             application/json:
               schema:
@@ -4164,6 +4169,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+          description: >-
+            (Optional) List of metrics associated with the API response
         completion_message:
           $ref: '#/components/schemas/CompletionMessage'
           description: The complete response message
@@ -4183,17 +4190,23 @@ components:
       properties:
         metric:
           type: string
+          description: The name of the metric
         value:
           oneOf:
             - type: integer
             - type: number
+          description: The numeric value of the metric
         unit:
           type: string
+          description: >-
+            (Optional) The unit of measurement for the metric value
       additionalProperties: false
       required:
         - metric
         - value
       title: MetricInResponse
+      description: >-
+        A metric value included in API responses.
     TokenLogProbs:
       type: object
       properties:
@@ -4268,6 +4281,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+          description: >-
+            (Optional) List of metrics associated with the API response
         content:
           type: string
           description: The generated completion text
@@ -4421,6 +4436,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+          description: >-
+            (Optional) List of metrics associated with the API response
         event:
           $ref: '#/components/schemas/ChatCompletionResponseEvent'
           description: The event containing the new content
@@ -4544,6 +4561,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MetricInResponse'
+          description: >-
+            (Optional) List of metrics associated with the API response
         delta:
           type: string
           description: >-
@@ -7881,18 +7900,28 @@ components:
       properties:
         span_id:
           type: string
+          description: Unique identifier for the span
         trace_id:
           type: string
+          description: >-
+            Unique identifier for the trace this span belongs to
         parent_span_id:
           type: string
+          description: >-
+            (Optional) Unique identifier for the parent span, if this is a child span
         name:
           type: string
+          description: >-
+            Human-readable name describing the operation this span represents
         start_time:
           type: string
           format: date-time
+          description: Timestamp when the operation began
         end_time:
           type: string
           format: date-time
+          description: >-
+            (Optional) Timestamp when the operation finished, if completed
         attributes:
           type: object
           additionalProperties:
@@ -7903,6 +7932,8 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Key-value pairs containing additional metadata about the span
       additionalProperties: false
       required:
         - span_id
@@ -7910,6 +7941,8 @@ components:
         - name
         - start_time
       title: Span
+      description: >-
+        A span representing a single operation within a trace.
     GetSpanTreeRequest:
       type: object
       properties:
@@ -7929,23 +7962,36 @@ components:
         - ok
         - error
       title: SpanStatus
+      description: >-
+        The status of a span indicating whether it completed successfully or with
+        an error.
     SpanWithStatus:
       type: object
       properties:
         span_id:
           type: string
+          description: Unique identifier for the span
         trace_id:
           type: string
+          description: >-
+            Unique identifier for the trace this span belongs to
         parent_span_id:
           type: string
+          description: >-
+            (Optional) Unique identifier for the parent span, if this is a child span
         name:
           type: string
+          description: >-
+            Human-readable name describing the operation this span represents
         start_time:
           type: string
           format: date-time
+          description: Timestamp when the operation began
         end_time:
           type: string
           format: date-time
+          description: >-
+            (Optional) Timestamp when the operation finished, if completed
         attributes:
           type: object
           additionalProperties:
@@ -7956,8 +8002,12 @@ components:
               - type: string
               - type: array
               - type: object
+          description: >-
+            (Optional) Key-value pairs containing additional metadata about the span
         status:
           $ref: '#/components/schemas/SpanStatus'
+          description: >-
+            (Optional) The current status of the span
       additionalProperties: false
       required:
         - span_id
@@ -7965,6 +8015,7 @@ components:
         - name
         - start_time
       title: SpanWithStatus
+      description: A span that includes status information.
     QuerySpanTreeResponse:
       type: object
       properties:
@@ -7972,10 +8023,14 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/SpanWithStatus'
+          description: >-
+            Dictionary mapping span IDs to spans with status information
       additionalProperties: false
       required:
         - data
       title: QuerySpanTreeResponse
+      description: >-
+        Response containing a tree structure of spans.
     Tool:
       type: object
       properties:
@@ -8086,20 +8141,29 @@ components:
       properties:
         trace_id:
           type: string
+          description: Unique identifier for the trace
         root_span_id:
           type: string
+          description: >-
+            Unique identifier for the root span that started this trace
         start_time:
           type: string
           format: date-time
+          description: Timestamp when the trace began
         end_time:
           type: string
           format: date-time
+          description: >-
+            (Optional) Timestamp when the trace finished, if completed
       additionalProperties: false
       required:
         - trace_id
         - root_span_id
         - start_time
       title: Trace
+      description: >-
+        A trace representing the complete execution path of a request across multiple
+        operations.
     Checkpoint:
       description: Checkpoint created during training runs
       title: Checkpoint
@@ -8245,11 +8309,13 @@ components:
             - OK
             - Error
             - Not Implemented
-          title: HealthStatus
+          description: Current health status of the service
       additionalProperties: false
       required:
         - status
       title: HealthInfo
+      description: >-
+        Health status information for the service.
     RAGDocument:
       type: object
       properties:
@@ -8808,18 +8874,25 @@ components:
       properties:
         route:
           type: string
+          description: The API endpoint path
         method:
           type: string
+          description: HTTP method for the route
         provider_types:
           type: array
           items:
             type: string
+          description: >-
+            List of provider types that implement this route
       additionalProperties: false
       required:
         - route
         - method
         - provider_types
       title: RouteInfo
+      description: >-
+        Information about an API route including its path, method, and implementing
+        providers.
     ListRoutesResponse:
       type: object
       properties:
@@ -8827,10 +8900,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RouteInfo'
+          description: >-
+            List of available route information objects
       additionalProperties: false
       required:
         - data
       title: ListRoutesResponse
+      description: >-
+        Response containing a list of all available API routes.
     ListToolDefsResponse:
       type: object
       properties:
@@ -8925,6 +9002,8 @@ components:
         - structured_log
         - metric
       title: EventType
+      description: >-
+        The type of telemetry event being logged.
     LogSeverity:
       type: string
       enum:
@@ -8935,16 +9014,22 @@ components:
         - error
         - critical
       title: LogSeverity
+      description: The severity level of a log message.
     MetricEvent:
       type: object
       properties:
         trace_id:
           type: string
+          description: >-
+            Unique identifier for the trace this event belongs to
         span_id:
           type: string
+          description: >-
+            Unique identifier for the span this event belongs to
         timestamp:
           type: string
           format: date-time
+          description: Timestamp when the event occurred
         attributes:
           type: object
           additionalProperties:
@@ -8954,18 +9039,26 @@ components:
               - type: number
               - type: boolean
               - type: 'null'
+          description: >-
+            (Optional) Key-value pairs containing additional metadata about the event
         type:
           $ref: '#/components/schemas/EventType'
           const: metric
           default: metric
+          description: Event type identifier set to METRIC
         metric:
           type: string
+          description: The name of the metric being measured
         value:
           oneOf:
             - type: integer
             - type: number
+          description: >-
+            The numeric value of the metric measurement
         unit:
           type: string
+          description: >-
+            The unit of measurement for the metric value
       additionalProperties: false
       required:
         - trace_id
@@ -8976,6 +9069,8 @@ components:
         - value
         - unit
       title: MetricEvent
+      description: >-
+        A metric event containing a measured value.
     SpanEndPayload:
       type: object
       properties:
@@ -8983,13 +9078,17 @@ components:
           $ref: '#/components/schemas/StructuredLogType'
           const: span_end
           default: span_end
+          description: Payload type identifier set to SPAN_END
         status:
           $ref: '#/components/schemas/SpanStatus'
+          description: >-
+            The final status of the span indicating success or failure
       additionalProperties: false
       required:
         - type
         - status
       title: SpanEndPayload
+      description: Payload for a span end event.
     SpanStartPayload:
       type: object
       properties:
@@ -8997,25 +9096,37 @@ components:
           $ref: '#/components/schemas/StructuredLogType'
           const: span_start
           default: span_start
+          description: >-
+            Payload type identifier set to SPAN_START
         name:
           type: string
+          description: >-
+            Human-readable name describing the operation this span represents
         parent_span_id:
           type: string
+          description: >-
+            (Optional) Unique identifier for the parent span, if this is a child span
       additionalProperties: false
       required:
         - type
         - name
       title: SpanStartPayload
+      description: Payload for a span start event.
     StructuredLogEvent:
       type: object
       properties:
         trace_id:
           type: string
+          description: >-
+            Unique identifier for the trace this event belongs to
         span_id:
           type: string
+          description: >-
+            Unique identifier for the span this event belongs to
         timestamp:
           type: string
           format: date-time
+          description: Timestamp when the event occurred
         attributes:
           type: object
           additionalProperties:
@@ -9025,12 +9136,18 @@ components:
               - type: number
               - type: boolean
               - type: 'null'
+          description: >-
+            (Optional) Key-value pairs containing additional metadata about the event
         type:
           $ref: '#/components/schemas/EventType'
           const: structured_log
           default: structured_log
+          description: >-
+            Event type identifier set to STRUCTURED_LOG
         payload:
           $ref: '#/components/schemas/StructuredLogPayload'
+          description: >-
+            The structured payload data for the log event
       additionalProperties: false
       required:
         - trace_id
@@ -9039,6 +9156,8 @@ components:
         - type
         - payload
       title: StructuredLogEvent
+      description: >-
+        A structured log event containing typed payload data.
     StructuredLogPayload:
       oneOf:
         - $ref: '#/components/schemas/SpanStartPayload'
@@ -9054,16 +9173,23 @@ components:
         - span_start
         - span_end
       title: StructuredLogType
+      description: >-
+        The type of structured log event payload.
     UnstructuredLogEvent:
       type: object
       properties:
         trace_id:
           type: string
+          description: >-
+            Unique identifier for the trace this event belongs to
         span_id:
           type: string
+          description: >-
+            Unique identifier for the span this event belongs to
         timestamp:
           type: string
           format: date-time
+          description: Timestamp when the event occurred
         attributes:
           type: object
           additionalProperties:
@@ -9073,14 +9199,20 @@ components:
               - type: number
               - type: boolean
               - type: 'null'
+          description: >-
+            (Optional) Key-value pairs containing additional metadata about the event
         type:
           $ref: '#/components/schemas/EventType'
           const: unstructured_log
           default: unstructured_log
+          description: >-
+            Event type identifier set to UNSTRUCTURED_LOG
         message:
           type: string
+          description: The log message text
         severity:
           $ref: '#/components/schemas/LogSeverity'
+          description: The severity level of the log message
       additionalProperties: false
       required:
         - trace_id
@@ -9090,6 +9222,8 @@ components:
         - message
         - severity
       title: UnstructuredLogEvent
+      description: >-
+        An unstructured log event containing a simple text message.
     LogEventRequest:
       type: object
       properties:
@@ -11065,8 +11199,10 @@ components:
             properties:
               name:
                 type: string
+                description: The name of the label to match
               value:
                 type: string
+                description: The value to match against
               operator:
                 type: string
                 enum:
@@ -11074,7 +11210,8 @@ components:
                   - '!='
                   - =~
                   - '!~'
-                title: MetricLabelOperator
+                description: >-
+                  The comparison operator to use for matching
                 default: '='
             additionalProperties: false
             required:
@@ -11082,6 +11219,8 @@ components:
               - value
               - operator
             title: MetricLabelMatcher
+            description: >-
+              A matcher for filtering metrics by label values.
           description: >-
             The label matchers to apply to the metric.
       additionalProperties: false
@@ -11094,44 +11233,59 @@ components:
       properties:
         timestamp:
           type: integer
+          description: >-
+            Unix timestamp when the metric value was recorded
         value:
           type: number
+          description: >-
+            The numeric value of the metric at this timestamp
       additionalProperties: false
       required:
         - timestamp
         - value
       title: MetricDataPoint
+      description: >-
+        A single data point in a metric time series.
     MetricLabel:
       type: object
       properties:
         name:
           type: string
+          description: The name of the label
         value:
           type: string
+          description: The value of the label
       additionalProperties: false
       required:
         - name
         - value
       title: MetricLabel
+      description: A label associated with a metric.
     MetricSeries:
       type: object
       properties:
         metric:
           type: string
+          description: The name of the metric
         labels:
           type: array
           items:
             $ref: '#/components/schemas/MetricLabel'
+          description: >-
+            List of labels associated with this metric series
         values:
           type: array
           items:
             $ref: '#/components/schemas/MetricDataPoint'
+          description: >-
+            List of data points in chronological order
       additionalProperties: false
       required:
         - metric
         - labels
         - values
       title: MetricSeries
+      description: A time series of metric data points.
     QueryMetricsResponse:
       type: object
       properties:
@@ -11139,17 +11293,23 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MetricSeries'
+          description: >-
+            List of metric series matching the query criteria
       additionalProperties: false
       required:
         - data
       title: QueryMetricsResponse
+      description: >-
+        Response containing metric time series data.
     QueryCondition:
       type: object
       properties:
         key:
           type: string
+          description: The attribute key to filter on
         op:
           $ref: '#/components/schemas/QueryConditionOp'
+          description: The comparison operator to apply
         value:
           oneOf:
             - type: 'null'
@@ -11158,12 +11318,14 @@ components:
             - type: string
             - type: array
             - type: object
+          description: The value to compare against
       additionalProperties: false
       required:
         - key
         - op
         - value
       title: QueryCondition
+      description: A condition for filtering query results.
     QueryConditionOp:
       type: string
       enum:
@@ -11172,6 +11334,8 @@ components:
         - gt
         - lt
       title: QueryConditionOp
+      description: >-
+        Comparison operators for query conditions.
     QuerySpansRequest:
       type: object
       properties:
@@ -11201,10 +11365,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Span'
+          description: >-
+            List of spans matching the query criteria
       additionalProperties: false
       required:
         - data
       title: QuerySpansResponse
+      description: Response containing a list of spans.
     QueryTracesRequest:
       type: object
       properties:
@@ -11234,10 +11401,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Trace'
+          description: >-
+            List of traces matching the query criteria
       additionalProperties: false
       required:
         - data
       title: QueryTracesResponse
+      description: Response containing a list of traces.
     RegisterBenchmarkRequest:
       type: object
       properties:
@@ -11858,10 +12028,12 @@ components:
       properties:
         version:
           type: string
+          description: Version number of the service
       additionalProperties: false
       required:
         - version
       title: VersionInfo
+      description: Version information for the service.
   responses:
     BadRequest400:
       description: The request was invalid or malformed
