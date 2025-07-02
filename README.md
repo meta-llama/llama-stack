@@ -135,7 +135,7 @@ Please checkout for [full list](https://llama-stack.readthedocs.io/en/latest/pro
 | NVIDIA NEMO | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
 | NVIDIA | Hosted | | | | | | ✅ | ✅ | ✅ |
 
-> **Note**: Additional providers are available through external packages. See [External Providers](https://llama-stack.readthedocs.io/en/latest/providers/external.html) documentation for providers like KubeFlow Training, KubeFlow Pipelines, RamaLama, and TrustyAI LM-Eval.
+> **Note**: Additional providers are available through external packages. See [External Providers](https://llama-stack.readthedocs.io/en/latest/providers/external.html) documentation.
 
 ### Distributions
 
