@@ -234,7 +234,7 @@ Before finalizing documentation, verify:
 [x] 13. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/eval/eval.py` - Evaluation framework
 [x] 14. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring/scoring.py` - Scoring system
 [x] 15. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/scoring_functions/scoring_functions.py` - Scoring function definitions
-16. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/benchmarks/benchmarks.py` - Benchmarking framework
+[x] 16. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/benchmarks/benchmarks.py` - Benchmarking framework
 17. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/shields/shields.py` - Safety shields
 18. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/batch_inference/batch_inference.py` - Batch inference operations
 19. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/synthetic_data_generation/synthetic_data_generation.py` - Data generation

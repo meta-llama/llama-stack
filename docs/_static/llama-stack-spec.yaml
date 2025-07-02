@@ -7037,15 +7037,19 @@ components:
             - benchmark
             - tool
             - tool_group
-          title: ResourceType
           const: benchmark
           default: benchmark
+          description: The resource type, always benchmark
         dataset_id:
           type: string
+          description: >-
+            Identifier of the dataset to use for the benchmark evaluation
         scoring_functions:
           type: array
           items:
             type: string
+          description: >-
+            List of scoring function identifiers to apply during evaluation
         metadata:
           type: object
           additionalProperties:
@@ -7056,6 +7060,7 @@ components:
               - type: string
               - type: array
               - type: object
+          description: Metadata for this evaluation task
       additionalProperties: false
       required:
         - identifier
@@ -7065,6 +7070,8 @@ components:
         - scoring_functions
         - metadata
       title: Benchmark
+      description: >-
+        A benchmark resource for evaluating model performance.
     OpenAIAssistantMessageParam:
       type: object
       properties:

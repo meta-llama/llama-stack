@@ -9797,18 +9797,20 @@
                             "tool",
                             "tool_group"
                         ],
-                        "title": "ResourceType",
                         "const": "benchmark",
-                        "default": "benchmark"
+                        "default": "benchmark",
+                        "description": "The resource type, always benchmark"
                     },
                     "dataset_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Identifier of the dataset to use for the benchmark evaluation"
                     },
                     "scoring_functions": {
                         "type": "array",
                         "items": {
                             "type": "string"
-                        }
+                        },
+                        "description": "List of scoring function identifiers to apply during evaluation"
                     },
                     "metadata": {
                         "type": "object",
@@ -9833,7 +9835,8 @@
                                     "type": "object"
                                 }
                             ]
-                        }
+                        },
+                        "description": "Metadata for this evaluation task"
                     }
                 },
                 "additionalProperties": false,
@@ -9845,7 +9848,8 @@
                     "scoring_functions",
                     "metadata"
                 ],
-                "title": "Benchmark"
+                "title": "Benchmark",
+                "description": "A benchmark resource for evaluating model performance."
             },
             "OpenAIAssistantMessageParam": {
                 "type": "object",
