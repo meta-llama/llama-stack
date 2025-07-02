@@ -6,9 +6,7 @@
 
 from collections.abc import AsyncGenerator
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
-from pathlib import PurePosixPath
 from typing import Any, cast
-from urllib.parse import unquote, urlparse
 
 import httpx
 from mcp import ClientSession
@@ -70,17 +68,11 @@ async def streamable_http_client_wrapper(endpoint: str, headers: dict[str, str])
 
 
 def get_client_wrapper(endpoint: str, headers: dict[str, str]) -> _AsyncGeneratorContextManager[ClientSession, Any]:
-    path = PurePosixPath(unquote(urlparse(endpoint).path))
-    if path.parts[-1] != "sse":
-        try:
-            return streamable_http_client_wrapper(endpoint, headers)
-        except AuthenticationRequiredError as e:
-            raise e  # since this was an authentication error, we want to surface that instead of trying with SSE
-        except Exception:
-            return sse_client_wrapper(endpoint, headers)
-    else:
-        # most SSE MCP servers are served at endpoints ending in /sse, so default to the SSE client wrapper
-        # if the endpoint is explicitly an SSE endpoint
+    try:
+        return streamable_http_client_wrapper(endpoint, headers)
+    except AuthenticationRequiredError as e:
+        raise e  # since this was an authentication error, we want to surface that instead of trying with SSE
+    except Exception:
         return sse_client_wrapper(endpoint, headers)
 
 
