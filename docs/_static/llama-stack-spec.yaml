@@ -4068,10 +4068,12 @@ components:
       properties:
         uri:
           type: string
+          description: The URL string pointing to the resource
       additionalProperties: false
       required:
         - uri
       title: URL
+      description: A URL reference to external content.
     UserMessage:
       type: object
       properties:
@@ -4465,14 +4467,19 @@ components:
           type: string
           const: image
           default: image
+          description: >-
+            Discriminator type of the delta. Always "image"
         image:
           type: string
           contentEncoding: base64
+          description: The incremental image data as bytes
       additionalProperties: false
       required:
         - type
         - image
       title: ImageDelta
+      description: >-
+        An image content delta for streaming responses.
     TextDelta:
       type: object
       properties:
@@ -4480,13 +4487,18 @@ components:
           type: string
           const: text
           default: text
+          description: >-
+            Discriminator type of the delta. Always "text"
         text:
           type: string
+          description: The incremental text content
       additionalProperties: false
       required:
         - type
         - text
       title: TextDelta
+      description: >-
+        A text content delta for streaming responses.
     ToolCallDelta:
       type: object
       properties:
@@ -4494,10 +4506,14 @@ components:
           type: string
           const: tool_call
           default: tool_call
+          description: >-
+            Discriminator type of the delta. Always "tool_call"
         tool_call:
           oneOf:
             - type: string
             - $ref: '#/components/schemas/ToolCall'
+          description: >-
+            Either an in-progress tool call string or the final parsed tool call
         parse_status:
           type: string
           enum:
@@ -4505,13 +4521,15 @@ components:
             - in_progress
             - failed
             - succeeded
-          title: ToolCallParseStatus
+          description: Current parsing status of the tool call
       additionalProperties: false
       required:
         - type
         - tool_call
         - parse_status
       title: ToolCallDelta
+      description: >-
+        A tool call content delta for streaming responses.
     CompletionRequest:
       type: object
       properties:
@@ -8636,6 +8654,7 @@ components:
       properties:
         job_id:
           type: string
+          description: Unique identifier for the job
         status:
           type: string
           enum:
@@ -8644,12 +8663,14 @@ components:
             - failed
             - scheduled
             - cancelled
-          title: JobStatus
+          description: Current execution status of the job
       additionalProperties: false
       required:
         - job_id
         - status
       title: Job
+      description: >-
+        A job execution instance with status tracking.
     ListBenchmarksResponse:
       type: object
       properties:

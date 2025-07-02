@@ -241,6 +241,14 @@ Before finalizing documentation, verify:
 [x] 20. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/providers/providers.py` - Provider management
 [x] 21. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/inspect/inspect.py` - System inspection
 [x] 22. `/Users/saip/Documents/GitHub/llama-stack/llama_stack/apis/telemetry/telemetry.py` - Telemetry and monitoring
+[x] 23. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/datatypes.py` - Core API datatypes and enums
+[x] 24. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/content_types.py` - Content type definitions for multimedia
+[x] 25. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/job_types.py` - Job status and management types
+[ ] 26. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/training_types.py` - Training metrics and checkpoint types
+[ ] 27. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/responses.py` - Generic response types (well documented)
+[ ] 28. `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/type_system.py` - Parameter type system definitions
+
+**NOTE:** `/Users/saip/Documents/GitHub/llama-stack-sai/llama_stack/apis/common/errors.py` contains only Python exception classes (no @json_schema_type), so it's not included in the documentation update scope.
 
 **Step 1: Existing Documentation Assessment**
 - **Priority**: Review all @json_schema_type classes and @webmethod functions for docstring completeness

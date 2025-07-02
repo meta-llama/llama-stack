@@ -5724,14 +5724,16 @@
                 "type": "object",
                 "properties": {
                     "uri": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The URL string pointing to the resource"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "uri"
                 ],
-                "title": "URL"
+                "title": "URL",
+                "description": "A URL reference to external content."
             },
             "UserMessage": {
                 "type": "object",
@@ -6189,11 +6191,13 @@
                     "type": {
                         "type": "string",
                         "const": "image",
-                        "default": "image"
+                        "default": "image",
+                        "description": "Discriminator type of the delta. Always \"image\""
                     },
                     "image": {
                         "type": "string",
-                        "contentEncoding": "base64"
+                        "contentEncoding": "base64",
+                        "description": "The incremental image data as bytes"
                     }
                 },
                 "additionalProperties": false,
@@ -6201,7 +6205,8 @@
                     "type",
                     "image"
                 ],
-                "title": "ImageDelta"
+                "title": "ImageDelta",
+                "description": "An image content delta for streaming responses."
             },
             "TextDelta": {
                 "type": "object",
@@ -6209,10 +6214,12 @@
                     "type": {
                         "type": "string",
                         "const": "text",
-                        "default": "text"
+                        "default": "text",
+                        "description": "Discriminator type of the delta. Always \"text\""
                     },
                     "text": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The incremental text content"
                     }
                 },
                 "additionalProperties": false,
@@ -6220,7 +6227,8 @@
                     "type",
                     "text"
                 ],
-                "title": "TextDelta"
+                "title": "TextDelta",
+                "description": "A text content delta for streaming responses."
             },
             "ToolCallDelta": {
                 "type": "object",
@@ -6228,7 +6236,8 @@
                     "type": {
                         "type": "string",
                         "const": "tool_call",
-                        "default": "tool_call"
+                        "default": "tool_call",
+                        "description": "Discriminator type of the delta. Always \"tool_call\""
                     },
                     "tool_call": {
                         "oneOf": [
@@ -6238,7 +6247,8 @@
                             {
                                 "$ref": "#/components/schemas/ToolCall"
                             }
-                        ]
+                        ],
+                        "description": "Either an in-progress tool call string or the final parsed tool call"
                     },
                     "parse_status": {
                         "type": "string",
@@ -6248,7 +6258,7 @@
                             "failed",
                             "succeeded"
                         ],
-                        "title": "ToolCallParseStatus"
+                        "description": "Current parsing status of the tool call"
                     }
                 },
                 "additionalProperties": false,
@@ -6257,7 +6267,8 @@
                     "tool_call",
                     "parse_status"
                 ],
-                "title": "ToolCallDelta"
+                "title": "ToolCallDelta",
+                "description": "A tool call content delta for streaming responses."
             },
             "CompletionRequest": {
                 "type": "object",
@@ -11943,7 +11954,8 @@
                 "type": "object",
                 "properties": {
                     "job_id": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "Unique identifier for the job"
                     },
                     "status": {
                         "type": "string",
@@ -11954,7 +11966,7 @@
                             "scheduled",
                             "cancelled"
                         ],
-                        "title": "JobStatus"
+                        "description": "Current execution status of the job"
                     }
                 },
                 "additionalProperties": false,
@@ -11962,7 +11974,8 @@
                     "job_id",
                     "status"
                 ],
-                "title": "Job"
+                "title": "Job",
+                "description": "A job execution instance with status tracking."
             },
             "ListBenchmarksResponse": {
                 "type": "object",
