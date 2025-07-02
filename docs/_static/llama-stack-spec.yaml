@@ -7692,10 +7692,13 @@ components:
           type: string
           const: agent_turn_input
           default: agent_turn_input
+          description: >-
+            Discriminator type. Always "agent_turn_input"
       additionalProperties: false
       required:
         - type
       title: AgentTurnInputType
+      description: Parameter type for agent turn input.
     ArrayType:
       type: object
       properties:
@@ -7703,10 +7706,12 @@ components:
           type: string
           const: array
           default: array
+          description: Discriminator type. Always "array"
       additionalProperties: false
       required:
         - type
       title: ArrayType
+      description: Parameter type for array values.
     BooleanType:
       type: object
       properties:
@@ -7714,10 +7719,12 @@ components:
           type: string
           const: boolean
           default: boolean
+          description: Discriminator type. Always "boolean"
       additionalProperties: false
       required:
         - type
       title: BooleanType
+      description: Parameter type for boolean values.
     ChatCompletionInputType:
       type: object
       properties:
@@ -7725,10 +7732,14 @@ components:
           type: string
           const: chat_completion_input
           default: chat_completion_input
+          description: >-
+            Discriminator type. Always "chat_completion_input"
       additionalProperties: false
       required:
         - type
       title: ChatCompletionInputType
+      description: >-
+        Parameter type for chat completion input.
     CompletionInputType:
       type: object
       properties:
@@ -7736,10 +7747,13 @@ components:
           type: string
           const: completion_input
           default: completion_input
+          description: >-
+            Discriminator type. Always "completion_input"
       additionalProperties: false
       required:
         - type
       title: CompletionInputType
+      description: Parameter type for completion input.
     JsonType:
       type: object
       properties:
@@ -7747,10 +7761,12 @@ components:
           type: string
           const: json
           default: json
+          description: Discriminator type. Always "json"
       additionalProperties: false
       required:
         - type
       title: JsonType
+      description: Parameter type for JSON values.
     NumberType:
       type: object
       properties:
@@ -7758,10 +7774,12 @@ components:
           type: string
           const: number
           default: number
+          description: Discriminator type. Always "number"
       additionalProperties: false
       required:
         - type
       title: NumberType
+      description: Parameter type for numeric values.
     ObjectType:
       type: object
       properties:
@@ -7769,10 +7787,12 @@ components:
           type: string
           const: object
           default: object
+          description: Discriminator type. Always "object"
       additionalProperties: false
       required:
         - type
       title: ObjectType
+      description: Parameter type for object values.
     ParamType:
       oneOf:
         - $ref: '#/components/schemas/StringType'
@@ -7855,10 +7875,12 @@ components:
           type: string
           const: string
           default: string
+          description: Discriminator type. Always "string"
       additionalProperties: false
       required:
         - type
       title: StringType
+      description: Parameter type for string values.
     UnionType:
       type: object
       properties:
@@ -7866,10 +7888,12 @@ components:
           type: string
           const: union
           default: union
+          description: Discriminator type. Always "union"
       additionalProperties: false
       required:
         - type
       title: UnionType
+      description: Parameter type for union values.
     Shield:
       type: object
       properties:
@@ -8183,7 +8207,7 @@ components:
         A trace representing the complete execution path of a request across multiple
         operations.
     Checkpoint:
-      description: Checkpoint created during training runs
+      description: Checkpoint created during training runs.
       title: Checkpoint
     PostTrainingJobArtifactsResponse:
       type: object
@@ -8688,6 +8712,7 @@ components:
         - asc
         - desc
       title: Order
+      description: Sort order for paginated responses.
     ListOpenAIChatCompletionResponse:
       type: object
       properties:

@@ -10616,14 +10616,16 @@
                     "type": {
                         "type": "string",
                         "const": "agent_turn_input",
-                        "default": "agent_turn_input"
+                        "default": "agent_turn_input",
+                        "description": "Discriminator type. Always \"agent_turn_input\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "AgentTurnInputType"
+                "title": "AgentTurnInputType",
+                "description": "Parameter type for agent turn input."
             },
             "ArrayType": {
                 "type": "object",
@@ -10631,14 +10633,16 @@
                     "type": {
                         "type": "string",
                         "const": "array",
-                        "default": "array"
+                        "default": "array",
+                        "description": "Discriminator type. Always \"array\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "ArrayType"
+                "title": "ArrayType",
+                "description": "Parameter type for array values."
             },
             "BooleanType": {
                 "type": "object",
@@ -10646,14 +10650,16 @@
                     "type": {
                         "type": "string",
                         "const": "boolean",
-                        "default": "boolean"
+                        "default": "boolean",
+                        "description": "Discriminator type. Always \"boolean\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "BooleanType"
+                "title": "BooleanType",
+                "description": "Parameter type for boolean values."
             },
             "ChatCompletionInputType": {
                 "type": "object",
@@ -10661,14 +10667,16 @@
                     "type": {
                         "type": "string",
                         "const": "chat_completion_input",
-                        "default": "chat_completion_input"
+                        "default": "chat_completion_input",
+                        "description": "Discriminator type. Always \"chat_completion_input\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "ChatCompletionInputType"
+                "title": "ChatCompletionInputType",
+                "description": "Parameter type for chat completion input."
             },
             "CompletionInputType": {
                 "type": "object",
@@ -10676,14 +10684,16 @@
                     "type": {
                         "type": "string",
                         "const": "completion_input",
-                        "default": "completion_input"
+                        "default": "completion_input",
+                        "description": "Discriminator type. Always \"completion_input\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "CompletionInputType"
+                "title": "CompletionInputType",
+                "description": "Parameter type for completion input."
             },
             "JsonType": {
                 "type": "object",
@@ -10691,14 +10701,16 @@
                     "type": {
                         "type": "string",
                         "const": "json",
-                        "default": "json"
+                        "default": "json",
+                        "description": "Discriminator type. Always \"json\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "JsonType"
+                "title": "JsonType",
+                "description": "Parameter type for JSON values."
             },
             "NumberType": {
                 "type": "object",
@@ -10706,14 +10718,16 @@
                     "type": {
                         "type": "string",
                         "const": "number",
-                        "default": "number"
+                        "default": "number",
+                        "description": "Discriminator type. Always \"number\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "NumberType"
+                "title": "NumberType",
+                "description": "Parameter type for numeric values."
             },
             "ObjectType": {
                 "type": "object",
@@ -10721,14 +10735,16 @@
                     "type": {
                         "type": "string",
                         "const": "object",
-                        "default": "object"
+                        "default": "object",
+                        "description": "Discriminator type. Always \"object\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "ObjectType"
+                "title": "ObjectType",
+                "description": "Parameter type for object values."
             },
             "ParamType": {
                 "oneOf": [
@@ -10859,14 +10875,16 @@
                     "type": {
                         "type": "string",
                         "const": "string",
-                        "default": "string"
+                        "default": "string",
+                        "description": "Discriminator type. Always \"string\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "StringType"
+                "title": "StringType",
+                "description": "Parameter type for string values."
             },
             "UnionType": {
                 "type": "object",
@@ -10874,14 +10892,16 @@
                     "type": {
                         "type": "string",
                         "const": "union",
-                        "default": "union"
+                        "default": "union",
+                        "description": "Discriminator type. Always \"union\""
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "type"
                 ],
-                "title": "UnionType"
+                "title": "UnionType",
+                "description": "Parameter type for union values."
             },
             "Shield": {
                 "type": "object",
@@ -11310,7 +11330,7 @@
                 "description": "A trace representing the complete execution path of a request across multiple operations."
             },
             "Checkpoint": {
-                "description": "Checkpoint created during training runs",
+                "description": "Checkpoint created during training runs.",
                 "title": "Checkpoint"
             },
             "PostTrainingJobArtifactsResponse": {
@@ -11999,7 +12019,8 @@
                     "asc",
                     "desc"
                 ],
-                "title": "Order"
+                "title": "Order",
+                "description": "Sort order for paginated responses."
             },
             "ListOpenAIChatCompletionResponse": {
                 "type": "object",
