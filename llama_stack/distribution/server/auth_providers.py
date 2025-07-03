@@ -8,15 +8,19 @@ import ssl
 import time
 from abc import ABC, abstractmethod
 from asyncio import Lock
-from pathlib import Path
-from typing import Self
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 from jose import jwt
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field
 
-from llama_stack.distribution.datatypes import AuthenticationConfig, AuthProviderType, User
+from llama_stack.distribution.datatypes import (
+    AuthenticationConfig,
+    CustomAuthConfig,
+    GitHubTokenAuthConfig,
+    OAuth2TokenAuthConfig,
+    User,
+)
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="auth")
@@ -38,9 +42,7 @@ class AuthRequestContext(BaseModel):
 
     headers: dict[str, str] = Field(description="HTTP headers from the original request (excluding Authorization)")
 
-    params: dict[str, list[str]] = Field(
-        description="Query parameters from the original request, parsed as dictionary of lists"
-    )
+    params: dict[str, list[str]] = Field(default_factory=dict, description="Query parameters from the original request")
 
 
 class AuthRequest(BaseModel):
@@ -62,6 +64,10 @@ class AuthProvider(ABC):
         """Clean up any resources."""
         pass
 
+    def get_auth_error_message(self, scope: dict | None = None) -> str:
+        """Return provider-specific authentication error message."""
+        return "Authentication required"
+
 
 def get_attributes_from_claims(claims: dict[str, str], mapping: dict[str, str]) -> dict[str, list[str]]:
     attributes: dict[str, list[str]] = {}
@@ -81,56 +87,6 @@ def get_attributes_from_claims(claims: dict[str, str], mapping: dict[str, str]) 
     return attributes
 
 
-class OAuth2JWKSConfig(BaseModel):
-    # The JWKS URI for collecting public keys
-    uri: str
-    token: str | None = Field(default=None, description="token to authorise access to jwks")
-    key_recheck_period: int = Field(default=3600, description="The period to recheck the JWKS URI for key updates")
-
-
-class OAuth2IntrospectionConfig(BaseModel):
-    url: str
-    client_id: str
-    client_secret: str
-    send_secret_in_body: bool = False
-
-
-class OAuth2TokenAuthProviderConfig(BaseModel):
-    audience: str = "llama-stack"
-    verify_tls: bool = True
-    tls_cafile: Path | None = None
-    issuer: str | None = Field(default=None, description="The OIDC issuer URL.")
-    claims_mapping: dict[str, str] = Field(
-        default_factory=lambda: {
-            "sub": "roles",
-            "username": "roles",
-            "groups": "teams",
-            "team": "teams",
-            "project": "projects",
-            "tenant": "namespaces",
-            "namespace": "namespaces",
-        },
-    )
-    jwks: OAuth2JWKSConfig | None
-    introspection: OAuth2IntrospectionConfig | None = None
-
-    @classmethod
-    @field_validator("claims_mapping")
-    def validate_claims_mapping(cls, v):
-        for key, value in v.items():
-            if not value:
-                raise ValueError(f"claims_mapping value cannot be empty: {key}")
-        return v
-
-    @model_validator(mode="after")
-    def validate_mode(self) -> Self:
-        if not self.jwks and not self.introspection:
-            raise ValueError("One of jwks or introspection must be configured")
-        if self.jwks and self.introspection:
-            raise ValueError("At present only one of jwks or introspection should be configured")
-        return self
-
-
 class OAuth2TokenAuthProvider(AuthProvider):
     """
     JWT token authentication provider that validates a JWT token and extracts access attributes.
@@ -138,7 +94,7 @@ class OAuth2TokenAuthProvider(AuthProvider):
     This should be the standard authentication provider for most use cases.
     """
 
-    def __init__(self, config: OAuth2TokenAuthProviderConfig):
+    def __init__(self, config: OAuth2TokenAuthConfig):
         self.config = config
         self._jwks_at: float = 0.0
         self._jwks: dict[str, str] = {}
@@ -170,7 +126,7 @@ class OAuth2TokenAuthProvider(AuthProvider):
                 issuer=self.config.issuer,
             )
         except Exception as exc:
-            raise ValueError(f"Invalid JWT token: {token}") from exc
+            raise ValueError("Invalid JWT token") from exc
 
         # There are other standard claims, the most relevant of which is `scope`.
         # We should incorporate these into the access attributes.
@@ -232,6 +188,17 @@ class OAuth2TokenAuthProvider(AuthProvider):
     async def close(self):
         pass
 
+    def get_auth_error_message(self, scope: dict | None = None) -> str:
+        """Return OAuth2-specific authentication error message."""
+        if self.config.issuer:
+            return f"Authentication required. Please provide a valid OAuth2 Bearer token from {self.config.issuer}"
+        elif self.config.introspection:
+            # Extract domain from introspection URL for a cleaner message
+            domain = urlparse(self.config.introspection.url).netloc
+            return f"Authentication required. Please provide a valid OAuth2 Bearer token validated by {domain}"
+        else:
+            return "Authentication required. Please provide a valid OAuth2 Bearer token in the Authorization header"
+
     async def _refresh_jwks(self) -> None:
         """
         Refresh the JWKS cache.
@@ -264,14 +231,10 @@ class OAuth2TokenAuthProvider(AuthProvider):
                     self._jwks_at = time.time()
 
 
-class CustomAuthProviderConfig(BaseModel):
-    endpoint: str
-
-
 class CustomAuthProvider(AuthProvider):
     """Custom authentication provider that uses an external endpoint."""
 
-    def __init__(self, config: CustomAuthProviderConfig):
+    def __init__(self, config: CustomAuthConfig):
         self.config = config
         self._client = None
 
@@ -317,7 +280,7 @@ class CustomAuthProvider(AuthProvider):
                 try:
                     response_data = response.json()
                     auth_response = AuthResponse(**response_data)
-                    return User(auth_response.principal, auth_response.attributes)
+                    return User(principal=auth_response.principal, attributes=auth_response.attributes)
                 except Exception as e:
                     logger.exception("Error parsing authentication response")
                     raise ValueError("Invalid authentication response format") from e
@@ -338,15 +301,85 @@ class CustomAuthProvider(AuthProvider):
             await self._client.aclose()
             self._client = None
 
+    def get_auth_error_message(self, scope: dict | None = None) -> str:
+        """Return custom auth provider-specific authentication error message."""
+        domain = urlparse(self.config.endpoint).netloc
+        if domain:
+            return f"Authentication required. Please provide your API key as a Bearer token (validated by {domain})"
+        else:
+            return "Authentication required. Please provide your API key as a Bearer token in the Authorization header"
+
+
+class GitHubTokenAuthProvider(AuthProvider):
+    """
+    GitHub token authentication provider that validates GitHub access tokens directly.
+
+    This provider accepts GitHub personal access tokens or OAuth tokens and verifies
+    them against the GitHub API to get user information.
+    """
+
+    def __init__(self, config: GitHubTokenAuthConfig):
+        self.config = config
+
+    async def validate_token(self, token: str, scope: dict | None = None) -> User:
+        """Validate a GitHub token by calling the GitHub API."""
+        try:
+            user_info = await self._get_github_user_info(token)
+
+            principal = user_info["user"]["login"]
+
+            github_data = {
+                "login": user_info["user"]["login"],
+                "id": str(user_info["user"]["id"]),
+                "organizations": user_info.get("organizations", []),
+            }
+
+            access_attributes = get_attributes_from_claims(github_data, self.config.claims_mapping)
+
+            return User(
+                principal=principal,
+                attributes=access_attributes,
+            )
+
+        except Exception as e:
+            logger.warning(f"GitHub token validation failed: {e}")
+            raise ValueError("Invalid GitHub token") from e
+
+    async def _get_github_user_info(self, access_token: str) -> dict:
+        """Fetch user info and organizations from GitHub API."""
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "llama-stack",
+        }
+
+        async with httpx.AsyncClient() as client:
+            user_response = await client.get(f"{self.config.github_api_base_url}/user", headers=headers, timeout=10.0)
+            user_response.raise_for_status()
+            user_data = user_response.json()
+
+            return {
+                "user": user_data,
+            }
+
+    async def close(self):
+        """Clean up any resources."""
+        pass
+
+    def get_auth_error_message(self, scope: dict | None = None) -> str:
+        """Return GitHub-specific authentication error message."""
+        return "Authentication required. Please provide a valid GitHub access token (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the Authorization header (Bearer <token>)"
+
 
 def create_auth_provider(config: AuthenticationConfig) -> AuthProvider:
     """Factory function to create the appropriate auth provider."""
-    provider_type = config.provider_type.lower()
+    provider_config = config.provider_config
 
-    if provider_type == "custom":
-        return CustomAuthProvider(CustomAuthProviderConfig.model_validate(config.config))
-    elif provider_type == "oauth2_token":
-        return OAuth2TokenAuthProvider(OAuth2TokenAuthProviderConfig.model_validate(config.config))
+    if isinstance(provider_config, CustomAuthConfig):
+        return CustomAuthProvider(provider_config)
+    elif isinstance(provider_config, OAuth2TokenAuthConfig):
+        return OAuth2TokenAuthProvider(provider_config)
+    elif isinstance(provider_config, GitHubTokenAuthConfig):
+        return GitHubTokenAuthProvider(provider_config)
     else:
-        supported_providers = ", ".join([t.value for t in AuthProviderType])
-        raise ValueError(f"Unsupported auth provider type: {provider_type}. Supported types are: {supported_providers}")
+        raise ValueError(f"Unknown authentication provider config type: {type(provider_config)}")

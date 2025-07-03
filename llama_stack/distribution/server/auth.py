@@ -87,7 +87,11 @@ class AuthenticationMiddleware:
             headers = dict(scope.get("headers", []))
             auth_header = headers.get(b"authorization", b"").decode()
 
-            if not auth_header or not auth_header.startswith("Bearer "):
+            if not auth_header:
+                error_msg = self.auth_provider.get_auth_error_message(scope)
+                return await self._send_auth_error(send, error_msg)
+
+            if not auth_header.startswith("Bearer "):
                 return await self._send_auth_error(send, "Missing or invalid Authorization header")
 
             token = auth_header.split("Bearer ", 1)[1]

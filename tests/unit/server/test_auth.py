@@ -11,10 +11,16 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from llama_stack.distribution.datatypes import AuthenticationConfig
+from llama_stack.distribution.datatypes import (
+    AuthenticationConfig,
+    AuthProviderType,
+    CustomAuthConfig,
+    OAuth2IntrospectionConfig,
+    OAuth2JWKSConfig,
+    OAuth2TokenAuthConfig,
+)
 from llama_stack.distribution.server.auth import AuthenticationMiddleware
 from llama_stack.distribution.server.auth_providers import (
-    AuthProviderType,
     get_attributes_from_claims,
 )
 
@@ -61,24 +67,11 @@ def invalid_token():
 def http_app(mock_auth_endpoint):
     app = FastAPI()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.CUSTOM,
-        config={"endpoint": mock_auth_endpoint},
-    )
-    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
-
-    @app.get("/test")
-    def test_endpoint():
-        return {"message": "Authentication successful"}
-
-    return app
-
-
-@pytest.fixture
-def k8s_app():
-    app = FastAPI()
-    auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.KUBERNETES,
-        config={"api_server_url": "https://kubernetes.default.svc"},
+        provider_config=CustomAuthConfig(
+            type=AuthProviderType.CUSTOM,
+            endpoint=mock_auth_endpoint,
+        ),
+        access_policy=[],
     )
     app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
 
@@ -92,11 +85,6 @@ def k8s_app():
 @pytest.fixture
 def http_client(http_app):
     return TestClient(http_app)
-
-
-@pytest.fixture
-def k8s_client(k8s_app):
-    return TestClient(k8s_app)
 
 
 @pytest.fixture
@@ -117,18 +105,11 @@ def mock_scope():
 def mock_http_middleware(mock_auth_endpoint):
     mock_app = AsyncMock()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.CUSTOM,
-        config={"endpoint": mock_auth_endpoint},
-    )
-    return AuthenticationMiddleware(mock_app, auth_config), mock_app
-
-
-@pytest.fixture
-def mock_k8s_middleware():
-    mock_app = AsyncMock()
-    auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.KUBERNETES,
-        config={"api_server_url": "https://kubernetes.default.svc"},
+        provider_config=CustomAuthConfig(
+            type=AuthProviderType.CUSTOM,
+            endpoint=mock_auth_endpoint,
+        ),
+        access_policy=[],
     )
     return AuthenticationMiddleware(mock_app, auth_config), mock_app
 
@@ -161,7 +142,8 @@ async def mock_post_exception(*args, **kwargs):
 def test_missing_auth_header(http_client):
     response = http_client.get("/test")
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Authentication required" in response.json()["error"]["message"]
+    assert "validated by mock-auth-service" in response.json()["error"]["message"]
 
 
 def test_invalid_auth_header_format(http_client):
@@ -262,14 +244,14 @@ async def test_http_middleware_with_access_attributes(mock_http_middleware, mock
 def oauth2_app():
     app = FastAPI()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.OAUTH2_TOKEN,
-        config={
-            "jwks": {
-                "uri": "http://mock-authz-service/token/introspect",
-                "key_recheck_period": "3600",
-            },
-            "audience": "llama-stack",
-        },
+        provider_config=OAuth2TokenAuthConfig(
+            type=AuthProviderType.OAUTH2_TOKEN,
+            jwks=OAuth2JWKSConfig(
+                uri="http://mock-authz-service/token/introspect",
+            ),
+            audience="llama-stack",
+        ),
+        access_policy=[],
     )
     app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
 
@@ -288,7 +270,8 @@ def oauth2_client(oauth2_app):
 def test_missing_auth_header_oauth2(oauth2_client):
     response = oauth2_client.get("/test")
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Authentication required" in response.json()["error"]["message"]
+    assert "OAuth2 Bearer token" in response.json()["error"]["message"]
 
 
 def test_invalid_auth_header_format_oauth2(oauth2_client):
@@ -358,15 +341,16 @@ async def mock_auth_jwks_response(*args, **kwargs):
 def oauth2_app_with_jwks_token():
     app = FastAPI()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.OAUTH2_TOKEN,
-        config={
-            "jwks": {
-                "uri": "http://mock-authz-service/token/introspect",
-                "key_recheck_period": "3600",
-                "token": "my-jwks-token",
-            },
-            "audience": "llama-stack",
-        },
+        provider_config=OAuth2TokenAuthConfig(
+            type=AuthProviderType.OAUTH2_TOKEN,
+            jwks=OAuth2JWKSConfig(
+                uri="http://mock-authz-service/token/introspect",
+                key_recheck_period=3600,
+                token="my-jwks-token",
+            ),
+            audience="llama-stack",
+        ),
+        access_policy=[],
     )
     app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
 
@@ -449,11 +433,15 @@ def mock_introspection_endpoint():
 def introspection_app(mock_introspection_endpoint):
     app = FastAPI()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.OAUTH2_TOKEN,
-        config={
-            "jwks": None,
-            "introspection": {"url": mock_introspection_endpoint, "client_id": "myclient", "client_secret": "abcdefg"},
-        },
+        provider_config=OAuth2TokenAuthConfig(
+            type=AuthProviderType.OAUTH2_TOKEN,
+            introspection=OAuth2IntrospectionConfig(
+                url=mock_introspection_endpoint,
+                client_id="myclient",
+                client_secret="abcdefg",
+            ),
+        ),
+        access_policy=[],
     )
     app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
 
@@ -468,22 +456,22 @@ def introspection_app(mock_introspection_endpoint):
 def introspection_app_with_custom_mapping(mock_introspection_endpoint):
     app = FastAPI()
     auth_config = AuthenticationConfig(
-        provider_type=AuthProviderType.OAUTH2_TOKEN,
-        config={
-            "jwks": None,
-            "introspection": {
-                "url": mock_introspection_endpoint,
-                "client_id": "myclient",
-                "client_secret": "abcdefg",
-                "send_secret_in_body": "true",
-            },
-            "claims_mapping": {
+        provider_config=OAuth2TokenAuthConfig(
+            type=AuthProviderType.OAUTH2_TOKEN,
+            introspection=OAuth2IntrospectionConfig(
+                url=mock_introspection_endpoint,
+                client_id="myclient",
+                client_secret="abcdefg",
+                send_secret_in_body=True,
+            ),
+            claims_mapping={
                 "sub": "roles",
                 "scope": "roles",
                 "groups": "teams",
                 "aud": "namespaces",
             },
-        },
+        ),
+        access_policy=[],
     )
     app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
 
@@ -507,7 +495,8 @@ def introspection_client_with_custom_mapping(introspection_app_with_custom_mappi
 def test_missing_auth_header_introspection(introspection_client):
     response = introspection_client.get("/test")
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Authentication required" in response.json()["error"]["message"]
+    assert "OAuth2 Bearer token" in response.json()["error"]["message"]
 
 
 def test_invalid_auth_header_format_introspection(introspection_client):
