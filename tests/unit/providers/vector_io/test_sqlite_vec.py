@@ -148,7 +148,7 @@ async def test_chunk_id_conflict(sqlite_vec_index, sample_chunks, embedding_dime
     assert len(chunk_ids) == len(set(chunk_ids)), "Duplicate chunk IDs detected across batches!"
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def sqlite_vec_adapter(sqlite_connection):
     config = type("Config", (object,), {"db_path": ":memory:"})  # Mock config with in-memory database
     adapter = SQLiteVecVectorIOAdapter(config=config, inference_api=None)
