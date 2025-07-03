@@ -234,7 +234,6 @@ def get_distribution_template() -> DistributionTemplate:
 
     default_models = get_model_registry(available_models)
 
-    postgres_store = PostgresSqlStoreConfig.sample_run_config()
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
@@ -243,7 +242,7 @@ def get_distribution_template() -> DistributionTemplate:
         template_path=None,
         providers=providers,
         available_models_by_provider=available_models,
-        additional_pip_packages=postgres_store.pip_packages,
+        additional_pip_packages=PostgresSqlStoreConfig.pip_packages(),
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={

@@ -44,7 +44,6 @@ more details about Faiss in general.
 ```yaml
 kvstore:
   type: sqlite
-  namespace: null
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/faiss_store.db
 
 ```

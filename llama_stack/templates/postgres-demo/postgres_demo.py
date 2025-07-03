@@ -114,7 +114,7 @@ def get_distribution_template() -> DistributionTemplate:
                             provider_id="meta-reference",
                             provider_type="inline::meta-reference",
                             config=dict(
-                                service_name="${env.OTEL_SERVICE_NAME:=}",
+                                service_name="${env.OTEL_SERVICE_NAME:=\u200b}",
                                 sinks="${env.TELEMETRY_SINKS:=console,otel_trace}",
                                 otel_trace_endpoint="${env.OTEL_TRACE_ENDPOINT:=http://localhost:4318/v1/traces}",
                             ),

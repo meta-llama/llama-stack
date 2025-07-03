@@ -23,7 +23,6 @@ providers:
     config:
       kvstore:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/faiss_store.db
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
@@ -49,7 +48,6 @@ providers:
     config:
       persistence_store:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/agents_store.db
       responses_store:
         type: sqlite
