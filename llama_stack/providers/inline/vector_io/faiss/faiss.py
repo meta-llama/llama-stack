@@ -104,7 +104,7 @@ class FaissIndex(EmbeddingIndex):
 
         await self.kvstore.delete(f"{FAISS_INDEX_PREFIX}{self.bank_id}")
 
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None):
         # Add dimension check
         embedding_dim = embeddings.shape[1] if len(embeddings.shape) > 1 else embeddings.shape[0]
         if embedding_dim != self.index.d:
@@ -242,6 +242,7 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
+        params: dict[str, Any] | None = None,
     ) -> None:
         index = self.cache.get(vector_db_id)
         if index is None:

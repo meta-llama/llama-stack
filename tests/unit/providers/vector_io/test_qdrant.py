@@ -24,6 +24,7 @@ from llama_stack.providers.inline.vector_io.qdrant.config import (
 from llama_stack.providers.remote.vector_io.qdrant.qdrant import (
     QdrantVectorIOAdapter,
 )
+from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 # This test is a unit test for the QdrantVectorIOAdapter class. This should only contain
 # tests which are specific to this class. More general (API-level) tests should be placed in
@@ -37,7 +38,9 @@ from llama_stack.providers.remote.vector_io.qdrant.qdrant import (
 
 @pytest.fixture
 def qdrant_config(tmp_path) -> InlineQdrantVectorIOConfig:
-    return InlineQdrantVectorIOConfig(path=os.path.join(tmp_path, "qdrant.db"))
+    kvstore_config = SqliteKVStoreConfig(db_name=os.path.join(tmp_path, "test_kvstore.db"))
+
+    return InlineQdrantVectorIOConfig(path=os.path.join(tmp_path, "qdrant.db"), kvstore=kvstore_config)
 
 
 @pytest.fixture(scope="session")
@@ -70,7 +73,7 @@ def mock_api_service(sample_embeddings):
 
 @pytest_asyncio.fixture
 async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service, loop) -> QdrantVectorIOAdapter:
-    adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service)
+    adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service, files_api=None)
     adapter.vector_db_store = mock_vector_db_store
     await adapter.initialize()
     yield adapter

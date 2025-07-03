@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 import logging
 import uuid
 from typing import Any
@@ -12,25 +13,18 @@ from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
+from llama_stack.apis.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
-    SearchRankingOptions,
     VectorIO,
-    VectorStoreChunkingStrategy,
-    VectorStoreDeleteResponse,
-    VectorStoreFileContentsResponse,
-    VectorStoreFileObject,
-    VectorStoreFileStatus,
-    VectorStoreListFilesResponse,
-    VectorStoreListResponse,
-    VectorStoreObject,
-    VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
+from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
@@ -40,6 +34,14 @@ from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
 log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
+
+# KV store prefixes for OpenAI vector stores
+VERSION = "v3"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:qdrant:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:qdrant:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:qdrant:{VERSION}::"
+
+VECTOR_DBS_PREFIX = f"vector_dbs:qdrant:{VERSION}::"
 
 
 def convert_id(_id: str) -> str:
@@ -57,17 +59,38 @@ class QdrantIndex(EmbeddingIndex):
     def __init__(self, client: AsyncQdrantClient, collection_name: str):
         self.client = client
         self.collection_name = collection_name
+        self._distance_metric = None  # Will be set when collection is created
 
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
 
+        # Extract distance_metric from metadata if provided, default to COSINE
+        distance_metric = "COSINE"  # Default
+        if metadata is not None and "distance_metric" in metadata:
+            distance_metric = metadata["distance_metric"]
+
         if not await self.client.collection_exists(self.collection_name):
+            # Create collection with the specified distance metric
+            distance = getattr(models.Distance, distance_metric, models.Distance.COSINE)
+            self._distance_metric = distance_metric
+
             await self.client.create_collection(
                 self.collection_name,
-                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=models.Distance.COSINE),
+                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=distance),
             )
+        else:
+            # Collection already exists, warn if different distance metric was requested
+            if self._distance_metric is None:
+                # For now, assume COSINE as default since we can't easily extract it from collection info
+                self._distance_metric = "COSINE"
+
+            if self._distance_metric != distance_metric:
+                log.warning(
+                    f"Collection {self.collection_name} was created with distance metric '{self._distance_metric}', "
+                    f"but '{distance_metric}' was requested. Using existing distance metric."
+                )
 
         points = []
         for _i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
@@ -83,6 +106,7 @@ class QdrantIndex(EmbeddingIndex):
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+        # Distance metric is set at collection creation and cannot be changed
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -132,20 +156,117 @@ class QdrantIndex(EmbeddingIndex):
         await self.client.delete_collection(collection_name=self.collection_name)
 
 
-class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
+class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     def __init__(
-        self, config: RemoteQdrantVectorIOConfig | InlineQdrantVectorIOConfig, inference_api: Api.inference
+        self,
+        config: RemoteQdrantVectorIOConfig | InlineQdrantVectorIOConfig,
+        inference_api: Api.inference,
+        files_api: Files | None,
     ) -> None:
         self.config = config
         self.client: AsyncQdrantClient = None
         self.cache = {}
         self.inference_api = inference_api
+        self.files_api = files_api
+        self.vector_db_store = None
+        self.kvstore: KVStore | None = None
+        self.openai_vector_stores: dict[str, dict[str, Any]] = {}
 
     async def initialize(self) -> None:
-        self.client = AsyncQdrantClient(**self.config.model_dump(exclude_none=True))
+        # Create client config excluding kvstore (which is used for metadata storage, not Qdrant client connection)
+        client_config = self.config.model_dump(exclude_none=True, exclude={"kvstore"})
+        self.client = AsyncQdrantClient(**client_config)
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+
+        # Load existing vector DBs from kvstore
+        start_key = VECTOR_DBS_PREFIX
+        end_key = f"{VECTOR_DBS_PREFIX}\xff"
+        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
+
+        for vector_db_data in stored_vector_dbs:
+            vector_db = VectorDB.model_validate_json(vector_db_data)
+            index = VectorDBWithIndex(
+                vector_db,
+                QdrantIndex(self.client, vector_db.identifier),
+                self.inference_api,
+            )
+            self.cache[vector_db.identifier] = index
+
+        # Load OpenAI vector stores as before
+        self.openai_vector_stores = await self._load_openai_vector_stores()
 
     async def shutdown(self) -> None:
         await self.client.close()
+
+    # OpenAI Vector Store Mixin abstract method implementations
+    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Save vector store metadata to kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+
+    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
+        """Load all vector store metadata from kvstore."""
+        assert self.kvstore is not None
+        start_key = OPENAI_VECTOR_STORES_PREFIX
+        end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
+        stored_openai_stores = await self.kvstore.values_in_range(start_key, end_key)
+
+        stores = {}
+        for store_data in stored_openai_stores:
+            store_info = json.loads(store_data)
+            stores[store_info["id"]] = store_info
+        return stores
+
+    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Update vector store metadata in kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+
+    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
+        """Delete vector store metadata from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.delete(key)
+
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
+        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=content_key, value=json.dumps(file_contents))
+
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        """Load vector store file metadata from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        stored_data = await self.kvstore.get(key)
+        return json.loads(stored_data) if stored_data else {}
+
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        """Load vector store file contents from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        stored_data = await self.kvstore.get(key)
+        return json.loads(stored_data) if stored_data else []
+
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
+
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        """Delete vector store file metadata from kvstore."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.delete(key)
+        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.delete(content_key)
 
     async def register_vector_db(
         self,
@@ -185,12 +306,18 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
+        params: dict[str, Any] | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
-        await index.insert_chunks(chunks)
+        # Extract distance_metric from params if provided
+        distance_metric = None
+        if params is not None:
+            distance_metric = params.get("distance_metric")
+
+        await index.insert_chunks(chunks, distance_metric=distance_metric)
 
     async def query_chunks(
         self,
@@ -203,108 +330,3 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
         return await index.query_chunks(query, params)
-
-    async def openai_create_vector_store(
-        self,
-        name: str,
-        file_ids: list[str] | None = None,
-        expires_after: dict[str, Any] | None = None,
-        chunking_strategy: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-        embedding_model: str | None = None,
-        embedding_dimension: int | None = 384,
-        provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_list_vector_stores(
-        self,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-    ) -> VectorStoreListResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_retrieve_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_update_vector_store(
-        self,
-        vector_store_id: str,
-        name: str | None = None,
-        expires_after: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> VectorStoreObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_delete_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreDeleteResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_search_vector_store(
-        self,
-        vector_store_id: str,
-        query: str | list[str],
-        filters: dict[str, Any] | None = None,
-        max_num_results: int | None = 10,
-        ranking_options: SearchRankingOptions | None = None,
-        rewrite_query: bool | None = False,
-        search_mode: str | None = "vector",
-    ) -> VectorStoreSearchResponsePage:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_attach_file_to_vector_store(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-        chunking_strategy: VectorStoreChunkingStrategy | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_list_files_in_vector_store(
-        self,
-        vector_store_id: str,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-        filter: VectorStoreFileStatus | None = None,
-    ) -> VectorStoreListFilesResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_retrieve_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_retrieve_vector_store_file_contents(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileContentsResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_update_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
-
-    async def openai_delete_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
