@@ -226,7 +226,7 @@ server:
 
 ### Authentication Configuration
 
-> **Breaking Change (v0.2.13)**: The authentication configuration structure has changed. The previous format with `provider_type` and `config` fields has been replaced with a unified `provider_config` field that includes the `type` field. Update your configuration files accordingly.
+> **Breaking Change (v0.2.14)**: The authentication configuration structure has changed. The previous format with `provider_type` and `config` fields has been replaced with a unified `provider_config` field that includes the `type` field. Update your configuration files accordingly.
 
 The `auth` section configures authentication for the server. When configured, all API requests must include a valid Bearer token in the Authorization header:
 
