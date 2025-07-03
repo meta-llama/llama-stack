@@ -7,6 +7,7 @@
 import argparse
 
 from .download import Download
+from .migrate_xdg import MigrateXDG
 from .model import ModelParser
 from .stack import StackParser
 from .stack.utils import print_subcommand_description
@@ -34,6 +35,7 @@ class LlamaCLIParser:
         StackParser.create(subparsers)
         Download.create(subparsers)
         VerifyDownload.create(subparsers)
+        MigrateXDG.create(subparsers)
 
         print_subcommand_description(self.parser, subparsers)
 
