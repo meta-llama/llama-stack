@@ -5,6 +5,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: gp2
   resources:
     requests:
       storage: 10Gi
@@ -23,6 +24,8 @@ spec:
       labels:
         app.kubernetes.io/name: postgres
     spec:
+      nodeSelector:
+        eks.amazonaws.com/nodegroup: cpu
       containers:
       - name: postgres
         image: postgres:15
