@@ -69,9 +69,10 @@ class TavilySearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsR
 
     async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
         api_key = self._get_api_key()
-
-        timeout = httpx.Timeout(timeout=self.config.timeout)
-
+        
+        # Configure timeout for external API calls using config values
+        timeout = httpx.Timeout(timeout=self.config.timeout, connect=self.config.connect_timeout)
+        
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 "https://api.tavily.com/search",
