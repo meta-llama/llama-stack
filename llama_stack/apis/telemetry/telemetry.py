@@ -101,7 +101,7 @@ class MetricInResponse(BaseModel):
 
 # This is a short term solution to allow inference API to return metrics
 # The ideal way to do this is to have a way for all response types to include metrics
-# and all metric events logged to the telemetry API to be inlcuded with the response
+# and all metric events logged to the telemetry API to be included with the response
 # To do this, we will need to augment all response types with a metrics field.
 # We have hit a blocker from stainless SDK that prevents us from doing this.
 # The blocker is that if we were to augment the response types that have a data field
