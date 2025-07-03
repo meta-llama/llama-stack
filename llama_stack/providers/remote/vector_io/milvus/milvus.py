@@ -425,13 +425,12 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
                 return
 
-            query_filter = f"store_id == '{store_id}' AND file_id == '{file_id}'"
+            query_filter = f"store_file_id in ['{store_id}_{file_id}']"
             await asyncio.to_thread(
                 self.client.delete,
                 collection_name="openai_vector_store_files",
                 filter=query_filter,
             )
-
             if await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files_contents"):
                 await asyncio.to_thread(
                     self.client.delete,
