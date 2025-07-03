@@ -6,6 +6,7 @@
 
 
 import pytest
+from pydantic import ValidationError
 
 from llama_stack.apis.providers import ProviderInfo
 from llama_stack.distribution.datatypes import Provider, StackRunConfig
@@ -31,6 +32,23 @@ class TestProviderImpl:
                         provider_id="test_provider_no_metrics_url",
                         provider_type="test_type2",
                         config={"url": "http://localhost:8080"},
+                    ),
+                ]
+            },
+        )
+        return ProviderImplConfig(run_config=run_config)
+
+    @pytest.fixture
+    def mock_config_malformed_metrics(self):
+        """Create a mock configuration with invalid metrics URL for testing."""
+        run_config = StackRunConfig(
+            image_name="test_image",
+            providers={
+                "inference": [
+                    Provider(
+                        provider_id="test_provider_malformed_metrics",
+                        provider_type="test_type3",
+                        config={"url": "http://localhost:8000", "metrics": "abcde-llama-stack"},
                     ),
                 ]
             },
@@ -111,3 +129,11 @@ class TestProviderImpl:
 
         with pytest.raises(ValueError, match="Provider nonexistent not found"):
             await provider_impl.inspect_provider("nonexistent")
+
+    @pytest.mark.asyncio
+    async def test_inspect_provider_malformed_metrics(self, mock_config_malformed_metrics, mock_deps):
+        """Test inspect_provider with invalid metrics URL raises validation error."""
+        provider_impl = ProviderImpl(mock_config_malformed_metrics, mock_deps)
+
+        with pytest.raises(ValidationError):
+            await provider_impl.inspect_provider("test_provider_malformed_metrics")
