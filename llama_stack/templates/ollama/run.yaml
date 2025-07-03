@@ -140,6 +140,8 @@ benchmarks: []
 tool_groups:
 - toolgroup_id: builtin::websearch
   provider_id: tavily-search
+- toolgroup_id: builtin::websearch_brave
+  provider_id: brave-search
 - toolgroup_id: builtin::rag
   provider_id: rag-runtime
 - toolgroup_id: builtin::wolfram_alpha
