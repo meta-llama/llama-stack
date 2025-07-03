@@ -9,6 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
+import logging
 import os
 import ssl
 import sys
@@ -31,6 +32,7 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.distribution.access_control.access_control import AccessDeniedError
 from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
@@ -116,7 +118,7 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
         return HTTPException(status_code=400, detail=str(exc))
-    elif isinstance(exc, PermissionError):
+    elif isinstance(exc, PermissionError | AccessDeniedError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, asyncio.TimeoutError | TimeoutError):
         return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
@@ -236,7 +238,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                         result.url = route
                     return result
             except Exception as e:
-                logger.exception(f"Error executing endpoint {route=} {method=}")
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(f"Error executing endpoint {route=} {method=}")
+                else:
+                    logger.error(f"Error executing endpoint {route=} {method=}: {str(e)}")
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
