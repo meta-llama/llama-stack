@@ -57,7 +57,7 @@ class MilvusIndex(EmbeddingIndex):
         self, client: MilvusClient, collection_name: str, consistency_level="Strong", kvstore: KVStore | None = None
     ):
         self.client = client
-        self.collection_name = collection_name.replace("-", "_")
+        self.collection_name = sanitize_collection_name(collection_name)
         self.consistency_level = consistency_level
         self.kvstore = kvstore
 
