@@ -105,7 +105,17 @@ def is_action_allowed(
     return False
 
 
-def build_access_denied_message(action: str | None, resource: ProtectedResource | None, user: User | None) -> str:
+class AccessDeniedError(RuntimeError):
+    def __init__(self, action: str | None = None, resource: ProtectedResource | None = None, user: User | None = None):
+        self.action = action
+        self.resource = resource
+        self.user = user
+
+        message = _build_access_denied_message(action, resource, user)
+        super().__init__(message)
+
+
+def _build_access_denied_message(action: str | None, resource: ProtectedResource | None, user: User | None) -> str:
     """Build detailed error message for access denied scenarios."""
     if action and resource and user:
         resource_info = f"{resource.type}::{resource.identifier}"
@@ -119,13 +129,3 @@ def build_access_denied_message(action: str | None, resource: ProtectedResource 
         message = "Insufficient permissions"
 
     return message
-
-
-class AccessDeniedError(RuntimeError):
-    def __init__(self, action: str | None = None, resource: ProtectedResource | None = None, user: User | None = None):
-        self.action = action
-        self.resource = resource
-        self.user = user
-
-        message = build_access_denied_message(action, resource, user)
-        super().__init__(message)

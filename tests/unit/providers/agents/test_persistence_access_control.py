@@ -9,6 +9,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 import pytest
+import pytest_asyncio
 
 from llama_stack.apis.agents import Turn
 from llama_stack.apis.inference import CompletionMessage, StopReason
@@ -16,7 +17,7 @@ from llama_stack.distribution.datatypes import User
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentPersistence, AgentSessionInfo
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_setup(sqlite_kvstore):
     agent_persistence = AgentPersistence(agent_id="test_agent", kvstore=sqlite_kvstore, policy={})
     yield agent_persistence
