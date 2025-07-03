@@ -72,7 +72,7 @@ def test_authenticated_endpoint_with_invalid_bearer_format(github_token_client):
     """Test accessing protected endpoint with invalid bearer format"""
     response = github_token_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Invalid Authorization header format" in response.json()["error"]["message"]
 
 
 @patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")

@@ -149,7 +149,7 @@ def test_missing_auth_header(http_client):
 def test_invalid_auth_header_format(http_client):
     response = http_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Invalid Authorization header format" in response.json()["error"]["message"]
 
 
 @patch("httpx.AsyncClient.post", new=mock_post_success)
@@ -277,7 +277,7 @@ def test_missing_auth_header_oauth2(oauth2_client):
 def test_invalid_auth_header_format_oauth2(oauth2_client):
     response = oauth2_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Invalid Authorization header format" in response.json()["error"]["message"]
 
 
 async def mock_jwks_response(*args, **kwargs):
@@ -502,7 +502,7 @@ def test_missing_auth_header_introspection(introspection_client):
 def test_invalid_auth_header_format_introspection(introspection_client):
     response = introspection_client.get("/test", headers={"Authorization": "InvalidFormat token123"})
     assert response.status_code == 401
-    assert "Missing or invalid Authorization header" in response.json()["error"]["message"]
+    assert "Invalid Authorization header format" in response.json()["error"]["message"]
 
 
 async def mock_introspection_active(*args, **kwargs):
