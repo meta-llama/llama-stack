@@ -202,8 +202,14 @@ install_local_package() {
   fi
 
   if [ "$USE_COPY_NOT_MOUNT" = "true" ]; then
+    # Docker COPY needs relative path from build context
+    # we need to copy them to the build context first
+    local basename=$(basename "$dir")
+    local temp_name="${basename}-tmp-$$"
+    echo "Copying $dir to build context as $temp_name..." >&2
+    cp -r "$dir" "$BUILD_CONTEXT_DIR/$temp_name"
     add_to_container << EOF
-COPY $dir $mount_point
+COPY $temp_name $mount_point
 EOF
   fi
   add_to_container << EOF
@@ -327,8 +333,9 @@ $CONTAINER_BINARY build \
   -f "$TEMP_DIR/Containerfile" \
   "$BUILD_CONTEXT_DIR"
 
-# clean up tmp/configs
+# clean up tmp/configs and any temporary copied directories
 rm -f "$BUILD_CONTEXT_DIR/run.yaml"
+rm -rf "$BUILD_CONTEXT_DIR"/*-tmp-*
 set +x
 
 echo "Success!"
