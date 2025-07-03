@@ -147,7 +147,7 @@ class OpenAIVectorStoreMixin(ABC):
         provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         """Creates a vector store."""
-        store_id = f"vs_{str(uuid.uuid4())}"
+        store_id = name or str(uuid.uuid4())
         created_at = int(time.time())
 
         if provider_id is None:
@@ -186,7 +186,7 @@ class OpenAIVectorStoreMixin(ABC):
             "id": store_id,
             "object": "vector_store",
             "created_at": created_at,
-            "name": name,
+            "name": store_id,
             "usage_bytes": 0,
             "file_counts": file_counts.model_dump(),
             "status": status,
