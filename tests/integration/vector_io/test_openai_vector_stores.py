@@ -31,7 +31,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
 def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
-        if p.provider_type in ["inline::faiss", "inline::sqlite-vec"]:
+        if p.provider_type in ["inline::faiss", "inline::sqlite-vec", "inline::milvus"]:
             return
 
     pytest.skip("OpenAI vector stores are not supported by any provider")
@@ -524,7 +524,6 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
     file_ids = valid_file_ids + [failed_file_id]
     num_failed = len(file_ids) - len(valid_file_ids)
 
-    # Create a vector store
     vector_store = compat_client.vector_stores.create(
         name="test_store",
         file_ids=file_ids,
