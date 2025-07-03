@@ -244,8 +244,7 @@ class GitHubTokenAuthConfig(BaseModel):
     )
     claims_mapping: dict[str, str] = Field(
         default_factory=lambda: {
-            "login": "username",
-            "id": "user_id",
+            "login": "roles",
             "organizations": "teams",
         },
         description="Mapping from GitHub user fields to access attributes",

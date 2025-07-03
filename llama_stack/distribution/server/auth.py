@@ -92,7 +92,7 @@ class AuthenticationMiddleware:
                 return await self._send_auth_error(send, error_msg)
 
             if not auth_header.startswith("Bearer "):
-                return await self._send_auth_error(send, "Missing or invalid Authorization header")
+                return await self._send_auth_error(send, "Invalid Authorization header format")
 
             token = auth_header.split("Bearer ", 1)[1]
 

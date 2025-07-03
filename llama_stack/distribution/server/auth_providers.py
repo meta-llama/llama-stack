@@ -322,7 +322,10 @@ class GitHubTokenAuthProvider(AuthProvider):
         self.config = config
 
     async def validate_token(self, token: str, scope: dict | None = None) -> User:
-        """Validate a GitHub token by calling the GitHub API."""
+        """Validate a GitHub token by calling the GitHub API.
+        
+        This validates tokens issued by GitHub (personal access tokens or OAuth tokens).
+        """
         try:
             user_info = await self._get_github_user_info(token)
 
