@@ -44,8 +44,7 @@ async def client_wrapper(endpoint: str, headers: dict[str, str]) -> AsyncGenerat
             if err.response.status_code == 401:
                 raise AuthenticationRequiredError(exc) from exc
     except* McpError:
-        logger.debug("failed to connect via streamable http, falling back to sse")
-    # fallback to sse
+        logger.warning("failed to connect via streamable http, falling back to sse")
     try:
         async with sse_client(endpoint, headers=headers) as streams:
             async with ClientSession(*streams) as session:
@@ -65,7 +64,7 @@ async def client_wrapper(endpoint: str, headers: dict[str, str]) -> AsyncGenerat
 async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefsResponse:
     tools = []
     async with client_wrapper(endpoint, headers) as session:
-        logger.info("listing mcp tools...")
+        logger.debug("listing mcp tools")
         tools_result = await session.list_tools()
         for tool in tools_result.tools:
             parameters = []
@@ -94,7 +93,7 @@ async def invoke_mcp_tool(
     endpoint: str, headers: dict[str, str], tool_name: str, kwargs: dict[str, Any]
 ) -> ToolInvocationResult:
     async with client_wrapper(endpoint, headers) as session:
-        logger.info("invoking mcp tool")
+        logger.debug("invoking mcp tool")
         result = await session.call_tool(tool_name, kwargs)
 
         content: list[InterleavedContentItem] = []
