@@ -70,11 +70,44 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
                         default_value = field.default_factory()
                         # HACK ALERT:
                         # If the default value contains a path that looks like it came from RUNTIME_BASE_DIR,
-                        # replace it with a generic ~/.llama/ path for documentation
-                        if isinstance(default_value, str) and "/.llama/" in default_value:
-                            if ".llama/" in default_value:
+                        # replace it with a generic XDG-compliant path for documentation
+                        if isinstance(default_value, str):
+                            # Handle legacy .llama/ paths
+                            if "/.llama/" in default_value:
                                 path_part = default_value.split(".llama/")[-1]
-                                default_value = f"~/.llama/{path_part}"
+                                # Use appropriate XDG directory based on path content
+                                if path_part.startswith("runtime/"):
+                                    default_value = f"${{env.XDG_STATE_HOME:-~/.local/state}}/llama-stack/{path_part}"
+                                else:
+                                    default_value = f"${{env.XDG_DATA_HOME:-~/.local/share}}/llama-stack/{path_part}"
+                            # Handle XDG state paths (runtime data)
+                            elif "/llama-stack/runtime/" in default_value:
+                                path_part = default_value.split("/llama-stack/runtime/")[-1]
+                                default_value = (
+                                    f"${{env.XDG_STATE_HOME:-~/.local/state}}/llama-stack/runtime/{path_part}"
+                                )
+                            # Handle XDG data paths
+                            elif "/llama-stack/data/" in default_value or "/llama-stack/checkpoints/" in default_value:
+                                if "/llama-stack/data/" in default_value:
+                                    path_part = default_value.split("/llama-stack/data/")[-1]
+                                    default_value = (
+                                        f"${{env.XDG_DATA_HOME:-~/.local/share}}/llama-stack/data/{path_part}"
+                                    )
+                                else:
+                                    path_part = default_value.split("/llama-stack/checkpoints/")[-1]
+                                    default_value = (
+                                        f"${{env.XDG_DATA_HOME:-~/.local/share}}/llama-stack/checkpoints/{path_part}"
+                                    )
+                            # Handle XDG config paths
+                            elif "/llama-stack/" in default_value and (
+                                "/config/" in default_value or "/distributions/" in default_value
+                            ):
+                                if "/config/" in default_value:
+                                    path_part = default_value.split("/llama-stack/")[-1]
+                                    default_value = f"${{env.XDG_CONFIG_HOME:-~/.config}}/llama-stack/{path_part}"
+                                else:
+                                    path_part = default_value.split("/llama-stack/")[-1]
+                                    default_value = f"${{env.XDG_CONFIG_HOME:-~/.config}}/llama-stack/{path_part}"
                     except Exception:
                         default_value = ""
                 elif field.default is None:
@@ -201,7 +234,9 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
             if sample_config_func is not None:
                 sig = inspect.signature(sample_config_func)
                 if "__distro_dir__" in sig.parameters:
-                    sample_config = sample_config_func(__distro_dir__="~/.llama/dummy")
+                    sample_config = sample_config_func(
+                        __distro_dir__="${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy"
+                    )
                 else:
                     sample_config = sample_config_func()
 

@@ -17,10 +17,10 @@ Please refer to the remote provider documentation.
 ## Sample Configuration
 
 ```yaml
-db_path: ${env.MILVUS_DB_PATH:=~/.llama/dummy}/milvus.db
+db_path: ${env.MILVUS_DB_PATH:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/milvus.db
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/milvus_registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/milvus_registry.db
 
 ```
 

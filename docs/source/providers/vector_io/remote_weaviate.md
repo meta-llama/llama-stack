@@ -38,7 +38,7 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 ```yaml
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/weaviate_registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/weaviate_registry.db
 
 ```
 
