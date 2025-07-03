@@ -7,11 +7,15 @@
 import glob
 import importlib
 import os
+from pathlib import Path
 from typing import Any
 
 import yaml
 from pydantic import BaseModel
 
+from llama_stack.distribution.datatypes import Provider
+from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.env import replace_env_vars
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     AdapterSpec,
@@ -188,3 +192,22 @@ def get_provider_registry(
                         logger.error(f"Failed to load provider spec from {spec_path}: {e}")
                         raise e
     return ret
+
+
+def resolve_config(provider: Provider, provider_spec: ProviderSpec | None = None, api: str | None = None):
+    if not provider_spec:
+        if not api:
+            raise ValueError("In order to get provider spec, must have API")
+        registry = get_provider_registry()
+        provider_spec = registry[Api(api)][provider.provider_type]
+    config_type = instantiate_class_type(provider_spec.config_class)
+    try:
+        if provider.config and isinstance(provider.config, str):
+            with open(Path(provider.config).expanduser().resolve()) as f:
+                config: dict[str, Any] = yaml.safe_load(f)
+                replaced = replace_env_vars(config)
+                return config_type(**replaced)
+        elif provider.config is not None:
+            return config_type(**provider.config)
+    except Exception as e:
+        raise ValueError("Error getting provider config") from e

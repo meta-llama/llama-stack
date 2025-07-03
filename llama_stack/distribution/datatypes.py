@@ -150,7 +150,10 @@ class Provider(BaseModel):
     # when the provider is enabled via a conditional environment variable
     provider_id: str | None
     provider_type: str
-    config: dict[str, Any]
+    config: str | dict[str, Any] | None = Field(
+        default=None,
+        description="Provider configuration dictionary or path to provider configuration file",
+    )
 
 
 class LoggingConfig(BaseModel):

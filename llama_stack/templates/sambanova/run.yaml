@@ -40,38 +40,22 @@ providers:
   safety:
   - provider_id: sambanova
     provider_type: remote::sambanova
-    config:
-      url: https://api.sambanova.ai/v1
-      api_key: ${env.SAMBANOVA_API_KEY}
+    config: ~/.llama/distributions/sambanova/provider_configs/safety/sambanova.yaml
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      persistence_store:
-        type: sqlite
-        namespace: null
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/agents_store.db
-      responses_store:
-        type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/responses_store.db
+    config: ~/.llama/distributions/sambanova/provider_configs/agents/meta-reference.yaml
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
-    config:
-      service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
-      sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
-      sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/trace_store.db
+    config: ~/.llama/distributions/sambanova/provider_configs/telemetry/meta-reference.yaml
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
-    config:
-      api_key: ${env.BRAVE_SEARCH_API_KEY:=}
-      max_results: 3
+    config: ~/.llama/distributions/sambanova/provider_configs/tool_runtime/brave-search.yaml
   - provider_id: tavily-search
     provider_type: remote::tavily-search
-    config:
-      api_key: ${env.TAVILY_SEARCH_API_KEY:=}
-      max_results: 3
+    config: ~/.llama/distributions/sambanova/provider_configs/tool_runtime/tavily-search.yaml
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
@@ -80,8 +64,7 @@ providers:
     config: {}
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
-    config:
-      api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
+    config: ~/.llama/distributions/sambanova/provider_configs/tool_runtime/wolfram-alpha.yaml
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/registry.db

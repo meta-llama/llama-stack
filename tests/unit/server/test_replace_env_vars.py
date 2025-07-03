@@ -7,7 +7,7 @@
 import os
 import unittest
 
-from llama_stack.distribution.stack import replace_env_vars
+from llama_stack.distribution.utils.env import replace_env_vars
 
 
 class TestReplaceEnvVars(unittest.TestCase):

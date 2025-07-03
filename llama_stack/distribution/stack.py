@@ -5,8 +5,6 @@
 # the root directory of this source tree.
 
 import importlib.resources
-import os
-import re
 import tempfile
 from typing import Any
 
@@ -40,6 +38,7 @@ from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.distribution.utils.env import replace_env_vars
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 
@@ -121,136 +120,6 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
             logger.debug(
                 f"{rsrc.capitalize()}: {obj.identifier} served by {obj.provider_id}",
             )
-
-
-class EnvVarError(Exception):
-    def __init__(self, var_name: str, path: str = ""):
-        self.var_name = var_name
-        self.path = path
-        super().__init__(
-            f"Environment variable '{var_name}' not set or empty {f'at {path}' if path else ''}. "
-            f"Use ${{env.{var_name}:=default_value}} to provide a default value, "
-            f"${{env.{var_name}:+value_if_set}} to make the field conditional, "
-            f"or ensure the environment variable is set."
-        )
-
-
-def replace_env_vars(config: Any, path: str = "") -> Any:
-    if isinstance(config, dict):
-        result = {}
-        for k, v in config.items():
-            try:
-                result[k] = replace_env_vars(v, f"{path}.{k}" if path else k)
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
-
-    elif isinstance(config, list):
-        result = []
-        for i, v in enumerate(config):
-            try:
-                result.append(replace_env_vars(v, f"{path}[{i}]"))
-            except EnvVarError as e:
-                raise EnvVarError(e.var_name, e.path) from None
-        return result
-
-    elif isinstance(config, str):
-        # Pattern supports bash-like syntax: := for default and :+ for conditional and a optional value
-        pattern = r"\${env\.([A-Z0-9_]+)(?::([=+])([^}]*))?}"
-
-        def get_env_var(match: re.Match):
-            env_var = match.group(1)
-            operator = match.group(2)  # '=' for default, '+' for conditional
-            value_expr = match.group(3)
-
-            env_value = os.environ.get(env_var)
-
-            if operator == "=":  # Default value syntax: ${env.FOO:=default}
-                # If the env is set like ${env.FOO:=default} then use the env value when set
-                if env_value:
-                    value = env_value
-                else:
-                    # If the env is not set, look for a default value
-                    # value_expr returns empty string (not None) when not matched
-                    # This means ${env.FOO:=} and it's accepted and returns empty string - just like bash
-                    if value_expr == "":
-                        return ""
-                    else:
-                        value = value_expr
-
-            elif operator == "+":  # Conditional value syntax: ${env.FOO:+value_if_set}
-                # If the env is set like ${env.FOO:+value_if_set} then use the value_if_set
-                if env_value:
-                    if value_expr:
-                        value = value_expr
-                    # This means ${env.FOO:+}
-                    else:
-                        # Just like bash, this doesn't care whether the env is set or not and applies
-                        # the value, in this case the empty string
-                        return ""
-                else:
-                    # Just like bash, this doesn't care whether the env is set or not, since it's not set
-                    # we return an empty string
-                    value = ""
-            else:  # No operator case: ${env.FOO}
-                if not env_value:
-                    raise EnvVarError(env_var, path)
-                value = env_value
-
-            # expand "~" from the values
-            return os.path.expanduser(value)
-
-        try:
-            result = re.sub(pattern, get_env_var, config)
-            return _convert_string_to_proper_type(result)
-        except EnvVarError as e:
-            raise EnvVarError(e.var_name, e.path) from None
-
-    return config
-
-
-def _convert_string_to_proper_type(value: str) -> Any:
-    # This might be tricky depending on what the config type is, if  'str | None' we are
-    # good, if 'str' we need to keep the empty string... 'str | None' is more common and
-    # providers config should be typed this way.
-    # TODO: we could try to load the config class and see if the config has a field with type 'str | None'
-    # and then convert the empty string to None or not
-    if value == "":
-        return None
-
-    lowered = value.lower()
-    if lowered == "true":
-        return True
-    elif lowered == "false":
-        return False
-
-    try:
-        return int(value)
-    except ValueError:
-        pass
-
-    try:
-        return float(value)
-    except ValueError:
-        pass
-
-    return value
-
-
-def validate_env_pair(env_pair: str) -> tuple[str, str]:
-    """Validate and split an environment variable key-value pair."""
-    try:
-        key, value = env_pair.split("=", 1)
-        key = key.strip()
-        if not key:
-            raise ValueError(f"Empty key in environment variable pair: {env_pair}")
-        if not all(c.isalnum() or c == "_" for c in key):
-            raise ValueError(f"Key must contain only alphanumeric characters and underscores: {key}")
-        return key, value
-    except ValueError as e:
-        raise ValueError(
-            f"Invalid environment variable format '{env_pair}': {str(e)}. Expected format: KEY=value"
-        ) from e
 
 
 def add_internal_implementations(impls: dict[Api, Any], run_config: StackRunConfig) -> None:

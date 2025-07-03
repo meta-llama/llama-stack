@@ -34,9 +34,8 @@ from llama_stack.distribution.datatypes import (
     RoutingTableProviderSpec,
     StackRunConfig,
 )
-from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.distribution import builtin_automatically_routed_apis, resolve_config
 from llama_stack.distribution.store import DistributionRegistry
-from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     Api,
@@ -156,7 +155,7 @@ def specs_for_autorouted_apis(apis_to_serve: list[str] | set[str]) -> dict[str, 
             "__builtin__": ProviderWithSpec(
                 provider_id="__routing_table__",
                 provider_type="__routing_table__",
-                config={},
+                config=None,
                 spec=RoutingTableProviderSpec(
                     api=info.routing_table_api,
                     router_api=info.router_api,
@@ -171,7 +170,7 @@ def specs_for_autorouted_apis(apis_to_serve: list[str] | set[str]) -> dict[str, 
             "__builtin__": ProviderWithSpec(
                 provider_id="__autorouted__",
                 provider_type="__autorouted__",
-                config={},
+                config=None,
                 spec=AutoRoutedProviderSpec(
                     api=info.router_api,
                     module="llama_stack.distribution.routers",
@@ -329,8 +328,7 @@ async def instantiate_provider(
     module = importlib.import_module(provider_spec.module)
     args = []
     if isinstance(provider_spec, RemoteProviderSpec):
-        config_type = instantiate_class_type(provider_spec.config_class)
-        config = config_type(**provider.config)
+        config = resolve_config(provider=provider, provider_spec=provider_spec)
 
         method = "get_adapter_impl"
         args = [config, deps]
@@ -348,8 +346,7 @@ async def instantiate_provider(
     else:
         method = "get_provider_impl"
 
-        config_type = instantiate_class_type(provider_spec.config_class)
-        config = config_type(**provider.config)
+        config = resolve_config(provider=provider, provider_spec=provider_spec)
         args = [config, deps]
         if "policy" in inspect.signature(getattr(module, method)).parameters:
             args.append(policy)
