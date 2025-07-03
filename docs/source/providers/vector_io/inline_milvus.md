@@ -19,7 +19,6 @@ Please refer to the remote provider documentation.
 db_path: ${env.MILVUS_DB_PATH:=~/.llama/dummy}/milvus.db
 kvstore:
   type: sqlite
-  namespace: null
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/milvus_registry.db
 
 ```
