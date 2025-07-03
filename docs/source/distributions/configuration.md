@@ -77,10 +77,10 @@ Next up is the most critical part: the set of providers that the stack will use 
 ```yaml
 providers:
   inference:
-  # provider_id is a string you can choose freely
+    # provider_id is a string you can choose freely
   - provider_id: ollama
     # provider_type is a string that specifies the type of provider.
-    # in this case, the provider for inference is ollama and it is run remotely (outside of the distribution)
+    # in this case, the provider for inference is ollama and it runs remotely (outside of the distribution)
     provider_type: remote::ollama
     # config is a dictionary that contains the configuration for the provider.
     # in this case, the configuration is the url of the ollama server
@@ -88,7 +88,7 @@ providers:
       url: ${env.OLLAMA_URL:=http://localhost:11434}
 ```
 A few things to note:
-- A _provider instance_ is identified with an (id, type, configuration) triplet.
+- A _provider instance_ is identified with an (id, type, config) triplet.
 - The id is a string you can choose freely.
 - You can instantiate any number of provider instances of the same type.
 - The configuration dictionary is provider-specific.
@@ -187,7 +187,7 @@ The environment variable substitution system is type-safe:
 
 ## Resources
 
-Finally, let's look at the `models` section:
+Let's look at the `models` section:
 
 ```yaml
 models:
@@ -195,8 +195,9 @@ models:
   model_id: ${env.INFERENCE_MODEL}
   provider_id: ollama
   provider_model_id: null
+  model_type: llm
 ```
-A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to always register models before using them, some Stack servers may come up a list of "already known and available" models.
+A Model is an instance of a "Resource" (see [Concepts](../concepts/index)) and is associated with a specific inference provider (in this case, the provider with identifier `ollama`). This is an instance of a "pre-registered" model. While we always encourage the clients to register models before using them, some Stack servers may come up a list of "already known and available" models.
 
 What's with the `provider_model_id` field? This is an identifier for the model inside the provider's model catalog. Contrast it with `model_id` which is the identifier for the same model for Llama Stack's purposes. For example, you may want to name "llama3.2:vision-11b" as "image_captioning_model" when you use it in your Stack interactions. When omitted, the server will set `provider_model_id` to be the same as `model_id`.
 

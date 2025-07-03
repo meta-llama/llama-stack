@@ -15,7 +15,6 @@ Meta's reference implementation of evaluation tasks with support for multiple la
 ```yaml
 kvstore:
   type: sqlite
-  namespace: null
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/meta_reference_eval.db
 
 ```

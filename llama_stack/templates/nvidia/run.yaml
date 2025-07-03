@@ -25,7 +25,6 @@ providers:
     config:
       kvstore:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/faiss_store.db
   safety:
   - provider_id: nvidia
@@ -39,7 +38,6 @@ providers:
     config:
       persistence_store:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/agents_store.db
       responses_store:
         type: sqlite

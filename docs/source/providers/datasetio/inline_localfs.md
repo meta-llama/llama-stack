@@ -15,7 +15,6 @@ Local filesystem-based dataset I/O provider for reading and writing datasets to 
 ```yaml
 kvstore:
   type: sqlite
-  namespace: null
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/localfs_datasetio.db
 
 ```

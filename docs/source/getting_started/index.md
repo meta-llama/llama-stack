@@ -8,6 +8,8 @@ environments. You can build and test using a local server first and deploy to a 
 In this guide, we'll walk through how to build a RAG application locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/inference/index) for a Llama Model.
 
+**💡 Notebook Version:** You can also follow this quickstart guide in a Jupyter notebook format: [quick_start.ipynb](https://github.com/meta-llama/llama-stack/blob/main/docs/quick_start.ipynb)
+
 #### Step 1: Install and setup
 1. Install [uv](https://docs.astral.sh/uv/)
 2. Run inference on a Llama model with [Ollama](https://ollama.com/download)
