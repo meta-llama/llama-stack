@@ -8,6 +8,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 from typing import Any
 
 from numpy.typing import NDArray
@@ -41,6 +42,14 @@ VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
+
+
+def sanitize_collection_name(name: str) -> str:
+    """
+    Sanitize collection name to ensure it only contains numbers, letters, and underscores.
+    Any other characters are replaced with underscores.
+    """
+    return re.sub(r"[^a-zA-Z0-9_]", "_", name)
 
 
 class MilvusIndex(EmbeddingIndex):
