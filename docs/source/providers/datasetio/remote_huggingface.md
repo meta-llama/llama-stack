@@ -15,7 +15,6 @@ HuggingFace datasets provider for accessing and managing datasets from the Huggi
 ```yaml
 kvstore:
   type: sqlite
-  namespace: null
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/huggingface_datasetio.db
 
 ```

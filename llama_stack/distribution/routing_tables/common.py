@@ -175,8 +175,9 @@ class CommonRoutingTableImpl(RoutingTable):
         return obj
 
     async def unregister_object(self, obj: RoutableObjectWithProvider) -> None:
-        if not is_action_allowed(self.policy, "delete", obj, get_authenticated_user()):
-            raise AccessDeniedError()
+        user = get_authenticated_user()
+        if not is_action_allowed(self.policy, "delete", obj, user):
+            raise AccessDeniedError("delete", obj, user)
         await self.dist_registry.delete(obj.type, obj.identifier)
         await unregister_object_from_provider(obj, self.impls_by_provider_id[obj.provider_id])
 
@@ -193,7 +194,7 @@ class CommonRoutingTableImpl(RoutingTable):
         # If object supports access control but no attributes set, use creator's attributes
         creator = get_authenticated_user()
         if not is_action_allowed(self.policy, "create", obj, creator):
-            raise AccessDeniedError()
+            raise AccessDeniedError("create", obj, creator)
         if creator:
             obj.owner = creator
             logger.info(f"Setting owner for {obj.type} '{obj.identifier}' to {obj.owner.principal}")

@@ -53,7 +53,7 @@ class AgentPersistence:
             identifier=name,  # should this be qualified in any way?
         )
         if not is_action_allowed(self.policy, "create", session_info, user):
-            raise AccessDeniedError()
+            raise AccessDeniedError("create", session_info, user)
 
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}",
