@@ -3940,6 +3940,16 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ToolParamDefinition'
+        annotations:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
       additionalProperties: false
       required:
         - tool_name
@@ -4629,6 +4639,16 @@ components:
           items:
             $ref: '#/components/schemas/ToolParameter'
         metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        annotations:
           type: object
           additionalProperties:
             oneOf:
@@ -5990,6 +6010,16 @@ components:
                 type: string
               description:
                 type: string
+              annotations:
+                type: object
+                additionalProperties:
+                  oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
             additionalProperties: false
             required:
               - input_schema
@@ -7759,6 +7789,16 @@ components:
           items:
             $ref: '#/components/schemas/ToolParameter'
         metadata:
+          type: object
+          additionalProperties:
+            oneOf:
+              - type: 'null'
+              - type: boolean
+              - type: number
+              - type: string
+              - type: array
+              - type: object
+        annotations:
           type: object
           additionalProperties:
             oneOf:
