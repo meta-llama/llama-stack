@@ -78,22 +78,25 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
     if provider_type == "ollama":
         return [
             ProviderModelEntry(
-                provider_model_id="${env.OLLAMA_INFERENCE_MODEL:=__disabled__}",
+                provider_model_id="${env.OLLAMA_INFERENCE_MODEL:=}",
                 model_type=ModelType.llm,
+                enabled=False,
             ),
             ProviderModelEntry(
-                provider_model_id="${env.OLLAMA_EMBEDDING_MODEL:=__disabled__}",
+                provider_model_id="${env.OLLAMA_EMBEDDING_MODEL:=}",
                 model_type=ModelType.embedding,
                 metadata={
                     "embedding_dimension": "${env.OLLAMA_EMBEDDING_DIMENSION:=384}",
                 },
+                enabled=False,
             ),
         ]
     elif provider_type == "vllm":
         return [
             ProviderModelEntry(
-                provider_model_id="${env.VLLM_INFERENCE_MODEL:=__disabled__}",
+                provider_model_id="${env.VLLM_INFERENCE_MODEL:=}",
                 model_type=ModelType.llm,
+                enabled=False,
             ),
         ]
 
@@ -129,29 +132,29 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
         provider_type = provider_spec.adapter.adapter_type
 
         # Build the environment variable name for enabling this provider
-        env_var = f"ENABLE_{provider_type.upper().replace('-', '_').replace('::', '_')}"
+        # only get the provider type after the ::
         model_entries = _get_model_entries_for_provider(provider_type)
         config = _get_config_for_provider(provider_spec)
         providers.append(
             (
-                f"${{env.{env_var}:=__disabled__}}",
                 provider_type,
                 model_entries,
                 config,
             )
         )
-        available_models[f"${{env.{env_var}:=__disabled__}}"] = model_entries
+        available_models[provider_type] = model_entries
 
     inference_providers = []
-    for provider_id, provider_type, model_entries, config in providers:
+    for provider_type, model_entries, config in providers:
         inference_providers.append(
             Provider(
-                provider_id=provider_id,
+                provider_id=provider_type,
                 provider_type=f"remote::{provider_type}",
                 config=config,
+                enabled=False,
             )
         )
-        available_models[provider_id] = model_entries
+        available_models[provider_type] = model_entries
     return inference_providers, available_models
 
 
