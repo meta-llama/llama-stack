@@ -14,9 +14,11 @@ providers:
     config:
       url: https://api.sambanova.ai/v1
       api_key: ${env.SAMBANOVA_API_KEY}
+    immutable: false
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
+    immutable: false
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -24,10 +26,12 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/faiss_store.db
+    immutable: false
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
       url: ${env.CHROMADB_URL:=}
+    immutable: false
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
@@ -36,12 +40,14 @@ providers:
       db: ${env.PGVECTOR_DB:=}
       user: ${env.PGVECTOR_USER:=}
       password: ${env.PGVECTOR_PASSWORD:=}
+    immutable: false
   safety:
   - provider_id: sambanova
     provider_type: remote::sambanova
     config:
       url: https://api.sambanova.ai/v1
       api_key: ${env.SAMBANOVA_API_KEY}
+    immutable: false
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -52,6 +58,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/responses_store.db
+    immutable: false
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -59,27 +66,33 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/trace_store.db
+    immutable: false
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
       api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    immutable: false
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+    immutable: false
   - provider_id: wolfram-alpha
     provider_type: remote::wolfram-alpha
     config:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
+    immutable: false
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/sambanova}/registry.db

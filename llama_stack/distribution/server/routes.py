@@ -62,6 +62,8 @@ def get_all_api_routes() -> dict[Api, list[Route]]:
                 http_method = hdrs.METH_GET
             elif webmethod.method == hdrs.METH_DELETE:
                 http_method = hdrs.METH_DELETE
+            elif webmethod.method == hdrs.METH_PUT:
+                http_method = hdrs.METH_PUT
             else:
                 http_method = hdrs.METH_POST
             routes.append(

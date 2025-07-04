@@ -151,6 +151,7 @@ class Provider(BaseModel):
     provider_id: str | None
     provider_type: str
     config: dict[str, Any]
+    immutable: bool = False
 
 
 class LoggingConfig(BaseModel):

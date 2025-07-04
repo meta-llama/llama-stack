@@ -21,9 +21,11 @@ providers:
       max_num_seqs: ${env.MAX_NUM_SEQS:=4}
       enforce_eager: ${env.ENFORCE_EAGER:=False}
       gpu_memory_utilization: ${env.GPU_MEMORY_UTILIZATION:=0.3}
+    immutable: false
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
+    immutable: false
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -31,11 +33,13 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/faiss_store.db
+    immutable: false
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+    immutable: false
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -46,6 +50,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/responses_store.db
+    immutable: false
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -53,6 +58,7 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/trace_store.db
+    immutable: false
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -60,6 +66,7 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/meta_reference_eval.db
+    immutable: false
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -67,40 +74,49 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/huggingface_datasetio.db
+    immutable: false
   - provider_id: localfs
     provider_type: inline::localfs
     config:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/localfs_datasetio.db
+    immutable: false
   scoring:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+    immutable: false
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
     config: {}
+    immutable: false
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:=}
+    immutable: false
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
       api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    immutable: false
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+    immutable: false
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/vllm-gpu}/registry.db

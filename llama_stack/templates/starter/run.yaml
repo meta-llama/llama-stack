@@ -17,39 +17,47 @@ providers:
     provider_type: remote::openai
     config:
       api_key: ${env.OPENAI_API_KEY:=}
+    immutable: false
   - provider_id: fireworks
     provider_type: remote::fireworks
     config:
       url: https://api.fireworks.ai/inference/v1
       api_key: ${env.FIREWORKS_API_KEY:=}
+    immutable: false
   - provider_id: together
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
       api_key: ${env.TOGETHER_API_KEY:=}
+    immutable: false
   - provider_id: ollama
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:=http://localhost:11434}
       raise_on_connect_error: false
+    immutable: false
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
       api_key: ${env.ANTHROPIC_API_KEY:=}
+    immutable: false
   - provider_id: gemini
     provider_type: remote::gemini
     config:
       api_key: ${env.GEMINI_API_KEY:=}
+    immutable: false
   - provider_id: groq
     provider_type: remote::groq
     config:
       url: https://api.groq.com
       api_key: ${env.GROQ_API_KEY:=}
+    immutable: false
   - provider_id: sambanova
     provider_type: remote::sambanova
     config:
       url: https://api.sambanova.ai/v1
       api_key: ${env.SAMBANOVA_API_KEY:=}
+    immutable: false
   - provider_id: vllm
     provider_type: remote::vllm
     config:
@@ -57,9 +65,11 @@ providers:
       max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
       api_token: ${env.VLLM_API_TOKEN:=fake}
       tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+    immutable: false
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
+    immutable: false
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -67,10 +77,12 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/faiss_store.db
+    immutable: false
   - provider_id: ${env.ENABLE_SQLITE_VEC:+sqlite-vec}
     provider_type: inline::sqlite-vec
     config:
       db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/sqlite_vec.db
+    immutable: false
   - provider_id: ${env.ENABLE_MILVUS:+milvus}
     provider_type: inline::milvus
     config:
@@ -78,10 +90,12 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/milvus_registry.db
+    immutable: false
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
       url: ${env.CHROMADB_URL:=}
+    immutable: false
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
@@ -90,6 +104,7 @@ providers:
       db: ${env.PGVECTOR_DB:=}
       user: ${env.PGVECTOR_USER:=}
       password: ${env.PGVECTOR_PASSWORD:=}
+    immutable: false
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
@@ -98,11 +113,13 @@ providers:
       metadata_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/files_metadata.db
+    immutable: false
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+    immutable: false
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -113,6 +130,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/responses_store.db
+    immutable: false
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -120,6 +138,7 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/trace_store.db
+    immutable: false
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -127,6 +146,7 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/meta_reference_eval.db
+    immutable: false
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -134,40 +154,49 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/huggingface_datasetio.db
+    immutable: false
   - provider_id: localfs
     provider_type: inline::localfs
     config:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/localfs_datasetio.db
+    immutable: false
   scoring:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+    immutable: false
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
     config: {}
+    immutable: false
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:=}
+    immutable: false
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
       api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+    immutable: false
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    immutable: false
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+    immutable: false
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/registry.db
