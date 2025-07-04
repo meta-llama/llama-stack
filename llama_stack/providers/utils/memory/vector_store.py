@@ -164,7 +164,8 @@ def make_overlapped_chunks(
     for i in range(0, len(tokens), window_len - overlap_len):
         toks = tokens[i : i + window_len]
         chunk = tokenizer.decode(toks)
-        chunk_id = generate_chunk_id(chunk, text)
+        chunk_window = f"{i}-{i + len(toks)}"
+        chunk_id = generate_chunk_id(chunk, text, chunk_window)
         chunk_metadata = metadata.copy()
         chunk_metadata["chunk_id"] = chunk_id
         chunk_metadata["document_id"] = document_id
@@ -177,7 +178,7 @@ def make_overlapped_chunks(
             source=metadata.get("source", None),
             created_timestamp=metadata.get("created_timestamp", int(time.time())),
             updated_timestamp=int(time.time()),
-            chunk_window=f"{i}-{i + len(toks)}",
+            chunk_window=chunk_window,
             chunk_tokenizer=default_tokenizer,
             chunk_embedding_model=None,  # This will be set in `VectorDBWithIndex.insert_chunks`
             content_token_count=len(toks),
