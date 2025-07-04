@@ -157,24 +157,7 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
 
 def get_distribution_template() -> DistributionTemplate:
     remote_inference_providers, available_models = get_remote_inference_providers()
-    providers = {
-        "inference": ([p.provider_type for p in remote_inference_providers] + ["inline::sentence-transformers"]),
-        "vector_io": ["inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector"],
-        "files": ["inline::localfs"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "post_training": ["inline::huggingface"],
-        "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
-        "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
-        ],
-    }
+
     name = "starter"
 
     vector_io_providers = [
@@ -208,6 +191,25 @@ def get_distribution_template() -> DistributionTemplate:
             ),
         ),
     ]
+
+    providers = {
+        "inference": ([p.provider_type for p in remote_inference_providers] + ["inline::sentence-transformers"]),
+        "vector_io": ([p.provider_type for p in vector_io_providers]),
+        "files": ["inline::localfs"],
+        "safety": ["inline::llama-guard"],
+        "agents": ["inline::meta-reference"],
+        "telemetry": ["inline::meta-reference"],
+        "post_training": ["inline::huggingface"],
+        "eval": ["inline::meta-reference"],
+        "datasetio": ["remote::huggingface", "inline::localfs"],
+        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "tool_runtime": [
+            "remote::brave-search",
+            "remote::tavily-search",
+            "inline::rag-runtime",
+            "remote::model-context-protocol",
+        ],
+    }
     files_provider = Provider(
         provider_id="meta-reference-files",
         provider_type="inline::localfs",
