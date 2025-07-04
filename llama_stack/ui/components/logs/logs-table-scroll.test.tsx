@@ -12,7 +12,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 // Mock the useInfiniteScroll hook
-jest.mock("@/hooks/useInfiniteScroll", () => ({
+jest.mock("@/hooks/use-infinite-scroll", () => ({
   useInfiniteScroll: jest.fn((onLoadMore, options) => {
     const ref = React.useRef(null);
 
