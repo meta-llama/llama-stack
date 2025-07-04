@@ -12,6 +12,7 @@ from llama_stack.distribution.datatypes import (
     ModelInput,
     Provider,
     ProviderSpec,
+    ShieldInput,
     ToolGroupInput,
 )
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
@@ -79,6 +80,10 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
         return [
             ProviderModelEntry(
                 provider_model_id="${env.OLLAMA_INFERENCE_MODEL:=__disabled__}",
+                model_type=ModelType.llm,
+            ),
+            ProviderModelEntry(
+                provider_model_id="${env.OLLAMA_SAFETY_MODEL:=__disabled__}",
                 model_type=ModelType.llm,
             ),
             ProviderModelEntry(
@@ -264,9 +269,9 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
                 # TODO: add a way to enable/disable shields on the fly
-                # default_shields=[
-                #     ShieldInput(provider_id="llama-guard", shield_id="${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}")
-                # ],
+                default_shields=[
+                    ShieldInput(provider_id="llama-guard", shield_id="${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}")
+                ],
             ),
         },
         run_config_env_vars={

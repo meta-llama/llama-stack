@@ -260,6 +260,11 @@ models:
   provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
   provider_model_id: ${env.OLLAMA_INFERENCE_MODEL:=__disabled__}
   model_type: llm
+- metadata: {}
+  model_id: ${env.OLLAMA_SAFETY_MODEL:=__disabled__} #  ollama/<foo> = no
+  provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
+  provider_model_id: ${env.OLLAMA_SAFETY_MODEL:=__disabled__}
+  model_type: llm
 - metadata:
     embedding_dimension: ${env.OLLAMA_EMBEDDING_DIMENSION:=384}
   model_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.OLLAMA_EMBEDDING_MODEL:=__disabled__}
@@ -893,7 +898,9 @@ models:
   model_id: all-MiniLM-L6-v2
   provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
   model_type: embedding
-shields: []
+shields:
+- shield_id: ${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}
+  provider_id: llama-guard
 vector_dbs: []
 datasets: []
 scoring_fns: []

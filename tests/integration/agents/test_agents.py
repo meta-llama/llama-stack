@@ -59,6 +59,7 @@ def get_boiling_point_with_metadata(liquid_name: str, celcius: bool = True) -> d
 def agent_config(llama_stack_client, text_model_id):
     available_shields = [shield.identifier for shield in llama_stack_client.shields.list()]
     available_shields = available_shields[:1]
+    print("available_shields: ", available_shields)
     agent_config = dict(
         model=text_model_id,
         instructions="You are a helpful assistant",
@@ -74,6 +75,7 @@ def agent_config(llama_stack_client, text_model_id):
         output_shields=available_shields,
         enable_session_persistence=False,
     )
+    print("agent_config: ", agent_config)
     return agent_config
 
 
@@ -94,7 +96,7 @@ def test_agent_simple(llama_stack_client, agent_config):
     logs = [str(log) for log in AgentEventLogger().log(simple_hello) if log is not None]
     logs_str = "".join(logs)
 
-    assert "hello" in logs_str.lower()
+    assert "hello" in logs_str.lower(), f"logs_str: {logs_str}"
 
     if len(agent_config["input_shields"]) > 0:
         assert "shield_call>" in logs_str
