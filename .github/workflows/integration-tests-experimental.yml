@@ -1,0 +1,143 @@
+name: Integration Tests (Experimental)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'llama_stack/**'
+      - 'tests/integration/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/integration-tests-experimental.yml' # This workflow
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # we want to run all tests regardless of failure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        with:
+          python-version: "3.10"
+          activate-environment: true
+
+      # TODO: some kind of pruning is required to prevent cache growing indefinitely
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: /home/runner/.cache/cachemeifyoucan
+          key: http-cache-integration-tests-${{ github.sha }}
+          restore-keys:
+            http-cache-integration-tests-
+
+      - name: Set Up Environment and Install Dependencies
+        run: |
+          uv sync --extra dev --extra test
+          uv pip install git+https://github.com/derekhiggins/cachemeifyoucan.git@44fad01
+          # always test against the latest version of the client
+          # TODO: this is not necessarily a good idea. we need to test against both published and latest
+          # to find out backwards compatibility issues.
+          uv pip install git+https://github.com/meta-llama/llama-stack-client-python.git@main
+          uv pip install -e .
+          llama stack build --template verification --image-type venv
+
+          # We update "created" as its used in LLS in the create_at field, some integration tests rely on the order it provides
+          # We update "id" to ensure that it is unique
+          cat - <<EOF > cachemeifyoucan.yaml
+          targets:
+            openai:
+              url: https://api.openai.com
+              response:
+                transform_body:
+                  - name: "created"
+                    value: "{{ timestamp.split('.')[0] }}"
+                  - name: "id"
+                    value: "{{body['id']}}__{{ timestamp }}"
+            together:
+              url: https://api.together.xyz
+            fireworks:
+              url: https://api.fireworks.ai
+          EOF
+          cat cachemeifyoucan.yaml
+          # Start cachemeifyoucan server in the background, it will be used to cache OpenAI responses
+          nohup uv run uvicorn cachemeifyoucan:app --host 127.0.0.1 --port 9999 > cachemeifyoucan.log 2>&1 &
+
+          # NotFoundError: Error code: 404 - {'error': 'Model not found'}
+          # TODO: remove this once we figure out the problem
+          yq '(.shields = [])' ./llama_stack/templates/verification/run.yaml > ./run_t1.yaml
+          yq '(.providers.inference[] | select(.provider_id == "together-openai-compat")).config.openai_compat_api_base = "http://127.0.0.1:9999/together"' \
+            ./run_t1.yaml > ./run_t2.yaml
+          yq '(.providers.inference[] | select(.provider_id == "fireworks-openai-compat")).config.openai_compat_api_base = "http://127.0.0.1:9999/fireworks/inference/v1"' \
+            ./run_t2.yaml > ./run.yaml
+
+      - name: Start Llama Stack server in background
+        env:
+          # TODO: instead if adding keys here, we could add support to cachemeifyoucan to add the header
+          # this would ensure no traffic is routed to 3rd parties without going via the cache
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+        run: |
+          source .venv/bin/activate
+          export OPENAI_BASE_URL=http://127.0.0.1:9999/openai/v1
+          nohup uv run llama stack run ./run.yaml --image-type venv > server.log 2>&1 &
+
+      - name: Wait for Llama Stack server to be ready
+        run: |
+          echo "Waiting for Llama Stack server..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8321/v1/health | grep -q "OK"; then
+              echo "Llama Stack server is up!"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Llama Stack server failed to start"
+          cat server.log
+          exit 1
+
+      - name: Run Integration Tests
+        run: |
+          # openai
+          echo "Running OpenAI tests"
+          TESTS="tests/integration/inference tests/integration/agents"
+          uv run pytest -v $TESTS --stack-config=http://localhost:8321 \
+            -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag_agent)" \
+            --text-model="openai/gpt-4o"
+
+          # skipping togetherai for now, free tier get rate limited when no cach)
+          #uv run pytest -v tests/integration/inference/test_text_inference.py --stack-config=http://localhost:8321 \
+          #  -k "not(builtin_tool or tool_calling)"  --text-model="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+
+          # fireworks (only running text inference for now, free tier get rate limited when no cach)
+          echo "Running Fireworks tests"
+          uv run pytest -v tests/integration/inference/test_text_inference.py --stack-config=http://localhost:8321 \
+            -k "not(builtin_tool or tool_calling)"  --text-model="accounts/fireworks/models/llama-v3p1-8b-instruct"
+
+      - name: Clean up
+        if: always()
+        run: |
+          if [ "$(find /home/runner/.cache/cachemeifyoucan -type f -newer cachemeifyoucan.yaml )" = '' ] ; then
+            echo "Removing cache as nothing new was cached"
+            rm -rf /home/runner/.cache/cachemeifyoucan
+          fi
+
+      - name: Upload all logs to artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            *.log
+          retention-days: 1
