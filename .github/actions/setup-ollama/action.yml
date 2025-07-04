@@ -7,3 +7,5 @@ runs:
       shell: bash
       run: |
         docker run -d --name ollama -p 11434:11434 docker.io/leseb/ollama-with-models
+        # TODO: rebuild an ollama image with llama-guard3:1b
+        docker exec ollama ollama pull llama-guard3:1b

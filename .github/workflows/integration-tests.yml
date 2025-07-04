@@ -24,7 +24,7 @@ jobs:
       matrix:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
-        test-type: [agents, inference, datasets, inspect, scoring, post_training, providers, tool_runtime, vector_io]
+        test-type: [agents, inference, datasets, inspect, safety, scoring, post_training, providers, tool_runtime, vector_io]
         client-type: [library, server]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
@@ -51,11 +51,23 @@ jobs:
           free -h
           df -h
 
+      - name: Verify Ollama status is OK
+        if: matrix.client-type == 'http'
+        run: |
+          echo "Verifying Ollama status..."
+          ollama_status=$(curl -s -L http://127.0.0.1:8321/v1/providers/ollama|jq --raw-output .health.status)
+          echo "Ollama status: $ollama_status"
+          if [ "$ollama_status" != "OK" ]; then
+            echo "Ollama health check failed"
+            exit 1
+          fi
+
       - name: Run Integration Tests
         env:
-          OLLAMA_INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct" # for server tests
+          OLLAMA_INFERENCE_MODEL: "llama3.2:3b-instruct-fp16" # for server tests
           ENABLE_OLLAMA: "ollama" # for server tests
           OLLAMA_URL: "http://0.0.0.0:11434"
+          SAFETY_MODEL: "llama-guard3:1b"
         # Use 'shell' to get pipefail behavior
         # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
         # TODO: write a precommit hook to detect if a test contains a pipe but does not use 'shell: bash'
@@ -68,8 +80,9 @@ jobs:
           fi
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
-            --text-model="ollama/meta-llama/Llama-3.2-3B-Instruct" \
+            --text-model="ollama/llama3.2:3b-instruct-fp16" \
             --embedding-model=all-MiniLM-L6-v2 \
+            --safety-shield=ollama \
             --color=yes \
             --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
 

@@ -257,9 +257,44 @@ inference_store:
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/inference_store.db
 models:
 - metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/llama3.1-8b
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama3.1-8b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/meta-llama/Llama-3.1-8B-Instruct
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama3.1-8b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/llama-3.3-70b
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama-3.3-70b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/meta-llama/Llama-3.3-70B-Instruct
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama-3.3-70b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/llama-4-scout-17b-16e-instruct
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/meta-llama/Llama-4-Scout-17B-16E-Instruct
+  provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+  provider_model_id: llama-4-scout-17b-16e-instruct
+  model_type: llm
+- metadata: {}
   model_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.OLLAMA_INFERENCE_MODEL:=__disabled__}
   provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
   provider_model_id: ${env.OLLAMA_INFERENCE_MODEL:=__disabled__}
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=__disabled__}
+  provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
+  provider_model_id: ${env.SAFETY_MODEL:=__disabled__}
   model_type: llm
 - metadata:
     embedding_dimension: ${env.OLLAMA_EMBEDDING_DIMENSION:=384}
@@ -343,26 +378,6 @@ models:
   provider_model_id: accounts/fireworks/models/llama-v3p3-70b-instruct
   model_type: llm
 - metadata: {}
-  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/accounts/fireworks/models/llama-guard-3-8b
-  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/meta-llama/Llama-Guard-3-8B
-  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/accounts/fireworks/models/llama-guard-3-11b-vision
-  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision
-  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
-  model_type: llm
-- metadata: {}
   model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/accounts/fireworks/models/llama4-scout-instruct-basic
   provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
   provider_model_id: accounts/fireworks/models/llama4-scout-instruct-basic
@@ -389,6 +404,26 @@ models:
   provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
   provider_model_id: nomic-ai/nomic-embed-text-v1.5
   model_type: embedding
+- metadata: {}
+  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/accounts/fireworks/models/llama-guard-3-8b
+  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/meta-llama/Llama-Guard-3-8B
+  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_model_id: accounts/fireworks/models/llama-guard-3-8b
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/accounts/fireworks/models/llama-guard-3-11b-vision
+  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_FIREWORKS:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_model_id: accounts/fireworks/models/llama-guard-3-11b-vision
+  model_type: llm
 - metadata: {}
   model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo
   provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
@@ -459,26 +494,6 @@ models:
   provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
   provider_model_id: meta-llama/Llama-3.3-70B-Instruct-Turbo
   model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Meta-Llama-Guard-3-8B
-  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_model_id: meta-llama/Meta-Llama-Guard-3-8B
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-8B
-  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_model_id: meta-llama/Meta-Llama-Guard-3-8B
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision-Turbo
-  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision
-  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
-  model_type: llm
 - metadata:
     embedding_dimension: 768
     context_length: 8192
@@ -522,6 +537,264 @@ models:
   model_id: ${env.ENABLE_TOGETHER:=__disabled__}/together/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
   provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
   provider_model_id: meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-8B
+  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_model_id: meta-llama/Llama-Guard-3-8B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-8B
+  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_model_id: meta-llama/Llama-Guard-3-8B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision-Turbo
+  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_TOGETHER:=__disabled__}/meta-llama/Llama-Guard-3-11B-Vision
+  provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_model_id: meta-llama/Llama-Guard-3-11B-Vision-Turbo
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta.llama3-1-8b-instruct-v1:0
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-8b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta-llama/Llama-3.1-8B-Instruct
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-8b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta.llama3-1-70b-instruct-v1:0
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-70b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta-llama/Llama-3.1-70B-Instruct
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-70b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta.llama3-1-405b-instruct-v1:0
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-405b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_BEDROCK:=__disabled__}/meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+  provider_model_id: meta.llama3-1-405b-instruct-v1:0
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_DATABRICKS:=__disabled__}/databricks-meta-llama-3-1-70b-instruct
+  provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
+  provider_model_id: databricks-meta-llama-3-1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_DATABRICKS:=__disabled__}/meta-llama/Llama-3.1-70B-Instruct
+  provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
+  provider_model_id: databricks-meta-llama-3-1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_DATABRICKS:=__disabled__}/databricks-meta-llama-3-1-405b-instruct
+  provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
+  provider_model_id: databricks-meta-llama-3-1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_DATABRICKS:=__disabled__}/meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
+  provider_model_id: databricks-meta-llama-3-1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama3-8b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama3-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3-8B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama3-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama3-70b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3-70B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.1-8b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.1-8B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-8b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.1-70b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.1-70B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.1-405b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.1-405B-Instruct-FP8
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.1-405b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.2-1b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-1b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.2-1B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-1b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.2-3b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.2-3B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-3b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.2-11b-vision-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-11b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.2-11B-Vision-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-11b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.2-90b-vision-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.2-90B-Vision-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.2-90b-vision-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta/llama-3.3-70b-instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.3-70b-instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/meta-llama/Llama-3.3-70B-Instruct
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: meta/llama-3.3-70b-instruct
+  model_type: llm
+- metadata:
+    embedding_dimension: 2048
+    context_length: 8192
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/nvidia/llama-3.2-nv-embedqa-1b-v2
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: nvidia/llama-3.2-nv-embedqa-1b-v2
+  model_type: embedding
+- metadata:
+    embedding_dimension: 1024
+    context_length: 512
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/nvidia/nv-embedqa-e5-v5
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: nvidia/nv-embedqa-e5-v5
+  model_type: embedding
+- metadata:
+    embedding_dimension: 4096
+    context_length: 512
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/nvidia/nv-embedqa-mistral-7b-v2
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: nvidia/nv-embedqa-mistral-7b-v2
+  model_type: embedding
+- metadata:
+    embedding_dimension: 1024
+    context_length: 512
+  model_id: ${env.ENABLE_NVIDIA:=__disabled__}/snowflake/arctic-embed-l
+  provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+  provider_model_id: snowflake/arctic-embed-l
+  model_type: embedding
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-8B
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-8B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-70B
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-70B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B:bf16-mp8
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B:bf16-mp8
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B:bf16-mp16
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B:bf16-mp16
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-8B-Instruct
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-8B-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-70B-Instruct
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-70B-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B-Instruct:bf16-mp8
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B-Instruct:bf16-mp8
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B-Instruct
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B-Instruct
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.1-405B-Instruct:bf16-mp16
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.1-405B-Instruct:bf16-mp16
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.2-1B
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.2-1B
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_RUNPOD:=__disabled__}/Llama3.2-3B
+  provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+  provider_model_id: Llama3.2-3B
   model_type: llm
 - metadata: {}
   model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/gpt-4o
@@ -894,7 +1167,25 @@ models:
   model_id: all-MiniLM-L6-v2
   provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
   model_type: embedding
-shields: []
+shields:
+- shield_id: ${env.ENABLE_OLLAMA:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=llama-guard3:1b}
+- shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}/${env.SAFETY_MODEL:=accounts/fireworks/models/llama-guard-3-8b}
+- shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}/${env.SAFETY_MODEL:=accounts/fireworks/models/llama-guard-3-11b-vision}
+- shield_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_TOGETHER:=__disabled__}/${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}
+- shield_id: ${env.ENABLE_TOGETHER:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_TOGETHER:=__disabled__}/${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-11B-Vision-Turbo}
+- shield_id: ${env.ENABLE_SAMBANOVA:=__disabled__}
+  provider_id: llama-guard
+  provider_shield_id: ${env.ENABLE_SAMBANOVA:=__disabled__}/${env.SAFETY_MODEL:=sambanova/Meta-Llama-Guard-3-8B}
 vector_dbs: []
 datasets: []
 scoring_fns: []
