@@ -4,13 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any, cast
 
 import httpx
-from mcp import ClientSession
+from mcp import ClientSession, McpError
 from mcp import types as mcp_types
 from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamablehttp_client
 
 from llama_stack.apis.common.content_types import ImageContentItem, InterleavedContentItem, TextContentItem
 from llama_stack.apis.tools import (
@@ -26,7 +28,23 @@ logger = get_logger(__name__, category="tools")
 
 
 @asynccontextmanager
-async def sse_client_wrapper(endpoint: str, headers: dict[str, str]):
+async def client_wrapper(endpoint: str, headers: dict[str, str]) -> AsyncGenerator[ClientSession, Any]:
+    try:
+        async with streamablehttp_client(endpoint, headers=headers) as (read_stream, write_stream, _):
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                yield session
+                return
+    except* httpx.HTTPStatusError as eg:
+        for exc in eg.exceptions:
+            # mypy does not currently narrow the type of `eg.exceptions` based on the `except*` filter,
+            # so we explicitly cast each item to httpx.HTTPStatusError. This is safe because
+            # `except* httpx.HTTPStatusError` guarantees all exceptions in `eg.exceptions` are of that type.
+            err = cast(httpx.HTTPStatusError, exc)
+            if err.response.status_code == 401:
+                raise AuthenticationRequiredError(exc) from exc
+    except* McpError:
+        logger.warning("failed to connect via streamable http, falling back to sse")
     try:
         async with sse_client(endpoint, headers=headers) as streams:
             async with ClientSession(*streams) as session:
@@ -45,7 +63,8 @@ async def sse_client_wrapper(endpoint: str, headers: dict[str, str]):
 
 async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefsResponse:
     tools = []
-    async with sse_client_wrapper(endpoint, headers) as session:
+    async with client_wrapper(endpoint, headers) as session:
+        logger.debug("listing mcp tools")
         tools_result = await session.list_tools()
         for tool in tools_result.tools:
             parameters = []
@@ -73,7 +92,8 @@ async def list_mcp_tools(endpoint: str, headers: dict[str, str]) -> ListToolDefs
 async def invoke_mcp_tool(
     endpoint: str, headers: dict[str, str], tool_name: str, kwargs: dict[str, Any]
 ) -> ToolInvocationResult:
-    async with sse_client_wrapper(endpoint, headers) as session:
+    async with client_wrapper(endpoint, headers) as session:
+        logger.debug("invoking mcp tool")
         result = await session.call_tool(tool_name, kwargs)
 
         content: list[InterleavedContentItem] = []
