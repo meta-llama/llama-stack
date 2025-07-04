@@ -182,7 +182,7 @@ async def sse_generator(event_gen_coroutine):
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
         if event_gen:
-            await event_gen.aclose()
+            await event_gen.close()
     except Exception as e:
         logger.exception("Error in sse_generator")
         yield create_sse_event(
