@@ -29,6 +29,7 @@ distribution_spec:
     - remote::passthrough
     - inline::sentence-transformers
     vector_io:
+    - inline::faiss
     - inline::sqlite-vec
     - inline::milvus
     - remote::chromadb
