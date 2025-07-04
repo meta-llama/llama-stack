@@ -30,7 +30,7 @@ class TavilySearchToolConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str) -> dict[str, Any]:
         return {
-            "api_key": "${env.TAVILY_SEARCH_API_KEY:+}",
+            "api_key": "${env.TAVILY_SEARCH_API_KEY:=}",
             "max_results": 3,
             "timeout": 30.0,
             "connect_timeout": 10.0,
