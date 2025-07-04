@@ -49,17 +49,17 @@ def get_distribution_template() -> DistributionTemplate:
     vector_io_provider_faiss = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
-        config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        config=FaissVectorIOConfig.sample_run_config(f"${{env.XDG_STATE_HOME:-~/.local/state}}/llama-stack/distributions/{name}"),
     )
     files_provider = Provider(
         provider_id="meta-reference-files",
         provider_type="inline::localfs",
-        config=LocalfsFilesImplConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        config=LocalfsFilesImplConfig.sample_run_config(f"${{env.XDG_DATA_HOME:-~/.local/share}}/llama-stack/distributions/{name}"),
     )
     posttraining_provider = Provider(
         provider_id="huggingface",
         provider_type="inline::huggingface",
-        config=HuggingFacePostTrainingConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+        config=HuggingFacePostTrainingConfig.sample_run_config(f"${{env.XDG_DATA_HOME:-~/.local/share}}/llama-stack/distributions/{name}"),
     )
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",

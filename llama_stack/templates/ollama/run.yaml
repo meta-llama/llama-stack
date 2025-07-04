@@ -25,7 +25,12 @@ providers:
     config:
       kvstore:
         type: sqlite
+<<<<<<< HEAD
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/faiss_store.db
+=======
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_STATE_HOME:-~/.local/state}/llama-stack/distributions/ollama}/faiss_store.db
+>>>>>>> 3a63a840 (feat: use XDG directory standards)
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -37,7 +42,12 @@ providers:
     config:
       persistence_store:
         type: sqlite
+<<<<<<< HEAD
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/agents_store.db
+=======
+        namespace: null
+        db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_STATE_HOME:-~/.local/state}/llama-stack/distributions/ollama}/agents_store.db
+>>>>>>> 3a63a840 (feat: use XDG directory standards)
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/responses_store.db
@@ -83,10 +93,10 @@ providers:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
     config:
-      storage_dir: ${env.FILES_STORAGE_DIR:=~/.llama/distributions/ollama/files}
+      storage_dir: ${env.FILES_STORAGE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/distributions/ollama/files}
       metadata_store:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/files_metadata.db
+                  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_STATE_HOME:-~/.local/state}/llama-stack/distributions/ollama}/files_metadata.db
   post_training:
   - provider_id: huggingface
     provider_type: inline::huggingface
@@ -117,10 +127,10 @@ providers:
       api_key: ${env.WOLFRAM_ALPHA_API_KEY:=}
 metadata_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_STATE_HOME:-~/.local/state}/llama-stack/distributions/ollama}/registry.db
 inference_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/inference_store.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_STATE_HOME:-~/.local/state}/llama-stack/distributions/ollama}/inference_store.db
 models:
 - metadata: {}
   model_id: ${env.INFERENCE_MODEL}
