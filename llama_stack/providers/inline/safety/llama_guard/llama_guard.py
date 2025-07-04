@@ -93,12 +93,17 @@ LLAMA_GUARD_MODEL_IDS = {
     "meta-llama/Llama-Guard-3-1B": "meta-llama/Llama-Guard-3-1B",
     CoreModelId.llama_guard_3_11b_vision.value: "meta-llama/Llama-Guard-3-11B-Vision",
     "meta-llama/Llama-Guard-3-11B-Vision": "meta-llama/Llama-Guard-3-11B-Vision",
+    CoreModelId.llama_guard_4_12b.value: "meta-llama/Llama-Guard-4-12B",
+    "meta-llama/Llama-Guard-4-12B": "meta-llama/Llama-Guard-4-12B",
 }
 
 MODEL_TO_SAFETY_CATEGORIES_MAP = {
     "meta-llama/Llama-Guard-3-8B": DEFAULT_LG_V3_SAFETY_CATEGORIES + [CAT_CODE_INTERPRETER_ABUSE],
     "meta-llama/Llama-Guard-3-1B": DEFAULT_LG_V3_SAFETY_CATEGORIES,
     "meta-llama/Llama-Guard-3-11B-Vision": DEFAULT_LG_V3_SAFETY_CATEGORIES,
+    # Llama Guard 4 uses the same categories as Llama Guard 3
+    # source: https://github.com/meta-llama/PurpleLlama/blob/main/Llama-Guard4/12B/MODEL_CARD.md
+    "meta-llama/Llama-Guard-4-12B": DEFAULT_LG_V3_SAFETY_CATEGORIES,
 }
 
 
