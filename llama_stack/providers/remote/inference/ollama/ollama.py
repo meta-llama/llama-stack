@@ -94,7 +94,6 @@ class OllamaInferenceAdapter(
     def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
         self.url = config.url
-        self.raise_on_connect_error = config.raise_on_connect_error
 
     @property
     def client(self) -> AsyncClient:
@@ -108,10 +107,7 @@ class OllamaInferenceAdapter(
         logger.debug(f"checking connectivity to Ollama at `{self.url}`...")
         health_response = await self.health()
         if health_response["status"] == HealthStatus.ERROR:
-            if self.raise_on_connect_error:
-                raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
-            else:
-                logger.warning("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
+            raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
 
     async def health(self) -> HealthResponse:
         """

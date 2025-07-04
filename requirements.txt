@@ -97,7 +97,7 @@ jsonschema==4.23.0
     # via llama-stack
 jsonschema-specifications==2024.10.1
     # via jsonschema
-llama-stack-client==0.2.13
+llama-stack-client==0.2.14
     # via llama-stack
 markdown-it-py==3.0.0
     # via rich

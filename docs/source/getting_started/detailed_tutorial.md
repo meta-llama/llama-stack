@@ -58,7 +58,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
+INFERENCE_MODEL=llama3.2:3b llama stack build --template starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using `conda`
@@ -69,7 +69,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type conda  --image-name llama3-3b-conda --run
+INFERENCE_MODEL=llama3.2:3b llama stack build --template starter --image-type conda  --image-name llama3-3b-conda --run
 ```
 :::
 :::{tab-item} Using a Container

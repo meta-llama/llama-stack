@@ -33,7 +33,7 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY:=}
+      api_key: ${env.TOGETHER_API_KEY}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec
@@ -73,6 +73,7 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/open-benchmark}/trace_store.db
+      otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

@@ -20,13 +20,9 @@ class TelemetrySink(StrEnum):
 
 
 class TelemetryConfig(BaseModel):
-    otel_trace_endpoint: str | None = Field(
+    otel_exporter_otlp_endpoint: str | None = Field(
         default=None,
-        description="The OpenTelemetry collector endpoint URL for traces",
-    )
-    otel_metric_endpoint: str | None = Field(
-        default=None,
-        description="The OpenTelemetry collector endpoint URL for metrics",
+        description="The OpenTelemetry collector endpoint URL (base URL for traces, metrics, and logs). If not set, the SDK will use OTEL_EXPORTER_OTLP_ENDPOINT environment variable.",
     )
     service_name: str = Field(
         # service name is always the same, use zero-width space to avoid clutter
@@ -35,7 +31,7 @@ class TelemetryConfig(BaseModel):
     )
     sinks: list[TelemetrySink] = Field(
         default=[TelemetrySink.CONSOLE, TelemetrySink.SQLITE],
-        description="List of telemetry sinks to enable (possible values: otel, sqlite, console)",
+        description="List of telemetry sinks to enable (possible values: otel_trace, otel_metric, sqlite, console)",
     )
     sqlite_db_path: str = Field(
         default_factory=lambda: (RUNTIME_BASE_DIR / "trace_store.db").as_posix(),
@@ -55,4 +51,5 @@ class TelemetryConfig(BaseModel):
             "service_name": "${env.OTEL_SERVICE_NAME:=\u200b}",
             "sinks": "${env.TELEMETRY_SINKS:=console,sqlite}",
             "sqlite_db_path": "${env.SQLITE_STORE_DIR:=" + __distro_dir__ + "}/" + db_name,
+            "otel_exporter_otlp_endpoint": "${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}",
         }
