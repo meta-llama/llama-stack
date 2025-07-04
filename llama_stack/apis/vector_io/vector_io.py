@@ -346,7 +346,7 @@ class VectorIO(Protocol):
         embedding_model: str | None = None,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
+        provider_vector_db_id: str = "",
     ) -> VectorStoreObject:
         """Creates a vector store.
 
