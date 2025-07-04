@@ -105,7 +105,8 @@ class RunConfigSettings(BaseModel):
             if api_providers := self.provider_overrides.get(api_str):
                 # Convert Provider objects to dicts for YAML serialization
                 provider_configs[api_str] = [
-                    p.model_dump(exclude_none=True) if isinstance(p, Provider) else p for p in api_providers
+                    p.model_dump(exclude_defaults=True, exclude_none=True) if isinstance(p, Provider) else p
+                    for p in api_providers
                 ]
                 continue
 
@@ -133,7 +134,7 @@ class RunConfigSettings(BaseModel):
                         provider_id=provider_id,
                         provider_type=provider_type,
                         config=config,
-                    ).model_dump(exclude_none=True)
+                    ).model_dump(exclude_defaults=True, exclude_none=True)
                 )
 
         # Get unique set of APIs from providers

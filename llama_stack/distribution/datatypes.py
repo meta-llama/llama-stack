@@ -146,11 +146,10 @@ in the runtime configuration to help route to the correct provider.""",
 
 
 class Provider(BaseModel):
-    # provider_id of None means that the provider is not enabled - this happens
-    # when the provider is enabled via a conditional environment variable
-    provider_id: str | None
+    provider_id: str
     provider_type: str
     config: dict[str, Any]
+    enabled: bool = Field(default=True, description="Whether the provider is enabled")
 
 
 class LoggingConfig(BaseModel):

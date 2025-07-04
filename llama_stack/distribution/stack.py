@@ -99,19 +99,10 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
         method = getattr(impls[api], register_method)
         for obj in objects:
             # Do not register models on disabled providers
-            if hasattr(obj, "provider_id") and obj.provider_id is not None and obj.provider_id == "__disabled__":
-                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
-                continue
-            # In complex templates, like our starter template, we may have dynamic model ids
-            # given by environment variables. This allows those environment variables to have
-            # a default value of __disabled__ to skip registration of the model if not set.
-            if (
-                hasattr(obj, "provider_model_id")
-                and obj.provider_model_id is not None
-                and "__disabled__" in obj.provider_model_id
-            ):
+            if hasattr(obj, "provider_model_id") and obj.provider_model_id is not None and not obj.enabled:
                 logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled model.")
                 continue
+
             # we want to maintain the type information in arguments to method.
             # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,
             # we use model_dump() to find all the attrs and then getattr to get the still typed value.
@@ -155,17 +146,20 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
         for i, v in enumerate(config):
             try:
                 # Special handling for providers: first resolve the provider_id to check if provider
-                # is disabled so that we can skip config env variable expansion and avoid validation errors
+                # is disabled so that we can skip config env variable expansion and avoid validation
+                # errors
                 if isinstance(v, dict) and "provider_id" in v:
                     try:
-                        resolved_provider_id = replace_env_vars(v["provider_id"], f"{path}[{i}].provider_id")
-                        if resolved_provider_id == "__disabled__":
+                        # We have to set a default to True because we use Pydantic
+                        # exclude_defaults=True from the serializer so the loaded config only has
+                        # 'enabled' field when it is set to False explicitly.
+                        if not v.get("enabled", True):
                             logger.debug(
-                                f"Skipping config env variable expansion for disabled provider: {v.get('provider_id', '')}"
+                                f"Skipping config env variable expansion for disabled provider: {v.get('provider_type', '') + '/' if v.get('provider_type', '') else ''}{v.get('provider_id', '')}"
                             )
                             # Create a copy with resolved provider_id but original config
                             disabled_provider = v.copy()
-                            disabled_provider["provider_id"] = resolved_provider_id
+                            disabled_provider["provider_id"] = v["provider_id"]
                             result.append(disabled_provider)
                             continue
                     except EnvVarError:

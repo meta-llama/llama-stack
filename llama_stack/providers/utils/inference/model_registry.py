@@ -25,6 +25,7 @@ class ProviderModelEntry(BaseModel):
     llama_model: str | None = None
     model_type: ModelType = ModelType.llm
     metadata: dict[str, Any] = Field(default_factory=dict)
+    enabled: bool = Field(default=True, description="Whether the model is enabled")
 
 
 def get_huggingface_repo(model_descriptor: str) -> str | None:

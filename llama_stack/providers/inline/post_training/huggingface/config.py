@@ -68,5 +68,5 @@ class HuggingFacePostTrainingConfig(BaseModel):
     dataloader_pin_memory: bool = True
 
     @classmethod
-    def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
+    def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
         return {"checkpoint_format": "huggingface", "distributed_backend": None, "device": "cpu"}
