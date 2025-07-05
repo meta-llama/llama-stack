@@ -17,18 +17,18 @@ The `llamastack/distribution-starter` distribution is a comprehensive, multi-pro
 
 The starter distribution consists of the following provider configurations:
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| datasetio | `remote::huggingface`, `inline::localfs` |
-| eval | `inline::meta-reference` |
-| files | `inline::localfs` |
+| API | Provider(s)                                                                                                                                                                                                                                                                                                                                    |
+|-----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| agents | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| datasetio | `remote::huggingface`, `inline::localfs`                                                                                                                                                                                                                                                                                                       |
+| eval | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| files | `inline::localfs`                                                                                                                                                                                                                                                                                                                              |
 | inference | `remote::openai`, `remote::fireworks`, `remote::together`, `remote::ollama`, `remote::anthropic`, `remote::gemini`, `remote::groq`, `remote::sambanova`, `remote::vllm`, `remote::tgi`, `remote::cerebras`, `remote::llama-openai-compat`, `remote::nvidia`, `remote::hf::serverless`, `remote::hf::endpoint`, `inline::sentence-transformers` |
-| safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
-| telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol` |
-| vector_io | `inline::faiss`, `inline::sqlite-vec`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard`                                                                                                                                                                                                                                                                                                                          |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust`                                                                                                                                                                                                                                                                                  |
+| telemetry | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol`                                                                                                                                                                                                                                       |
+| vector_io | `inline::faiss`, `inline::sqlite-vec`, `inline::milvus`, `remote::chromadb`, `remote::pgvector`                                                                                                                                                                                                                                                 |
 
 ## Inference Providers
 
