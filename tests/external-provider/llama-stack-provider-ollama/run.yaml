@@ -105,7 +105,7 @@ models:
     embedding_dimension: 384
   model_id: all-MiniLM-L6-v2
   provider_id: custom_ollama
-  provider_model_id: all-minilm:latest
+  provider_model_id: all-minilm:l6-v2
   model_type: embedding
 shields: []
 vector_dbs: []
