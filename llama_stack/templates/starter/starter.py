@@ -348,6 +348,10 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="tavily-search",
         ),
         ToolGroupInput(
+            toolgroup_id="builtin::websearch_brave",
+            provider_id="brave-search",
+        ),
+        ToolGroupInput(
             toolgroup_id="builtin::rag",
             provider_id="rag-runtime",
         ),
