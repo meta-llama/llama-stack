@@ -151,6 +151,7 @@ class Provider(BaseModel):
     provider_id: str | None
     provider_type: str
     config: dict[str, Any]
+    enabled: bool = Field(default=True, description="Whether the provider is enabled")
 
 
 class LoggingConfig(BaseModel):

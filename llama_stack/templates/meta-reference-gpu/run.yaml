@@ -22,9 +22,11 @@ providers:
       model_parallel_size: ${env.MODEL_PARALLEL_SIZE:=0}
       max_batch_size: ${env.MAX_BATCH_SIZE:=1}
       max_seq_len: ${env.MAX_SEQ_LEN:=4096}
+    enabled: true
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
+    enabled: true
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss
@@ -32,11 +34,13 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/faiss_store.db
+    enabled: true
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+    enabled: true
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -47,6 +51,7 @@ providers:
       responses_store:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/responses_store.db
+    enabled: true
   telemetry:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -55,6 +60,7 @@ providers:
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/trace_store.db
       otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
+    enabled: true
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -62,6 +68,7 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/meta_reference_eval.db
+    enabled: true
   datasetio:
   - provider_id: huggingface
     provider_type: remote::huggingface
@@ -69,40 +76,49 @@ providers:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/huggingface_datasetio.db
+    enabled: true
   - provider_id: localfs
     provider_type: inline::localfs
     config:
       kvstore:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/localfs_datasetio.db
+    enabled: true
   scoring:
   - provider_id: basic
     provider_type: inline::basic
     config: {}
+    enabled: true
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
     config: {}
+    enabled: true
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
       openai_api_key: ${env.OPENAI_API_KEY:=}
+    enabled: true
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
     config:
       api_key: ${env.BRAVE_SEARCH_API_KEY:=}
       max_results: 3
+    enabled: true
   - provider_id: tavily-search
     provider_type: remote::tavily-search
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+    enabled: true
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}
+    enabled: true
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
     config: {}
+    enabled: true
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/meta-reference-gpu}/registry.db
