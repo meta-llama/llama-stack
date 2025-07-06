@@ -3,17 +3,33 @@ distribution_spec:
   description: Quick start template for running Llama Stack with several popular providers
   providers:
     inference:
-    - remote::openai
+    - remote::cerebras
+    - remote::ollama
+    - remote::vllm
+    - remote::tgi
+    - remote::hf::serverless
+    - remote::hf::endpoint
     - remote::fireworks
     - remote::together
-    - remote::ollama
+    - remote::bedrock
+    - remote::databricks
+    - remote::nvidia
+    - remote::runpod
+    - remote::openai
     - remote::anthropic
     - remote::gemini
     - remote::groq
+    - remote::fireworks-openai-compat
+    - remote::llama-openai-compat
+    - remote::together-openai-compat
+    - remote::groq-openai-compat
+    - remote::sambanova-openai-compat
+    - remote::cerebras-openai-compat
     - remote::sambanova
-    - remote::vllm
+    - remote::passthrough
     - inline::sentence-transformers
     vector_io:
+    - inline::faiss
     - inline::sqlite-vec
     - inline::milvus
     - remote::chromadb
@@ -26,6 +42,8 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
+    post_training:
+    - inline::huggingface
     eval:
     - inline::meta-reference
     datasetio:

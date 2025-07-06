@@ -141,9 +141,9 @@ You may then pick a template to build your distribution with providers fitted to
 
 For example, to build a distribution with TGI as the inference provider, you can run:
 ```
-$ llama stack build --template tgi
+$ llama stack build --template starter
 ...
-You can now edit ~/.llama/distributions/llamastack-tgi/tgi-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-tgi/tgi-run.yaml`
+You can now edit ~/.llama/distributions/llamastack-starter/starter-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-starter/starter-run.yaml`
 ```
 :::
 :::{tab-item} Building from Scratch
@@ -183,26 +183,7 @@ You can now edit ~/.llama/distributions/llamastack-my-local-stack/my-local-stack
 - The config file will be of contents like the ones in `llama_stack/templates/*build.yaml`.
 
 ```
-$ cat llama_stack/templates/ollama/build.yaml
-
-name: ollama
-distribution_spec:
-  description: Like local, but use ollama for running LLM inference
-  providers:
-    inference: remote::ollama
-    memory: inline::faiss
-    safety: inline::llama-guard
-    agents: inline::meta-reference
-    telemetry: inline::meta-reference
-image_name: ollama
-image_type: conda
-
-# If some providers are external, you can specify the path to the implementation
-external_providers_dir: ~/.llama/providers.d
-```
-
-```
-llama stack build --config llama_stack/templates/ollama/build.yaml
+llama stack build --config llama_stack/templates/starter/build.yaml
 ```
 :::
 
@@ -268,11 +249,11 @@ Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podm
 To build a container image, you may start off from a template and use the `--image-type container` flag to specify `container` as the build image type.
 
 ```
-llama stack build --template ollama --image-type container
+llama stack build --template starter --image-type container
 ```
 
 ```
-$ llama stack build --template ollama --image-type container
+$ llama stack build --template starter --image-type container
 ...
 Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM python:3.10-slim
 ...
@@ -412,17 +393,17 @@ llama stack list
 ```
 
 ```
-------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| Stack Name                  | Path                                                                        | Build Config | Run Config |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| together                    | /home/wenzhou/.llama/distributions/together                                 | Yes          | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| bedrock                     | /home/wenzhou/.llama/distributions/bedrock                                  | Yes          | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| starter                     | /home/wenzhou/.llama/distributions/starter                                  | No           | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| remote-vllm                 | /home/wenzhou/.llama/distributions/remote-vllm                              | Yes          | Yes        |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+------------------------------+-----------------------------------------------------------------+--------------+------------+
+| Stack Name                  | Path                                                            | Build Config | Run Config |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| together                    | ~/.llama/distributions/together                                 | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| bedrock                     | ~/.llama/distributions/bedrock                                  | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| starter                     | ~/.llama/distributions/starter                                  | Yes          | Yes        |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| remote-vllm                 | ~/.llama/distributions/remote-vllm                              | Yes          | Yes        |
++------------------------------+-----------------------------------------------------------------------------+--------------+
 ```
 
 ### Removing a Distribution

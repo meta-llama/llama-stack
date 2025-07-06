@@ -6,7 +6,7 @@ This avoids the overhead of setting up a server.
 ```bash
 # setup
 uv pip install llama-stack
-llama stack build --template ollama --image-type venv
+llama stack build --template starter --image-type venv
 ```
 
 ```python
