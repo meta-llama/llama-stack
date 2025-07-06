@@ -84,7 +84,7 @@ MODEL_ENTRIES = [
         CoreModelId.llama_guard_3_1b.value,
     ),
     ProviderModelEntry(
-        provider_model_id="all-minilm:latest",
+        provider_model_id="all-minilm:l6-v2",
         aliases=["all-minilm"],
         model_type=ModelType.embedding,
         metadata={
