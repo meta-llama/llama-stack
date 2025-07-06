@@ -402,7 +402,7 @@ def _run_stack_build_command_from_build_config(
         run_config_file = _generate_run_config(build_config, build_dir, image_name)
 
     with open(build_file_path, "w") as f:
-        to_write = json.loads(build_config.model_dump_json())
+        to_write = json.loads(build_config.model_dump_json(exclude_none=True))
         f.write(yaml.dump(to_write, sort_keys=False))
 
     # We first install the external APIs so that the build process can use them and discover the

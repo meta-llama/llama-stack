@@ -345,7 +345,7 @@ async def instantiate_provider(
     policy: list[AccessRule],
 ):
     provider_spec = provider.spec
-    if not hasattr(provider_spec, "module"):
+    if not hasattr(provider_spec, "module") or provider_spec.module is None:
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
 
     logger.debug(f"Instantiating provider {provider.provider_id} from {provider_spec.module}")
