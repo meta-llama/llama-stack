@@ -16,10 +16,6 @@ if [ $FOUND_PYTHON -ne 0 ]; then
      uv python install "$PYTHON_VERSION"
 fi
 
-# Install coverage if not installed
-uv pip install coverage >/dev/null 2>&1
-
 uv run --python "$PYTHON_VERSION" --with-editable . --group unit \
     coverage run --source=llama_stack -m pytest --asyncio-mode=auto -s -v tests/unit/ "$@" && \
 uv run --python "$PYTHON_VERSION" coverage html -d htmlcov-$PYTHON_VERSION
-
