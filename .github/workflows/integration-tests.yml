@@ -53,10 +53,13 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
-          OLLAMA_INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct" # for library tests
-          ENABLE_OLLAMA: "ollama" # for library tests
+          OLLAMA_INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct" # for server tests
+          ENABLE_OLLAMA: "ollama" # for server tests
           OLLAMA_URL: "http://0.0.0.0:11434"
+        # Use 'shell' to get pipefail behavior
+        # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
+        # TODO: write a precommit hook to detect if a test contains a pipe but does not use 'shell: bash'
+        shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
             stack_config="starter"
