@@ -101,15 +101,6 @@ vector_io:
 - **`client_pem_path`**: Path to the **client certificate** file (required for mTLS).
 - **`client_key_path`**: Path to the **client private key** file (required for mTLS).
 
-## Supported Search Modes
-
-The Milvus provider supports both vector-based and keyword-based (full-text) search modes, but with some limitations:
-
-- Remote Milvus supports both vector-based and keyword-based search modes.
-- Inline Milvus (Milvus-Lite) only supports vector-based search. Keyword search is not supported as Milvus-Lite has not implemented this functionality yet. For updates on this feature, see [Milvus GitHub Issue #40848](https://github.com/milvus-io/milvus/issues/40848).
-
-When using the RAGTool interface, you can specify the desired search behavior via the `mode` parameter in `RAGQueryConfig`. For more details on Milvus's implementation of keyword search modes, refer to the [Milvus documentation](https://milvus.io/docs/full_text_search_with_milvus.md).
-
 ## Documentation
 See the [Milvus documentation](https://milvus.io/docs/install-overview.md) for more details about Milvus in general.
 

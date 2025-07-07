@@ -132,41 +132,52 @@ async def test_query_chunks_keyword_search(milvus_index, sample_chunks, sample_e
 
     # Test keyword search
     query_string = "Sentence 5"
-    response = await milvus_index.query_keyword(query_string=query_string, k=3, score_threshold=0.0)
+    response = await milvus_index.query_keyword(query_string=query_string, k=2, score_threshold=0.0)
 
     assert isinstance(response, QueryChunksResponse)
-    assert len(response.chunks) == 3
-    mock_milvus_client.query.assert_called_once()
-
-    # Test no results case
-    mock_milvus_client.query.return_value = []
-    response_no_results = await milvus_index.query_keyword(query_string="nonexistent", k=1, score_threshold=0.0)
-
-    assert isinstance(response_no_results, QueryChunksResponse)
-    assert len(response_no_results.chunks) == 0
+    assert len(response.chunks) == 2
 
 
 @pytest.mark.asyncio
-async def test_query_chunks_keyword_search_k_greater_than_results(
-    milvus_index, sample_chunks, sample_embeddings, mock_milvus_client
-):
+async def test_bm25_fallback_to_simple_search(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
+    """Test that when BM25 search fails, the system falls back to simple text search."""
     mock_milvus_client.has_collection.return_value = True
     await milvus_index.add_chunks(sample_chunks, sample_embeddings)
 
-    # Mock returning only 1 result even though k=5
+    # Force BM25 search to fail
+    mock_milvus_client.search.side_effect = Exception("BM25 search not available")
+
+    # Mock simple text search results
     mock_milvus_client.query.return_value = [
         {
             "chunk_id": "chunk1",
-            "chunk_content": {"content": "Sentence 1 from document 0", "metadata": {"document_id": "doc1"}},
-            "score": 0.9,
-        }
+            "chunk_content": {"content": "Python programming language", "metadata": {"document_id": "doc1"}},
+        },
+        {
+            "chunk_id": "chunk2",
+            "chunk_content": {"content": "Machine learning algorithms", "metadata": {"document_id": "doc2"}},
+        },
     ]
 
-    query_str = "Sentence 1 from document 0"
-    response = await milvus_index.query_keyword(query_string=query_str, k=5, score_threshold=0.0)
+    # Test keyword search that should fall back to simple text search
+    query_string = "Python"
+    response = await milvus_index.query_keyword(query_string=query_string, k=3, score_threshold=0.0)
 
-    assert 0 < len(response.chunks) <= 4
-    assert any("Sentence 1 from document 0" in chunk.content for chunk in response.chunks)
+    # Verify response structure
+    assert isinstance(response, QueryChunksResponse)
+    assert len(response.chunks) > 0, "Fallback search should return results"
+
+    # Verify that simple text search was used (query method called instead of search)
+    mock_milvus_client.query.assert_called_once()
+    mock_milvus_client.search.assert_called_once()  # Called once but failed
+
+    # Verify the query filter contains the search term
+    query_call_args = mock_milvus_client.query.call_args
+    assert "filter" in query_call_args[1], "Query should include filter for text search"
+    assert "Python" in query_call_args[1]["filter"], "Filter should contain the search term"
+
+    # Verify all returned chunks have score 1.0 (simple binary scoring)
+    assert all(score == 1.0 for score in response.scores), "Simple text search should use binary scoring"
 
 
 @pytest.mark.asyncio
