@@ -39,6 +39,13 @@ docker pull llama-stack/distribution-meta-reference-gpu
 
 **Guides:** [Meta Reference GPU Guide](self_hosted_distro/meta-reference-gpu)
 
+### 🖥️ Self-Hosted with NVIDA NeMo Microservices
+
+**Use `nvidia` if you:**
+- Want to use Llama Stack with NVIDIA NeMo Microservices
+
+**Guides:** [NVIDIA Distribution Guide](self_hosted_distro/nvidia)
+
 ### ☁️ Managed Hosting
 
 **Use remote-hosted endpoints if you:**
