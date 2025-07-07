@@ -42,7 +42,7 @@ def start_llama_stack_server(config_name: str) -> subprocess.Popen:
     process = subprocess.Popen(
         cmd,
         stdout=devnull,  # redirect stdout to devnull to prevent deadlock
-        stderr=devnull,  # redirect stderr to devnull to prevent deadlock
+        stderr=subprocess.PIPE,  # keep stderr to see errors
         text=True,
         env={**os.environ, "LLAMA_STACK_LOG_FILE": "server.log"},
     )
@@ -57,6 +57,7 @@ def wait_for_server_ready(base_url: str, timeout: int = 30, process: subprocess.
     while time.time() - start_time < timeout:
         if process and process.poll() is not None:
             print(f"Server process terminated with return code: {process.returncode}")
+            print(f"Server stderr: {process.stderr.read()}")
             return False
 
         try:
