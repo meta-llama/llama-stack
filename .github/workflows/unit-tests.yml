@@ -36,7 +36,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          PYTHON_VERSION=${{ matrix.python }} ./scripts/unit-tests.sh --cov=llama_stack --junitxml=pytest-report-${{ matrix.python }}.xml --cov-report=html:htmlcov-${{ matrix.python }}
+          PYTHON_VERSION=${{ matrix.python }} ./scripts/unit-tests.sh --junitxml=pytest-report-${{ matrix.python }}.xml
 
       - name: Upload test results
         if: always()
@@ -48,3 +48,16 @@ jobs:
             pytest-report-${{ matrix.python }}.xml
             htmlcov-${{ matrix.python }}/
           retention-days: 7
+
+      - name: Check coverage
+        run: |
+          coverage=$(uv run --python $PYTHON_VERSION coverage report -m | tail -1 | tail -c 4 | head -c 2)
+          echo "Total coverage: ${coverage}%"
+          
+          # Check if coverage is below the threshold
+          if (( ${coverage} < 40 )); then
+              echo "Coverage failed at ${coverage}%, expected at least 40%"
+              exit 1
+          else
+              echo "Coverage passed, ${coverage}%"
+          fi
