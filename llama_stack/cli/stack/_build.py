@@ -403,15 +403,16 @@ def _run_stack_build_command_from_build_config(
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
         template_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/run.yaml"
+        run_config_file = build_dir / f"{template_name}-run.yaml"
+
         with importlib.resources.as_file(template_path) as path:
-            run_config_file = build_dir / f"{template_name}-run.yaml"
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green", file=sys.stderr)
-        cprint(f"You can find the newly-built template here: {template_path}", color="blue", file=sys.stderr)
+        cprint(f"You can find the newly-built template here: {run_config_file}", color="blue", file=sys.stderr)
         cprint(
             "You can run the new Llama Stack distro via: "
-            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "blue"),
+            + colored(f"llama stack run {run_config_file} --image-type {build_config.image_type}", "blue"),
             color="green",
             file=sys.stderr,
         )
