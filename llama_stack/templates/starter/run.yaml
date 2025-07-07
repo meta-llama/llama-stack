@@ -243,6 +243,8 @@ providers:
     config:
       api_key: ${env.TAVILY_SEARCH_API_KEY:=}
       max_results: 3
+      timeout: 30.0
+      connect_timeout: 10.0
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
     config: {}

@@ -32,6 +32,6 @@ class TavilySearchToolConfig(BaseModel):
         return {
             "api_key": "${env.TAVILY_SEARCH_API_KEY:=}",
             "max_results": 3,
-            "timeout:" 30.0,
+            "timeout": 30.0,
             "connect_timeout": 10.0,
         }
