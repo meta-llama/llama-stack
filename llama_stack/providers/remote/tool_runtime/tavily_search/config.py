@@ -22,10 +22,6 @@ class TavilySearchToolConfig(BaseModel):
         default=30.0,
         description="HTTP request timeout for the API",
     )
-    connect_timeout: float = Field(
-        default=10.0,
-        description="HTTP connection timeout in seconds for the API",
-    )
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str) -> dict[str, Any]:
@@ -33,5 +29,4 @@ class TavilySearchToolConfig(BaseModel):
             "api_key": "${env.TAVILY_SEARCH_API_KEY:=}",
             "max_results": 3,
             "timeout": 30.0,
-            "connect_timeout": 10.0,
         }
