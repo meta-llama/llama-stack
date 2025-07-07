@@ -24,6 +24,7 @@ class Role(Enum):
 
 
 class BuiltinTool(Enum):
+    web_search = "web_search"
     brave_search = "brave_search"
     wolfram_alpha = "wolfram_alpha"
     photogen = "photogen"

@@ -220,7 +220,10 @@ class ToolUtils:
 
     @staticmethod
     def encode_tool_call(t: ToolCall, tool_prompt_format: ToolPromptFormat) -> str:
-        if t.tool_name == BuiltinTool.brave_search:
+        if t.tool_name == BuiltinTool.web_search:
+            q = t.arguments["query"]
+            return f'web_search.call(query="{q}")'
+        elif t.tool_name == BuiltinTool.brave_search:
             q = t.arguments["query"]
             return f'brave_search.call(query="{q}")'
         elif t.tool_name == BuiltinTool.wolfram_alpha:
