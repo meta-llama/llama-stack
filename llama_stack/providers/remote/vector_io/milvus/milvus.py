@@ -154,10 +154,10 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
 
         for vector_db_data in stored_vector_dbs:
-            vector_db = VectorDB.mdel_validate_json(vector_db_data)
+            vector_db = VectorDB.model_validate_json(vector_db_data)
             index = VectorDBWithIndex(
                 vector_db,
-                index=await MilvusIndex(
+                index=MilvusIndex(
                     client=self.client,
                     collection_name=vector_db.identifier,
                     consistency_level=self.config.consistency_level,
@@ -259,6 +259,8 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
+        if store_id in self.openai_vector_stores:
+            del self.openai_vector_stores[store_id]
 
     async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
         """Load all vector store metadata from persistent storage."""
