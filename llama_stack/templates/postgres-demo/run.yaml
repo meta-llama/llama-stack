@@ -18,7 +18,6 @@ providers:
       tls_verify: ${env.VLLM_TLS_VERIFY:=true}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
-    config: {}
   vector_io:
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
@@ -70,10 +69,8 @@ providers:
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
-    config: {}
 metadata_store:
   type: postgres
   host: ${env.POSTGRES_HOST:=localhost}

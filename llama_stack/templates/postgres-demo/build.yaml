@@ -3,22 +3,33 @@ distribution_spec:
   description: Quick start template for running Llama Stack with several popular providers
   providers:
     inference:
-    - remote::vllm
-    - inline::sentence-transformers
+    - provider_id: vllm-inference
+      provider_type: remote::vllm
+    - provider_id: sentence-transformers
+      provider_type: inline::sentence-transformers
     vector_io:
-    - remote::chromadb
+    - provider_id: chromadb
+      provider_type: remote::chromadb
     safety:
-    - inline::llama-guard
+    - provider_id: llama-guard
+      provider_type: inline::llama-guard
     agents:
-    - inline::meta-reference
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
     telemetry:
-    - inline::meta-reference
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
     tool_runtime:
-    - remote::brave-search
-    - remote::tavily-search
-    - inline::rag-runtime
-    - remote::model-context-protocol
+    - provider_id: brave-search
+      provider_type: remote::brave-search
+    - provider_id: tavily-search
+      provider_type: remote::tavily-search
+    - provider_id: rag-runtime
+      provider_type: inline::rag-runtime
+    - provider_id: model-context-protocol
+      provider_type: remote::model-context-protocol
 image_type: conda
+image_name: postgres-demo
 additional_pip_packages:
 - asyncpg
 - psycopg2-binary
