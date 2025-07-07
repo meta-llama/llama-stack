@@ -53,7 +53,7 @@ jobs:
         run: |
           coverage=$(uv run --python ${{ matrix.python }} --group unit coverage report -m | tail -1 | tail -c 4 | head -c 2)
           echo "Total coverage: ${coverage}%"
-          
+
           # Check if coverage is below the threshold
           if (( ${coverage} < 40 )); then
               echo "Coverage failed at ${coverage}%, expected at least 40%"
