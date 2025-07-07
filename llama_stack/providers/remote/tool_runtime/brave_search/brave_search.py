@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import json
 from typing import Any
 
 import httpx
@@ -18,7 +19,6 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
-from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 
 from .config import BraveSearchToolConfig
@@ -54,7 +54,7 @@ class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRe
         return ListToolDefsResponse(
             data=[
                 ToolDef(
-                    name="web_search",
+                    name="web_search_brave",
                     description="Search the web for information",
                     parameters=[
                         ToolParameter(
@@ -63,7 +63,6 @@ class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRe
                             parameter_type="string",
                         )
                     ],
-                    built_in_type=BuiltinTool.brave_search,
                 )
             ]
         )
@@ -85,9 +84,10 @@ class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRe
             )
             response.raise_for_status()
         results = self._clean_brave_response(response.json())
-        content_items = "\n".join([str(result) for result in results])
+        # Format response consistently with Tavily (JSON with query and top_k)
+        formatted_response = {"query": kwargs["query"], "top_k": results}
         return ToolInvocationResult(
-            content=content_items,
+            content=json.dumps(formatted_response),
         )
 
     def _clean_brave_response(self, search_response):
@@ -143,4 +143,4 @@ class BraveSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, NeedsRe
         else:
             cleaned = {k: v for k, v in results.items() if k in selected_keys}
 
-        return str(cleaned)
+        return cleaned
