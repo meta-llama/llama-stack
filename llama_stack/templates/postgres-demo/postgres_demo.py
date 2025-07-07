@@ -34,16 +34,31 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
     providers = {
-        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
-        "vector_io": ["remote::chromadb"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
+        "inference": inference_providers
+        + [
+            Provider(
+                provider_id="sentence-transformers", provider_type="inline::sentence-transformers", config={}, module=""
+            ),
+        ],
+        "vector_io": [
+            Provider(provider_id="chromadb", provider_type="remote::chromadb", config={}, module=""),
+        ],
+        "safety": [Provider(provider_id="llama-guard", provider_type="inline::llama-guard", config={}, module="")],
+        "agents": [
+            Provider(provider_id="meta-reference", provider_type="inline::meta-reference", config={}, module="")
+        ],
+        "telemetry": [
+            Provider(provider_id="meta-reference", provider_type="inline::meta-reference", config={}, module="")
+        ],
         "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
+            Provider(provider_id="brave-search", provider_type="remote::brave-search", config={}, module=""),
+            Provider(provider_id="tavily-search", provider_type="remote::tavily-search", config={}, module=""),
+            Provider(provider_id="rag-runtime", provider_type="inline::rag-runtime", config={}, module=""),
+            Provider(
+                provider_id="model-context-protocol",
+                provider_type="remote::model-context-protocol",
+                config={},
+            ),
         ],
     }
     name = "postgres-demo"
