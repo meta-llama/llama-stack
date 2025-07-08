@@ -15,6 +15,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
+from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
@@ -29,9 +30,18 @@ ALLOWED_CODE_SCANNER_MODEL_IDS = [
 ]
 
 
-class MetaReferenceCodeScannerSafetyImpl(Safety):
+class MetaReferenceCodeScannerSafetyImpl(Safety, ShieldsProtocolPrivate):
     def __init__(self, config: CodeScannerConfig, deps) -> None:
         self.config = config
+        self._shield_store = None
+
+    @property
+    def shield_store(self):
+        return self._shield_store
+
+    @shield_store.setter
+    def shield_store(self, value):
+        self._shield_store = value
 
     async def initialize(self) -> None:
         pass
@@ -49,13 +59,19 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
         self,
         shield_id: str,
         messages: list[Message],
-        params: dict[str, Any] = None,
+        params: dict[str, Any],
     ) -> RunShieldResponse:
-        shield = await self.shield_store.get_shield(shield_id)
+        if self._shield_store is None:
+            raise RuntimeError("Shield store not initialized")
+
+        shield = await self._shield_store.get_shield(shield_id)
         if not shield:
             raise ValueError(f"Shield {shield_id} not found")
 
-        from codeshield.cs import CodeShield
+        try:
+            from codeshield.cs import CodeShield  # type: ignore
+        except ImportError:
+            raise ImportError("codeshield is not installed. Please install it to use the CodeScanner shield.") from None
 
         text = "\n".join([interleaved_content_as_str(m.content) for m in messages])
         log.info(f"Running CodeScannerShield on {text[50:]}")
