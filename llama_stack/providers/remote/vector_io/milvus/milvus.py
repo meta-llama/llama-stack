@@ -430,7 +430,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             logger.error(f"Error loading openai vector store file contents for {file_id} in store {store_id}: {e}")
             return []
 
-
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         """Delete vector store file metadata from Milvus database."""
         try:

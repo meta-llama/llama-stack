@@ -336,6 +336,7 @@ async def test_save_openai_vector_store_file(milvus_vec_adapter, tmp_path_factor
     # validating we don't raise an exception
     await milvus_vec_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
 
+
 @pytest.mark.asyncio
 async def test_update_openai_vector_store_file(milvus_vec_adapter, tmp_path_factory):
     store_id = "vs_1234"
@@ -359,7 +360,6 @@ async def test_update_openai_vector_store_file(milvus_vec_adapter, tmp_path_fact
     updated_file_info = file_info.copy()
     updated_file_info["filename"] = "updated_test_file.txt"
 
-
     await milvus_vec_adapter._update_openai_vector_store_file(
         store_id,
         file_id,
@@ -369,6 +369,7 @@ async def test_update_openai_vector_store_file(milvus_vec_adapter, tmp_path_fact
     loaded_contents = await milvus_vec_adapter._load_openai_vector_store_file(store_id, file_id)
     assert loaded_contents == updated_file_info
     assert loaded_contents != file_info
+
 
 @pytest.mark.asyncio
 async def test_load_openai_vector_store_file_contents(milvus_vec_adapter, tmp_path_factory):
