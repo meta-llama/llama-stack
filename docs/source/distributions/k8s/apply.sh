@@ -13,8 +13,21 @@ export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-llamastack}
 export INFERENCE_MODEL=${INFERENCE_MODEL:-meta-llama/Llama-3.2-3B-Instruct}
 export SAFETY_MODEL=${SAFETY_MODEL:-meta-llama/Llama-Guard-3-1B}
 
+# HF_TOKEN should be set by the user; base64 encode it for the secret
+if [ -n "${HF_TOKEN:-}" ]; then
+  export HF_TOKEN_BASE64=$(echo -n "$HF_TOKEN" | base64)
+else
+  echo "ERROR: HF_TOKEN not set. You need it for vLLM to download models from Hugging Face."
+  exit 1
+fi
+
 set -euo pipefail
 set -x
+
+# Apply the HF token secret if HF_TOKEN is provided
+if [ -n "${HF_TOKEN:-}" ]; then
+  envsubst < ./hf-token-secret.yaml.template | kubectl apply -f -
+fi
 
 envsubst < ./vllm-k8s.yaml.template | kubectl apply -f -
 envsubst < ./vllm-safety-k8s.yaml.template | kubectl apply -f -
