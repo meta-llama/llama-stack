@@ -10,8 +10,7 @@ import sqlite3
 import threading
 from datetime import UTC, datetime
 
-from opentelemetry.sdk.trace import SpanProcessor
-from opentelemetry.trace import Span
+from opentelemetry.sdk.trace import ReadableSpan, SpanProcessor
 from opentelemetry.trace.span import format_span_id, format_trace_id
 
 from llama_stack.providers.utils.telemetry.tracing import LOCAL_ROOT_SPAN_MARKER
@@ -93,11 +92,11 @@ class SQLiteSpanProcessor(SpanProcessor):
         conn.commit()
         cursor.close()
 
-    def on_start(self, span: Span, parent_context=None):
+    def on_start(self, span: ReadableSpan, parent_context=None):
         """Called when a span starts."""
         pass
 
-    def on_end(self, span: Span):
+    def on_end(self, span: ReadableSpan):
         """Called when a span ends. Export the span data to SQLite."""
         try:
             conn = self._get_connection()

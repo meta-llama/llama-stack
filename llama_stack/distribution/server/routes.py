@@ -64,9 +64,7 @@ def get_all_api_routes() -> dict[Api, list[Route]]:
                 http_method = hdrs.METH_DELETE
             else:
                 http_method = hdrs.METH_POST
-            routes.append(
-                Route(path=path, methods=[http_method], name=name, endpoint=None)
-            )  # setting endpoint to None since don't use a Router object
+            routes.append(Route(path=path, methods=[http_method], name=name, endpoint=None))
 
         apis[api] = routes
 
@@ -95,6 +93,8 @@ def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
             impl = impls[api]
             func = getattr(impl, route.name)
             # Get the first (and typically only) method from the set, filtering out HEAD
+            if route.methods is None:
+                continue  # Skip if no methods are available
             available_methods = [m for m in route.methods if m != "HEAD"]
             if not available_methods:
                 continue  # Skip if only HEAD method is available

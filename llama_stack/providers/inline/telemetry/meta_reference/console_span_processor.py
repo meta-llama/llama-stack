@@ -34,6 +34,9 @@ class ConsoleSpanProcessor(SpanProcessor):
         if span.attributes and span.attributes.get("__autotraced__"):
             return
 
+        if span.start_time is None:
+            return
+
         timestamp = datetime.fromtimestamp(span.start_time / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
 
         print(
@@ -44,6 +47,9 @@ class ConsoleSpanProcessor(SpanProcessor):
 
     def on_end(self, span: ReadableSpan) -> None:
         if span.attributes and span.attributes.get("__autotraced__"):
+            return
+
+        if span.end_time is None:
             return
 
         timestamp = datetime.fromtimestamp(span.end_time / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
@@ -59,8 +65,9 @@ class ConsoleSpanProcessor(SpanProcessor):
         elif span.status.status_code != StatusCode.UNSET:
             span_context += f"{COLORS['reset']} [{span.status.status_code}]"
 
-        duration_ms = (span.end_time - span.start_time) / 1e6
-        span_context += f"{COLORS['reset']} ({duration_ms:.2f}ms)"
+        if span.start_time is not None and span.end_time is not None:
+            duration_ms = (span.end_time - span.start_time) / 1e6
+            span_context += f"{COLORS['reset']} ({duration_ms:.2f}ms)"
 
         print(span_context)
 
@@ -76,10 +83,13 @@ class ConsoleSpanProcessor(SpanProcessor):
         for event in span.events:
             event_time = datetime.fromtimestamp(event.timestamp / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
 
-            severity = event.attributes.get("severity", "info")
-            message = event.attributes.get("message", event.name)
-            if isinstance(message, dict | list):
-                message = json.dumps(message, indent=2)
+            severity = "info"
+            message = event.name
+            if event.attributes:
+                severity = event.attributes.get("severity", "info")
+                message = event.attributes.get("message", event.name)
+                if isinstance(message, dict | list):
+                    message = json.dumps(message, indent=2)
 
             severity_colors = {
                 "error": f"{COLORS['bold']}{COLORS['red']}",
@@ -87,9 +97,10 @@ class ConsoleSpanProcessor(SpanProcessor):
                 "info": COLORS["white"],
                 "debug": COLORS["dim"],
             }
-            msg_color = severity_colors.get(severity, COLORS["white"])
+            msg_color = severity_colors.get(str(severity), COLORS["white"])
 
-            print(f" {event_time} {msg_color}[{severity.upper()}] {message}{COLORS['reset']}")
+            severity_str = str(severity).upper() if severity else "INFO"
+            print(f" {event_time} {msg_color}[{severity_str}] {message}{COLORS['reset']}")
 
             if event.attributes:
                 for key, value in event.attributes.items():
