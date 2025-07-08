@@ -335,3 +335,85 @@ async def test_save_openai_vector_store_file(milvus_vec_adapter, tmp_path_factor
 
     # validating we don't raise an exception
     await milvus_vec_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
+
+@pytest.mark.asyncio
+async def test_update_openai_vector_store_file(milvus_vec_adapter, tmp_path_factory):
+    store_id = "vs_1234"
+    file_id = "file_1234"
+
+    file_info = {
+        "id": file_id,
+        "status": "completed",
+        "vector_store_id": store_id,
+        "attributes": {},
+        "filename": "test_file.txt",
+        "created_at": int(time.time()),
+    }
+
+    file_contents = [
+        {"content": "Test content", "chunk_metadata": {"chunk_id": "chunk_001"}, "metadata": {"file_id": file_id}}
+    ]
+
+    await milvus_vec_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
+
+    updated_file_info = file_info.copy()
+    updated_file_info["filename"] = "updated_test_file.txt"
+
+
+    await milvus_vec_adapter._update_openai_vector_store_file(
+        store_id,
+        file_id,
+        updated_file_info,
+    )
+
+    loaded_contents = await milvus_vec_adapter._load_openai_vector_store_file(store_id, file_id)
+    assert loaded_contents == updated_file_info
+    assert loaded_contents != file_info
+
+@pytest.mark.asyncio
+async def test_load_openai_vector_store_file_contents(milvus_vec_adapter, tmp_path_factory):
+    store_id = "vs_1234"
+    file_id = "file_1234"
+
+    file_info = {
+        "id": file_id,
+        "status": "completed",
+        "vector_store_id": store_id,
+        "attributes": {},
+        "filename": "test_file.txt",
+        "created_at": int(time.time()),
+    }
+
+    file_contents = [
+        {"content": "Test content", "chunk_metadata": {"chunk_id": "chunk_001"}, "metadata": {"file_id": file_id}}
+    ]
+
+    await milvus_vec_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
+
+    loaded_contents = await milvus_vec_adapter._load_openai_vector_store_file_contents(store_id, file_id)
+    assert loaded_contents == file_contents
+
+
+@pytest.mark.asyncio
+async def test_delete_openai_vector_store_file_from_storage(milvus_vec_adapter, tmp_path_factory):
+    store_id = "vs_1234"
+    file_id = "file_1234"
+
+    file_info = {
+        "id": file_id,
+        "status": "completed",
+        "vector_store_id": store_id,
+        "attributes": {},
+        "filename": "test_file.txt",
+        "created_at": int(time.time()),
+    }
+
+    file_contents = [
+        {"content": "Test content", "chunk_metadata": {"chunk_id": "chunk_001"}, "metadata": {"file_id": file_id}}
+    ]
+
+    await milvus_vec_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
+    await milvus_vec_adapter._delete_openai_vector_store_file_from_storage(store_id, file_id)
+
+    loaded_contents = await milvus_vec_adapter._load_openai_vector_store_file_contents(store_id, file_id)
+    assert loaded_contents == []

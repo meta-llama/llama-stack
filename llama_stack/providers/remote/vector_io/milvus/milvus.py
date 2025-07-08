@@ -379,6 +379,29 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             logger.error(f"Error loading openai vector store file {file_id} for store {store_id}: {e}")
             return {}
 
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        """Update vector store file metadata in Milvus database."""
+        try:
+            if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
+                return
+
+            file_data = [
+                {
+                    "store_file_id": f"{store_id}_{file_id}",
+                    "store_id": store_id,
+                    "file_id": file_id,
+                    "file_info": json.dumps(file_info),
+                }
+            ]
+            await asyncio.to_thread(
+                self.client.upsert,
+                collection_name="openai_vector_store_files",
+                data=file_data,
+            )
+        except Exception as e:
+            logger.error(f"Error updating openai vector store file {file_id} for store {store_id}: {e}")
+            raise
+
     async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
         """Load vector store file contents from Milvus database."""
         try:
@@ -407,28 +430,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             logger.error(f"Error loading openai vector store file contents for {file_id} in store {store_id}: {e}")
             return []
 
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        """Update vector store file metadata in Milvus database."""
-        try:
-            if not await asyncio.to_thread(self.client.has_collection, "openai_vector_store_files"):
-                return
-
-            file_data = [
-                {
-                    "store_file_id": f"{store_id}_{file_id}",
-                    "store_id": store_id,
-                    "file_id": file_id,
-                    "file_info": json.dumps(file_info),
-                }
-            ]
-            await asyncio.to_thread(
-                self.client.upsert,
-                collection_name="openai_vector_store_files",
-                data=file_data,
-            )
-        except Exception as e:
-            logger.error(f"Error updating openai vector store file {file_id} for store {store_id}: {e}")
-            raise
 
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         """Delete vector store file metadata from Milvus database."""
