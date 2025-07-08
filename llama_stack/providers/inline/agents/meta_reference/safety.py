@@ -28,8 +28,8 @@ class ShieldRunnerMixin:
         output_shields: list[str] | None = None,
     ):
         self.safety_api = safety_api
-        self.input_shields = input_shields
-        self.output_shields = output_shields
+        self.input_shields = input_shields or []
+        self.output_shields = output_shields or []
 
     async def run_multiple_shields(self, messages: list[Message], identifiers: list[str]) -> None:
         async def run_shield_with_span(identifier: str):
