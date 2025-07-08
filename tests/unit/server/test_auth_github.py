@@ -6,6 +6,7 @@
 
 from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -24,7 +25,9 @@ class MockResponse:
 
     def raise_for_status(self):
         if self.status_code != 200:
-            raise Exception(f"HTTP error: {self.status_code}")
+            # Create a mock request for the HTTPStatusError
+            mock_request = httpx.Request("GET", "https://api.github.com/user")
+            raise httpx.HTTPStatusError(f"HTTP error: {self.status_code}", request=mock_request, response=self)
 
 
 @pytest.fixture
@@ -127,7 +130,7 @@ def test_authenticated_endpoint_with_invalid_github_token(mock_client_class, git
 
     response = github_token_client.get("/test", headers={"Authorization": "Bearer invalid_token"})
     assert response.status_code == 401
-    assert "Invalid GitHub token" in response.json()["error"]["message"]
+    assert "GitHub token validation failed. Please check your token and try again." in response.json()["error"]["message"]
 
 
 @patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")

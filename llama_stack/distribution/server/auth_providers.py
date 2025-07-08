@@ -328,9 +328,9 @@ class GitHubTokenAuthProvider(AuthProvider):
         """
         try:
             user_info = await _get_github_user_info(token, self.config.github_api_base_url)
-        except Exception as e:
+        except httpx.HTTPStatusError as e:
             logger.warning(f"GitHub token validation failed: {e}")
-            raise ValueError("Invalid GitHub token") from e
+            raise ValueError("GitHub token validation failed. Please check your token and try again.") from e
 
         principal = user_info["user"]["login"]
 
