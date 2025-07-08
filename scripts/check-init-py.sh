@@ -10,12 +10,6 @@
 
 set -euo pipefail
 
-# Use mapfile to get a faster way to iterate over directories
-if (( BASH_VERSINFO[0] < 4 )); then
-    echo "This script requires Bash 4.0 or higher for mapfile support."
-    exit 1
-fi
-
 PACKAGE_DIR="${1:-llama_stack}"
 
 if [ ! -d "$PACKAGE_DIR" ]; then
@@ -23,24 +17,22 @@ if [ ! -d "$PACKAGE_DIR" ]; then
     exit 1
 fi
 
-# Get all directories with Python files (excluding __init__.py)
-mapfile -t py_dirs < <(
-    find "$PACKAGE_DIR" \
-        -type f \
-        -name "*.py" ! -name "__init__.py" \
-        ! -path "*/.venv/*" \
-        ! -path "*/node_modules/*" \
-        -exec dirname {} \; | sort -u
-)
-
 missing_init_files=0
 
-for dir in "${py_dirs[@]}"; do
+# Get all directories with Python files (excluding __init__.py) and check each one
+while IFS= read -r -d '' dir; do
     if [ ! -f "$dir/__init__.py" ]; then
         echo "ERROR: Missing __init__.py in directory: $dir"
         echo "This directory contains Python files but no __init__.py, which may cause packaging issues."
         missing_init_files=1
     fi
-done
+done < <(
+    find "$PACKAGE_DIR" \
+        -type f \
+        -name "*.py" ! -name "__init__.py" \
+        ! -path "*/.venv/*" \
+        ! -path "*/node_modules/*" \
+        -exec dirname {} \; | sort -u | tr '\n' '\0'
+)
 
 exit $missing_init_files
