@@ -4,9 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-
 from abc import abstractmethod
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -19,7 +18,7 @@ from .api import SqlStore
 sql_store_pip_packages = ["sqlalchemy[asyncio]", "aiosqlite", "asyncpg"]
 
 
-class SqlStoreType(Enum):
+class SqlStoreType(StrEnum):
     sqlite = "sqlite"
     postgres = "postgres"
 
@@ -36,7 +35,7 @@ class SqlAlchemySqlStoreConfig(BaseModel):
 
 
 class SqliteSqlStoreConfig(SqlAlchemySqlStoreConfig):
-    type: Literal["sqlite"] = SqlStoreType.sqlite.value
+    type: Literal[SqlStoreType.sqlite] = SqlStoreType.sqlite
     db_path: str = Field(
         default=(RUNTIME_BASE_DIR / "sqlstore.db").as_posix(),
         description="Database path, e.g. ~/.llama/distributions/ollama/sqlstore.db",
@@ -59,7 +58,7 @@ class SqliteSqlStoreConfig(SqlAlchemySqlStoreConfig):
 
 
 class PostgresSqlStoreConfig(SqlAlchemySqlStoreConfig):
-    type: Literal["postgres"] = SqlStoreType.postgres.value
+    type: Literal[SqlStoreType.postgres] = SqlStoreType.postgres
     host: str = "localhost"
     port: int = 5432
     db: str = "llamastack"
@@ -107,7 +106,7 @@ def get_pip_packages(store_config: dict | SqlStoreConfig) -> list[str]:
 
 
 def sqlstore_impl(config: SqlStoreConfig) -> SqlStore:
-    if config.type in [SqlStoreType.sqlite.value, SqlStoreType.postgres.value]:
+    if config.type in [SqlStoreType.sqlite, SqlStoreType.postgres]:
         from .sqlalchemy_sqlstore import SqlAlchemySqlStoreImpl
 
         impl = SqlAlchemySqlStoreImpl(config)
