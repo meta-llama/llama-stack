@@ -5,6 +5,8 @@ Instead of starting the Llama Stack and vLLM servers locally. We can deploy them
 ### Prerequisites
 In this guide, we'll use a local [Kind](https://kind.sigs.k8s.io/) cluster and a vLLM inference service in the same cluster for demonstration purposes.
 
+Note: You can also deploy the Llama Stack server in an AWS EKS cluster. See [Deploying Llama Stack Server in AWS EKS](#deploying-llama-stack-server-in-aws-eks) for more details.
+
 First, create a local Kubernetes cluster via Kind:
 
 ```
@@ -217,3 +219,18 @@ Finally, we forward the Kubernetes service to a local port and test some inferen
 kubectl port-forward service/llama-stack-service 5000:5000
 llama-stack-client --endpoint http://localhost:5000 inference chat-completion --message "hello, what model are you?"
 ```
+
+## Deploying Llama Stack Server in AWS EKS
+
+We've also provided a script to deploy the Llama Stack server in an AWS EKS cluster. Once you have an [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html), you can run the following script to deploy the Llama Stack server.
+
+
+```
+cd docs/source/distributions/eks
+./apply.sh
+```
+
+This script will:
+
+- Set up a default storage class for AWS EKS
+- Deploy the Llama Stack server in a Kubernetes Pod and Service
