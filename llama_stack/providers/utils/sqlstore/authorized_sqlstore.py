@@ -15,6 +15,7 @@ from llama_stack.distribution.request_headers import get_authenticated_user
 from llama_stack.log import get_logger
 
 from .api import ColumnDefinition, ColumnType, PaginatedResponse, SqlStore
+from .sqlstore import SqlStoreType
 
 logger = get_logger(name=__name__, category="authorized_sqlstore")
 
@@ -71,8 +72,17 @@ class AuthorizedSqlStore:
         :param sql_store: Base SqlStore implementation to wrap
         """
         self.sql_store = sql_store
-
+        self._detect_database_type()
         self._validate_sql_optimized_policy()
+
+    def _detect_database_type(self) -> None:
+        """Detect the database type from the underlying SQL store."""
+        if not hasattr(self.sql_store, "config"):
+            raise ValueError("SqlStore must have a config attribute to be used with AuthorizedSqlStore")
+
+        self.database_type = self.sql_store.config.type
+        if self.database_type not in [SqlStoreType.postgres, SqlStoreType.sqlite]:
+            raise ValueError(f"Unsupported database type: {self.database_type}")
 
     def _validate_sql_optimized_policy(self) -> None:
         """Validate that SQL_OPTIMIZED_POLICY matches the actual default_policy().
@@ -181,6 +191,50 @@ class AuthorizedSqlStore:
         else:
             return self._build_conservative_where_clause()
 
+    def _json_extract(self, column: str, path: str) -> str:
+        """Extract JSON value (keeping JSON type).
+
+        Args:
+            column: The JSON column name
+            path: The JSON path (e.g., 'roles', 'teams')
+
+        Returns:
+            SQL expression to extract JSON value
+        """
+        if self.database_type == SqlStoreType.postgres:
+            return f"{column}->'{path}'"
+        elif self.database_type == SqlStoreType.sqlite:
+            return f"JSON_EXTRACT({column}, '$.{path}')"
+        else:
+            raise ValueError(f"Unsupported database type: {self.database_type}")
+
+    def _json_extract_text(self, column: str, path: str) -> str:
+        """Extract JSON value as text.
+
+        Args:
+            column: The JSON column name
+            path: The JSON path (e.g., 'roles', 'teams')
+
+        Returns:
+            SQL expression to extract JSON value as text
+        """
+        if self.database_type == SqlStoreType.postgres:
+            return f"{column}->>'{path}'"
+        elif self.database_type == SqlStoreType.sqlite:
+            return f"JSON_EXTRACT({column}, '$.{path}')"
+        else:
+            raise ValueError(f"Unsupported database type: {self.database_type}")
+
+    def _get_public_access_conditions(self) -> list[str]:
+        """Get the SQL conditions for public access."""
+        if self.database_type == SqlStoreType.postgres:
+            # Postgres stores JSON null as 'null'
+            return ["access_attributes::text = 'null'"]
+        elif self.database_type == SqlStoreType.sqlite:
+            return ["access_attributes = 'null'"]
+        else:
+            raise ValueError(f"Unsupported database type: {self.database_type}")
+
     def _build_default_policy_where_clause(self) -> str:
         """Build SQL WHERE clause for the default policy.
 
@@ -189,30 +243,33 @@ class AuthorizedSqlStore:
         """
         current_user = get_authenticated_user()
 
+        base_conditions = self._get_public_access_conditions()
         if not current_user or not current_user.attributes:
-            return "(access_attributes IS NULL OR access_attributes = 'null' OR access_attributes = '{}')"
+            # Only allow public records
+            return f"({' OR '.join(base_conditions)})"
         else:
-            base_conditions = ["access_attributes IS NULL", "access_attributes = 'null'", "access_attributes = '{}'"]
-
             user_attr_conditions = []
 
             for attr_key, user_values in current_user.attributes.items():
                 if user_values:
                     value_conditions = []
                     for value in user_values:
-                        value_conditions.append(f"JSON_EXTRACT(access_attributes, '$.{attr_key}') LIKE '%\"{value}\"%'")
+                        # Check if JSON array contains the value
+                        escaped_value = value.replace("'", "''")
+                        json_text = self._json_extract_text("access_attributes", attr_key)
+                        value_conditions.append(f"({json_text} LIKE '%\"{escaped_value}\"%')")
 
                     if value_conditions:
-                        category_missing = f"JSON_EXTRACT(access_attributes, '$.{attr_key}') IS NULL"
+                        # Check if the category is missing (NULL)
+                        category_missing = f"{self._json_extract('access_attributes', attr_key)} IS NULL"
                         user_matches_category = f"({' OR '.join(value_conditions)})"
                         user_attr_conditions.append(f"({category_missing} OR {user_matches_category})")
 
             if user_attr_conditions:
                 all_requirements_met = f"({' AND '.join(user_attr_conditions)})"
                 base_conditions.append(all_requirements_met)
-                return f"({' OR '.join(base_conditions)})"
-            else:
-                return f"({' OR '.join(base_conditions)})"
+
+            return f"({' OR '.join(base_conditions)})"
 
     def _build_conservative_where_clause(self) -> str:
         """Conservative SQL filtering for custom policies.
@@ -222,5 +279,8 @@ class AuthorizedSqlStore:
         current_user = get_authenticated_user()
 
         if not current_user:
-            return "(access_attributes IS NULL OR access_attributes = 'null' OR access_attributes = '{}')"
+            # Only allow public records
+            base_conditions = self._get_public_access_conditions()
+            return f"({' OR '.join(base_conditions)})"
+
         return "1=1"

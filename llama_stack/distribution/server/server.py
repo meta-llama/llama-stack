@@ -33,7 +33,11 @@ from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.distribution.access_control.access_control import AccessDeniedError
-from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
+from llama_stack.distribution.datatypes import (
+    AuthenticationRequiredError,
+    LoggingConfig,
+    StackRunConfig,
+)
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -217,7 +221,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
         principal = request.scope.get("principal", "")
-        user = User(principal, user_attributes)
+        user = User(principal=principal, attributes=user_attributes)
 
         await log_request_pre_validation(request)
 
@@ -405,13 +409,13 @@ def main(args: argparse.Namespace | None = None):
         args = parser.parse_args()
 
     log_line = ""
-    if args.config:
+    if hasattr(args, "config") and args.config:
         # if the user provided a config file, use it, even if template was specified
         config_file = Path(args.config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
         log_line = f"Using config file: {config_file}"
-    elif args.template:
+    elif hasattr(args, "template") and args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
@@ -455,7 +459,7 @@ def main(args: argparse.Namespace | None = None):
 
     # Add authentication middleware if configured
     if config.server.auth:
-        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
     else:
         if config.server.quota:

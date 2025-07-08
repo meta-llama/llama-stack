@@ -155,8 +155,12 @@ class StackRun(Subcommand):
                 # func=<bound method StackRun._run_stack_run_cmd of <llama_stack.cli.stack.run.StackRun object at 0x10484b010>>
                 if callable(getattr(args, arg)):
                     continue
-                if arg == "config" and template_name:
-                    server_args.config = str(config_file)
+                if arg == "config":
+                    if template_name:
+                        server_args.template = str(template_name)
+                    else:
+                        # Set the config file path
+                        server_args.config = str(config_file)
                 else:
                     setattr(server_args, arg, getattr(args, arg))
 
@@ -168,7 +172,10 @@ class StackRun(Subcommand):
             run_args.extend([str(args.port)])
 
             if config_file:
-                run_args.extend(["--config", str(config_file)])
+                if template_name:
+                    run_args.extend(["--template", str(template_name)])
+                else:
+                    run_args.extend(["--config", str(config_file)])
 
             if args.env:
                 for env_var in args.env:

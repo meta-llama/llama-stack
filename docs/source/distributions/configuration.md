@@ -56,8 +56,8 @@ shields: []
 server:
   port: 8321
   auth:
-    provider_type: "oauth2_token"
-    config:
+    provider_config:
+      type: "oauth2_token"
       jwks:
         uri: "https://my-token-issuing-svc.com/jwks"
 ```
@@ -226,6 +226,8 @@ server:
 
 ### Authentication Configuration
 
+> **Breaking Change (v0.2.14)**: The authentication configuration structure has changed. The previous format with `provider_type` and `config` fields has been replaced with a unified `provider_config` field that includes the `type` field. Update your configuration files accordingly.
+
 The `auth` section configures authentication for the server. When configured, all API requests must include a valid Bearer token in the Authorization header:
 
 ```
@@ -240,8 +242,8 @@ The server can be configured to use service account tokens for authorization, va
 ```yaml
 server:
   auth:
-    provider_type: "oauth2_token"
-    config:
+    provider_config:
+      type: "oauth2_token"
       jwks:
         uri: "https://kubernetes.default.svc:8443/openid/v1/jwks"
         token: "${env.TOKEN:+}"
@@ -325,13 +327,25 @@ You can easily validate a request by running:
 curl -s -L -H "Authorization: Bearer $(cat llama-stack-auth-token)" http://127.0.0.1:8321/v1/providers
 ```
 
+#### GitHub Token Provider
+Validates GitHub personal access tokens or OAuth tokens directly:
+```yaml
+server:
+  auth:
+    provider_config:
+      type: "github_token"
+      github_api_base_url: "https://api.github.com"  # Or GitHub Enterprise URL
+```
+
+The provider fetches user information from GitHub and maps it to access attributes based on the `claims_mapping` configuration.
+
 #### Custom Provider
 Validates tokens against a custom authentication endpoint:
 ```yaml
 server:
   auth:
-    provider_type: "custom"
-    config:
+    provider_config:
+      type: "custom"
       endpoint: "https://auth.example.com/validate"  # URL of the auth endpoint
 ```
 
@@ -416,8 +430,8 @@ clients.
 server:
   port: 8321
   auth:
-    provider_type: custom
-    config:
+    provider_config:
+      type: custom
       endpoint: https://auth.example.com/validate
   quota:
     kvstore:

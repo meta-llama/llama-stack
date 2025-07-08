@@ -6,7 +6,7 @@
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from llama_stack.providers.utils.kvstore.config import (
     KVStoreConfig,
@@ -19,6 +19,7 @@ from llama_stack.schema_utils import json_schema_type
 class MilvusVectorIOConfig(BaseModel):
     db_path: str
     kvstore: KVStoreConfig
+    consistency_level: str = Field(description="The consistency level of the Milvus server", default="Strong")
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:

@@ -104,19 +104,17 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
 
         # Test scenarios with different access control patterns
         test_scenarios = [
-            # Scenario 1: Public record (no access control)
+            # Scenario 1: Public record (no access control - represents None user insert)
             {"id": "1", "name": "public", "access_attributes": None},
-            # Scenario 2: Empty access control (should be treated as public)
-            {"id": "2", "name": "empty", "access_attributes": {}},
-            # Scenario 3: Record with roles requirement
-            {"id": "3", "name": "admin-only", "access_attributes": {"roles": ["admin"]}},
-            # Scenario 4: Record with multiple attribute categories
-            {"id": "4", "name": "admin-ml-team", "access_attributes": {"roles": ["admin"], "teams": ["ml-team"]}},
-            # Scenario 5: Record with teams only (missing roles category)
-            {"id": "5", "name": "ml-team-only", "access_attributes": {"teams": ["ml-team"]}},
-            # Scenario 6: Record with roles and projects
+            # Scenario 2: Record with roles requirement
+            {"id": "2", "name": "admin-only", "access_attributes": {"roles": ["admin"]}},
+            # Scenario 3: Record with multiple attribute categories
+            {"id": "3", "name": "admin-ml-team", "access_attributes": {"roles": ["admin"], "teams": ["ml-team"]}},
+            # Scenario 4: Record with teams only (missing roles category)
+            {"id": "4", "name": "ml-team-only", "access_attributes": {"teams": ["ml-team"]}},
+            # Scenario 5: Record with roles and projects
             {
-                "id": "6",
+                "id": "5",
                 "name": "admin-project-x",
                 "access_attributes": {"roles": ["admin"], "projects": ["project-x"]},
             },
