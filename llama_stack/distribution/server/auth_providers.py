@@ -327,43 +327,25 @@ class GitHubTokenAuthProvider(AuthProvider):
         This validates tokens issued by GitHub (personal access tokens or OAuth tokens).
         """
         try:
-            user_info = await self._get_github_user_info(token)
-
-            principal = user_info["user"]["login"]
-
-            github_data = {
-                "login": user_info["user"]["login"],
-                "id": str(user_info["user"]["id"]),
-                "organizations": user_info.get("organizations", []),
-            }
-
-            access_attributes = get_attributes_from_claims(github_data, self.config.claims_mapping)
-
-            return User(
-                principal=principal,
-                attributes=access_attributes,
-            )
-
+            user_info = await _get_github_user_info(token, self.config.github_api_base_url)
         except Exception as e:
             logger.warning(f"GitHub token validation failed: {e}")
             raise ValueError("Invalid GitHub token") from e
 
-    async def _get_github_user_info(self, access_token: str) -> dict:
-        """Fetch user info and organizations from GitHub API."""
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Accept": "application/vnd.github.v3+json",
-            "User-Agent": "llama-stack",
+        principal = user_info["user"]["login"]
+
+        github_data = {
+            "login": user_info["user"]["login"],
+            "id": str(user_info["user"]["id"]),
+            "organizations": user_info.get("organizations", []),
         }
 
-        async with httpx.AsyncClient() as client:
-            user_response = await client.get(f"{self.config.github_api_base_url}/user", headers=headers, timeout=10.0)
-            user_response.raise_for_status()
-            user_data = user_response.json()
+        access_attributes = get_attributes_from_claims(github_data, self.config.claims_mapping)
 
-            return {
-                "user": user_data,
-            }
+        return User(
+            principal=principal,
+            attributes=access_attributes,
+        )
 
     async def close(self):
         """Clean up any resources."""
@@ -372,6 +354,24 @@ class GitHubTokenAuthProvider(AuthProvider):
     def get_auth_error_message(self, scope: dict | None = None) -> str:
         """Return GitHub-specific authentication error message."""
         return "Authentication required. Please provide a valid GitHub access token (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) in the Authorization header (Bearer <token>)"
+
+
+async def _get_github_user_info(access_token: str, github_api_base_url: str) -> dict:
+    """Fetch user info and organizations from GitHub API."""
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "llama-stack",
+    }
+
+    async with httpx.AsyncClient() as client:
+        user_response = await client.get(f"{github_api_base_url}/user", headers=headers, timeout=10.0)
+        user_response.raise_for_status()
+        user_data = user_response.json()
+
+        return {
+            "user": user_data,
+        }
 
 
 def create_auth_provider(config: AuthenticationConfig) -> AuthProvider:
