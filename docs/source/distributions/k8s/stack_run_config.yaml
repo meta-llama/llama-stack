@@ -30,7 +30,7 @@ providers:
   - provider_id: ${env.ENABLE_CHROMADB:+chromadb}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:+}
+      url: ${env.CHROMADB_URL:=}
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
@@ -58,8 +58,8 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: ${env.OTEL_SERVICE_NAME:+console}
-      sinks: ${env.TELEMETRY_SINKS:+console}
+      service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
+      sinks: ${env.TELEMETRY_SINKS:=console}
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search
