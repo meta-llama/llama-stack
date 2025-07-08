@@ -51,9 +51,19 @@ from llama_stack.models.llama.llama3.prompt_templates import (
     SystemDefaultGenerator,
 )
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
-from llama_stack.models.llama.llama4.prompt_templates.system_prompts import (
-    PythonListCustomToolGenerator as PythonListCustomToolGeneratorLlama4,
-)
+
+# Conditional imports to avoid heavy dependencies during module loading
+try:
+    from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
+    from llama_stack.models.llama.llama4.prompt_templates.system_prompts import (
+        PythonListCustomToolGenerator as PythonListCustomToolGeneratorLlama4,
+    )
+    from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
+
+    LLAMA4_AVAILABLE = True
+except ImportError:
+    # Llama4 dependencies not available (e.g., torch not installed)
+    LLAMA4_AVAILABLE = False
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.models.llama.sku_types import ModelFamily, is_multimodal
 from llama_stack.providers.utils.inference import supported_inference_models
@@ -69,8 +79,34 @@ class CompletionRequestWithRawContent(CompletionRequest):
     content: RawContent
 
 
-def decode_assistant_message(content: str, stop_reason: StopReason) -> RawMessage:
-    formatter = ChatFormat(Tokenizer.get_instance())
+def decode_assistant_message(content: str, stop_reason: StopReason, model_id: str | None = None) -> RawMessage:
+    # -----------------------------------------------------------------------------------
+    # Model-routing logic
+    # -----------------------------------------------------------------------------------
+    # 1. If the caller passes a model_id and we have Llama-4 components available
+    #    (i.e. torch + llama4 package import succeeded), we inspect the resolved
+    #    model and use the Llama-4 specific ChatFormat.  This guarantees that
+    #    tool-calling responses use the correct python_list formatting.
+    # 2. In ALL other cases (no model_id, unresolved model, or Llama-4 deps not
+    #    installed) we fall back to the Llama-3 formatter so environments
+    #    without torch continue to work.
+    #
+    # This conditional import pattern prevents ImportError in torch-less
+    # environments while still supporting Llama-4 when the dependency tree is
+    # satisfied.
+    """Decode assistant message using the appropriate formatter for the model family."""
+    if model_id and LLAMA4_AVAILABLE:
+        model = resolve_model(model_id)
+        if model and model.model_family == ModelFamily.llama4:
+            # Use Llama4's ChatFormat for Llama4 models
+            formatter = Llama4ChatFormat(Llama4Tokenizer.get_instance())
+        else:
+            # Use Llama3's ChatFormat for all other models (default)
+            formatter = ChatFormat(Tokenizer.get_instance())
+    else:
+        # Default to Llama3 if no model specified or Llama4 not available
+        formatter = ChatFormat(Tokenizer.get_instance())
+
     return formatter.decode_assistant_message_from_content(content, stop_reason)
 
 
