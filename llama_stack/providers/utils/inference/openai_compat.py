@@ -299,7 +299,9 @@ def process_chat_completion_response(
 
     # TODO: This does not work well with tool calls for vLLM remote provider
     #   Ref: https://github.com/meta-llama/llama-stack/issues/1058
-    raw_message = decode_assistant_message(text_from_choice(choice), get_stop_reason(choice.finish_reason))
+    raw_message = decode_assistant_message(
+        text_from_choice(choice), get_stop_reason(choice.finish_reason), request.model
+    )
 
     # NOTE: If we do not set tools in chat-completion request, we should not
     # expect the ToolCall in the response. Instead, we should return the raw
@@ -448,7 +450,7 @@ async def process_chat_completion_stream_response(
             )
 
     # parse tool calls and report errors
-    message = decode_assistant_message(buffer, stop_reason)
+    message = decode_assistant_message(buffer, stop_reason, request.model)
 
     parsed_tool_calls = len(message.tool_calls) > 0
     if ipython and not parsed_tool_calls:
