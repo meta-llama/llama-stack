@@ -24,8 +24,8 @@ class ShieldRunnerMixin:
     def __init__(
         self,
         safety_api: Safety,
-        input_shields: list[str] = None,
-        output_shields: list[str] = None,
+        input_shields: list[str] | None = None,
+        output_shields: list[str] | None = None,
     ):
         self.safety_api = safety_api
         self.input_shields = input_shields
@@ -37,6 +37,7 @@ class ShieldRunnerMixin:
                 return await self.safety_api.run_shield(
                     shield_id=identifier,
                     messages=messages,
+                    params={},
                 )
 
         responses = await asyncio.gather(*[run_shield_with_span(identifier) for identifier in identifiers])
