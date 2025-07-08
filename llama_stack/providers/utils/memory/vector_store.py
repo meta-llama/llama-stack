@@ -228,7 +228,7 @@ def _validate_embedding(embedding: NDArray, index: int, expected_dimension: int)
 
 class EmbeddingIndex(ABC):
     @abstractmethod
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         raise NotImplementedError()
 
     @abstractmethod
@@ -265,7 +265,6 @@ class VectorDBWithIndex:
     async def insert_chunks(
         self,
         chunks: list[Chunk],
-        distance_metric: str | None = None,
     ) -> None:
         chunks_to_embed = []
         for i, c in enumerate(chunks):
@@ -287,12 +286,7 @@ class VectorDBWithIndex:
 
         embeddings = np.array([c.embedding for c in chunks], dtype=np.float32)
 
-        # Create metadata dict with distance_metric if provided
-        metadata = None
-        if distance_metric is not None:
-            metadata = {"distance_metric": distance_metric}
-
-        await self.index.add_chunks(chunks, embeddings, metadata=metadata)
+        await self.index.add_chunks(chunks, embeddings)
 
     async def query_chunks(
         self,

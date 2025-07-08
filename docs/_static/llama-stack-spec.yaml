@@ -7984,6 +7984,8 @@ components:
           type: string
         embedding_dimension:
           type: integer
+        distance_metric:
+          type: string
       additionalProperties: false
       required:
         - identifier
@@ -10950,6 +10952,11 @@ components:
           type: string
           description: >-
             The identifier of the vector database in the provider.
+        distance_metric:
+          type: string
+          description: >-
+            The distance metric to use (COSINE, L2, IP). If not specified, will be
+            automatically determined based on the embedding model.
       additionalProperties: false
       required:
         - vector_db_id

@@ -19,6 +19,7 @@ class VectorDB(Resource):
 
     embedding_model: str
     embedding_dimension: int
+    distance_metric: str | None = None
 
     @property
     def vector_db_id(self) -> str:
@@ -34,6 +35,7 @@ class VectorDBInput(BaseModel):
     embedding_model: str
     embedding_dimension: int
     provider_vector_db_id: str | None = None
+    distance_metric: str | None = None
 
 
 class ListVectorDBsResponse(BaseModel):
@@ -71,6 +73,7 @@ class VectorDBs(Protocol):
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
         provider_vector_db_id: str | None = None,
+        distance_metric: str | None = None,
     ) -> VectorDB:
         """Register a vector database.
 
@@ -79,6 +82,7 @@ class VectorDBs(Protocol):
         :param embedding_dimension: The dimension of the embedding model.
         :param provider_id: The identifier of the provider.
         :param provider_vector_db_id: The identifier of the vector database in the provider.
+        :param distance_metric: The distance metric to use (COSINE, L2, IP). If not specified, will be automatically determined based on the embedding model.
         :returns: A VectorDB.
         """
         ...

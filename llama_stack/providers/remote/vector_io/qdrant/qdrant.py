@@ -61,36 +61,10 @@ class QdrantIndex(EmbeddingIndex):
         self.collection_name = collection_name
         self._distance_metric = None  # Will be set when collection is created
 
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None):
+    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
-
-        # Extract distance_metric from metadata if provided, default to COSINE
-        distance_metric = "COSINE"  # Default
-        if metadata is not None and "distance_metric" in metadata:
-            distance_metric = metadata["distance_metric"]
-
-        if not await self.client.collection_exists(self.collection_name):
-            # Create collection with the specified distance metric
-            distance = getattr(models.Distance, distance_metric, models.Distance.COSINE)
-            self._distance_metric = distance_metric
-
-            await self.client.create_collection(
-                self.collection_name,
-                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=distance),
-            )
-        else:
-            # Collection already exists, warn if different distance metric was requested
-            if self._distance_metric is None:
-                # For now, assume COSINE as default since we can't easily extract it from collection info
-                self._distance_metric = "COSINE"
-
-            if self._distance_metric != distance_metric:
-                log.warning(
-                    f"Collection {self.collection_name} was created with distance metric '{self._distance_metric}', "
-                    f"but '{distance_metric}' was requested. Using existing distance metric."
-                )
 
         points = []
         for _i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
@@ -306,18 +280,11 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
-        params: dict[str, Any] | None = None,
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
-
-        # Extract distance_metric from params if provided
-        distance_metric = None
-        if params is not None:
-            distance_metric = params.get("distance_metric")
-
-        await index.insert_chunks(chunks, distance_metric=distance_metric)
+        await index.insert_chunks(chunks)
 
     async def query_chunks(
         self,
