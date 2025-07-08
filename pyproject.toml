@@ -242,7 +242,7 @@ exclude = [
     "^llama_stack/models/llama/llama3/interface\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
-    "^llama_stack/providers/inline/agents/meta_reference/",
+    "^llama_stack/models/llama/llama3_3/prompts\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/agent_instance\\.py$",
     "^llama_stack/providers/inline/agents/meta_reference/agents\\.py$",
     "^llama_stack/providers/inline/datasetio/localfs/",
