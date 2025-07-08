@@ -405,13 +405,13 @@ def main(args: argparse.Namespace | None = None):
         args = parser.parse_args()
 
     log_line = ""
-    if args.config:
+    if hasattr(args, "config") and args.config:
         # if the user provided a config file, use it, even if template was specified
         config_file = Path(args.config)
         if not config_file.exists():
             raise ValueError(f"Config file {config_file} does not exist")
         log_line = f"Using config file: {config_file}"
-    elif args.template:
+    elif hasattr(args, "template") and args.template:
         config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
         if not config_file.exists():
             raise ValueError(f"Template {args.template} does not exist")
