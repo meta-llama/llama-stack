@@ -125,6 +125,7 @@ docs = [
     "sphinxcontrib.redoc",
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
+    "sphinx-reredirects",
     "tomli",
     "linkify",
     "sphinxcontrib.openapi",

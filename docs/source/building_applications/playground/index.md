@@ -1,4 +1,4 @@
-# Llama Stack Playground
+## Llama Stack Playground
 
 ```{note}
 The Llama Stack Playground is currently experimental and subject to change. We welcome feedback and contributions to help improve it.
@@ -9,7 +9,7 @@ The Llama Stack Playground is an simple interface which aims to:
 - Demo **end-to-end** application code to help users get started to build their own applications
 - Provide an **UI** to help users inspect and understand Llama Stack API providers and resources
 
-## Key Features
+### Key Features
 
 #### Playground
 Interactive pages for users to play with and explore Llama Stack API capabilities.
@@ -90,7 +90,7 @@ Interactive pages for users to play with and explore Llama Stack API capabilitie
   - Under the hood, it uses Llama Stack's `/<resources>/list` API to get information about each resources.
   - Please visit [Core Concepts](https://llama-stack.readthedocs.io/en/latest/concepts/index.html) for more details about the resources.
 
-## Starting the Llama Stack Playground
+### Starting the Llama Stack Playground
 
 To start the Llama Stack Playground, run the following commands:
 

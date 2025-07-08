@@ -28,5 +28,4 @@ If you have built a container image and want to deploy it in a Kubernetes cluste
 
 importing_as_library
 configuration
-kubernetes_deployment
 ```
