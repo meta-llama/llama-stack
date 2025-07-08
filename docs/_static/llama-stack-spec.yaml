@@ -3832,6 +3832,7 @@ components:
           oneOf:
             - type: string
               enum:
+                - web_search
                 - brave_search
                 - wolfram_alpha
                 - photogen
@@ -3928,6 +3929,7 @@ components:
           oneOf:
             - type: string
               enum:
+                - web_search
                 - brave_search
                 - wolfram_alpha
                 - photogen
@@ -4964,6 +4966,7 @@ components:
           oneOf:
             - type: string
               enum:
+                - web_search
                 - brave_search
                 - wolfram_alpha
                 - photogen
