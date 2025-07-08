@@ -6,7 +6,7 @@
 
 import logging
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterator
 from datetime import UTC, datetime
 
 from llama_stack.apis.agents import (
@@ -22,9 +22,11 @@ from llama_stack.apis.agents import (
     Document,
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
+    OpenAIDeleteResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputTool,
     OpenAIResponseObject,
+    OpenAIResponseObjectStream,
     Order,
     Session,
     Turn,
@@ -133,7 +135,7 @@ class MetaReferenceAgentsImpl(Agents):
             persistence_store=(
                 self.persistence_store if agent_info.enable_session_persistence else self.in_memory_store
             ),
-            created_at=agent_info.created_at,
+            created_at=agent_info.created_at.isoformat(),
             policy=self.policy,
         )
 
@@ -154,9 +156,9 @@ class MetaReferenceAgentsImpl(Agents):
         agent_id: str,
         session_id: str,
         messages: list[UserMessage | ToolResponseMessage],
-        toolgroups: list[AgentToolGroup] | None = None,
-        documents: list[Document] | None = None,
         stream: bool | None = False,
+        documents: list[Document] | None = None,
+        toolgroups: list[AgentToolGroup] | None = None,
         tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         request = AgentTurnCreateRequest(
@@ -212,6 +214,8 @@ class MetaReferenceAgentsImpl(Agents):
     async def get_agents_turn(self, agent_id: str, session_id: str, turn_id: str) -> Turn:
         agent = await self._get_agent_impl(agent_id)
         turn = await agent.storage.get_session_turn(session_id, turn_id)
+        if turn is None:
+            raise ValueError(f"Turn {turn_id} not found in session {session_id}")
         return turn
 
     async def get_agents_step(self, agent_id: str, session_id: str, turn_id: str, step_id: str) -> AgentStepResponse:
@@ -223,8 +227,8 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def get_agents_session(
         self,
-        agent_id: str,
         session_id: str,
+        agent_id: str,
         turn_ids: list[str] | None = None,
     ) -> Session:
         agent = await self._get_agent_impl(agent_id)
@@ -242,7 +246,7 @@ class MetaReferenceAgentsImpl(Agents):
             started_at=session_info.started_at,
         )
 
-    async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
+    async def delete_agents_session(self, session_id: str, agent_id: str) -> None:
         agent = await self._get_agent_impl(agent_id)
         session_info = await agent.storage.get_session_info(session_id)
         if session_info is None:
@@ -259,7 +263,7 @@ class MetaReferenceAgentsImpl(Agents):
 
         # Delete all sessions
         for session in sessions:
-            await self.delete_agents_session(agent_id, session.session_id)
+            await self.delete_agents_session(session.session_id, agent_id)
 
         # Finally delete the agent itself
         await self.persistence_store.delete(f"agent:{agent_id}")
@@ -298,7 +302,7 @@ class MetaReferenceAgentsImpl(Agents):
         agent = Agent(
             agent_id=agent_id,
             agent_config=chat_agent.agent_config,
-            created_at=chat_agent.created_at,
+            created_at=datetime.fromisoformat(chat_agent.created_at),
         )
         return agent
 
@@ -319,6 +323,8 @@ class MetaReferenceAgentsImpl(Agents):
         self,
         response_id: str,
     ) -> OpenAIResponseObject:
+        if self.openai_responses_impl is None:
+            raise RuntimeError("OpenAI responses implementation not initialized")
         return await self.openai_responses_impl.get_openai_response(response_id)
 
     async def create_openai_response(
@@ -333,7 +339,9 @@ class MetaReferenceAgentsImpl(Agents):
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
         max_infer_iters: int | None = 10,
-    ) -> OpenAIResponseObject:
+    ) -> OpenAIResponseObject | AsyncIterator[OpenAIResponseObjectStream]:
+        if self.openai_responses_impl is None:
+            raise RuntimeError("OpenAI responses implementation not initialized")
         return await self.openai_responses_impl.create_openai_response(
             input, model, instructions, previous_response_id, store, stream, temperature, text, tools, max_infer_iters
         )
@@ -345,6 +353,8 @@ class MetaReferenceAgentsImpl(Agents):
         model: str | None = None,
         order: Order | None = Order.desc,
     ) -> ListOpenAIResponseObject:
+        if self.openai_responses_impl is None:
+            raise RuntimeError("OpenAI responses implementation not initialized")
         return await self.openai_responses_impl.list_openai_responses(after, limit, model, order)
 
     async def list_openai_response_input_items(
@@ -356,9 +366,13 @@ class MetaReferenceAgentsImpl(Agents):
         limit: int | None = 20,
         order: Order | None = Order.desc,
     ) -> ListOpenAIResponseInputItem:
+        if self.openai_responses_impl is None:
+            raise RuntimeError("OpenAI responses implementation not initialized")
         return await self.openai_responses_impl.list_openai_response_input_items(
             response_id, after, before, include, limit, order
         )
 
-    async def delete_openai_response(self, response_id: str) -> None:
+    async def delete_openai_response(self, response_id: str) -> OpenAIDeleteResponseObject:
+        if self.openai_responses_impl is None:
+            raise RuntimeError("OpenAI responses implementation not initialized")
         return await self.openai_responses_impl.delete_openai_response(response_id)
