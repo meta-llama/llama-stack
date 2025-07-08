@@ -327,7 +327,6 @@ class InferenceEndpointAdapter(_HfAdapter):
         # Get the inference endpoint details
         api = HfApi(token=config.api_token.get_secret_value())
         endpoint = api.get_inference_endpoint(config.endpoint_name)
-
         # Wait for the endpoint to be ready (if not already)
         endpoint.wait(timeout=60)
 

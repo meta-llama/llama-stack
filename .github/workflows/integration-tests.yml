@@ -25,7 +25,7 @@ jobs:
         # Listing tests manually since some of them currently fail
         # TODO: generate matrix list from tests/integration when fixed
         test-type: [agents, inference, datasets, inspect, scoring, post_training, providers, tool_runtime, vector_io]
-        client-type: [library, http]
+        client-type: [library, server]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -43,40 +43,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template ollama --image-type venv
-
-      - name: Start Llama Stack server in background
-        if: matrix.client-type == 'http'
-        env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
-        run: |
-          LLAMA_STACK_LOG_FILE=server.log nohup uv run llama stack run ./llama_stack/templates/ollama/run.yaml --image-type venv --env OLLAMA_URL="http://0.0.0.0:11434" &
-
-      - name: Wait for Llama Stack server to be ready
-        if: matrix.client-type == 'http'
-        run: |
-          echo "Waiting for Llama Stack server..."
-          for i in {1..30}; do
-            if curl -s http://localhost:8321/v1/health | grep -q "OK"; then
-              echo "Llama Stack server is up!"
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "Llama Stack server failed to start"
-          cat server.log
-          exit 1
-
-      - name: Verify Ollama status is OK
-        if: matrix.client-type == 'http'
-        run: |
-          echo "Verifying Ollama status..."
-          ollama_status=$(curl -s -L http://127.0.0.1:8321/v1/providers/ollama|jq --raw-output .health.status)
-          echo "Ollama status: $ollama_status"
-          if [ "$ollama_status" != "OK" ]; then
-            echo "Ollama health check failed"
-            exit 1
-          fi
+          uv run llama stack build --template starter --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -86,18 +53,25 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          OLLAMA_INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct" # for server tests
+          ENABLE_OLLAMA: "ollama" # for server tests
           OLLAMA_URL: "http://0.0.0.0:11434"
+        # Use 'shell' to get pipefail behavior
+        # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
+        # TODO: write a precommit hook to detect if a test contains a pipe but does not use 'shell: bash'
+        shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="ollama"
+            stack_config="starter"
           else
-            stack_config="http://localhost:8321"
+            stack_config="server:starter"
           fi
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
-            --text-model="meta-llama/Llama-3.2-3B-Instruct" \
-            --embedding-model=all-MiniLM-L6-v2
+            --text-model="ollama/meta-llama/Llama-3.2-3B-Instruct" \
+            --embedding-model=all-MiniLM-L6-v2 \
+            --color=yes \
+            --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}

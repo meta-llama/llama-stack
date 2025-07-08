@@ -13,7 +13,7 @@ Here are the most important options:
   - **`server:<config>`** - automatically start a server with the given config (e.g., `server:fireworks`). This provides one-step testing by auto-starting the server if the port is available, or reusing an existing server if already running.
   - **`server:<config>:<port>`** - same as above but with a custom port (e.g., `server:together:8322`)
   - a URL which points to a Llama Stack distribution server
-  - a template (e.g., `fireworks`, `together`) or a path to a `run.yaml` file
+  - a template (e.g., `starter`) or a path to a `run.yaml` file
   - a comma-separated list of api=provider pairs, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`. This is most useful for testing a single API surface.
 - `--env`: set environment variables, e.g. --env KEY=value. this is a utility option to set environment variables required by various providers.
 
@@ -61,28 +61,29 @@ pytest -s -v tests/integration/inference/ tests/integration/safety/ tests/integr
 
 ### Testing with Library Client
 
-Run all text inference tests with the `together` distribution:
+Run all text inference tests with the `starter` distribution using the `together` provider:
 
 ```bash
-pytest -s -v tests/integration/inference/test_text_inference.py \
-   --stack-config=together \
+ENABLE_TOGETHER=together pytest -s -v tests/integration/inference/test_text_inference.py \
+   --stack-config=starter \
    --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Run all text inference tests with the `together` distribution and `meta-llama/Llama-3.1-8B-Instruct`:
+Run all text inference tests with the `starter` distribution using the `together` provider and `meta-llama/Llama-3.1-8B-Instruct`:
 
 ```bash
-pytest -s -v tests/integration/inference/test_text_inference.py \
-   --stack-config=together \
+ENABLE_TOGETHER=together pytest -s -v tests/integration/inference/test_text_inference.py \
+   --stack-config=starter \
    --text-model=meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Running all inference tests for a number of models:
+Running all inference tests for a number of models using the `together` provider:
 
 ```bash
 TEXT_MODELS=meta-llama/Llama-3.1-8B-Instruct,meta-llama/Llama-3.1-70B-Instruct
 VISION_MODELS=meta-llama/Llama-3.2-11B-Vision-Instruct
 EMBEDDING_MODELS=all-MiniLM-L6-v2
+ENABLE_TOGETHER=together
 export TOGETHER_API_KEY=<together_api_key>
 
 pytest -s -v tests/integration/inference/ \

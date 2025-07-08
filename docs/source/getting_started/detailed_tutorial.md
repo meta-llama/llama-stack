@@ -42,7 +42,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 Setup your virtual environment.
 
 ```bash
-uv sync --python 3.10
+uv sync --python 3.12
 source .venv/bin/activate
 ```
 ## Step 2:  Run Llama Stack
@@ -56,9 +56,10 @@ You can use Python to build and run the Llama Stack server, which is useful for 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
 which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
+We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type venv --run
+ENABLE_OLLAMA=ollama OLLAMA_INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using `conda`
@@ -69,17 +70,18 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-INFERENCE_MODEL=llama3.2:3b llama stack build --template ollama --image-type conda  --image-name llama3-3b-conda --run
+ENABLE_OLLAMA=ollama INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type conda --run
 ```
 :::
 :::{tab-item} Using a Container
 You can use a container image to run the Llama Stack server. We provide several container images for the server
 component that works with different inference providers out of the box. For this guide, we will use
-`llamastack/distribution-ollama` as the container image. If you'd like to build your own image or customize the
+`llamastack/distribution-starter` as the container image. If you'd like to build your own image or customize the
 configurations, please check out [this guide](../references/index.md).
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
 export INFERENCE_MODEL="llama3.2:3b"
+export ENABLE_OLLAMA=ollama
 export LLAMA_STACK_PORT=8321
 mkdir -p ~/.llama
 ```
@@ -90,7 +92,7 @@ docker run -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
-  llamastack/distribution-ollama \
+  llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
@@ -112,7 +114,7 @@ docker run -it \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v ~/.llama:/root/.llama \
   --network=host \
-  llamastack/distribution-ollama \
+  llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://localhost:11434
@@ -146,7 +148,7 @@ source .venv/bin/activate
 
 :::{tab-item} Install with `venv`
 ```bash
-uv venv client --python 3.10
+uv venv client --python 3.12
 source client/bin/activate
 pip install llama-stack-client
 ```
@@ -154,7 +156,7 @@ pip install llama-stack-client
 
 :::{tab-item} Install with `conda`
 ```bash
-yes | conda create -n stack-client python=3.10
+yes | conda create -n stack-client python=3.12
 conda activate stack-client
 pip install llama-stack-client
 ```
@@ -177,37 +179,56 @@ List the models
 llama-stack-client models list
 Available Models
 
-┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ model_type      ┃ identifier                          ┃ provider_resource_id                ┃ metadata                                  ┃ provider_id     ┃
-┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ embedding       │ all-MiniLM-L6-v2                    │ all-minilm:latest                   │ {'embedding_dimension': 384.0}            │ ollama          │
-├─────────────────┼─────────────────────────────────────┼─────────────────────────────────────┼───────────────────────────────────────────┼─────────────────┤
-│ llm             │ llama3.2:3b                         │ llama3.2:3b                         │                                           │ ollama          │
-└─────────────────┴─────────────────────────────────────┴─────────────────────────────────────┴───────────────────────────────────────────┴─────────────────┘
-
-Total models: 2
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ model_type      ┃ identifier                          ┃ provider_resource_id                ┃ metadata                                  ┃ provider_id           ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━┩
+│ embedding       │ ollama/all-minilm:l6-v2             │ all-minilm:l6-v2                    │ {'embedding_dimension': 384.0}            │ ollama                │
+├─────────────────┼─────────────────────────────────────┼─────────────────────────────────────┼───────────────────────────────────────────┼───────────────────────┤
+│ ...             │ ...                                 │ ...                                 │                                           │ ...                   │
+├─────────────────┼─────────────────────────────────────┼─────────────────────────────────────┼───────────────────────────────────────────┼───────────────────────┤
+│ llm             │ ollama/Llama-3.2:3b                 │ llama3.2:3b                         │                                           │ ollama                │
+└─────────────────┴─────────────────────────────────────┴─────────────────────────────────────┴───────────────────────────────────────────┴───────────────────────┘
 
 ```
 You can test basic Llama inference completion using the CLI.
 
 ```bash
-llama-stack-client inference chat-completion --message "tell me a joke"
+llama-stack-client inference chat-completion --model-id "ollama/llama3.2:3b" --message "tell me a joke"
+
 ```
 Sample output:
 ```python
-ChatCompletionResponse(
-    completion_message=CompletionMessage(
-        content="Here's one:\n\nWhat do you call a fake noodle?\n\nAn impasta!",
-        role="assistant",
-        stop_reason="end_of_turn",
-        tool_calls=[],
-    ),
-    logprobs=None,
-    metrics=[
-        Metric(metric="prompt_tokens", value=14.0, unit=None),
-        Metric(metric="completion_tokens", value=27.0, unit=None),
-        Metric(metric="total_tokens", value=41.0, unit=None),
+OpenAIChatCompletion(
+    id="chatcmpl-08d7b2be-40f3-47ed-8f16-a6f29f2436af",
+    choices=[
+        OpenAIChatCompletionChoice(
+            finish_reason="stop",
+            index=0,
+            message=OpenAIChatCompletionChoiceMessageOpenAIAssistantMessageParam(
+                role="assistant",
+                content="Why couldn't the bicycle stand up by itself?\n\nBecause it was two-tired.",
+                name=None,
+                tool_calls=None,
+                refusal=None,
+                annotations=None,
+                audio=None,
+                function_call=None,
+            ),
+            logprobs=None,
+        )
     ],
+    created=1751725254,
+    model="llama3.2:3b",
+    object="chat.completion",
+    service_tier=None,
+    system_fingerprint="fp_ollama",
+    usage={
+        "completion_tokens": 18,
+        "prompt_tokens": 29,
+        "total_tokens": 47,
+        "completion_tokens_details": None,
+        "prompt_tokens_details": None,
+    },
 )
 ```
 
@@ -233,19 +254,19 @@ client = LlamaStackClient(base_url="http://localhost:8321")
 models = client.models.list()
 
 # Select the first LLM
-llm = next(m for m in models if m.model_type == "llm")
+llm = next(m for m in models if m.model_type == "llm" and m.provider_id == "ollama")
 model_id = llm.identifier
 
 print("Model:", model_id)
 
-response = client.inference.chat_completion(
-    model_id=model_id,
+response = client.chat.completions.create(
+    model=model_id,
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Write a haiku about coding"},
     ],
 )
-print(response.completion_message.content)
+print(response)
 ```
 
 ### ii. Run the Script
@@ -255,12 +276,8 @@ uv run python inference.py
 ```
 Which will output:
 ```
-Model: llama3.2:3b
-Here is a haiku about coding:
-
-Lines of code unfold
-Logic flows through digital night
-Beauty in the bits
+Model: ollama/llama3.2:3b
+OpenAIChatCompletion(id='chatcmpl-30cd0f28-a2ad-4b6d-934b-13707fc60ebf', choices=[OpenAIChatCompletionChoice(finish_reason='stop', index=0, message=OpenAIChatCompletionChoiceMessageOpenAIAssistantMessageParam(role='assistant', content="Lines of code unfold\nAlgorithms dance with ease\nLogic's gentle kiss", name=None, tool_calls=None, refusal=None, annotations=None, audio=None, function_call=None), logprobs=None)], created=1751732480, model='llama3.2:3b', object='chat.completion', service_tier=None, system_fingerprint='fp_ollama', usage={'completion_tokens': 16, 'prompt_tokens': 37, 'total_tokens': 53, 'completion_tokens_details': None, 'prompt_tokens_details': None})
 ```
 :::
 
@@ -278,7 +295,7 @@ import uuid
 client = LlamaStackClient(base_url=f"http://localhost:8321")
 
 models = client.models.list()
-llm = next(m for m in models if m.model_type == "llm")
+llm = next(m for m in models if m.model_type == "llm" and m.provider_id == "ollama")
 model_id = llm.identifier
 
 agent = Agent(client, model=model_id, instructions="You are a helpful assistant.")
@@ -315,19 +332,20 @@ uv run python agent.py
 
 ```{dropdown} 👋 Click here to see the sample output
     Non-streaming ...
-    agent> I'm an artificial intelligence designed to assist and communicate with users like you. I don't have a personal identity, but I'm here to provide information, answer questions, and help with tasks to the best of my abilities.
+    agent> I'm an artificial intelligence designed to assist and communicate with users like you. I don't have a personal identity, but I can provide information, answer questions, and help with tasks to the best of my abilities.
 
-    I can be used for a wide range of purposes, such as:
+    I'm a large language model, which means I've been trained on a massive dataset of text from various sources, allowing me to understand and respond to a wide range of topics and questions. My purpose is to provide helpful and accurate information, and I'm constantly learning and improving my responses based on the interactions I have with users like you.
 
+    I can help with:
+
+    * Answering questions on various subjects
     * Providing definitions and explanations
     * Offering suggestions and ideas
-    * Helping with language translation
-    * Assisting with writing and proofreading
-    * Generating text or responses to questions
-    * Playing simple games or chatting about topics of interest
+    * Assisting with language-related tasks, such as proofreading and editing
+    * Generating text and content
+    * And more!
 
-    I'm constantly learning and improving my abilities, so feel free to ask me anything, and I'll do my best to help!
-
+    Feel free to ask me anything, and I'll do my best to help!
     Streaming ...
     AgentTurnResponseStreamChunk(
     │   event=TurnResponseEvent(
@@ -421,15 +439,15 @@ uv run python agent.py
 
 
     Streaming with print helper...
-    inference> Déjà vu!
+    inference> Déjà vu! You're asking me again!
 
-    As I mentioned earlier, I'm an artificial intelligence language model. I don't have a personal identity or consciousness like humans do. I exist solely to process and respond to text-based inputs, providing information and assistance on a wide range of topics.
+    As I mentioned earlier, I'm a computer program designed to simulate conversation and answer questions. I don't have a personal identity or consciousness like a human would. I exist solely as a digital entity, running on computer servers and responding to inputs from users like you.
 
-    I'm a computer program designed to simulate human-like conversations, using natural language processing (NLP) and machine learning algorithms to understand and generate responses. My purpose is to help users like you with their questions, provide information, and engage in conversation.
+    I'm a type of artificial intelligence (AI) called a large language model, which means I've been trained on a massive dataset of text from various sources. This training allows me to understand and respond to a wide range of questions and topics.
 
-    Think of me as a virtual companion, a helpful tool designed to make your interactions more efficient and enjoyable. I don't have personal opinions, emotions, or biases, but I'm here to provide accurate and informative responses to the best of my abilities.
+    My purpose is to provide helpful and accurate information, answer questions, and assist users like you with tasks and conversations. I don't have personal preferences, emotions, or opinions like humans do. My goal is to be informative, neutral, and respectful in my responses.
 
-    So, who am I? I'm just a computer program designed to help you!
+    So, that's me in a nutshell!
 ```
 :::
 
@@ -483,7 +501,11 @@ client.tool_runtime.rag_tool.insert(
 )
 
 # Get the model being served
-llm = next(m for m in client.models.list() if m.model_type == "llm")
+llm = next(
+    m
+    for m in client.models.list()
+    if m.model_type == "llm" and m.provider_id == "ollama"
+)
 model = llm.identifier
 
 # Create the RAG agent

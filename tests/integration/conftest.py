@@ -65,7 +65,7 @@ def pytest_addoption(parser):
         help=textwrap.dedent(
             """
             a 'pointer' to the stack. this can be either be:
-            (a) a template name like `fireworks`, or
+            (a) a template name like `starter`, or
             (b) a path to a run.yaml file, or
             (c) an adhoc config spec, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`
             """

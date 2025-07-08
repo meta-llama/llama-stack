@@ -7,6 +7,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+import pytest_asyncio
 import yaml
 from pydantic import TypeAdapter, ValidationError
 
@@ -26,7 +27,7 @@ def _return_model(model):
     return model
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_setup(cached_disk_dist_registry):
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
@@ -245,7 +246,7 @@ async def test_automatic_access_attributes(mock_get_authenticated_user, test_set
     assert model.identifier == "auto-access-model"
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_setup_with_access_policy(cached_disk_dist_registry):
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
