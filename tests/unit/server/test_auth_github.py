@@ -130,7 +130,9 @@ def test_authenticated_endpoint_with_invalid_github_token(mock_client_class, git
 
     response = github_token_client.get("/test", headers={"Authorization": "Bearer invalid_token"})
     assert response.status_code == 401
-    assert "GitHub token validation failed. Please check your token and try again." in response.json()["error"]["message"]
+    assert (
+        "GitHub token validation failed. Please check your token and try again." in response.json()["error"]["message"]
+    )
 
 
 @patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")
