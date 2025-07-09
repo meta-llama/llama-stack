@@ -258,7 +258,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             raise RuntimeError(f"Request to {list_models_url} failed") from e
         available_models = [model.get("id") for model in response.json().get("data", {})]
         if len(available_models) == 0 or model_id.split("sambanova/")[-1] not in available_models:
-            logger.warning(f"Model {model_id} not found as available in SambaNova models")
+            logger.warning(f"Model {model_id} not available in {self.config.url}/models")
         return model
 
     async def initialize(self):
