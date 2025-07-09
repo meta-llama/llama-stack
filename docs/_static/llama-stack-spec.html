@@ -11132,8 +11132,38 @@
                 "title": "Trace"
             },
             "Checkpoint": {
-                "description": "Checkpoint created during training runs",
-                "title": "Checkpoint"
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "epoch": {
+                        "type": "integer"
+                    },
+                    "post_training_job_id": {
+                        "type": "string"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "training_metrics": {
+                        "$ref": "#/components/schemas/PostTrainingMetric"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "created_at",
+                    "epoch",
+                    "post_training_job_id",
+                    "path"
+                ],
+                "title": "Checkpoint",
+                "description": "Checkpoint created during training runs"
             },
             "PostTrainingJobArtifactsResponse": {
                 "type": "object",
@@ -11155,6 +11185,31 @@
                 ],
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
+            },
+            "PostTrainingMetric": {
+                "type": "object",
+                "properties": {
+                    "epoch": {
+                        "type": "integer"
+                    },
+                    "train_loss": {
+                        "type": "number"
+                    },
+                    "validation_loss": {
+                        "type": "number"
+                    },
+                    "perplexity": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "epoch",
+                    "train_loss",
+                    "validation_loss",
+                    "perplexity"
+                ],
+                "title": "PostTrainingMetric"
             },
             "PostTrainingJobStatusResponse": {
                 "type": "object",

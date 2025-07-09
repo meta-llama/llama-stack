@@ -19,8 +19,10 @@ class PostTrainingMetric(BaseModel):
     perplexity: float
 
 
-@json_schema_type(schema={"description": "Checkpoint created during training runs"})
+@json_schema_type
 class Checkpoint(BaseModel):
+    """Checkpoint created during training runs"""
+
     identifier: str
     created_at: datetime
     epoch: int
