@@ -82,9 +82,37 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
     def get_llama_model(self, provider_model_id: str) -> str | None:
         return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
+    async def query_available_models(self) -> list[str]:
+        """
+        Return a list of available models.
+
+        This is for subclassing purposes, so providers can lookup a list of
+        of currently available models.
+
+        This is combined with the statically configured model entries in
+        `self.alias_to_provider_id_map` to determine which models are
+        available for registration.
+
+        Default implementation returns no models.
+
+        :return: A list of model identifiers (provider_model_ids).
+        """
+        return []
+
     async def register_model(self, model: Model) -> Model:
-        if not (supported_model_id := self.get_provider_model_id(model.provider_resource_id)):
-            raise UnsupportedModelError(model.provider_resource_id, self.alias_to_provider_id_map.keys())
+        # Check if model is supported in static configuration
+        supported_model_id = self.get_provider_model_id(model.provider_resource_id)
+
+        # If not found in static config, check if it's available from provider
+        if not supported_model_id:
+            available_models = await self.query_available_models()
+            if model.provider_resource_id in available_models:
+                supported_model_id = model.provider_resource_id
+            else:
+                # Combine static and dynamic models for error message
+                all_supported_models = list(self.alias_to_provider_id_map.keys()) + available_models
+                raise UnsupportedModelError(model.provider_resource_id, all_supported_models)
+
         provider_resource_id = self.get_provider_model_id(model.model_id)
         if model.model_type == ModelType.embedding:
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
@@ -113,6 +141,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                         ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[llama_model]
                     )
 
+        # Register the model alias, ensuring it maps to the correct provider model id
         self.alias_to_provider_id_map[model.model_id] = supported_model_id
 
         return model
