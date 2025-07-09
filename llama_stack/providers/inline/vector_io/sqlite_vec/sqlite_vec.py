@@ -520,3 +520,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await index.query_chunks(query, params)
+
+    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a sqlite_vec index."""
+        pass  # TODO

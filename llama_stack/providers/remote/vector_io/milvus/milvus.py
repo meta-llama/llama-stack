@@ -369,3 +369,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
                 )
 
         return await index.query_chunks(query, params)
+
+    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a milvus vector store."""
+        pass  # TODO

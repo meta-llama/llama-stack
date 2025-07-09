@@ -232,6 +232,10 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def delete_chunk(self, chunk_id: str):
+        raise NotImplementedError()
+
+    @abstractmethod
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         raise NotImplementedError()
 

@@ -153,6 +153,11 @@ class OpenAIVectorStoreMixin(ABC):
         self.openai_vector_stores = await self._load_openai_vector_stores()
 
     @abstractmethod
+    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a vector store."""
+        pass
+
+    @abstractmethod
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         """Register a vector database (provider-specific implementation)."""
         pass
@@ -762,6 +767,12 @@ class OpenAIVectorStoreMixin(ABC):
         """Deletes a vector store file."""
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
+
+        dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
+        chunks = [Chunk.model_validate(c) for c in dict_chunks]
+        for c in chunks:
+            if c.chunk_id:
+                await self.delete_chunk(vector_store_id, str(c.chunk_id))
 
         store_info = self.openai_vector_stores[vector_store_id].copy()
 
