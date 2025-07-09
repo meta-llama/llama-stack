@@ -742,3 +742,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if vector_db_id not in self.cache:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await self.cache[vector_db_id].query_chunks(query, params)
+
+    async def _delete_openai_chunk_from_vector_store(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a sqlite_vec index."""
+        pass  # TODO

@@ -55,6 +55,11 @@ class FaissIndex(EmbeddingIndex):
         self.kvstore = kvstore
         self.bank_id = bank_id
 
+        # A list of chunk id's in the same order as they are in the index,
+        # must be updated when chunks are added or removed
+        # TODO: will need a lock around this and the index to ensure thread safety
+        self.chunk_ids: list[Any] = []
+
     @classmethod
     async def create(cls, dimension: int, kvstore: KVStore | None = None, bank_id: str | None = None):
         instance = cls(dimension, kvstore, bank_id)
@@ -75,6 +80,7 @@ class FaissIndex(EmbeddingIndex):
             buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
             try:
                 self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
+                self.chunk_ids = [chunk.stored_chunk_id for chunk in self.chunk_by_index.values()]
             except Exception as e:
                 logger.debug(e, exc_info=True)
                 raise ValueError(
@@ -115,8 +121,28 @@ class FaissIndex(EmbeddingIndex):
             self.chunk_by_index[indexlen + i] = chunk
 
         self.index.add(np.array(embeddings).astype(np.float32))
+        self.chunk_ids.extend([chunk.stored_chunk_id for chunk in chunks])
 
         # Save updated index
+        await self._save_index()
+
+    async def remove_chunk(self, chunk_id: str) -> None:
+        if chunk_id not in self.chunk_ids:
+            return
+
+        index = self.chunk_ids.index(chunk_id)
+        self.index.remove_ids(np.array([index]))
+
+        new_chunk_by_index = {}
+        for idx, chunk in self.chunk_by_index.items():
+            # Shift all chunks after the removed chunk to the left
+            if idx > index:
+                new_chunk_by_index[idx - 1] = chunk
+            else:
+                new_chunk_by_index[idx] = chunk
+        self.chunk_by_index = new_chunk_by_index
+        self.chunk_ids.pop(index)
+
         await self._save_index()
 
     async def query_vector(
@@ -328,3 +354,8 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
         await self.kvstore.delete(key)
+
+    async def _delete_openai_chunk_from_vector_store(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a faiss index"""
+        faiss_index = self.cache[store_id].index
+        await faiss_index.remove_chunk(chunk_id)
