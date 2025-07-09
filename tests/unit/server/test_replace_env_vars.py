@@ -5,73 +5,91 @@
 # the root directory of this source tree.
 
 import os
-import unittest
+
+import pytest
 
 from llama_stack.distribution.stack import replace_env_vars
 
 
-class TestReplaceEnvVars(unittest.TestCase):
-    def setUp(self):
-        # Clear any existing environment variables we'll use in tests
-        for var in ["TEST_VAR", "EMPTY_VAR", "ZERO_VAR"]:
-            if var in os.environ:
-                del os.environ[var]
+@pytest.fixture(autouse=True)
+def setup_env_vars():
+    """Set up test environment variables and clean up after test"""
+    # Store original values
+    original_vars = {}
+    for var in ["TEST_VAR", "EMPTY_VAR", "ZERO_VAR"]:
+        original_vars[var] = os.environ.get(var)
+        if var in os.environ:
+            del os.environ[var]
 
-        # Set up test environment variables
-        os.environ["TEST_VAR"] = "test_value"
-        os.environ["EMPTY_VAR"] = ""
-        os.environ["ZERO_VAR"] = "0"
+    # Set up test environment variables
+    os.environ["TEST_VAR"] = "test_value"
+    os.environ["EMPTY_VAR"] = ""
+    os.environ["ZERO_VAR"] = "0"
 
-    def test_simple_replacement(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR}"), "test_value")
+    yield
 
-    def test_default_value_when_not_set(self):
-        self.assertEqual(replace_env_vars("${env.NOT_SET:=default}"), "default")
-
-    def test_default_value_when_set(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR:=default}"), "test_value")
-
-    def test_default_value_when_empty(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:=default}"), "default")
-
-    def test_none_value_when_empty(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:=}"), None)
-
-    def test_value_when_set(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR:=}"), "test_value")
-
-    def test_empty_var_no_default(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR_NO_DEFAULT:+}"), None)
-
-    def test_conditional_value_when_set(self):
-        self.assertEqual(replace_env_vars("${env.TEST_VAR:+conditional}"), "conditional")
-
-    def test_conditional_value_when_not_set(self):
-        self.assertEqual(replace_env_vars("${env.NOT_SET:+conditional}"), None)
-
-    def test_conditional_value_when_empty(self):
-        self.assertEqual(replace_env_vars("${env.EMPTY_VAR:+conditional}"), None)
-
-    def test_conditional_value_with_zero(self):
-        self.assertEqual(replace_env_vars("${env.ZERO_VAR:+conditional}"), "conditional")
-
-    def test_mixed_syntax(self):
-        self.assertEqual(
-            replace_env_vars("${env.TEST_VAR:=default} and ${env.NOT_SET:+conditional}"), "test_value and "
-        )
-        self.assertEqual(
-            replace_env_vars("${env.NOT_SET:=default} and ${env.TEST_VAR:+conditional}"), "default and conditional"
-        )
-
-    def test_nested_structures(self):
-        data = {
-            "key1": "${env.TEST_VAR:=default}",
-            "key2": ["${env.NOT_SET:=default}", "${env.TEST_VAR:+conditional}"],
-            "key3": {"nested": "${env.NOT_SET:+conditional}"},
-        }
-        expected = {"key1": "test_value", "key2": ["default", "conditional"], "key3": {"nested": None}}
-        self.assertEqual(replace_env_vars(data), expected)
+    # Cleanup: restore original values
+    for var, original_value in original_vars.items():
+        if original_value is not None:
+            os.environ[var] = original_value
+        elif var in os.environ:
+            del os.environ[var]
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_simple_replacement():
+    assert replace_env_vars("${env.TEST_VAR}") == "test_value"
+
+
+def test_default_value_when_not_set():
+    assert replace_env_vars("${env.NOT_SET:=default}") == "default"
+
+
+def test_default_value_when_set():
+    assert replace_env_vars("${env.TEST_VAR:=default}") == "test_value"
+
+
+def test_default_value_when_empty():
+    assert replace_env_vars("${env.EMPTY_VAR:=default}") == "default"
+
+
+def test_none_value_when_empty():
+    assert replace_env_vars("${env.EMPTY_VAR:=}") is None
+
+
+def test_value_when_set():
+    assert replace_env_vars("${env.TEST_VAR:=}") == "test_value"
+
+
+def test_empty_var_no_default():
+    assert replace_env_vars("${env.EMPTY_VAR_NO_DEFAULT:+}") is None
+
+
+def test_conditional_value_when_set():
+    assert replace_env_vars("${env.TEST_VAR:+conditional}") == "conditional"
+
+
+def test_conditional_value_when_not_set():
+    assert replace_env_vars("${env.NOT_SET:+conditional}") is None
+
+
+def test_conditional_value_when_empty():
+    assert replace_env_vars("${env.EMPTY_VAR:+conditional}") is None
+
+
+def test_conditional_value_with_zero():
+    assert replace_env_vars("${env.ZERO_VAR:+conditional}") == "conditional"
+
+
+def test_mixed_syntax():
+    assert replace_env_vars("${env.TEST_VAR:=default} and ${env.NOT_SET:+conditional}") == "test_value and "
+    assert replace_env_vars("${env.NOT_SET:=default} and ${env.TEST_VAR:+conditional}") == "default and conditional"
+
+
+def test_nested_structures():
+    data = {
+        "key1": "${env.TEST_VAR:=default}",
+        "key2": ["${env.NOT_SET:=default}", "${env.TEST_VAR:+conditional}"],
+        "key3": {"nested": "${env.NOT_SET:+conditional}"},
+    }
+    expected = {"key1": "test_value", "key2": ["default", "conditional"], "key3": {"nested": None}}
+    assert replace_env_vars(data) == expected

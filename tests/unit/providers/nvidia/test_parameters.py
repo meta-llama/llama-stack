@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-import unittest
 import warnings
 from unittest.mock import patch
 
@@ -27,253 +26,249 @@ from llama_stack.providers.remote.post_training.nvidia.post_training import (
 )
 
 
-class TestNvidiaParameters(unittest.TestCase):
-    def setUp(self):
-        os.environ["NVIDIA_BASE_URL"] = "http://nemo.test"
-        os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"
+@pytest.fixture
+def nvidia_adapter():
+    """Set up the NVIDIA adapter with mock configuration"""
+    os.environ["NVIDIA_BASE_URL"] = "http://nemo.test"
+    os.environ["NVIDIA_CUSTOMIZER_URL"] = "http://nemo.test"
 
-        config = NvidiaPostTrainingConfig(
-            base_url=os.environ["NVIDIA_BASE_URL"], customizer_url=os.environ["NVIDIA_CUSTOMIZER_URL"], api_key=None
-        )
-        self.adapter = NvidiaPostTrainingAdapter(config)
+    config = NvidiaPostTrainingConfig(
+        base_url=os.environ["NVIDIA_BASE_URL"], customizer_url=os.environ["NVIDIA_CUSTOMIZER_URL"], api_key=None
+    )
+    adapter = NvidiaPostTrainingAdapter(config)
 
-        self.make_request_patcher = patch(
-            "llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request"
-        )
-        self.mock_make_request = self.make_request_patcher.start()
-        self.mock_make_request.return_value = {
+    # Mock the _make_request method
+    with patch(
+        "llama_stack.providers.remote.post_training.nvidia.post_training.NvidiaPostTrainingAdapter._make_request"
+    ) as mock_make_request:
+        mock_make_request.return_value = {
             "id": "job-123",
             "status": "created",
             "created_at": "2025-03-04T13:07:47.543605",
             "updated_at": "2025-03-04T13:07:47.543605",
         }
+        yield adapter, mock_make_request
 
-    def tearDown(self):
-        self.make_request_patcher.stop()
 
-    def _assert_request_params(self, expected_json):
-        """Helper method to verify parameters in the request JSON."""
-        call_args = self.mock_make_request.call_args
-        actual_json = call_args[1]["json"]
+def assert_request_params(mock_make_request, expected_json):
+    """Helper function to verify parameters in the request JSON."""
+    call_args = mock_make_request.call_args
+    actual_json = call_args[1]["json"]
 
-        for key, value in expected_json.items():
-            if isinstance(value, dict):
-                for nested_key, nested_value in value.items():
-                    assert actual_json[key][nested_key] == nested_value
-            else:
-                assert actual_json[key] == value
+    for key, value in expected_json.items():
+        if isinstance(value, dict):
+            for nested_key, nested_value in value.items():
+                assert actual_json[key][nested_key] == nested_value
+        else:
+            assert actual_json[key] == value
 
-    @pytest.fixture(autouse=True)
-    def inject_fixtures(self, run_async):
-        self.run_async = run_async
 
-    def test_customizer_parameters_passed(self):
-        """Test scenario 1: When an optional parameter is passed and value is correctly set."""
-        algorithm_config = LoraFinetuningConfig(
-            type="LoRA",
-            apply_lora_to_mlp=True,
-            apply_lora_to_output=True,
-            alpha=16,
-            rank=16,
-            lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+async def test_customizer_parameters_passed(nvidia_adapter):
+    """Test scenario 1: When an optional parameter is passed and value is correctly set."""
+    adapter, mock_make_request = nvidia_adapter
+
+    algorithm_config = LoraFinetuningConfig(
+        type="LoRA",
+        apply_lora_to_mlp=True,
+        apply_lora_to_output=True,
+        alpha=16,
+        rank=16,
+        lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+    )
+
+    data_config = DataConfig(
+        dataset_id="test-dataset", batch_size=16, shuffle=False, data_format=DatasetFormat.instruct
+    )
+    optimizer_config = OptimizerConfig(
+        optimizer_type=OptimizerType.adam,
+        lr=0.0002,
+        weight_decay=0.01,
+        num_warmup_steps=100,
+    )
+    training_config = TrainingConfig(
+        n_epochs=3,
+        data_config=data_config,
+        optimizer_config=optimizer_config,
+    )
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        await adapter.supervised_fine_tune(
+            job_uuid="test-job",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            checkpoint_dir="",
+            algorithm_config=algorithm_config,
+            training_config=convert_pydantic_to_json_value(training_config),
+            logger_config={},
+            hyperparam_search_config={},
         )
 
-        data_config = DataConfig(
-            dataset_id="test-dataset", batch_size=16, shuffle=False, data_format=DatasetFormat.instruct
-        )
-        optimizer_config = OptimizerConfig(
-            optimizer_type=OptimizerType.adam,
-            lr=0.0002,
-            weight_decay=0.01,
-            num_warmup_steps=100,
-        )
-        training_config = TrainingConfig(
-            n_epochs=3,
-            data_config=data_config,
-            optimizer_config=optimizer_config,
-        )
+        warning_texts = [str(warning.message) for warning in w]
 
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+        fields = [
+            "apply_lora_to_output",
+            "lora_attn_modules",
+            "apply_lora_to_mlp",
+        ]
+        for field in fields:
+            assert any(field in text for text in warning_texts)
 
-            self.run_async(
-                self.adapter.supervised_fine_tune(
-                    job_uuid="test-job",
-                    model="meta-llama/Llama-3.1-8B-Instruct",
-                    checkpoint_dir="",
-                    algorithm_config=algorithm_config,
-                    training_config=convert_pydantic_to_json_value(training_config),
-                    logger_config={},
-                    hyperparam_search_config={},
-                )
-            )
-
-            warning_texts = [str(warning.message) for warning in w]
-
-            fields = [
-                "apply_lora_to_output",
-                "lora_attn_modules",
-                "apply_lora_to_mlp",
-            ]
-            for field in fields:
-                assert any(field in text for text in warning_texts)
-
-        self._assert_request_params(
-            {
-                "hyperparameters": {
-                    "lora": {"alpha": 16},
-                    "epochs": 3,
-                    "learning_rate": 0.0002,
-                    "batch_size": 16,
-                }
+    assert_request_params(
+        mock_make_request,
+        {
+            "hyperparameters": {
+                "lora": {"alpha": 16},
+                "epochs": 3,
+                "learning_rate": 0.0002,
+                "batch_size": 16,
             }
+        },
+    )
+
+
+async def test_required_parameters_passed(nvidia_adapter):
+    """Test scenario 2: When required parameters are passed."""
+    adapter, mock_make_request = nvidia_adapter
+
+    required_model = "meta/llama-3.2-1b-instruct@v1.0.0+L40"
+    required_dataset_id = "required-dataset"
+    required_job_uuid = "required-job"
+
+    algorithm_config = LoraFinetuningConfig(
+        type="LoRA",
+        apply_lora_to_mlp=True,
+        apply_lora_to_output=True,
+        alpha=16,
+        rank=16,
+        lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+    )
+
+    data_config = DataConfig(
+        dataset_id=required_dataset_id, batch_size=8, shuffle=False, data_format=DatasetFormat.instruct
+    )
+
+    optimizer_config = OptimizerConfig(
+        optimizer_type=OptimizerType.adam,
+        lr=0.0001,
+        weight_decay=0.01,
+        num_warmup_steps=100,
+    )
+
+    training_config = TrainingConfig(
+        n_epochs=1,
+        data_config=data_config,
+        optimizer_config=optimizer_config,
+    )
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        await adapter.supervised_fine_tune(
+            job_uuid=required_job_uuid,  # Required parameter
+            model=required_model,  # Required parameter
+            checkpoint_dir="",
+            algorithm_config=algorithm_config,
+            training_config=convert_pydantic_to_json_value(training_config),
+            logger_config={},
+            hyperparam_search_config={},
         )
 
-    def test_required_parameters_passed(self):
-        """Test scenario 2: When required parameters are passed."""
-        required_model = "meta/llama-3.2-1b-instruct@v1.0.0+L40"
-        required_dataset_id = "required-dataset"
-        required_job_uuid = "required-job"
+        warning_texts = [str(warning.message) for warning in w]
 
-        algorithm_config = LoraFinetuningConfig(
-            type="LoRA",
-            apply_lora_to_mlp=True,
-            apply_lora_to_output=True,
-            alpha=16,
-            rank=16,
-            lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+        fields = [
+            "rank",
+            "apply_lora_to_output",
+            "lora_attn_modules",
+            "apply_lora_to_mlp",
+        ]
+        for field in fields:
+            assert any(field in text for text in warning_texts)
+
+    mock_make_request.assert_called_once()
+    call_args = mock_make_request.call_args
+
+    assert call_args[1]["json"]["config"] == required_model
+    assert call_args[1]["json"]["dataset"]["name"] == required_dataset_id
+
+
+async def test_unsupported_parameters_warning(nvidia_adapter):
+    """Test that warnings are raised for unsupported parameters."""
+    adapter, mock_make_request = nvidia_adapter
+
+    data_config = DataConfig(
+        dataset_id="test-dataset",
+        batch_size=8,
+        # Unsupported parameters
+        shuffle=True,
+        data_format=DatasetFormat.instruct,
+        validation_dataset_id="val-dataset",
+    )
+
+    optimizer_config = OptimizerConfig(
+        lr=0.0001,
+        weight_decay=0.01,
+        # Unsupported parameters
+        optimizer_type=OptimizerType.adam,
+        num_warmup_steps=100,
+    )
+
+    efficiency_config = EfficiencyConfig(
+        enable_activation_checkpointing=True  # Unsupported parameter
+    )
+
+    training_config = TrainingConfig(
+        n_epochs=1,
+        data_config=data_config,
+        optimizer_config=optimizer_config,
+        # Unsupported parameters
+        efficiency_config=efficiency_config,
+        max_steps_per_epoch=1000,
+        gradient_accumulation_steps=4,
+        max_validation_steps=100,
+        dtype="bf16",
+    )
+
+    # Capture warnings
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        await adapter.supervised_fine_tune(
+            job_uuid="test-job",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            checkpoint_dir="test-dir",  # Unsupported parameter
+            algorithm_config=LoraFinetuningConfig(
+                type="LoRA",
+                apply_lora_to_mlp=True,
+                apply_lora_to_output=True,
+                alpha=16,
+                rank=16,
+                lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
+            ),
+            training_config=convert_pydantic_to_json_value(training_config),
+            logger_config={"test": "value"},  # Unsupported parameter
+            hyperparam_search_config={"test": "value"},  # Unsupported parameter
         )
 
-        data_config = DataConfig(
-            dataset_id=required_dataset_id, batch_size=8, shuffle=False, data_format=DatasetFormat.instruct
-        )
+        assert len(w) >= 4
+        warning_texts = [str(warning.message) for warning in w]
 
-        optimizer_config = OptimizerConfig(
-            optimizer_type=OptimizerType.adam,
-            lr=0.0001,
-            weight_decay=0.01,
-            num_warmup_steps=100,
-        )
-
-        training_config = TrainingConfig(
-            n_epochs=1,
-            data_config=data_config,
-            optimizer_config=optimizer_config,
-        )
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-
-            self.run_async(
-                self.adapter.supervised_fine_tune(
-                    job_uuid=required_job_uuid,  # Required parameter
-                    model=required_model,  # Required parameter
-                    checkpoint_dir="",
-                    algorithm_config=algorithm_config,
-                    training_config=convert_pydantic_to_json_value(training_config),
-                    logger_config={},
-                    hyperparam_search_config={},
-                )
-            )
-
-            warning_texts = [str(warning.message) for warning in w]
-
-            fields = [
-                "rank",
-                "apply_lora_to_output",
-                "lora_attn_modules",
-                "apply_lora_to_mlp",
-            ]
-            for field in fields:
-                assert any(field in text for text in warning_texts)
-
-        self.mock_make_request.assert_called_once()
-        call_args = self.mock_make_request.call_args
-
-        assert call_args[1]["json"]["config"] == required_model
-        assert call_args[1]["json"]["dataset"]["name"] == required_dataset_id
-
-    def test_unsupported_parameters_warning(self):
-        """Test that warnings are raised for unsupported parameters."""
-        data_config = DataConfig(
-            dataset_id="test-dataset",
-            batch_size=8,
-            # Unsupported parameters
-            shuffle=True,
-            data_format=DatasetFormat.instruct,
-            validation_dataset_id="val-dataset",
-        )
-
-        optimizer_config = OptimizerConfig(
-            lr=0.0001,
-            weight_decay=0.01,
-            # Unsupported parameters
-            optimizer_type=OptimizerType.adam,
-            num_warmup_steps=100,
-        )
-
-        efficiency_config = EfficiencyConfig(
-            enable_activation_checkpointing=True  # Unsupported parameter
-        )
-
-        training_config = TrainingConfig(
-            n_epochs=1,
-            data_config=data_config,
-            optimizer_config=optimizer_config,
-            # Unsupported parameters
-            efficiency_config=efficiency_config,
-            max_steps_per_epoch=1000,
-            gradient_accumulation_steps=4,
-            max_validation_steps=100,
-            dtype="bf16",
-        )
-
-        # Capture warnings
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-
-            self.run_async(
-                self.adapter.supervised_fine_tune(
-                    job_uuid="test-job",
-                    model="meta-llama/Llama-3.1-8B-Instruct",
-                    checkpoint_dir="test-dir",  # Unsupported parameter
-                    algorithm_config=LoraFinetuningConfig(
-                        type="LoRA",
-                        apply_lora_to_mlp=True,
-                        apply_lora_to_output=True,
-                        alpha=16,
-                        rank=16,
-                        lora_attn_modules=["q_proj", "k_proj", "v_proj", "o_proj"],
-                    ),
-                    training_config=convert_pydantic_to_json_value(training_config),
-                    logger_config={"test": "value"},  # Unsupported parameter
-                    hyperparam_search_config={"test": "value"},  # Unsupported parameter
-                )
-            )
-
-            assert len(w) >= 4
-            warning_texts = [str(warning.message) for warning in w]
-
-            fields = [
-                "checkpoint_dir",
-                "hyperparam_search_config",
-                "logger_config",
-                "TrainingConfig",
-                "DataConfig",
-                "OptimizerConfig",
-                "max_steps_per_epoch",
-                "gradient_accumulation_steps",
-                "max_validation_steps",
-                "dtype",
-                # required unsupported parameters
-                "rank",
-                "apply_lora_to_output",
-                "lora_attn_modules",
-                "apply_lora_to_mlp",
-            ]
-            for field in fields:
-                assert any(field in text for text in warning_texts)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        fields = [
+            "checkpoint_dir",
+            "hyperparam_search_config",
+            "logger_config",
+            "TrainingConfig",
+            "DataConfig",
+            "OptimizerConfig",
+            "max_steps_per_epoch",
+            "gradient_accumulation_steps",
+            "max_validation_steps",
+            "dtype",
+            # required unsupported parameters
+            "rank",
+            "apply_lora_to_output",
+            "lora_attn_modules",
+            "apply_lora_to_mlp",
+        ]
+        for field in fields:
+            assert any(field in text for text in warning_texts)
