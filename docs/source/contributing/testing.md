@@ -19,16 +19,9 @@ Unit tests verify individual components and functions in isolation. They are fas
 
 #### Using the Unit Test Script (Recommended)
 
-The easiest way to run unit tests is using the provided script:
+The easiest way to run unit tests is by using the provided script:
 
 ```bash
-# Activate virtual environment
-uv venv .venv --python 3.12
-source .venv/bin/activate
-
-# Install dependencies
-uv pip install -r requirements.txt
-
 # Run all unit tests and generate coverage report
 PYTHON_VERSION=3.12 ./scripts/unit-tests.sh
 ```
