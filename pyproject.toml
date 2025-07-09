@@ -32,7 +32,7 @@ dependencies = [
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
-    "python-jose",
+    "python-jose[cryptography]",
     "pydantic>=2",
     "rich",
     "starlette",
