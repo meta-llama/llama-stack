@@ -553,3 +553,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         except Exception as e:
             logger.error(f"Error deleting openai vector store file {file_id} for store {store_id}: {e}")
             raise
+
+    async def _delete_openai_chunk_from_vector_store(self, store_id: str, chunk_id: str) -> None:
+        """Delete a chunk from a milvus vector store."""
+        pass  # TODO
