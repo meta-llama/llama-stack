@@ -65,7 +65,7 @@ class SambaNovaSafetyAdapter(Safety, ShieldsProtocolPrivate, NeedsRequestProvide
             or "guard" not in shield.provider_resource_id.lower()
             or shield.provider_resource_id.split("sambanova/")[-1] not in available_models
         ):
-            raise ValueError(f"Shield {shield.provider_resource_id} not found in SambaNova")
+            logger.warning(f"Shield {shield.provider_resource_id} not found as available in SambaNova models")
 
     async def run_shield(
         self, shield_id: str, messages: list[Message], params: dict[str, Any] | None = None
