@@ -15,21 +15,26 @@ LLM_MODEL_IDS = [
     "anthropic/claude-3-5-haiku-latest",
 ]
 
+SAFETY_MODELS_ENTRIES = []
 
-MODEL_ENTRIES = [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS] + [
-    ProviderModelEntry(
-        provider_model_id="anthropic/voyage-3",
-        model_type=ModelType.embedding,
-        metadata={"embedding_dimension": 1024, "context_length": 32000},
-    ),
-    ProviderModelEntry(
-        provider_model_id="anthropic/voyage-3-lite",
-        model_type=ModelType.embedding,
-        metadata={"embedding_dimension": 512, "context_length": 32000},
-    ),
-    ProviderModelEntry(
-        provider_model_id="anthropic/voyage-code-3",
-        model_type=ModelType.embedding,
-        metadata={"embedding_dimension": 1024, "context_length": 32000},
-    ),
-]
+MODEL_ENTRIES = (
+    [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS]
+    + [
+        ProviderModelEntry(
+            provider_model_id="anthropic/voyage-3",
+            model_type=ModelType.embedding,
+            metadata={"embedding_dimension": 1024, "context_length": 32000},
+        ),
+        ProviderModelEntry(
+            provider_model_id="anthropic/voyage-3-lite",
+            model_type=ModelType.embedding,
+            metadata={"embedding_dimension": 512, "context_length": 32000},
+        ),
+        ProviderModelEntry(
+            provider_model_id="anthropic/voyage-code-3",
+            model_type=ModelType.embedding,
+            metadata={"embedding_dimension": 1024, "context_length": 32000},
+        ),
+    ]
+    + SAFETY_MODELS_ENTRIES
+)

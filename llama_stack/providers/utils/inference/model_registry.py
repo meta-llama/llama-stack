@@ -44,6 +44,7 @@ def build_hf_repo_model_entry(
     ]
     if additional_aliases:
         aliases.extend(additional_aliases)
+    aliases = [alias for alias in aliases if alias is not None]
     return ProviderModelEntry(
         provider_model_id=provider_model_id,
         aliases=aliases,
@@ -90,7 +91,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
             provider_resource_id = model.provider_resource_id
         if provider_resource_id:
-            if provider_resource_id != supported_model_id:  # be idemopotent, only reject differences
+            if provider_resource_id != supported_model_id:  # be idempotent, only reject differences
                 raise ValueError(
                     f"Model id '{model.model_id}' is already registered. Please use a different id or unregister it first."
                 )
