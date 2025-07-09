@@ -197,7 +197,7 @@ def llama_stack_client(request, provider_data):
             server_process = start_llama_stack_server(config_name)
 
             # Wait for server to be ready
-            if not wait_for_server_ready(base_url, timeout=30, process=server_process):
+            if not wait_for_server_ready(base_url, timeout=120, process=server_process):
                 print("Server failed to start within timeout")
                 server_process.terminate()
                 raise RuntimeError(
