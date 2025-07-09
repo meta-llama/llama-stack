@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock
 import numpy as np
 import pytest
 import pytest_asyncio
-from pymilvus import Collection, MilvusClient, connections
+from pymilvus import AsyncMilvusClient, Collection, connections
 
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse
@@ -52,7 +52,7 @@ async def unique_kvstore_config(tmp_path_factory):
 async def milvus_vec_index(embedding_dimension, tmp_path_factory):
     temp_dir = tmp_path_factory.getbasetemp()
     db_path = str(temp_dir / "test_milvus.db")
-    client = MilvusClient(db_path)
+    client = AsyncMilvusClient(uri=db_path)
     name = f"{COLLECTION_PREFIX}_{np.random.randint(1e6)}"
     connections.connect(alias=MILVUS_ALIAS, uri=db_path)
     index = MilvusIndex(client, name, consistency_level="Strong")
@@ -148,7 +148,7 @@ async def test_initialize_with_milvus_client(milvus_vec_index, unique_kvstore_co
     await tmp_milvus_vec_adapter.kvstore.set(f"{VECTOR_DBS_PREFIX}/test_db", test_vector_db_data)
 
     assert milvus_vec_index.client is not None
-    assert isinstance(milvus_vec_index.client, MilvusClient)
+    assert isinstance(milvus_vec_index.client, AsyncMilvusClient)
     assert tmp_milvus_vec_adapter.cache is not None
     # registering a vector won't update the cache or openai_vector_store collection name
     assert (
