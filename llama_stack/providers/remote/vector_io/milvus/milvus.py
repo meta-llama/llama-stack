@@ -61,6 +61,11 @@ class MilvusIndex(EmbeddingIndex):
         self.consistency_level = consistency_level
         self.kvstore = kvstore
 
+    async def initialize(self):
+        # MilvusIndex does not require explicit initialization
+        # TODO: could move collection creation into initialization but it is not really necessary
+        pass
+
     async def delete(self):
         if await asyncio.to_thread(self.client.has_collection, self.collection_name):
             await asyncio.to_thread(self.client.drop_collection, collection_name=self.collection_name)
@@ -198,6 +203,9 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
+
+        if self.vector_db_store is None:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
