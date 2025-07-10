@@ -1239,6 +1239,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/65/c6/246100fa3967074d9725b3716913bd495823547bde5047050d4c3462f994/linkify-1.4.tar.gz", hash = "sha256:9ba276ba179525f7262820d90f009604e51cd4f1466c1112b882ef7eda243d5e", size = 1749, upload-time = "2009-11-12T21:42:00.934Z" }
 
 [[package]]
+name = "llama-models"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jinja2" },
+    { name = "pillow" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "rich" },
+    { name = "tiktoken" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/a2/e3a682e709d60b4b9e65915012c41e031defcbb02c7987ac042f673f7cec/llama_models-0.2.0.tar.gz", hash = "sha256:2ed9cbb572e9bbb660e65fb22eadbb46b9736fdd4f63dab84bf1415a647e506d", size = 6518488, upload-time = "2025-04-05T18:58:46.239Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d1/e4/5263e9f4d051dfe2615ecfa0e6f59788aa86611f8542f0363ec037eb2b7d/llama_models-0.2.0-py3-none-any.whl", hash = "sha256:dd849efa684e24c7c579070f0837a3a8059640e33a3a550c1b279cb802370dbd", size = 6558334, upload-time = "2025-04-05T18:58:44.028Z" },
+]
+
+[[package]]
 name = "llama-stack"
 version = "0.2.14"
 source = { editable = "." }
@@ -1253,6 +1270,7 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "jinja2" },
     { name = "jsonschema" },
+    { name = "llama-models" },
     { name = "llama-stack-client" },
     { name = "openai" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
@@ -1362,6 +1380,7 @@ requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.30.0,<1.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema" },
+    { name = "llama-models" },
     { name = "llama-stack-client", specifier = ">=0.2.14" },
     { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.14" },
     { name = "openai", specifier = ">=1.66" },

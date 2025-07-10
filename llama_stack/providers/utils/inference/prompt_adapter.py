@@ -54,11 +54,11 @@ from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 
 # Conditional imports to avoid heavy dependencies during module loading
 try:
-    from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
-    from llama_stack.models.llama.llama4.prompt_templates.system_prompts import (
+    from llama_models.llama4.chat_format import ChatFormat as Llama4ChatFormat
+    from llama_models.llama4.prompt_templates.system_prompts import (
         PythonListCustomToolGenerator as PythonListCustomToolGeneratorLlama4,
     )
-    from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
+    from llama_models.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 
     LLAMA4_AVAILABLE = True
 except ImportError:
