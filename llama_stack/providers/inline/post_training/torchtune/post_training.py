@@ -123,7 +123,8 @@ class TorchtunePostTrainingImpl:
         training_config: TrainingConfig,
         hyperparam_search_config: dict[str, Any],
         logger_config: dict[str, Any],
-    ) -> PostTrainingJob: ...
+    ) -> PostTrainingJob:
+        raise NotImplementedError()
 
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
         return ListPostTrainingJobsResponse(
