@@ -6,12 +6,12 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-export POSTGRES_USER=${POSTGRES_USER:-llamastack}
-export POSTGRES_DB=${POSTGRES_DB:-llamastack}
-export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-llamastack}
+export POSTGRES_USER=llamastack
+export POSTGRES_DB=llamastack
+export POSTGRES_PASSWORD=llamastack
 
-export INFERENCE_MODEL=${INFERENCE_MODEL:-meta-llama/Llama-3.2-3B-Instruct}
-export SAFETY_MODEL=${SAFETY_MODEL:-meta-llama/Llama-Guard-3-1B}
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 
 # HF_TOKEN should be set by the user; base64 encode it for the secret
 if [ -n "${HF_TOKEN:-}" ]; then
