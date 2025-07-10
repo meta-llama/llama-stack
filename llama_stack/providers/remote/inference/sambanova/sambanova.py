@@ -178,6 +178,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
 
     def __init__(self, config: SambaNovaImplConfig):
         self.config = config
+        self.environment_available_models = []
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
@@ -250,15 +251,18 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
 
     async def register_model(self, model: Model) -> Model:
         model_id = self.get_provider_model_id(model.provider_resource_id)
+
         list_models_url = self.config.url + "/models"
-        try:
-            response = requests.get(list_models_url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            raise RuntimeError(f"Request to {list_models_url} failed") from e
-        available_models = [model.get("id") for model in response.json().get("data", {})]
-        if len(available_models) == 0 or model_id.split("sambanova/")[-1] not in available_models:
-            logger.warning(f"Model {model_id} not available in {self.config.url}/models")
+        if len(self.environment_available_models) == 0:
+            try:
+                response = requests.get(list_models_url)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                raise RuntimeError(f"Request to {list_models_url} failed") from e
+            self.environment_available_models = [model.get("id") for model in response.json().get("data", {})]
+
+        if model_id.split("sambanova/")[-1] not in self.environment_available_models:
+            logger.warning(f"Model {model_id} not available in {list_models_url}")
         return model
 
     async def initialize(self):
