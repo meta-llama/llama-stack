@@ -514,8 +514,12 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         assert self.kvstore is not None
         start_key = OPENAI_VECTOR_STORES_PREFIX
         end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
-        stored = await self.kvstore.values_in_range(start_key, end_key)
-        return {json.loads(s)["id"]: json.loads(s) for s in stored}
+        stored_openai_stores = await self.kvstore.values_in_range(start_key, end_key)
+        stores = {}
+        for store_data in stored_openai_stores:
+            store_info = json.loads(store_data)
+            stores[store_info["id"]] = store_info
+        return stores
 
     async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
         """Update vector store metadata in SQLite database."""
