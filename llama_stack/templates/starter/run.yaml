@@ -19,11 +19,11 @@ providers:
     config:
       base_url: https://api.cerebras.ai
       api_key: ${env.CEREBRAS_API_KEY:=}
-  - provider_id: ollama
+  - provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:=http://localhost:11434}
-  - provider_id: vllm
+  - provider_id: ${env.ENABLE_VLLM:=__disabled__}
     provider_type: remote::vllm
     config:
       url: ${env.VLLM_URL:=http://localhost:8000/v1}
@@ -862,9 +862,9 @@ models:
   provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
   model_type: embedding
 shields:
-- shield_id: ollama
+- shield_id: ${env.ENABLE_OLLAMA:=__disabled__}
   provider_id: llama-guard
-  provider_shield_id: ollama/${env.SAFETY_MODEL:=llama-guard3:1b}
+  provider_shield_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=llama-guard3:1b}
 - shield_id: fireworks
   provider_id: llama-guard
   provider_shield_id: fireworks/${env.SAFETY_MODEL:=accounts/fireworks/models/llama-guard-3-8b}

@@ -126,6 +126,11 @@ REMOTE_INFERENCE_PROVIDERS_FOR_STARTER = {
     "vllm",
 }
 
+DEFAULT_DISABLED_PROVIDERS = {
+    "ollama",
+    "vllm",
+}
+
 
 def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEntry]:
     """Get model entries for a specific provider type."""
@@ -232,9 +237,17 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
         model_entries = _get_model_entries_for_provider(provider_type)
         config = _get_config_for_provider(provider_spec)
 
+        if provider_type in DEFAULT_DISABLED_PROVIDERS:
+            # For default disabled providers, we set id to be in the form of ${env.ENABLE_OLLAMA:=__disabled__}
+            # And allow this to be enabled explicitly by user by setting the environment variables
+            env_var = f"ENABLE_{provider_type.upper().replace('-', '_').replace('::', '_')}"
+            provider_id = f"${{env.{env_var}:=__disabled__}}"
+        else:
+            provider_id = provider_type
+
         inference_providers.append(
             Provider(
-                provider_id=provider_type,
+                provider_id=provider_id,
                 provider_type=f"remote::{provider_type}",
                 config=config,
             )
