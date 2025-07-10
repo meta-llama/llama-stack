@@ -34,7 +34,7 @@ from .config import SentenceTransformersInferenceConfig
 log = logging.getLogger(__name__)
 
 
-class SentenceTransformersInferenceImpl(
+class SentenceTransformersInferenceImpl(  # type: ignore[misc]  # Multiple inheritance from mixins creates MRO conflicts since sentence transformers don't actually support chat/completion operations
     OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompletionToLlamaStackMixin,
     SentenceTransformerEmbeddingMixin,
@@ -59,7 +59,7 @@ class SentenceTransformersInferenceImpl(
     async def completion(
         self,
         model_id: str,
-        content: str,
+        content: InterleavedContent,
         sampling_params: SamplingParams | None = None,
         response_format: ResponseFormat | None = None,
         stream: bool | None = False,
@@ -72,10 +72,10 @@ class SentenceTransformersInferenceImpl(
         model_id: str,
         messages: list[Message],
         sampling_params: SamplingParams | None = None,
-        response_format: ResponseFormat | None = None,
         tools: list[ToolDefinition] | None = None,
         tool_choice: ToolChoice | None = ToolChoice.auto,
         tool_prompt_format: ToolPromptFormat | None = None,
+        response_format: ResponseFormat | None = None,
         stream: bool | None = False,
         logprobs: LogProbConfig | None = None,
         tool_config: ToolConfig | None = None,
