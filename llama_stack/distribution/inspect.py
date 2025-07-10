@@ -54,6 +54,7 @@ class DistributionInspectImpl(Inspect):
                             provider_types=[],  # These APIs don't have "real" providers - they're internal to the stack
                         )
                         for e in endpoints
+                        if e.methods is not None
                     ]
                 )
             else:
@@ -67,6 +68,7 @@ class DistributionInspectImpl(Inspect):
                                 provider_types=[p.provider_type for p in providers],
                             )
                             for e in endpoints
+                            if e.methods is not None
                         ]
                     )
 
