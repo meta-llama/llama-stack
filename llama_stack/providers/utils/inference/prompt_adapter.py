@@ -52,7 +52,7 @@ from llama_stack.models.llama.llama3.prompt_templates import (
 )
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 
-# Conditional imports to avoid heavy dependencies during module loading
+# Import llama4 components - these require torch to be available
 try:
     from llama_models.llama4.chat_format import ChatFormat as Llama4ChatFormat
     from llama_models.llama4.prompt_templates.system_prompts import (
@@ -62,8 +62,11 @@ try:
 
     LLAMA4_AVAILABLE = True
 except ImportError:
-    # Llama4 dependencies not available (e.g., torch not installed)
+    # Llama4 requires torch - if not available, we can't use Llama4 features
     LLAMA4_AVAILABLE = False
+    Llama4ChatFormat = None
+    PythonListCustomToolGeneratorLlama4 = None
+    Llama4Tokenizer = None
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.models.llama.sku_types import ModelFamily, is_multimodal
 from llama_stack.providers.utils.inference import supported_inference_models
