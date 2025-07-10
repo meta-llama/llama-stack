@@ -23,19 +23,6 @@ def resolve_model(descriptor: str) -> Model | None:
         if descriptor in (m.descriptor(), m.huggingface_repo):
             return m
 
-    # Check provider aliases by attempting to import and check common providers
-    try:
-        from llama_stack.providers.remote.inference.together.models import MODEL_ENTRIES as TOGETHER_ENTRIES
-
-        for entry in TOGETHER_ENTRIES:
-            if descriptor in entry.aliases and entry.llama_model:
-                # Find the model by its descriptor
-                for m in all_registered_models():
-                    if m.descriptor() == entry.llama_model:
-                        return m
-    except ImportError:
-        pass
-
     return None
 
 
