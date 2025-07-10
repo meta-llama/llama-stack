@@ -15,6 +15,7 @@ import json
 import textwrap
 from pathlib import Path
 
+from llama_models.llama4.tokenizer import Tokenizer
 from pydantic import BaseModel, Field
 
 from llama_stack.models.llama.datatypes import (
@@ -26,7 +27,6 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
     ToolPromptFormat,
 )
-from llama_stack.models.llama.llama4.tokenizer import Tokenizer
 
 from .llama3.interface import LLama31Interface
 from .llama3.template_data import (

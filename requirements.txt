@@ -94,13 +94,17 @@ idna==3.10
 importlib-metadata==8.5.0
     # via opentelemetry-api
 jinja2==3.1.6
-    # via llama-stack
+    # via
+    #   llama-models
+    #   llama-stack
 jiter==0.8.2
     # via openai
 jsonschema==4.23.0
     # via llama-stack
 jsonschema-specifications==2024.10.1
     # via jsonschema
+llama-models==0.2.0
+    # via llama-stack
 llama-stack-client==0.2.14
     # via llama-stack
 markdown-it-py==3.0.0
@@ -141,7 +145,9 @@ packaging==24.2
 pandas==2.2.3
     # via llama-stack-client
 pillow==11.1.0
-    # via llama-stack
+    # via
+    #   llama-models
+    #   llama-stack
 prompt-toolkit==3.0.50
     # via
     #   llama-stack
@@ -165,6 +171,7 @@ pycparser==2.22 ; platform_python_implementation != 'PyPy'
 pydantic==2.10.6
     # via
     #   fastapi
+    #   llama-models
     #   llama-stack
     #   llama-stack-client
     #   openai
@@ -185,6 +192,7 @@ pytz==2025.1
 pyyaml==6.0.2
     # via
     #   huggingface-hub
+    #   llama-models
     #   pyaml
 referencing==0.36.2
     # via
@@ -200,6 +208,7 @@ requests==2.32.4
     #   tiktoken
 rich==13.9.4
     # via
+    #   llama-models
     #   llama-stack
     #   llama-stack-client
 rpds-py==0.22.3
@@ -227,7 +236,9 @@ termcolor==2.5.0
     #   llama-stack
     #   llama-stack-client
 tiktoken==0.9.0
-    # via llama-stack
+    # via
+    #   llama-models
+    #   llama-stack
 tqdm==4.67.1
     # via
     #   huggingface-hub
