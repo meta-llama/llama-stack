@@ -1,6 +1,9 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.7.20,<0.8.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
 
 [project]
 name = "llama_stack"
@@ -139,6 +142,8 @@ Homepage = "https://github.com/meta-llama/llama-stack"
 llama = "llama_stack.cli.llama:main"
 install-wheel-from-presigned = "llama_stack.cli.scripts.run:install_wheel_from_presigned"
 
+# Keep this for the docs build even if the build backend is uv_build but that's for the package
+# build.
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["llama_stack", "llama_stack.*"]

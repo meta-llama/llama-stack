@@ -89,7 +89,7 @@ repos:
       - id: distro-codegen
         name: Distribution Template Codegen
         additional_dependencies:
-          - uv==0.7.8
+          - uv==0.7.20
         entry: uv run --group codegen ./scripts/distro_codegen.py
         language: python
         pass_filenames: false
@@ -98,7 +98,7 @@ repos:
       - id: provider-codegen
         name: Provider Codegen
         additional_dependencies:
-          - uv==0.7.8
+          - uv==0.7.20
         entry: uv run --group codegen ./scripts/provider_codegen.py
         language: python
         pass_filenames: false
@@ -107,7 +107,7 @@ repos:
       - id: openapi-codegen
         name: API Spec Codegen
         additional_dependencies:
-          - uv==0.7.8
+          - uv==0.7.20
         entry: sh -c 'uv run ./docs/openapi_generator/run_openapi_generator.sh > /dev/null'
         language: python
         pass_filenames: false
