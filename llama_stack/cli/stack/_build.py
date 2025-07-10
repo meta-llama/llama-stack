@@ -336,6 +336,9 @@ def _generate_run_config(
 
     run_config_file = build_dir / f"{image_name}-run.yaml"
 
+    # Create the directory structure for the run config file
+    os.makedirs(run_config_file.parent, exist_ok=True)
+
     with open(run_config_file, "w") as f:
         to_write = json.loads(run_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
@@ -371,6 +374,10 @@ def _run_stack_build_command_from_build_config(
         if not image_name:
             raise ValueError("Please specify an image name when building a venv image")
 
+    # At this point, image_name should not be None due to the validation above
+    if not image_name:
+        raise ValueError("Image name is required but was not provided")
+
     if template_name:
         build_dir = DISTRIBS_BASE_DIR / template_name
         build_file_path = build_dir / f"{template_name}-build.yaml"
@@ -378,7 +385,8 @@ def _run_stack_build_command_from_build_config(
         build_dir = DISTRIBS_BASE_DIR / image_name
         build_file_path = build_dir / f"{image_name}-build.yaml"
 
-    os.makedirs(build_dir, exist_ok=True)
+    # Create the directory structure for the build file
+    os.makedirs(build_file_path.parent, exist_ok=True)
     run_config_file = None
     # Generate the run.yaml so it can be included in the container image with the proper entrypoint
     # Only do this if we're building a container image and we're not using a template
@@ -395,7 +403,7 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
-        run_config=run_config_file,
+        run_config=run_config_file.as_posix() if run_config_file else None,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
