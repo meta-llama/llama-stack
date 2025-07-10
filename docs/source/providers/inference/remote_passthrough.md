@@ -15,7 +15,7 @@ Passthrough inference provider for connecting to any external inference service 
 
 ```yaml
 url: ${env.PASSTHROUGH_URL}
-api_key: ${env.PASSTHROUGH_API_KEY}
+api_key: ${env.PASSTHROUGH_API_KEY:=}
 
 ```
 

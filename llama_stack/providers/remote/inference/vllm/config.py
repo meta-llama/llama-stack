@@ -46,7 +46,7 @@ class VLLMInferenceAdapterConfig(BaseModel):
     @classmethod
     def sample_run_config(
         cls,
-        url: str = "${env.VLLM_URL}",
+        url: str = "${env.VLLM_URL:=http://localhost:8000/v1}",
         **kwargs,
     ):
         return {

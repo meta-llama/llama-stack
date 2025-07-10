@@ -15,7 +15,7 @@ Cerebras OpenAI-compatible provider for using Cerebras models with OpenAI API fo
 
 ```yaml
 openai_compat_api_base: https://api.cerebras.ai/v1
-api_key: ${env.CEREBRAS_API_KEY}
+api_key: ${env.CEREBRAS_API_KEY:=}
 
 ```
 

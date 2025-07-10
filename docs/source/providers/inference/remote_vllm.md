@@ -16,7 +16,7 @@ Remote vLLM inference provider for connecting to vLLM servers.
 ## Sample Configuration
 
 ```yaml
-url: ${env.VLLM_URL}
+url: ${env.VLLM_URL:=http://localhost:8000/v1}
 max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
 api_token: ${env.VLLM_API_TOKEN:=fake}
 tls_verify: ${env.VLLM_TLS_VERIFY:=true}

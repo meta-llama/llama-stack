@@ -65,9 +65,10 @@ class CerebrasInferenceAdapter(
         )
         self.config = config
 
+        api_key = self.config.api_key.get_secret_value() if self.config.api_key else ""
         self.client = AsyncCerebras(
             base_url=self.config.base_url,
-            api_key=self.config.api_key.get_secret_value(),
+            api_key=api_key,
         )
 
     async def initialize(self) -> None:

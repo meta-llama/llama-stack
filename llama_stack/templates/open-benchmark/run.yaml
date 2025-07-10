@@ -33,7 +33,7 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
+      api_key: ${env.TOGETHER_API_KEY:=}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec

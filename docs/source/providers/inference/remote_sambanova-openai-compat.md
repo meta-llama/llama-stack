@@ -15,7 +15,7 @@ SambaNova OpenAI-compatible provider for using SambaNova models with OpenAI API 
 
 ```yaml
 openai_compat_api_base: https://api.sambanova.ai/v1
-api_key: ${env.SAMBANOVA_API_KEY}
+api_key: ${env.SAMBANOVA_API_KEY:=}
 
 ```
 

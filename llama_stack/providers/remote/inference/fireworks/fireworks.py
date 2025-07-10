@@ -96,6 +96,7 @@ class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProv
 
     def _get_client(self) -> Fireworks:
         fireworks_api_key = self._get_api_key()
+        print(f">>>>>> fireworks_api_key: {fireworks_api_key} <<<<<")
         return Fireworks(api_key=fireworks_api_key)
 
     def _get_openai_client(self) -> AsyncOpenAI:
