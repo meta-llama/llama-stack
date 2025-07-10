@@ -1,6 +1,6 @@
 # The Llama Stack API
 
-*Originally authored Aug 20, 2024*
+*Originally authored Jul 23, 2024*
 
 **Authors:**
 
