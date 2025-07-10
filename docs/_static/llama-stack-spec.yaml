@@ -7984,7 +7984,7 @@ components:
           type: string
         embedding_dimension:
           type: integer
-        provider_vector_db_name:
+        vector_db_name:
           type: string
       additionalProperties: false
       required:
@@ -10940,7 +10940,7 @@ components:
           type: string
           description: >-
             The identifier of the vector database in the provider.
-        provider_vector_db_name:
+        vector_db_name:
           type: string
           description: The name of the vector database.
       additionalProperties: false

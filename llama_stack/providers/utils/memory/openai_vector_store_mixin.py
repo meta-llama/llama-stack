@@ -166,7 +166,7 @@ class OpenAIVectorStoreMixin(ABC):
             embedding_model=embedding_model,
             provider_id=provider_id,
             provider_resource_id=provider_vector_db_id,
-            provider_vector_db_name=name,
+            vector_db_name=name,
         )
         # Register the vector DB
         await self.register_vector_db(vector_db)
