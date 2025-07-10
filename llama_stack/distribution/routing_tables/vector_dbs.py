@@ -36,7 +36,6 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
         provider_vector_db_id: str | None = None,
-        distance_metric: str | None = None,
     ) -> VectorDB:
         if provider_vector_db_id is None:
             provider_vector_db_id = vector_db_id
@@ -56,15 +55,6 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             raise ValueError(f"Model {embedding_model} is not an embedding model")
         if "embedding_dimension" not in model.metadata:
             raise ValueError(f"Model {embedding_model} does not have an embedding dimension")
-        # If distance_metric is not specified, get it from the model metadata
-        if distance_metric is None:
-            distance_metric = model.metadata.get("distance_metric")
-            if distance_metric is None:
-                raise ValueError(
-                    f"No distance metric specified for embedding model '{embedding_model}'. "
-                    "Please specify distance_metric during vector store creation or add it to model metadata."
-                )
-
         vector_db_data = {
             "identifier": vector_db_id,
             "type": ResourceType.vector_db.value,
@@ -72,7 +62,6 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             "provider_resource_id": provider_vector_db_id,
             "embedding_model": embedding_model,
             "embedding_dimension": model.metadata["embedding_dimension"],
-            "distance_metric": distance_metric,
         }
         vector_db = TypeAdapter(VectorDBWithOwner).validate_python(vector_db_data)
         await self.register_object(vector_db)

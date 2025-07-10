@@ -581,7 +581,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                 cur.close()
                 connection.close()
 
-        try
+        try:
             await asyncio.to_thread(_create_or_store)
         except Exception as e:
             logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
@@ -672,16 +672,10 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
 
         await asyncio.to_thread(_delete)
 
-    async def insert_chunks(
-        self,
-        vector_db_id: str,
-        chunks: list[Chunk],
-        ttl_seconds: int | None = None,
-        
-    ) -> None:
-        if vector_db_id not in self.cache:
-            raise ValueError(f"Vector DB {vector_db_id} not found. Found: {list(self.cache.keys())}")
-        
+    async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
+        index = await self._get_and_cache_vector_db_index(vector_db_id)
+        if not index:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
         # The VectorDBWithIndex helper is expected to compute embeddings via the inference_api
         # and then call our index's add_chunks.
         await index.insert_chunks(chunks)

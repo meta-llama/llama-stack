@@ -11340,9 +11340,6 @@
                     },
                     "embedding_dimension": {
                         "type": "integer"
-                    },
-                    "distance_metric": {
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -11591,32 +11588,6 @@
                     "ttl_seconds": {
                         "type": "integer",
                         "description": "The time to live of the chunks."
-                    },
-                    "params": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "oneOf": [
-                                {
-                                    "type": "null"
-                                },
-                                {
-                                    "type": "boolean"
-                                },
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "array"
-                                },
-                                {
-                                    "type": "object"
-                                }
-                            ]
-                        },
-                        "description": "Optional parameters for the insertion operation, such as distance_metric for vector databases."
                     }
                 },
                 "additionalProperties": false,
@@ -15655,10 +15626,6 @@
                     "provider_vector_db_id": {
                         "type": "string",
                         "description": "The identifier of the vector database in the provider."
-                    },
-                    "distance_metric": {
-                        "type": "string",
-                        "description": "The distance metric to use (COSINE, L2, IP). If not specified, will be automatically determined based on the embedding model."
                     }
                 },
                 "additionalProperties": false,

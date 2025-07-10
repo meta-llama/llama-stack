@@ -59,12 +59,22 @@ class QdrantIndex(EmbeddingIndex):
     def __init__(self, client: AsyncQdrantClient, collection_name: str):
         self.client = client
         self.collection_name = collection_name
-        self._distance_metric = None  # Will be set when collection is created
+
+    async def initialize(self) -> None:
+        # Qdrant collections are created on-demand in add_chunks
+        # If the collection does not exist, it will be created in add_chunks.
+        pass
 
     async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
+
+        if not await self.client.collection_exists(self.collection_name):
+            await self.client.create_collection(
+                self.collection_name,
+                vectors_config=models.VectorParams(size=len(embeddings[0]), distance=models.Distance.COSINE),
+            )
 
         points = []
         for _i, (chunk, embedding) in enumerate(zip(chunks, embeddings, strict=False)):
@@ -80,7 +90,6 @@ class QdrantIndex(EmbeddingIndex):
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
-        # Distance metric is set at collection creation and cannot be changed
         results = (
             await self.client.query_points(
                 collection_name=self.collection_name,
@@ -147,6 +156,13 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}
 
     async def initialize(self) -> None:
+        # Close existing client if it exists
+        # Qdrant doesn't allow multiple clients to access the same storage path simultaneously
+        # This prevents "Storage folder is already accessed by another instance" errors during re-initialization
+        if self.client is not None:
+            await self.client.close()
+            self.client = None
+
         # Create client config excluding kvstore (which is used for metadata storage, not Qdrant client connection)
         client_config = self.config.model_dump(exclude_none=True, exclude={"kvstore"})
         self.client = AsyncQdrantClient(**client_config)
@@ -178,6 +194,7 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
     async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
         """Load all vector store metadata from kvstore."""
@@ -197,12 +214,15 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
     async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
         """Delete vector store metadata from kvstore."""
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
+        if store_id in self.openai_vector_stores:
+            del self.openai_vector_stores[store_id]
 
     async def _save_openai_vector_store_file(
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
@@ -246,6 +266,12 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self,
         vector_db: VectorDB,
     ) -> None:
+        # Save to kvstore
+        assert self.kvstore is not None
+        key = f"{VECTOR_DBS_PREFIX}{vector_db.identifier}"
+        await self.kvstore.set(key=key, value=vector_db.model_dump_json())
+
+        # Store in cache
         index = VectorDBWithIndex(
             vector_db=vector_db,
             index=QdrantIndex(self.client, vector_db.identifier),
@@ -259,9 +285,16 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             await self.cache[vector_db_id].index.delete()
             del self.cache[vector_db_id]
 
+        # Remove from kvstore
+        assert self.kvstore is not None
+        await self.kvstore.delete(f"{VECTOR_DBS_PREFIX}{vector_db_id}")
+
     async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
+
+        if self.vector_db_store is None:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:

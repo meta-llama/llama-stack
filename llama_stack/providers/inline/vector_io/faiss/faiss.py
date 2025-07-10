@@ -242,7 +242,6 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         vector_db_id: str,
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
-        params: dict[str, Any] | None = None,
     ) -> None:
         index = self.cache.get(vector_db_id)
         if index is None:
