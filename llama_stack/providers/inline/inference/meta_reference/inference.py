@@ -9,6 +9,8 @@ import os
 import sys
 from collections.abc import AsyncGenerator
 
+from llama_models.llama4.chat_format import ChatFormat as Llama4ChatFormat
+from llama_models.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 from pydantic import BaseModel
 from termcolor import cprint
 
@@ -47,8 +49,6 @@ from llama_stack.apis.models import Model, ModelType
 from llama_stack.log import get_logger
 from llama_stack.models.llama.llama3.chat_format import ChatFormat as Llama3ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer as Llama3Tokenizer
-from llama_stack.models.llama.llama4.chat_format import ChatFormat as Llama4ChatFormat
-from llama_stack.models.llama.llama4.tokenizer import Tokenizer as Llama4Tokenizer
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.models.llama.sku_types import ModelFamily
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
