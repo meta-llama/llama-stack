@@ -11,7 +11,7 @@ Please refer to the remote provider documentation.
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `db_path` | `<class 'str'>` | No | PydanticUndefined |  |
-| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite |  |
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend (SQLite only for now) |
 | `consistency_level` | `<class 'str'>` | No | Strong | The consistency level of the Milvus server |
 
 ## Sample Configuration
