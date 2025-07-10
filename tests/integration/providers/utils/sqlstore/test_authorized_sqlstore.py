@@ -14,8 +14,7 @@ from llama_stack.distribution.access_control.access_control import default_polic
 from llama_stack.distribution.datatypes import User
 from llama_stack.providers.utils.sqlstore.api import ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
-from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemySqlStoreImpl
-from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig, SqliteSqlStoreConfig
+from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig, SqliteSqlStoreConfig, sqlstore_impl
 
 
 def get_postgres_config():
@@ -30,144 +29,213 @@ def get_postgres_config():
 
 
 def get_sqlite_config():
-    """Get SQLite configuration with temporary database."""
-    tmp_file = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-    tmp_file.close()
-    return SqliteSqlStoreConfig(db_path=tmp_file.name), tmp_file.name
+    """Get SQLite configuration with temporary file database."""
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    temp_file.close()
+    return SqliteSqlStoreConfig(db_path=temp_file.name)
+
+
+# Backend configurations for parametrized tests
+BACKEND_CONFIGS = [
+    pytest.param(
+        get_postgres_config,
+        marks=pytest.mark.skipif(
+            not os.environ.get("ENABLE_POSTGRES_TESTS"),
+            reason="PostgreSQL tests require ENABLE_POSTGRES_TESTS environment variable",
+        ),
+        id="postgres",
+    ),
+    pytest.param(get_sqlite_config, id="sqlite"),
+]
+
+
+@pytest.fixture
+def authorized_store(backend_config):
+    """Set up authorized store with proper cleanup."""
+    config_func = backend_config
+
+    config = config_func()
+
+    base_sqlstore = sqlstore_impl(config)
+    authorized_store = AuthorizedSqlStore(base_sqlstore)
+
+    yield authorized_store
+
+    if hasattr(config, "db_path"):
+        try:
+            os.unlink(config.db_path)
+        except (OSError, FileNotFoundError):
+            pass
+
+
+async def create_test_table(authorized_store, table_name):
+    """Create a test table with standard schema."""
+    await authorized_store.create_table(
+        table=table_name,
+        schema={
+            "id": ColumnType.STRING,
+            "data": ColumnType.STRING,
+        },
+    )
+
+
+async def cleanup_records(sql_store, table_name, record_ids):
+    """Clean up test records."""
+    for record_id in record_ids:
+        try:
+            await sql_store.delete(table_name, {"id": record_id})
+        except Exception:
+            pass
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "backend_config",
-    [
-        pytest.param(
-            ("postgres", get_postgres_config),
-            marks=pytest.mark.skipif(
-                not os.environ.get("ENABLE_POSTGRES_TESTS"),
-                reason="PostgreSQL tests require ENABLE_POSTGRES_TESTS environment variable",
-            ),
-            id="postgres",
-        ),
-        pytest.param(("sqlite", get_sqlite_config), id="sqlite"),
-    ],
-)
+@pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
-async def test_json_comparison(mock_get_authenticated_user, backend_config):
+async def test_authorized_store_attributes(mock_get_authenticated_user, authorized_store, request):
     """Test that JSON column comparisons work correctly for both PostgreSQL and SQLite"""
-    backend_name, config_func = backend_config
+    backend_name = request.node.callspec.id
 
-    # Handle different config types
-    if backend_name == "postgres":
-        config = config_func()
-        cleanup_path = None
-    else:  # sqlite
-        config, cleanup_path = config_func()
+    # Create test table
+    table_name = f"test_json_comparison_{backend_name}"
+    await create_test_table(authorized_store, table_name)
 
     try:
-        base_sqlstore = SqlAlchemySqlStoreImpl(config)
-        authorized_store = AuthorizedSqlStore(base_sqlstore)
+        # Test with no authenticated user (should handle JSON null comparison)
+        mock_get_authenticated_user.return_value = None
 
-        # Create test table
-        table_name = f"test_json_comparison_{backend_name}"
-        await authorized_store.create_table(
-            table=table_name,
-            schema={
-                "id": ColumnType.STRING,
-                "data": ColumnType.STRING,
-            },
+        # Insert some test data
+        await authorized_store.insert(table_name, {"id": "1", "data": "public_data"})
+
+        # Test fetching with no user - should not error on JSON comparison
+        result = await authorized_store.fetch_all(table_name, policy=default_policy())
+        assert len(result.data) == 1
+        assert result.data[0]["id"] == "1"
+        assert result.data[0]["access_attributes"] is None
+
+        # Test with authenticated user
+        test_user = User("test-user", {"roles": ["admin"]})
+        mock_get_authenticated_user.return_value = test_user
+
+        # Insert data with user attributes
+        await authorized_store.insert(table_name, {"id": "2", "data": "admin_data"})
+
+        # Fetch all - admin should see both
+        result = await authorized_store.fetch_all(table_name, policy=default_policy())
+        assert len(result.data) == 2
+
+        # Test with non-admin user
+        regular_user = User("regular-user", {"roles": ["user"]})
+        mock_get_authenticated_user.return_value = regular_user
+
+        # Should only see public record
+        result = await authorized_store.fetch_all(table_name, policy=default_policy())
+        assert len(result.data) == 1
+        assert result.data[0]["id"] == "1"
+
+        # Test the category missing branch: user with multiple attributes
+        multi_user = User("multi-user", {"roles": ["admin"], "teams": ["dev"]})
+        mock_get_authenticated_user.return_value = multi_user
+
+        # Insert record with multi-user (has both roles and teams)
+        await authorized_store.insert(table_name, {"id": "3", "data": "multi_user_data"})
+
+        # Test different user types to create records with different attribute patterns
+        # Record with only roles (teams category will be missing)
+        roles_only_user = User("roles-user", {"roles": ["admin"]})
+        mock_get_authenticated_user.return_value = roles_only_user
+        await authorized_store.insert(table_name, {"id": "4", "data": "roles_only_data"})
+
+        # Record with only teams (roles category will be missing)
+        teams_only_user = User("teams-user", {"teams": ["dev"]})
+        mock_get_authenticated_user.return_value = teams_only_user
+        await authorized_store.insert(table_name, {"id": "5", "data": "teams_only_data"})
+
+        # Record with different roles/teams (shouldn't match our test user)
+        different_user = User("different-user", {"roles": ["user"], "teams": ["qa"]})
+        mock_get_authenticated_user.return_value = different_user
+        await authorized_store.insert(table_name, {"id": "6", "data": "different_user_data"})
+
+        # Now test with the multi-user who has both roles=admin and teams=dev
+        mock_get_authenticated_user.return_value = multi_user
+        result = await authorized_store.fetch_all(table_name, policy=default_policy())
+
+        # Should see:
+        # - public record (1) - no access_attributes
+        # - admin record (2) - user matches roles=admin, teams missing (allowed)
+        # - multi_user record (3) - user matches both roles=admin and teams=dev
+        # - roles_only record (4) - user matches roles=admin, teams missing (allowed)
+        # - teams_only record (5) - user matches teams=dev, roles missing (allowed)
+        # Should NOT see:
+        # - different_user record (6) - user doesn't match roles=user or teams=qa
+        expected_ids = {"1", "2", "3", "4", "5"}
+        actual_ids = {record["id"] for record in result.data}
+        assert actual_ids == expected_ids, f"Expected to see records {expected_ids} but got {actual_ids}"
+
+        # Verify the category missing logic specifically
+        # Records 4 and 5 test the "category missing" branch where one attribute category is missing
+        category_test_ids = {record["id"] for record in result.data if record["id"] in ["4", "5"]}
+        assert category_test_ids == {"4", "5"}, (
+            f"Category missing logic failed: expected 4,5 but got {category_test_ids}"
         )
 
-        try:
-            # Test with no authenticated user (should handle JSON null comparison)
-            mock_get_authenticated_user.return_value = None
+    finally:
+        # Clean up records
+        await cleanup_records(authorized_store.sql_store, table_name, ["1", "2", "3", "4", "5", "6"])
 
-            # Insert some test data
-            await authorized_store.insert(table_name, {"id": "1", "data": "public_data"})
 
-            # Test fetching with no user - should not error on JSON comparison
-            result = await authorized_store.fetch_all(table_name, policy=default_policy())
-            assert len(result.data) == 1
-            assert result.data[0]["id"] == "1"
-            assert result.data[0]["access_attributes"] is None
+@pytest.mark.asyncio
+@pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
+@patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
+async def test_user_ownership_policy(mock_get_authenticated_user, authorized_store, request):
+    """Test that 'user is owner' policies work correctly with record ownership"""
+    from llama_stack.distribution.access_control.datatypes import AccessRule, Action, Scope
 
-            # Test with authenticated user
-            test_user = User("test-user", {"roles": ["admin"]})
-            mock_get_authenticated_user.return_value = test_user
+    backend_name = request.node.callspec.id
 
-            # Insert data with user attributes
-            await authorized_store.insert(table_name, {"id": "2", "data": "admin_data"})
+    # Create test table
+    table_name = f"test_ownership_{backend_name}"
+    await create_test_table(authorized_store, table_name)
 
-            # Fetch all - admin should see both
-            result = await authorized_store.fetch_all(table_name, policy=default_policy())
-            assert len(result.data) == 2
+    try:
+        # Test with first user who creates records
+        user1 = User("user1", {"roles": ["admin"]})
+        mock_get_authenticated_user.return_value = user1
 
-            # Test with non-admin user
-            regular_user = User("regular-user", {"roles": ["user"]})
-            mock_get_authenticated_user.return_value = regular_user
+        # Insert a record owned by user1
+        await authorized_store.insert(table_name, {"id": "1", "data": "user1_data"})
 
-            # Should only see public record
-            result = await authorized_store.fetch_all(table_name, policy=default_policy())
-            assert len(result.data) == 1
-            assert result.data[0]["id"] == "1"
+        # Test with second user
+        user2 = User("user2", {"roles": ["user"]})
+        mock_get_authenticated_user.return_value = user2
 
-            # Test the category missing branch: user with multiple attributes
-            multi_user = User("multi-user", {"roles": ["admin"], "teams": ["dev"]})
-            mock_get_authenticated_user.return_value = multi_user
+        # Insert a record owned by user2
+        await authorized_store.insert(table_name, {"id": "2", "data": "user2_data"})
 
-            # Insert record with multi-user (has both roles and teams)
-            await authorized_store.insert(table_name, {"id": "3", "data": "multi_user_data"})
+        # Create a policy that only allows access when user is the owner
+        owner_only_policy = [
+            AccessRule(
+                permit=Scope(actions=[Action.READ]),
+                when=["user is owner"],
+            ),
+        ]
 
-            # Test different user types to create records with different attribute patterns
-            # Record with only roles (teams category will be missing)
-            roles_only_user = User("roles-user", {"roles": ["admin"]})
-            mock_get_authenticated_user.return_value = roles_only_user
-            await authorized_store.insert(table_name, {"id": "4", "data": "roles_only_data"})
+        # Test user1 access - should only see their own record
+        mock_get_authenticated_user.return_value = user1
+        result = await authorized_store.fetch_all(table_name, policy=owner_only_policy)
+        assert len(result.data) == 1, f"Expected user1 to see 1 record, got {len(result.data)}"
+        assert result.data[0]["id"] == "1", f"Expected user1's record, got {result.data[0]['id']}"
 
-            # Record with only teams (roles category will be missing)
-            teams_only_user = User("teams-user", {"teams": ["dev"]})
-            mock_get_authenticated_user.return_value = teams_only_user
-            await authorized_store.insert(table_name, {"id": "5", "data": "teams_only_data"})
+        # Test user2 access - should only see their own record
+        mock_get_authenticated_user.return_value = user2
+        result = await authorized_store.fetch_all(table_name, policy=owner_only_policy)
+        assert len(result.data) == 1, f"Expected user2 to see 1 record, got {len(result.data)}"
+        assert result.data[0]["id"] == "2", f"Expected user2's record, got {result.data[0]['id']}"
 
-            # Record with different roles/teams (shouldn't match our test user)
-            different_user = User("different-user", {"roles": ["user"], "teams": ["qa"]})
-            mock_get_authenticated_user.return_value = different_user
-            await authorized_store.insert(table_name, {"id": "6", "data": "different_user_data"})
-
-            # Now test with the multi-user who has both roles=admin and teams=dev
-            mock_get_authenticated_user.return_value = multi_user
-            result = await authorized_store.fetch_all(table_name, policy=default_policy())
-
-            # Should see:
-            # - public record (1) - no access_attributes
-            # - admin record (2) - user matches roles=admin, teams missing (allowed)
-            # - multi_user record (3) - user matches both roles=admin and teams=dev
-            # - roles_only record (4) - user matches roles=admin, teams missing (allowed)
-            # - teams_only record (5) - user matches teams=dev, roles missing (allowed)
-            # Should NOT see:
-            # - different_user record (6) - user doesn't match roles=user or teams=qa
-            expected_ids = {"1", "2", "3", "4", "5"}
-            actual_ids = {record["id"] for record in result.data}
-            assert actual_ids == expected_ids, f"Expected to see records {expected_ids} but got {actual_ids}"
-
-            # Verify the category missing logic specifically
-            # Records 4 and 5 test the "category missing" branch where one attribute category is missing
-            category_test_ids = {record["id"] for record in result.data if record["id"] in ["4", "5"]}
-            assert category_test_ids == {"4", "5"}, (
-                f"Category missing logic failed: expected 4,5 but got {category_test_ids}"
-            )
-
-        finally:
-            # Clean up records
-            for record_id in ["1", "2", "3", "4", "5", "6"]:
-                try:
-                    await base_sqlstore.delete(table_name, {"id": record_id})
-                except Exception:
-                    pass
+        # Test with anonymous user - should see no records
+        mock_get_authenticated_user.return_value = None
+        result = await authorized_store.fetch_all(table_name, policy=owner_only_policy)
+        assert len(result.data) == 0, f"Expected anonymous user to see 0 records, got {len(result.data)}"
 
     finally:
-        # Clean up temporary SQLite database file if needed
-        if cleanup_path:
-            try:
-                os.unlink(cleanup_path)
-            except OSError:
-                pass
+        # Clean up records
+        await cleanup_records(authorized_store.sql_store, table_name, ["1", "2"])

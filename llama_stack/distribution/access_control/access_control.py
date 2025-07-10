@@ -81,7 +81,7 @@ def is_action_allowed(
     if not len(policy):
         policy = default_policy()
 
-    qualified_resource_id = resource.type + "::" + resource.identifier
+    qualified_resource_id = f"{resource.type}::{resource.identifier}"
     for rule in policy:
         if rule.forbid and matches_scope(rule.forbid, action, qualified_resource_id, user.principal):
             if rule.when:
