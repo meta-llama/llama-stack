@@ -654,6 +654,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         top_logprobs: int | None = None,
         top_p: float | None = None,
         user: str | None = None,
+        extra_body: dict[str, Any] | None = None,
     ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
         self._lazy_initialize_client()
         model_obj = await self._get_model(model)
@@ -681,6 +682,7 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             top_logprobs=top_logprobs,
             top_p=top_p,
             user=user,
+            extra_body=extra_body,
         )
         return await self.client.chat.completions.create(**params)  # type: ignore
 
