@@ -80,6 +80,7 @@ def make_random_string(length: int = 8):
 TOOLS_ATTACHMENT_KEY_REGEX = re.compile(r"__tools_attachment__=(\{.*?\})")
 MEMORY_QUERY_TOOL = "knowledge_search"
 WEB_SEARCH_TOOL = "web_search"
+WEB_SEARCH_BRAVE_TOOL = "web_search_brave"
 RAG_TOOL_GROUP = "builtin::rag"
 
 logger = get_logger(name=__name__, category="agents")
@@ -817,9 +818,12 @@ class ChatAgent(ShieldRunnerMixin):
             for tool_def in tools.data:
                 if toolgroup_name.startswith("builtin") and toolgroup_name != RAG_TOOL_GROUP:
                     identifier: str | BuiltinTool | None = tool_def.identifier
-                    if identifier == "web_search":
+                    # Map tool identifiers to BuiltinTool enum values
+                    if identifier == WEB_SEARCH_TOOL:
+                        identifier = BuiltinTool.web_search
+                    elif identifier == WEB_SEARCH_BRAVE_TOOL:
                         identifier = BuiltinTool.brave_search
-                    else:
+                    elif identifier in [e.value for e in BuiltinTool]:
                         identifier = BuiltinTool(identifier)
                 else:
                     # add if tool_name is unspecified or the tool_def identifier is the same as the tool_name
@@ -880,8 +884,10 @@ class ChatAgent(ShieldRunnerMixin):
                 f"Tool {tool_name} not found in provided tools, registered tools: {', '.join([str(x) for x in registered_tool_names])}"
             )
         if isinstance(tool_name, BuiltinTool):
-            if tool_name == BuiltinTool.brave_search:
+            if tool_name == BuiltinTool.web_search:
                 tool_name_str = WEB_SEARCH_TOOL
+            elif tool_name == BuiltinTool.brave_search:
+                tool_name_str = WEB_SEARCH_BRAVE_TOOL
             else:
                 tool_name_str = tool_name.value
         else:
