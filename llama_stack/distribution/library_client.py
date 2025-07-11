@@ -392,8 +392,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         # we use asynchronous impl always internally and channel all requests to AsyncLlamaStackClient
         # however, the top-level caller may be a SyncAPIClient -- so its stream_cls might be a Stream (SyncStream)
         # so we need to convert it to AsyncStream
+        # mypy can't track runtime variables inside the [...] of a generic, so ignore that check
         args = get_args(stream_cls)
-        stream_cls = AsyncStream[args[0]]
+        stream_cls = AsyncStream[args[0]] # type: ignore[valid-type]
         response = AsyncAPIResponse(
             raw=mock_response,
             client=self,
