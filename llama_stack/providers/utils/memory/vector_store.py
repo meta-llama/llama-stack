@@ -285,6 +285,7 @@ class VectorDBWithIndex:
                 c.embedding = embedding
 
         embeddings = np.array([c.embedding for c in chunks], dtype=np.float32)
+
         await self.index.add_chunks(chunks, embeddings)
 
     async def query_chunks(
