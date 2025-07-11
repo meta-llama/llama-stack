@@ -94,7 +94,7 @@ async def test_query_unregistered_raises(vector_io_adapter):
 
 async def test_insert_chunks_calls_underlying_index(vector_io_adapter):
     fake_index = AsyncMock()
-    vector_io_adapter._get_and_cache_vector_db_index = AsyncMock(return_value=fake_index)
+    vector_io_adapter.cache["db1"] = fake_index
 
     chunks = ["chunk1", "chunk2"]
     await vector_io_adapter.insert_chunks("db1", chunks)
@@ -112,7 +112,7 @@ async def test_insert_chunks_missing_db_raises(vector_io_adapter):
 async def test_query_chunks_calls_underlying_index_and_returns(vector_io_adapter):
     expected = QueryChunksResponse(chunks=[Chunk(content="c1")], scores=[0.1])
     fake_index = AsyncMock(query_chunks=AsyncMock(return_value=expected))
-    vector_io_adapter._get_and_cache_vector_db_index = AsyncMock(return_value=fake_index)
+    vector_io_adapter.cache["db1"] = fake_index
 
     response = await vector_io_adapter.query_chunks("db1", "my_query", {"param": 1})
 
@@ -286,5 +286,7 @@ async def test_delete_openai_vector_store_file_from_storage(vector_io_adapter, t
     await vector_io_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
     await vector_io_adapter._delete_openai_vector_store_file_from_storage(store_id, file_id)
 
+    loaded_file_info = await vector_io_adapter._load_openai_vector_store_file(store_id, file_id)
+    assert loaded_file_info == {}
     loaded_contents = await vector_io_adapter._load_openai_vector_store_file_contents(store_id, file_id)
     assert loaded_contents == []
