@@ -246,7 +246,7 @@ exclude = [
     "^llama_stack/providers/inline/agents/meta_reference/agents\\.py$",
     "^llama_stack/providers/inline/datasetio/localfs/",
     "^llama_stack/providers/inline/eval/meta_reference/eval\\.py$",
-    "^llama_stack/providers/inline/inference/meta_reference/inference\\.py$",
+    "^llama_stack/providers/inline/inference/meta_reference/config\\.py$",
     "^llama_stack/models/llama/llama3/generation\\.py$",
     "^llama_stack/models/llama/llama3/multimodal/model\\.py$",
     "^llama_stack/models/llama/llama4/",

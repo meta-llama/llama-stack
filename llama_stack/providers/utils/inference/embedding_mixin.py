@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 
 
 class SentenceTransformerEmbeddingMixin:
-    model_store: ModelStore
+    model_store: ModelStore | None = None
 
     async def embeddings(
         self,
@@ -41,7 +41,11 @@ class SentenceTransformerEmbeddingMixin:
         output_dimension: int | None = None,
         task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
+        if self.model_store is None:
+            raise RuntimeError("Model store is not initialized")
         model = await self.model_store.get_model(model_id)
+        if model.provider_resource_id is None:
+            raise RuntimeError("Model provider resource ID is not set")
         embedding_model = self._load_sentence_transformer_model(model.provider_resource_id)
         embeddings = embedding_model.encode(
             [interleaved_content_as_str(content) for content in contents], show_progress_bar=False
@@ -62,7 +66,11 @@ class SentenceTransformerEmbeddingMixin:
             raise ValueError("Empty list not supported")
 
         # Get the model and generate embeddings
+        if self.model_store is None:
+            raise RuntimeError("Model store is not initialized")
         model_obj = await self.model_store.get_model(model)
+        if model_obj.provider_resource_id is None:
+            raise RuntimeError("Model provider resource ID is not set")
         embedding_model = self._load_sentence_transformer_model(model_obj.provider_resource_id)
         embeddings = embedding_model.encode(input_list, show_progress_bar=False)
 
