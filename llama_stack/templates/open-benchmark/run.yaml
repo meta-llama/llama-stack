@@ -1,5 +1,6 @@
 version: 2
 image_name: open-benchmark
+container_image: null
 apis:
 - agents
 - datasetio
@@ -100,10 +101,8 @@ providers:
   scoring:
   - provider_id: basic
     provider_type: inline::basic
-    config: {}
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
-    config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
@@ -121,10 +120,8 @@ providers:
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
-    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/open-benchmark}/registry.db

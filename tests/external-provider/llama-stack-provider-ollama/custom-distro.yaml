@@ -3,7 +3,9 @@ distribution_spec:
   description: Custom distro for CI tests
   providers:
     inference:
-    - remote::custom_ollama
+    - provider_id: custom_ollama
+      provider_type: remote::custom_ollama
+      config: {}
 image_type: container
 image_name: ci-test
 external_providers_dir: ~/.llama/providers.d

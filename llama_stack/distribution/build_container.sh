@@ -26,7 +26,7 @@ BUILD_CONTEXT_DIR=$(pwd)
 
 if [ "$#" -lt 4 ]; then
   # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>]" >&2
+  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>] [<external_provider_deps>]" >&2
   exit 1
 fi
 set -euo pipefail
@@ -43,21 +43,36 @@ shift
 # Handle optional arguments
 run_config=""
 special_pip_deps=""
+external_provider_deps=""
 
 # Check if there are more arguments
-# The logics is becoming cumbersom, we should refactor it if we can do better
+# build.py always passes both special_deps and external_provider_deps as the last two arguments
+# The 5th argument might be run_config (if provided) or special_pip_deps (if no run_config)
+# The 6th argument might be special_pip_deps (if run_config was provided) or external_provider_deps (if no run_config)
+# The 7th argument is external_provider_deps (if run_config was provided)
+
 if [ $# -gt 0 ]; then
-  # Check if the argument ends with .yaml
+  # Check if the 5th argument ends with .yaml (run_config)
   if [[ "$1" == *.yaml ]]; then
     run_config="$1"
     shift
-    # If there's another argument after .yaml, it must be special_pip_deps
+    # Now the 6th argument is special_pip_deps
     if [ $# -gt 0 ]; then
       special_pip_deps="$1"
+      shift
+      # Now the 7th argument is external_provider_deps
+      if [ $# -gt 0 ]; then
+        external_provider_deps="$1"
+      fi
     fi
   else
-    # If it's not .yaml, it must be special_pip_deps
+    # No run_config provided, so 5th argument is special_pip_deps
     special_pip_deps="$1"
+    shift
+    # 6th argument is external_provider_deps
+    if [ $# -gt 0 ]; then
+      external_provider_deps="$1"
+    fi
   fi
 fi
 
@@ -138,6 +153,41 @@ if [ -n "$special_pip_deps" ]; then
   for part in "${parts[@]}"; do
     add_to_container <<EOF
 RUN uv pip install --no-cache $part
+EOF
+  done
+fi
+
+if [ -n "$external_provider_deps" ]; then
+  IFS='#' read -ra parts <<<"$external_provider_deps"
+  for part in "${parts[@]}"; do
+    add_to_container <<EOF
+RUN uv pip install --no-cache "$part"
+EOF
+    # Now import the module and get its provider spec to install additional dependencies
+    add_to_container <<EOF
+RUN python3 -c "
+import importlib
+import sys
+try:
+    # Extract package name from version specification (e.g., \"ramalama_stack==0.3.0a0\" -> \"ramalama_stack\")
+    package_name = '$part'.split('==')[0].split('>=')[0].split('<=')[0].split('!=')[0].split('<')[0].split('>')[0]
+    module = importlib.import_module(f'{package_name}.provider')
+    spec = module.get_provider_spec()
+    if hasattr(spec, 'pip_packages') and spec.pip_packages:
+        # Ensure pip_packages is a list/iterable before joining
+        if isinstance(spec.pip_packages, (list, tuple)):
+            print('ADDITIONAL_DEPS:' + ' '.join(spec.pip_packages))
+except Exception as e:
+    print(f'Error getting provider spec for {package_name}: {e}', file=sys.stderr)
+" > /tmp/provider_deps.txt
+EOF
+    add_to_container <<EOF
+RUN additional_deps=\$(grep '^ADDITIONAL_DEPS:' /tmp/provider_deps.txt | cut -d: -f2) && \\
+    if [ -n "\$additional_deps" ]; then \\
+        echo "Installing additional dependencies from provider spec: \$additional_deps" && \\
+        uv pip install --no-cache "\$additional_deps"; \\
+    fi && \\
+    rm -f /tmp/provider_deps.txt
 EOF
   done
 fi

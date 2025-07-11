@@ -17,16 +17,75 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::nvidia"],
-        "vector_io": ["inline::faiss"],
-        "safety": ["remote::nvidia"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "eval": ["remote::nvidia"],
-        "post_training": ["remote::nvidia"],
-        "datasetio": ["inline::localfs", "remote::nvidia"],
-        "scoring": ["inline::basic"],
-        "tool_runtime": ["inline::rag-runtime"],
+        "inference": [
+            Provider(
+                provider_id="nvidia",
+                provider_type="remote::nvidia",
+                config={},
+            )
+        ],
+        "vector_io": [
+            Provider(
+                provider_id="faiss",
+                provider_type="inline::faiss",
+                config={},
+            )
+        ],
+        "safety": [
+            Provider(
+                provider_id="nvidia",
+                provider_type="remote::nvidia",
+                config={},
+            )
+        ],
+        "agents": [
+            Provider(
+                provider_id="meta-reference",
+                provider_type="inline::meta-reference",
+                config={},
+            )
+        ],
+        "telemetry": [
+            Provider(
+                provider_id="meta-reference",
+                provider_type="inline::meta-reference",
+                config={},
+            )
+        ],
+        "eval": [
+            Provider(
+                provider_id="nvidia",
+                provider_type="remote::nvidia",
+                config={},
+            )
+        ],
+        "post_training": [Provider(provider_id="nvidia", provider_type="remote::nvidia", config={})],
+        "datasetio": [
+            Provider(
+                provider_id="localfs",
+                provider_type="inline::localfs",
+                config={},
+            ),
+            Provider(
+                provider_id="nvidia",
+                provider_type="remote::nvidia",
+                config={},
+            ),
+        ],
+        "scoring": [
+            Provider(
+                provider_id="basic",
+                provider_type="inline::basic",
+                config={},
+            )
+        ],
+        "tool_runtime": [
+            Provider(
+                provider_id="rag-runtime",
+                provider_type="inline::rag-runtime",
+                config={},
+            )
+        ],
     }
 
     inference_provider = Provider(

@@ -26,12 +26,14 @@ if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
 fi
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: $0 <env_name> <pip_dependencies> [<special_pip_deps>]" >&2
+  echo "Usage: $0 <env_name> <pip_dependencies> [<special_pip_deps>] [<external_provider_deps>]" >&2
   echo "Example: $0 mybuild ./my-stack-build.yaml 'numpy pandas scipy'" >&2
   exit 1
 fi
 
-special_pip_deps="$3"
+# Handle optional arguments - they may be empty strings or not provided
+special_pip_deps="${3:-}"
+external_provider_deps="${4:-}"
 
 set -euo pipefail
 
@@ -74,6 +76,7 @@ run() {
   local env_name="$1"
   local pip_dependencies="$2"
   local special_pip_deps="$3"
+  local external_provider_deps="$4"
 
   if [ -n "$UV_SYSTEM_PYTHON" ] || [ "$env_name" == "__system__" ]; then
     echo "Installing dependencies in system Python environment"
@@ -104,6 +107,15 @@ run() {
         # shellcheck disable=SC2086
         # we are building a command line so word splitting is expected
         uv pip install $part
+      done
+    fi
+    if [ -n "$external_provider_deps" ]; then
+      IFS='#' read -ra parts <<<"$external_provider_deps"
+      for part in "${parts[@]}"; do
+        echo "$part"
+        # shellcheck disable=SC2086
+        # we are building a command line so word splitting is expected
+        uv pip install "$part"
       done
     fi
   else
@@ -138,14 +150,53 @@ run() {
     if [ -n "$special_pip_deps" ]; then
       IFS='#' read -ra parts <<<"$special_pip_deps"
       for part in "${parts[@]}"; do
+        echo "Installing special provider module: $part"
         echo "$part"
         # shellcheck disable=SC2086
         # we are building a command line so word splitting is expected
         uv pip install $part
       done
     fi
+    if [ -n "$external_provider_deps" ]; then
+      IFS='#' read -ra parts <<<"$external_provider_deps"
+      for part in "${parts[@]}"; do
+        echo "Installing external provider module: $part"
+        # shellcheck disable=SC2086
+        # we are building a command line so word splitting is expected
+        uv pip install "$part"
+
+        # Now import the module and get its provider spec to install additional dependencies
+        echo "Getting provider spec for module: $part"
+        # Extract package name from version specification (e.g., "ramalama_stack==0.3.0a0" -> "ramalama_stack")
+        package_name=$(echo "$part" | sed 's/[<>=!].*//')
+        python3 -c "
+import importlib
+import sys
+try:
+    module = importlib.import_module(f'$package_name.provider')
+    spec = module.get_provider_spec()
+    if hasattr(spec, 'pip_packages') and spec.pip_packages:
+        print('ADDITIONAL_DEPS:' + ' '.join(spec.pip_packages))
+except Exception as e:
+    print(f'Error getting provider spec for $package_name: {e}', file=sys.stderr)
+" > /tmp/provider_deps_$$.txt
+
+        cat /tmp/provider_deps_$$.txt
+        # Read the additional dependencies and install them
+        additional_deps=$(grep '^ADDITIONAL_DEPS:' /tmp/provider_deps_$$.txt | cut -d: -f2)
+        if [ -n "$additional_deps" ]; then
+          echo "Installing additional dependencies from provider spec: $additional_deps"
+          # shellcheck disable=SC2086
+          # we are building a command line so word splitting is expected
+          uv pip install $additional_deps
+        fi
+
+        # Clean up temp file
+        rm -f /tmp/provider_deps_$$.txt
+      done
+    fi
   fi
 }
 
 pre_run_checks "$env_name"
-run "$env_name" "$pip_dependencies" "$special_pip_deps"
+run "$env_name" "$pip_dependencies" "$special_pip_deps" "$external_provider_deps"
