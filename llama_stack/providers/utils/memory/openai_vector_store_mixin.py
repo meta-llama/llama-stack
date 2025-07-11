@@ -143,7 +143,7 @@ class OpenAIVectorStoreMixin(ABC):
         embedding_model: str | None = None,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
-        provider_vector_db_id: str = "",
+        provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         """Creates a vector store."""
         created_at = int(time.time())
