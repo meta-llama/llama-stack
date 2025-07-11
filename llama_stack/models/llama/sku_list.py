@@ -22,6 +22,7 @@ def resolve_model(descriptor: str) -> Model | None:
     for m in all_registered_models():
         if descriptor in (m.descriptor(), m.huggingface_repo):
             return m
+
     return None
 
 
