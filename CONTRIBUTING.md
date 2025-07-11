@@ -66,7 +66,7 @@ You can install the dependencies by running:
 
 ```bash
 cd llama-stack
-uv sync --extra dev
+uv sync --group dev
 uv pip install -e .
 source .venv/bin/activate
 ```
@@ -168,7 +168,7 @@ manually as they are auto-generated.
 
 ### Updating the provider documentation
 
-If you have made changes to a provider's configuration, you should run `./scripts/distro_codegen.py`
+If you have made changes to a provider's configuration, you should run `./scripts/provider_codegen.py`
 to re-generate the documentation. You should not change `docs/source/.../providers/` files manually
 as they are auto-generated.
 Note that the provider "description" field will be used to generate the provider documentation.
