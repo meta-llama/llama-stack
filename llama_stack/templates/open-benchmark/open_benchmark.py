@@ -146,7 +146,8 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models) + [
+    models, _ = get_model_registry(available_models)
+    default_models = models + [
         ModelInput(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
             provider_id="groq",

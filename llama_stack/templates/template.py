@@ -37,7 +37,7 @@ from llama_stack.providers.utils.sqlstore.sqlstore import get_pip_packages as ge
 
 def get_model_registry(
     available_models: dict[str, list[ProviderModelEntry]],
-) -> list[ModelInput]:
+) -> tuple[list[ModelInput], bool]:
     models = []
 
     # check for conflicts in model ids
@@ -74,7 +74,50 @@ def get_model_registry(
                         metadata=entry.metadata,
                     )
                 )
-    return models
+    return models, ids_conflict
+
+
+def get_shield_registry(
+    available_safety_models: dict[str, list[ProviderModelEntry]],
+    ids_conflict_in_models: bool,
+) -> list[ShieldInput]:
+    shields = []
+
+    # check for conflicts in shield ids
+    all_ids = set()
+    ids_conflict = False
+
+    for _, entries in available_safety_models.items():
+        for entry in entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for model_id in ids:
+                if model_id in all_ids:
+                    ids_conflict = True
+                    rich.print(
+                        f"[yellow]Shield id {model_id} conflicts; all shield ids will be prefixed with provider id[/yellow]"
+                    )
+                    break
+            all_ids.update(ids)
+            if ids_conflict:
+                break
+        if ids_conflict:
+            break
+
+    for provider_id, entries in available_safety_models.items():
+        for entry in entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for model_id in ids:
+                identifier = f"{provider_id}/{model_id}" if ids_conflict and provider_id not in model_id else model_id
+                shields.append(
+                    ShieldInput(
+                        shield_id=identifier,
+                        provider_shield_id=f"{provider_id}/{entry.provider_model_id}"
+                        if ids_conflict_in_models
+                        else entry.provider_model_id,
+                    )
+                )
+
+    return shields
 
 
 class DefaultModel(BaseModel):
