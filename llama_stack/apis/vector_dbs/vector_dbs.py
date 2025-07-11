@@ -77,7 +77,6 @@ class VectorDBs(Protocol):
         """Register a vector database.
 
         :param vector_db_id: The identifier of the vector database to register.
-        :param provider_vector_db_id: The identifier of the vector database in the provider.
         :param embedding_model: The embedding model to use.
         :param embedding_dimension: The dimension of the embedding model.
         :param provider_id: The identifier of the provider.
