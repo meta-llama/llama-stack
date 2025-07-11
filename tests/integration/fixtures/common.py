@@ -218,6 +218,7 @@ def llama_stack_client(request, provider_data):
         return LlamaStackClient(
             base_url=base_url,
             provider_data=provider_data,
+            timeout=int(os.environ.get("LLAMA_STACK_CLIENT_TIMEOUT", "30")),
         )
 
     # check if this looks like a URL using proper URL parsing

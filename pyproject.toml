@@ -226,7 +226,6 @@ follow_imports = "silent"
 exclude = [
     # As we fix more and more of these, we should remove them from the list
     "^llama_stack/cli/download\\.py$",
-    "^llama_stack/cli/stack/_build\\.py$",
     "^llama_stack/distribution/build\\.py$",
     "^llama_stack/distribution/client\\.py$",
     "^llama_stack/distribution/request_headers\\.py$",
