@@ -394,7 +394,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         # so we need to convert it to AsyncStream
         # mypy can't track runtime variables inside the [...] of a generic, so ignore that check
         args = get_args(stream_cls)
-        stream_cls = AsyncStream[args[0]] # type: ignore[valid-type]
+        stream_cls = AsyncStream[args[0]]  # type: ignore[valid-type]
         response = AsyncAPIResponse(
             raw=mock_response,
             client=self,
