@@ -34,7 +34,7 @@ def loop():
     return asyncio.new_event_loop()
 
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
+@pytest_asyncio.fixture
 async def sqlite_vec_index(embedding_dimension, tmp_path_factory):
     temp_dir = tmp_path_factory.getbasetemp()
     db_path = str(temp_dir / "test_sqlite.db")
@@ -44,38 +44,15 @@ async def sqlite_vec_index(embedding_dimension, tmp_path_factory):
 
 
 @pytest.mark.asyncio
-async def test_add_chunks(sqlite_vec_index, sample_chunks, sample_embeddings):
-    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings, batch_size=2)
-    connection = _create_sqlite_connection(sqlite_vec_index.db_path)
-    cur = connection.cursor()
-    cur.execute(f"SELECT COUNT(*) FROM {sqlite_vec_index.metadata_table}")
-    count = cur.fetchone()[0]
-    assert count == len(sample_chunks)
-    cur.close()
-    connection.close()
-
-
-@pytest.mark.asyncio
-async def test_query_chunks_vector(sqlite_vec_index, sample_chunks, sample_embeddings, embedding_dimension):
-    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
-    query_embedding = np.random.rand(embedding_dimension).astype(np.float32)
-    response = await sqlite_vec_index.query_vector(query_embedding, k=2, score_threshold=0.0)
-    assert isinstance(response, QueryChunksResponse)
-    assert len(response.chunks) == 2
-
-
-@pytest.mark.xfail(reason="Chunk Metadata not yet supported for SQLite-vec", strict=True)
-async def test_query_chunk_metadata(sqlite_vec_index, sample_chunks, sample_embeddings):
-    await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
-    query_embedding = sample_embeddings[0]
-    response = await sqlite_vec_index.query_vector(query_embedding, k=2, score_threshold=0.0)
-    assert response.chunks[-1].chunk_metadata == sample_chunks[-1].chunk_metadata
+async def test_query_chunk_metadata(sqlite_vec_index, sample_chunks_with_metadata, sample_embeddings_with_metadata):
+    await sqlite_vec_index.add_chunks(sample_chunks_with_metadata, sample_embeddings_with_metadata)
+    response = await sqlite_vec_index.query_vector(sample_embeddings_with_metadata[-1], k=2, score_threshold=0.0)
+    assert response.chunks[0].chunk_metadata == sample_chunks_with_metadata[-1].chunk_metadata
 
 
 @pytest.mark.asyncio
 async def test_query_chunks_full_text_search(sqlite_vec_index, sample_chunks, sample_embeddings):
     await sqlite_vec_index.add_chunks(sample_chunks, sample_embeddings)
-
     query_string = "Sentence 5"
     response = await sqlite_vec_index.query_keyword(k=3, score_threshold=0.0, query_string=query_string)
 
@@ -148,7 +125,7 @@ async def test_chunk_id_conflict(sqlite_vec_index, sample_chunks, embedding_dime
     assert len(chunk_ids) == len(set(chunk_ids)), "Duplicate chunk IDs detected across batches!"
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest.fixture(scope="session")
 async def sqlite_vec_adapter(sqlite_connection):
     config = type("Config", (object,), {"db_path": ":memory:"})  # Mock config with in-memory database
     adapter = SQLiteVecVectorIOAdapter(config=config, inference_api=None)

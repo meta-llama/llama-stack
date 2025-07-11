@@ -8,4 +8,6 @@ runs:
       run: |
         docker run -d --name ollama -p 11434:11434 docker.io/leseb/ollama-with-models
         # TODO: rebuild an ollama image with llama-guard3:1b
+        echo "Verifying Ollama status..."
+        timeout 30 bash -c 'while ! curl -s -L http://127.0.0.1:11434; do sleep 1 && echo "."; done'
         docker exec ollama ollama pull llama-guard3:1b

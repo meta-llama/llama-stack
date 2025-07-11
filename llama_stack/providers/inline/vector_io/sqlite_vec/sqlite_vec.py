@@ -24,6 +24,8 @@ from llama_stack.apis.vector_io import (
     VectorIO,
 )
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     RERANKER_TYPE_RRF,
@@ -39,6 +41,13 @@ VECTOR_SEARCH = "vector"
 KEYWORD_SEARCH = "keyword"
 HYBRID_SEARCH = "hybrid"
 SEARCH_MODES = {VECTOR_SEARCH, KEYWORD_SEARCH, HYBRID_SEARCH}
+
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:sqlite_vec:{VERSION}::"
+VECTOR_INDEX_PREFIX = f"vector_index:sqlite_vec:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:sqlite_vec:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:sqlite_vec:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:sqlite_vec:{VERSION}::"
 
 
 def serialize_vector(vector: list[float]) -> bytes:
@@ -117,13 +126,14 @@ class SQLiteVecIndex(EmbeddingIndex):
       - An FTS5 table (fts_chunks_{bank_id}) for full-text keyword search.
     """
 
-    def __init__(self, dimension: int, db_path: str, bank_id: str):
+    def __init__(self, dimension: int, db_path: str, bank_id: str, kvstore: KVStore | None = None):
         self.dimension = dimension
         self.db_path = db_path
         self.bank_id = bank_id
         self.metadata_table = f"chunks_{bank_id}".replace("-", "_")
         self.vector_table = f"vec_chunks_{bank_id}".replace("-", "_")
         self.fts_table = f"fts_chunks_{bank_id}".replace("-", "_")
+        self.kvstore = kvstore
 
     @classmethod
     async def create(cls, dimension: int, db_path: str, bank_id: str):
@@ -425,27 +435,116 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         self.files_api = files_api
         self.cache: dict[str, VectorDBWithIndex] = {}
         self.openai_vector_stores: dict[str, dict[str, Any]] = {}
+        self.kvstore: KVStore | None = None
 
     async def initialize(self) -> None:
-        def _setup_connection():
-            # Open a connection to the SQLite database (the file is specified in the config).
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+
+        start_key = VECTOR_DBS_PREFIX
+        end_key = f"{VECTOR_DBS_PREFIX}\xff"
+        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
+        for db_json in stored_vector_dbs:
+            vector_db = VectorDB.model_validate_json(db_json)
+            index = await SQLiteVecIndex.create(
+                vector_db.embedding_dimension,
+                self.config.db_path,
+                vector_db.identifier,
+            )
+            self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
+
+        # load any existing OpenAI vector stores
+        self.openai_vector_stores = await self._load_openai_vector_stores()
+
+    async def shutdown(self) -> None:
+        # nothing to do since we don't maintain a persistent connection
+        pass
+
+    async def list_vector_dbs(self) -> list[VectorDB]:
+        return [v.vector_db for v in self.cache.values()]
+
+    async def register_vector_db(self, vector_db: VectorDB) -> None:
+        index = await SQLiteVecIndex.create(
+            vector_db.embedding_dimension,
+            self.config.db_path,
+            vector_db.identifier,
+        )
+        self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
+
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
+        if vector_db_id in self.cache:
+            return self.cache[vector_db_id]
+
+        if self.vector_db_store is None:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
+
+        vector_db = self.vector_db_store.get_vector_db(vector_db_id)
+        if not vector_db:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
+
+        index = VectorDBWithIndex(
+            vector_db=vector_db,
+            index=SQLiteVecIndex(
+                dimension=vector_db.embedding_dimension,
+                db_path=self.config.db_path,
+                bank_id=vector_db.identifier,
+                kvstore=self.kvstore,
+            ),
+            inference_api=self.inference_api,
+        )
+        self.cache[vector_db_id] = index
+        return index
+
+    async def unregister_vector_db(self, vector_db_id: str) -> None:
+        if vector_db_id not in self.cache:
+            logger.warning(f"Vector DB {vector_db_id} not found")
+            return
+        await self.cache[vector_db_id].index.delete()
+        del self.cache[vector_db_id]
+
+    # OpenAI Vector Store Mixin abstract method implementations
+    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Save vector store metadata to SQLite database."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
+
+    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
+        """Load all vector store metadata from SQLite database."""
+        assert self.kvstore is not None
+        start_key = OPENAI_VECTOR_STORES_PREFIX
+        end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
+        stored_openai_stores = await self.kvstore.values_in_range(start_key, end_key)
+        stores = {}
+        for store_data in stored_openai_stores:
+            store_info = json.loads(store_data)
+            stores[store_info["id"]] = store_info
+        return stores
+
+    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
+        """Update vector store metadata in SQLite database."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
+
+    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
+        """Delete vector store metadata from SQLite database."""
+        assert self.kvstore is not None
+        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
+        await self.kvstore.delete(key)
+        if store_id in self.openai_vector_stores:
+            del self.openai_vector_stores[store_id]
+
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        """Save vector store file metadata to SQLite database."""
+
+        def _create_or_store():
             connection = _create_sqlite_connection(self.config.db_path)
             cur = connection.cursor()
             try:
-                # Create a table to persist vector DB registrations.
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS vector_dbs (
-                        id TEXT PRIMARY KEY,
-                        metadata TEXT
-                    );
-                """)
-                # Create a table to persist OpenAI vector stores.
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS openai_vector_stores (
-                        id TEXT PRIMARY KEY,
-                        metadata TEXT
-                    );
-                """)
                 # Create a table to persist OpenAI vector store files.
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS openai_vector_store_files (
@@ -464,168 +563,6 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                     );
                 """)
                 connection.commit()
-                # Load any existing vector DB registrations.
-                cur.execute("SELECT metadata FROM vector_dbs")
-                vector_db_rows = cur.fetchall()
-                return vector_db_rows
-            finally:
-                cur.close()
-                connection.close()
-
-        vector_db_rows = await asyncio.to_thread(_setup_connection)
-
-        # Load existing vector DBs
-        for row in vector_db_rows:
-            vector_db_data = row[0]
-            vector_db = VectorDB.model_validate_json(vector_db_data)
-            index = await SQLiteVecIndex.create(
-                vector_db.embedding_dimension,
-                self.config.db_path,
-                vector_db.identifier,
-            )
-            self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
-
-        # Load existing OpenAI vector stores using the mixin method
-        self.openai_vector_stores = await self._load_openai_vector_stores()
-
-    async def shutdown(self) -> None:
-        # nothing to do since we don't maintain a persistent connection
-        pass
-
-    async def register_vector_db(self, vector_db: VectorDB) -> None:
-        def _register_db():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "INSERT OR REPLACE INTO vector_dbs (id, metadata) VALUES (?, ?)",
-                    (vector_db.identifier, vector_db.model_dump_json()),
-                )
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_register_db)
-        index = await SQLiteVecIndex.create(
-            vector_db.embedding_dimension,
-            self.config.db_path,
-            vector_db.identifier,
-        )
-        self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
-
-    async def list_vector_dbs(self) -> list[VectorDB]:
-        return [v.vector_db for v in self.cache.values()]
-
-    async def unregister_vector_db(self, vector_db_id: str) -> None:
-        if vector_db_id not in self.cache:
-            logger.warning(f"Vector DB {vector_db_id} not found")
-            return
-        await self.cache[vector_db_id].index.delete()
-        del self.cache[vector_db_id]
-
-        def _delete_vector_db_from_registry():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute("DELETE FROM vector_dbs WHERE id = ?", (vector_db_id,))
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_delete_vector_db_from_registry)
-
-    # OpenAI Vector Store Mixin abstract method implementations
-    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Save vector store metadata to SQLite database."""
-
-        def _store():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "INSERT OR REPLACE INTO openai_vector_stores (id, metadata) VALUES (?, ?)",
-                    (store_id, json.dumps(store_info)),
-                )
-                connection.commit()
-            except Exception as e:
-                logger.error(f"Error saving openai vector store {store_id}: {e}")
-                raise
-            finally:
-                cur.close()
-                connection.close()
-
-        try:
-            await asyncio.to_thread(_store)
-        except Exception as e:
-            logger.error(f"Error saving openai vector store {store_id}: {e}")
-            raise
-
-    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
-        """Load all vector store metadata from SQLite database."""
-
-        def _load():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute("SELECT metadata FROM openai_vector_stores")
-                rows = cur.fetchall()
-                return rows
-            finally:
-                cur.close()
-                connection.close()
-
-        rows = await asyncio.to_thread(_load)
-        stores = {}
-        for row in rows:
-            store_data = row[0]
-            store_info = json.loads(store_data)
-            stores[store_info["id"]] = store_info
-        return stores
-
-    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Update vector store metadata in SQLite database."""
-
-        def _update():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "UPDATE openai_vector_stores SET metadata = ? WHERE id = ?",
-                    (json.dumps(store_info), store_id),
-                )
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_update)
-
-    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
-        """Delete vector store metadata from SQLite database."""
-
-        def _delete():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute("DELETE FROM openai_vector_stores WHERE id = ?", (store_id,))
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_delete)
-
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        """Save vector store file metadata to SQLite database."""
-
-        def _store():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
                 cur.execute(
                     "INSERT OR REPLACE INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (?, ?, ?)",
                     (store_id, file_id, json.dumps(file_info)),
@@ -643,7 +580,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                 connection.close()
 
         try:
-            await asyncio.to_thread(_store)
+            await asyncio.to_thread(_create_or_store)
         except Exception as e:
             logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
             raise
@@ -722,6 +659,10 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
                 cur.execute(
                     "DELETE FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?", (store_id, file_id)
                 )
+                cur.execute(
+                    "DELETE FROM openai_vector_store_files_contents WHERE store_id = ? AND file_id = ?",
+                    (store_id, file_id),
+                )
                 connection.commit()
             finally:
                 cur.close()
@@ -730,15 +671,17 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         await asyncio.to_thread(_delete)
 
     async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
-        if vector_db_id not in self.cache:
-            raise ValueError(f"Vector DB {vector_db_id} not found. Found: {list(self.cache.keys())}")
+        index = await self._get_and_cache_vector_db_index(vector_db_id)
+        if not index:
+            raise ValueError(f"Vector DB {vector_db_id} not found")
         # The VectorDBWithIndex helper is expected to compute embeddings via the inference_api
         # and then call our index's add_chunks.
-        await self.cache[vector_db_id].insert_chunks(chunks)
+        await index.insert_chunks(chunks)
 
     async def query_chunks(
         self, vector_db_id: str, query: Any, params: dict[str, Any] | None = None
     ) -> QueryChunksResponse:
-        if vector_db_id not in self.cache:
+        index = await self._get_and_cache_vector_db_index(vector_db_id)
+        if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
-        return await self.cache[vector_db_id].query_chunks(query, params)
+        return await index.query_chunks(query, params)
