@@ -68,11 +68,11 @@ class VectorDBs(Protocol):
     async def register_vector_db(
         self,
         vector_db_id: str,
-        provider_vector_db_id: str,
         embedding_model: str,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
         vector_db_name: str | None = None,
+        provider_vector_db_id: str | None = None,
     ) -> VectorDB:
         """Register a vector database.
 
@@ -82,6 +82,7 @@ class VectorDBs(Protocol):
         :param embedding_dimension: The dimension of the embedding model.
         :param provider_id: The identifier of the provider.
         :param vector_db_name: The name of the vector database.
+                :param provider_vector_db_id: The identifier of the vector database in the provider.
         :returns: A VectorDB.
         """
         ...
