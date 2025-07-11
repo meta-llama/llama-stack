@@ -28,12 +28,22 @@ class ToolParameter(BaseModel):
 
 
 @json_schema_type
+class ToolAnnotations(BaseModel):
+    title: str | None = None
+    readOnlyHint: bool | None = None
+    destructiveHint: bool | None = None
+    idempotentHint: bool | None = None
+    openWorldHint: bool | None = None
+
+
+@json_schema_type
 class Tool(Resource):
     type: Literal[ResourceType.tool] = ResourceType.tool
     toolgroup_id: str
     description: str
     parameters: list[ToolParameter]
     metadata: dict[str, Any] | None = None
+    annotations: ToolAnnotations | None = None
 
 
 @json_schema_type
@@ -42,6 +52,7 @@ class ToolDef(BaseModel):
     description: str | None = None
     parameters: list[ToolParameter] | None = None
     metadata: dict[str, Any] | None = None
+    annotations: ToolAnnotations | None = None
 
 
 @json_schema_type
