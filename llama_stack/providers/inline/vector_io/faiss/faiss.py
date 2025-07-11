@@ -267,6 +267,7 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
     async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
         """Load all vector store metadata from kvstore."""
@@ -286,12 +287,15 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
+        self.openai_vector_stores[store_id] = store_info
 
     async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
         """Delete vector store metadata from kvstore."""
         assert self.kvstore is not None
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
+        if store_id in self.openai_vector_stores:
+            del self.openai_vector_stores[store_id]
 
     async def _save_openai_vector_store_file(
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
