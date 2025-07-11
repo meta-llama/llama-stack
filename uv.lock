@@ -1239,6 +1239,28 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/65/c6/246100fa3967074d9725b3716913bd495823547bde5047050d4c3462f994/linkify-1.4.tar.gz", hash = "sha256:9ba276ba179525f7262820d90f009604e51cd4f1466c1112b882ef7eda243d5e", size = 1749, upload-time = "2009-11-12T21:42:00.934Z" }
 
 [[package]]
+name = "litellm"
+version = "1.74.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "click" },
+    { name = "httpx" },
+    { name = "importlib-metadata" },
+    { name = "jinja2" },
+    { name = "jsonschema" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "tiktoken" },
+    { name = "tokenizers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/10/63cdae1b1d581ad1db51153dfd06c4e18394a3ba8de495f73f2d797ece3b/litellm-1.74.2.tar.gz", hash = "sha256:cbacffe93976c60ca674fec0a942c70b900b4ad1c8069395174049a162f255bf", size = 9230641, upload-time = "2025-07-11T03:31:07.925Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/f7/67689245f48b9e79bcd2f3a10a3690cb1918fb99fffd5a623ed2496bca66/litellm-1.74.2-py3-none-any.whl", hash = "sha256:29bb555b45128e4cc696e72921a6ec24e97b14e9b69e86eed6f155124ad629b1", size = 8587065, upload-time = "2025-07-11T03:31:05.598Z" },
+]
+
+[[package]]
 name = "llama-stack"
 version = "0.2.14"
 source = { editable = "." }
@@ -1341,6 +1363,7 @@ unit = [
     { name = "blobfile" },
     { name = "chardet" },
     { name = "faiss-cpu" },
+    { name = "litellm" },
     { name = "mcp" },
     { name = "openai" },
     { name = "pymilvus" },
@@ -1446,6 +1469,7 @@ unit = [
     { name = "blobfile" },
     { name = "chardet" },
     { name = "faiss-cpu" },
+    { name = "litellm" },
     { name = "mcp" },
     { name = "openai" },
     { name = "pymilvus", specifier = ">=2.5.12" },
