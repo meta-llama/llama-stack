@@ -36,7 +36,8 @@ class Model(CommonModelFields, Resource):
         return self.identifier
 
     @property
-    def provider_model_id(self) -> str | None:
+    def provider_model_id(self) -> str:
+        assert self.provider_resource_id is not None, "Provider resource ID must be set"
         return self.provider_resource_id
 
     model_config = ConfigDict(protected_namespaces=())
