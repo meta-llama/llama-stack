@@ -54,6 +54,7 @@ class DistributionInspectImpl(Inspect):
                             provider_types=[],  # These APIs don't have "real" providers - they're internal to the stack
                         )
                         for e in endpoints
+                        if e.methods
                     ]
                 )
             else:
@@ -63,10 +64,11 @@ class DistributionInspectImpl(Inspect):
                         [
                             RouteInfo(
                                 route=e.path,
-                                method=next(iter([m for m in e.methods if m != "HEAD"])),
+                                method=next(iter([m for m in e.methods if m != "HEAD"])) if e.methods else "POST",
                                 provider_types=[p.provider_type for p in providers],
                             )
                             for e in endpoints
+                            if e.methods
                         ]
                     )
 

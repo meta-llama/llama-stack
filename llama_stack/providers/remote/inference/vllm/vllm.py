@@ -168,7 +168,7 @@ def _process_vllm_chat_completion_end_of_stream(
     last_chunk_content: str | None,
     current_event_type: ChatCompletionResponseEventType,
     tool_call_bufs: dict[str, UnparseableToolCall] | None = None,
-) -> list[OpenAIChatCompletionChunk]:
+) -> list[ChatCompletionResponseStreamChunk]:
     chunks = []
 
     if finish_reason is not None:
@@ -247,9 +247,10 @@ async def _process_vllm_chat_completion_stream_response(
         if choice.delta.tool_calls:
             for delta_tool_call in choice.delta.tool_calls:
                 tool_call = convert_tool_call(delta_tool_call)
-                if delta_tool_call.index not in tool_call_bufs:
-                    tool_call_bufs[delta_tool_call.index] = UnparseableToolCall()
-                tool_call_buf = tool_call_bufs[delta_tool_call.index]
+                index_str = str(delta_tool_call.index)
+                if index_str not in tool_call_bufs:
+                    tool_call_bufs[index_str] = UnparseableToolCall()
+                tool_call_buf = tool_call_bufs[index_str]
                 tool_call_buf.tool_name += str(tool_call.tool_name)
                 tool_call_buf.call_id += tool_call.call_id
                 tool_call_buf.arguments += (
