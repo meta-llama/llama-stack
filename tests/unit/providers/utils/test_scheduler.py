@@ -11,7 +11,6 @@ import pytest
 from llama_stack.providers.utils.scheduler import JobStatus, Scheduler
 
 
-@pytest.mark.asyncio
 async def test_scheduler_unknown_backend():
     with pytest.raises(ValueError):
         Scheduler(backend="unknown")
@@ -26,7 +25,6 @@ async def wait_for_job_completed(sched: Scheduler, job_id: str) -> None:
     raise TimeoutError(f"Job {job_id} did not complete in time.")
 
 
-@pytest.mark.asyncio
 async def test_scheduler_naive():
     sched = Scheduler()
 
@@ -87,7 +85,6 @@ async def test_scheduler_naive():
     assert job.logs[0][0] < job.logs[1][0]
 
 
-@pytest.mark.asyncio
 async def test_scheduler_naive_handler_raises():
     sched = Scheduler()
 

@@ -88,7 +88,6 @@ async def cleanup_records(sql_store, table_name, record_ids):
             pass
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_store_attributes(mock_get_authenticated_user, authorized_store, request):
@@ -183,7 +182,6 @@ async def test_authorized_store_attributes(mock_get_authenticated_user, authoriz
         await cleanup_records(authorized_store.sql_store, table_name, ["1", "2", "3", "4", "5", "6"])
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_user_ownership_policy(mock_get_authenticated_user, authorized_store, request):
