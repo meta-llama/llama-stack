@@ -58,9 +58,9 @@ ui = [
 
 [dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=8.4",
     "pytest-timeout",
-    "pytest-asyncio",
+    "pytest-asyncio>=1.0",
     "pytest-cov",
     "pytest-html",
     "pytest-json-report",
@@ -339,3 +339,6 @@ warn_required_dynamic_aliases = true
 
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
