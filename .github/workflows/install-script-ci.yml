@@ -17,10 +17,39 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - name: Run ShellCheck on install.sh
         run: shellcheck scripts/install.sh
-  smoke-test:
+  smoke-test-on-stable:
     needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
       - name: Run installer end-to-end
         run: ./scripts/install.sh
+
+  smoke-test-on-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install dependencies
+        uses: ./.github/actions/setup-runner
+
+      - name: Build a single provider
+        run: |
+          yq -i '.image_type = "container"' llama_stack/templates/starter/build.yaml
+          yq -i '.image_name = "test"' llama_stack/templates/starter/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/starter/build.yaml
+
+      - name: Inspect the container image entrypoint
+        run: |
+          IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          entrypoint=$(docker inspect --format '{{ .Config.Entrypoint }}' $IMAGE_ID)
+          echo "Entrypoint: $entrypoint"
+          if [ "$entrypoint" != "[python -m llama_stack.distribution.server.server --config /app/run.yaml]" ]; then
+            echo "Entrypoint is not correct"
+            exit 1
+          fi
+      - name: Run installer end-to-end
+        run: |
+          IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          ./scripts/install.sh --image $IMAGE_ID
