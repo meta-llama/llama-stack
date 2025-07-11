@@ -179,9 +179,7 @@ def test_openai_completion_prompt_logprobs(llama_stack_client, client_with_model
         model=text_model_id,
         prompt=prompt,
         stream=False,
-        extra_body={
-            "prompt_logprobs": prompt_logprobs,
-        },
+        prompt_logprobs=prompt_logprobs,
     )
     assert len(response.choices) > 0
     choice = response.choices[0]
@@ -196,9 +194,7 @@ def test_openai_completion_guided_choice(llama_stack_client, client_with_models,
         model=text_model_id,
         prompt=prompt,
         stream=False,
-        extra_body={
-            "guided_choice": ["joy", "sadness"],
-        },
+        guided_choice=["joy", "sadness"],
     )
     assert len(response.choices) > 0
     choice = response.choices[0]
