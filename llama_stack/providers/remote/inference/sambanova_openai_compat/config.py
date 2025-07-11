@@ -31,7 +31,7 @@ class SambaNovaCompatConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, api_key: str = "${env.SAMBANOVA_API_KEY}", **kwargs) -> dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.SAMBANOVA_API_KEY:=}", **kwargs) -> dict[str, Any]:
         return {
             "openai_compat_api_base": "https://api.sambanova.ai/v1",
             "api_key": api_key,

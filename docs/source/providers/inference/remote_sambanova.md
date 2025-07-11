@@ -15,7 +15,7 @@ SambaNova inference provider for running models on SambaNova's dataflow architec
 
 ```yaml
 url: https://api.sambanova.ai/v1
-api_key: ${env.SAMBANOVA_API_KEY}
+api_key: ${env.SAMBANOVA_API_KEY:=}
 
 ```
 

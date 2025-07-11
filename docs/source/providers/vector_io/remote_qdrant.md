@@ -24,7 +24,7 @@ Please refer to the inline provider documentation.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.QDRANT_API_KEY}
+api_key: ${env.QDRANT_API_KEY:=}
 
 ```
 

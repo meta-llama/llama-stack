@@ -113,6 +113,24 @@ from llama_stack.templates.template import (
     get_model_registry,
 )
 
+REMOTE_INFERENCE_PROVIDERS_FOR_STARTER = {
+    "anthropic",
+    "cerebras",
+    "fireworks",
+    "gemini",
+    "groq",
+    "ollama",
+    "openai",
+    "sambanova",
+    "together",
+    "vllm",
+}
+
+DEFAULT_DISABLED_PROVIDERS = {
+    "ollama",
+    "vllm",
+}
+
 
 def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEntry]:
     """Get model entries for a specific provider type."""
@@ -207,33 +225,26 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
     remote_providers = [
         provider
         for provider in all_providers
-        # TODO: re-add once the Python 3.13 issue is fixed
-        # discussion: https://github.com/meta-llama/llama-stack/pull/2327#discussion_r2156883828
-        if hasattr(provider, "adapter") and provider.adapter.adapter_type != "watsonx"
+        if hasattr(provider, "adapter") and provider.adapter.adapter_type in REMOTE_INFERENCE_PROVIDERS_FOR_STARTER
     ]
 
-    providers = []
+    inference_providers = []
     available_models = {}
 
     for provider_spec in remote_providers:
         provider_type = provider_spec.adapter.adapter_type
 
-        # Build the environment variable name for enabling this provider
-        env_var = f"ENABLE_{provider_type.upper().replace('-', '_').replace('::', '_')}"
         model_entries = _get_model_entries_for_provider(provider_type)
         config = _get_config_for_provider(provider_spec)
-        providers.append(
-            (
-                f"${{env.{env_var}:=__disabled__}}",
-                provider_type,
-                model_entries,
-                config,
-            )
-        )
-        available_models[f"${{env.{env_var}:=__disabled__}}"] = model_entries
 
-    inference_providers = []
-    for provider_id, provider_type, model_entries, config in providers:
+        if provider_type in DEFAULT_DISABLED_PROVIDERS:
+            # For default disabled providers, we set id to be in the form of ${env.ENABLE_OLLAMA:=__disabled__}
+            # And allow this to be enabled explicitly by user by setting the environment variables
+            env_var = f"ENABLE_{provider_type.upper().replace('-', '_').replace('::', '_')}"
+            provider_id = f"${{env.{env_var}:=__disabled__}}"
+        else:
+            provider_id = provider_type
+
         inference_providers.append(
             Provider(
                 provider_id=provider_id,
@@ -241,7 +252,8 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
                 config=config,
             )
         )
-        available_models[provider_id] = model_entries
+        available_models[provider_type] = model_entries
+
     return inference_providers, available_models
 
 
