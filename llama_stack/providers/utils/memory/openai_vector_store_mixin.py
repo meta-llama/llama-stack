@@ -8,6 +8,7 @@ import asyncio
 import logging
 import mimetypes
 import time
+import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -148,7 +149,7 @@ class OpenAIVectorStoreMixin(ABC):
         """Creates a vector store."""
         created_at = int(time.time())
         if provider_vector_db_id is None:
-            raise ValueError("Provider vector DB ID is required")
+            provider_vector_db_id = f"vs_{uuid.uuid4()}"
 
         if provider_id is None:
             raise ValueError("Provider ID is required")

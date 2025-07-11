@@ -53,7 +53,6 @@ def test_vector_db_retrieve(client_with_empty_registry, embedding_model_id, embe
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
         embedding_dimension=embedding_dimension,
-        provider_vector_db_id=vector_db_id,
     )
 
     # Retrieve the memory bank and validate its properties
@@ -70,7 +69,6 @@ def test_vector_db_register(client_with_empty_registry, embedding_model_id, embe
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
         embedding_dimension=embedding_dimension,
-        provider_vector_db_id=vector_db_id,
     )
 
     vector_dbs_after_register = [vector_db.identifier for vector_db in client_with_empty_registry.vector_dbs.list()]
@@ -98,7 +96,6 @@ def test_insert_chunks(client_with_empty_registry, embedding_model_id, embedding
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
         embedding_dimension=embedding_dimension,
-        provider_vector_db_id=vector_db_id,
     )
 
     client_with_empty_registry.vector_io.insert(
@@ -134,7 +131,6 @@ def test_insert_chunks_with_precomputed_embeddings(client_with_empty_registry, e
         vector_db_id=vector_db_id,
         embedding_model=embedding_model_id,
         embedding_dimension=embedding_dimension,
-        provider_vector_db_id=vector_db_id,
     )
 
     chunks_with_embeddings = [

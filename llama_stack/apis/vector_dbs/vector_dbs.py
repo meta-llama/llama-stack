@@ -82,7 +82,7 @@ class VectorDBs(Protocol):
         :param embedding_dimension: The dimension of the embedding model.
         :param provider_id: The identifier of the provider.
         :param vector_db_name: The name of the vector database.
-                :param provider_vector_db_id: The identifier of the vector database in the provider.
+        :param provider_vector_db_id: The identifier of the vector database in the provider.
         :returns: A VectorDB.
         """
         ...

@@ -10933,9 +10933,7 @@ components:
           description: The identifier of the provider.
         vector_db_name:
           type: string
-          description: >-
-            The name of the vector database. :param provider_vector_db_id: The identifier
-            of the vector database in the provider.
+          description: The name of the vector database.
         provider_vector_db_id:
           type: string
           description: >-
