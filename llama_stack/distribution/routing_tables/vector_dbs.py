@@ -32,14 +32,12 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def register_vector_db(
         self,
         vector_db_id: str,
+        provider_vector_db_id: str,
         embedding_model: str,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
-        provider_vector_db_id: str = "",
         vector_db_name: str | None = None,
     ) -> VectorDB:
-        if provider_vector_db_id == "":
-            provider_vector_db_id = vector_db_id
         if provider_id is None:
             if len(self.impls_by_provider_id) > 0:
                 provider_id = list(self.impls_by_provider_id.keys())[0]

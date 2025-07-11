@@ -10922,6 +10922,10 @@ components:
           type: string
           description: >-
             The identifier of the vector database to register.
+        provider_vector_db_id:
+          type: string
+          description: >-
+            The identifier of the vector database in the provider.
         embedding_model:
           type: string
           description: The embedding model to use.
@@ -10931,16 +10935,13 @@ components:
         provider_id:
           type: string
           description: The identifier of the provider.
-        provider_vector_db_id:
-          type: string
-          description: >-
-            The identifier of the vector database in the provider.
         vector_db_name:
           type: string
           description: The name of the vector database.
       additionalProperties: false
       required:
         - vector_db_id
+        - provider_vector_db_id
         - embedding_model
       title: RegisterVectorDbRequest
     ResumeAgentTurnRequest:
