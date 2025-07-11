@@ -91,7 +91,7 @@ async def _convert_response_content_to_chat_content(
     if isinstance(content, str):
         return content
 
-    converted_parts = []
+    converted_parts: list[OpenAIChatCompletionContentPartParam] = []
     for content_part in content:
         if isinstance(content_part, OpenAIResponseInputMessageContentText):
             converted_parts.append(OpenAIChatCompletionContentPartTextParam(text=content_part.text))
@@ -136,7 +136,7 @@ async def _convert_response_input_to_chat_messages(
                     ),
                 )
                 messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
-            else:
+            elif isinstance(input_item, OpenAIResponseMessage):
                 content = await _convert_response_content_to_chat_content(input_item.content)
                 message_type = await _get_message_type_by_role(input_item.role)
                 if message_type is None:
@@ -144,6 +144,11 @@ async def _convert_response_input_to_chat_messages(
                         f"Llama Stack OpenAI Responses does not yet support message role '{input_item.role}' in this context"
                     )
                 messages.append(message_type(content=content))
+            else:
+                # Handle other tool call types that don't have content/role attributes
+                raise ValueError(
+                    f"Llama Stack OpenAI Responses does not yet support input item type '{type(input_item)}' in this context"
+                )
     else:
         messages.append(OpenAIUserMessageParam(content=input))
     return messages
@@ -175,13 +180,17 @@ async def _convert_response_text_to_chat_response_format(text: OpenAIResponseTex
     """
     Convert an OpenAI Response text parameter into an OpenAI Chat Completion response format.
     """
-    if not text.format or text.format["type"] == "text":
+    if not text.format or text.format.get("type") == "text":
         return OpenAIResponseFormatText(type="text")
-    if text.format["type"] == "json_object":
+    if text.format.get("type") == "json_object":
         return OpenAIResponseFormatJSONObject()
-    if text.format["type"] == "json_schema":
+    if text.format.get("type") == "json_schema":
+        name = text.format.get("name")
+        schema = text.format.get("schema")
+        if name is None or schema is None:
+            raise ValueError(f"json_schema format requires both name and schema fields")
         return OpenAIResponseFormatJSONSchema(
-            json_schema=OpenAIJSONSchema(name=text.format["name"], schema=text.format["schema"])
+            json_schema=OpenAIJSONSchema(name=name, schema=schema)
         )
     raise ValueError(f"Unsupported text format: {text.format}")
 
@@ -472,11 +481,12 @@ class OpenAIResponsesImpl:
                             response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
                             if response_tool_call:
                                 # Don't attempt to concatenate arguments if we don't have any new argumentsAdd commentMore actions
-                                if tool_call.function.arguments:
+                                if tool_call.function and tool_call.function.arguments:
                                     # Guard against an initial None argument before we concatenate
-                                    response_tool_call.function.arguments = (
-                                        response_tool_call.function.arguments or ""
-                                    ) + tool_call.function.arguments
+                                    if response_tool_call.function:
+                                        response_tool_call.function.arguments = (
+                                            response_tool_call.function.arguments or ""
+                                        ) + tool_call.function.arguments
                             else:
                                 tool_call_dict: dict[str, Any] = tool_call.model_dump()
                                 tool_call_dict.pop("type", None)
@@ -530,15 +540,16 @@ class OpenAIResponsesImpl:
                     next_turn_messages.append(tool_response_message)
 
             for tool_call in function_tool_calls:
-                output_messages.append(
-                    OpenAIResponseOutputMessageFunctionToolCall(
-                        arguments=tool_call.function.arguments or "",
-                        call_id=tool_call.id,
-                        name=tool_call.function.name or "",
-                        id=f"fc_{uuid.uuid4()}",
-                        status="completed",
+                if tool_call.function:
+                    output_messages.append(
+                        OpenAIResponseOutputMessageFunctionToolCall(
+                            arguments=tool_call.function.arguments or "",
+                            call_id=tool_call.id,
+                            name=tool_call.function.name or "",
+                            id=f"fc_{uuid.uuid4()}",
+                            status="completed",
+                        )
                     )
-                )
 
             if not function_tool_calls and not non_function_tool_calls:
                 break
@@ -602,7 +613,7 @@ class OpenAIResponsesImpl:
                         required=param.required,
                         default=param.default,
                     )
-                    for param in tool.parameters
+                    for param in (tool.parameters or [])
                 },
             )
             return convert_tooldef_to_openai_tool(tool_def)
