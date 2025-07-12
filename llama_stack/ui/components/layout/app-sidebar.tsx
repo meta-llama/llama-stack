@@ -1,6 +1,11 @@
 "use client";
 
-import { MessageSquareText, MessagesSquare, MoveUpRight } from "lucide-react";
+import {
+  MessageSquareText,
+  MessagesSquare,
+  MoveUpRight,
+  Database,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -27,6 +32,11 @@ const logItems = [
     title: "Responses",
     url: "/logs/responses",
     icon: MessagesSquare,
+  },
+  {
+    title: "Vector Stores",
+    url: "/logs/vector-stores",
+    icon: Database,
   },
   {
     title: "Documentation",
@@ -57,13 +67,13 @@ export function AppSidebar() {
                       className={cn(
                         "justify-start",
                         isActive &&
-                          "bg-gray-200 hover:bg-gray-200 text-primary hover:text-primary",
+                          "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
                       )}
                     >
                       <Link href={item.url}>
                         <item.icon
                           className={cn(
-                            isActive && "text-primary",
+                            isActive && "text-gray-900 dark:text-gray-100",
                             "mr-2 h-4 w-4",
                           )}
                         />
