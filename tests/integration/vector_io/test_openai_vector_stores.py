@@ -821,6 +821,59 @@ def test_openai_vector_store_update_file(compat_client_with_empty_stores, client
     assert retrieved_file.attributes["foo"] == "baz"
 
 
+def test_create_vector_store_files_duplicate_vector_store_name(compat_client_with_empty_stores, client_with_models):
+    """
+    This test confirms that client.vector_stores.create() creates a unique ID
+    """
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
+
+    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
+        pytest.skip("Vector Store Files create is not yet supported with LlamaStackClient")
+
+    compat_client = compat_client_with_empty_stores
+
+    # Create a vector store with files
+    file_ids = []
+    for i in range(3):
+        with BytesIO(f"This is a test file {i}".encode()) as file_buffer:
+            file_buffer.name = f"openai_test_{i}.txt"
+            file = compat_client.files.create(file=file_buffer, purpose="assistants")
+        file_ids.append(file.id)
+
+    vector_store = compat_client.vector_stores.create(
+        name="test_store_with_files",
+    )
+    assert vector_store.file_counts.completed == 0
+    assert vector_store.file_counts.total == 0
+    assert vector_store.file_counts.cancelled == 0
+    assert vector_store.file_counts.failed == 0
+    assert vector_store.file_counts.in_progress == 0
+
+    vector_store2 = compat_client.vector_stores.create(
+        name="test_store_with_files",
+    )
+
+    vector_stores_list = compat_client.vector_stores.list()
+    assert len(vector_stores_list.data) == 2
+
+    created_file = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_ids[0],
+    )
+    assert created_file.status == "completed"
+
+    _ = compat_client.vector_stores.delete(vector_store2.id)
+    created_file_from_non_deleted_vector_store = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_ids[1],
+    )
+    assert created_file_from_non_deleted_vector_store.status == "completed"
+
+    vector_stores_list_post_delete = compat_client.vector_stores.list()
+    assert len(vector_stores_list_post_delete.data) == 1
+
+
 @pytest.mark.skip(reason="Client library needs to be scaffolded to support search_mode parameter")
 def test_openai_vector_store_search_modes():
     """Test OpenAI vector store search with different search modes.

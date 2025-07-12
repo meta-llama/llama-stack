@@ -36,6 +36,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
         provider_vector_db_id: str | None = None,
+        vector_db_name: str | None = None,
     ) -> VectorDB:
         if provider_vector_db_id is None:
             provider_vector_db_id = vector_db_id
@@ -62,6 +63,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             "provider_resource_id": provider_vector_db_id,
             "embedding_model": embedding_model,
             "embedding_dimension": model.metadata["embedding_dimension"],
+            "vector_db_name": vector_db_name,
         }
         vector_db = TypeAdapter(VectorDBWithOwner).validate_python(vector_db_data)
         await self.register_object(vector_db)
