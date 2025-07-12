@@ -333,4 +333,14 @@ def available_providers() -> list[ProviderSpec]:
                 description="IBM WatsonX inference provider for accessing AI models on IBM's WatsonX platform.",
             ),
         ),
+        remote_provider_spec(
+            api=Api.inference,
+            adapter=AdapterSpec(
+                adapter_type="llamacpp",
+                pip_packages=["litellm"],
+                module="llama_stack.providers.remote.inference.llamacpp",
+                config_class="llama_stack.providers.remote.inference.llamacpp.config.LlamaCppImplConfig",
+                provider_data_validator="llama_stack.providers.remote.inference.llamacpp.config.LlamaCppProviderDataValidator",
+            ),
+        ),
     ]
