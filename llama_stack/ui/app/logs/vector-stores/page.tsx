@@ -56,9 +56,12 @@ export default function VectorStoresPage() {
     return <div className="text-destructive">Error: {error}</div>;
   }
 
+  if (stores.length === 0) {
+    return <p>No vector stores found.</p>;
+  }
+
   return (
     <Table>
-      <TableCaption>A list of your vector stores.</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>ID</TableHead>
