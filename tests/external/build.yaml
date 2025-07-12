@@ -2,8 +2,9 @@ version: '2'
 distribution_spec:
   description: Custom distro for CI tests
   providers:
-    inference:
-    - remote::custom_ollama
-image_type: container
+    weather:
+    - remote::kaze
+image_type: venv
 image_name: ci-test
 external_providers_dir: ~/.llama/providers.d
+external_apis_dir: ~/.llama/apis.d
