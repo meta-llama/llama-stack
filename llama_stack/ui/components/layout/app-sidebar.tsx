@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareText, MessagesSquare, MoveUpRight } from "lucide-react";
+import { MessageSquareText, MessagesSquare, MoveUpRight, Database } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,11 @@ const logItems = [
     title: "Responses",
     url: "/logs/responses",
     icon: MessagesSquare,
+  },
+  {
+    title: "Vector Stores",
+    url: "/logs/vector-stores",
+    icon: Database,
   },
   {
     title: "Documentation",
