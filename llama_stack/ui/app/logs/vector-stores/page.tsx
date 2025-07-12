@@ -33,9 +33,7 @@ export default function VectorStoresPage() {
         setStores(res.data);
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load vector stores.",
+          err instanceof Error ? err.message : "Failed to load vector stores.",
         );
       } finally {
         setLoading(false);
@@ -84,10 +82,16 @@ export default function VectorStoresPage() {
           const providerDbId = metadata.provider_vector_db_id ?? "";
 
           return (
-            <TableRow key={store.id} className="hover:bg-muted/50">
+            <TableRow
+              key={store.id}
+              onClick={() => router.push(`/logs/vector-stores/${store.id}`)}
+              className="cursor-pointer hover:bg-muted/50"
+            >
               <TableCell>{store.id}</TableCell>
               <TableCell>{store.name}</TableCell>
-              <TableCell>{new Date(store.created_at * 1000).toLocaleString()}</TableCell>
+              <TableCell>
+                {new Date(store.created_at * 1000).toLocaleString()}
+              </TableCell>
               <TableCell>{fileCounts.completed}</TableCell>
               <TableCell>{fileCounts.cancelled}</TableCell>
               <TableCell>{fileCounts.failed}</TableCell>
