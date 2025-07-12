@@ -5,8 +5,8 @@
 # the root directory of this source tree.
 
 import asyncio
-import time
 from collections.abc import AsyncGenerator, AsyncIterator
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from openai.types.chat import ChatCompletionToolChoiceOptionParam as OpenAIChatCompletionToolChoiceOptionParam
@@ -20,6 +20,7 @@ from llama_stack.apis.common.content_types import (
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
     BatchCompletionResponse,
+    ChatCompletionRequest,
     ChatCompletionResponse,
     ChatCompletionResponseEventType,
     ChatCompletionResponseStreamChunk,
@@ -54,7 +55,11 @@ from llama_stack.models.llama.llama3.chat_format import ChatFormat
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import HealthResponse, HealthStatus, RoutingTable
 from llama_stack.providers.utils.inference.inference_store import InferenceStore
-from llama_stack.providers.utils.inference.stream_utils import stream_and_store_openai_completion
+from llama_stack.providers.utils.inference.openai_compat import (
+    openai_messages_to_messages,
+    process_chat_completion_response,
+    process_chat_completion_stream_response,
+)
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
 logger = get_logger(name=__name__, category="core")
@@ -120,6 +125,7 @@ class InferenceRouter(Inference):
         if span is None:
             logger.warning("No span found for token usage metrics")
             return []
+
         metrics = [
             ("prompt_tokens", prompt_tokens),
             ("completion_tokens", completion_tokens),
@@ -133,7 +139,7 @@ class InferenceRouter(Inference):
                     span_id=span.span_id,
                     metric=metric_name,
                     value=value,
-                    timestamp=time.time(),
+                    timestamp=datetime.now(UTC),
                     unit="tokens",
                     attributes={
                         "model_id": model.model_id,
@@ -270,13 +276,53 @@ class InferenceRouter(Inference):
                 tool_config.tool_prompt_format,
             )
             total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
-            metrics = await self._compute_and_log_token_usage(
-                prompt_tokens or 0,
-                completion_tokens or 0,
-                total_tokens,
-                model,
-            )
-            response.metrics = metrics if response.metrics is None else response.metrics + metrics
+
+            # Create a separate span for completion metrics
+            if self.telemetry:
+                from llama_stack.providers.utils.telemetry.tracing import span
+
+                async with span(
+                    "completion_metrics",
+                    {
+                        "model_id": model.model_id,
+                        "provider_id": model.provider_id,
+                        "prompt_tokens": prompt_tokens or 0,
+                        "completion_tokens": completion_tokens or 0,
+                        "total_tokens": total_tokens,
+                    },
+                ):
+                    # Log metrics in the new span context
+                    metrics = self._construct_metrics(
+                        prompt_tokens=prompt_tokens,
+                        completion_tokens=completion_tokens,
+                        total_tokens=total_tokens,
+                        model=model,
+                    )
+                    for metric in metrics:
+                        if metric.metric in [
+                            "completion_tokens",
+                            "total_tokens",
+                        ]:  # Only log completion and total tokens
+                            await self.telemetry.log_event(metric)
+
+                    # Return metrics in response
+                    response_metrics = [
+                        MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics
+                    ]
+                    response.metrics = (
+                        response_metrics if response.metrics is None else response.metrics + response_metrics
+                    )
+            else:
+                # Fallback if no telemetry
+                metrics = self._construct_metrics(
+                    prompt_tokens or 0,
+                    completion_tokens or 0,
+                    total_tokens,
+                    model,
+                )
+                response_metrics = [MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics]
+                response.metrics = response_metrics if response.metrics is None else response.metrics + response_metrics
+
             return response
 
     async def batch_chat_completion(
@@ -358,13 +404,53 @@ class InferenceRouter(Inference):
             response = await provider.completion(**params)
             completion_tokens = await self._count_tokens(response.content)
             total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
-            metrics = await self._compute_and_log_token_usage(
-                prompt_tokens or 0,
-                completion_tokens or 0,
-                total_tokens,
-                model,
-            )
-            response.metrics = metrics if response.metrics is None else response.metrics + metrics
+
+            # Create a separate span for completion metrics
+            if self.telemetry:
+                from llama_stack.providers.utils.telemetry.tracing import span
+
+                async with span(
+                    "completion_metrics",
+                    {
+                        "model_id": model.model_id,
+                        "provider_id": model.provider_id,
+                        "prompt_tokens": prompt_tokens or 0,
+                        "completion_tokens": completion_tokens or 0,
+                        "total_tokens": total_tokens,
+                    },
+                ):
+                    # Log metrics in the new span context
+                    metrics = self._construct_metrics(
+                        prompt_tokens=prompt_tokens,
+                        completion_tokens=completion_tokens,
+                        total_tokens=total_tokens,
+                        model=model,
+                    )
+                    for metric in metrics:
+                        if metric.metric in [
+                            "completion_tokens",
+                            "total_tokens",
+                        ]:  # Only log completion and total tokens
+                            await self.telemetry.log_event(metric)
+
+                    # Return metrics in response
+                    response_metrics = [
+                        MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics
+                    ]
+                    response.metrics = (
+                        response_metrics if response.metrics is None else response.metrics + response_metrics
+                    )
+            else:
+                # Fallback if no telemetry
+                metrics = self._construct_metrics(
+                    prompt_tokens or 0,
+                    completion_tokens or 0,
+                    total_tokens,
+                    model,
+                )
+                response_metrics = [MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics]
+                response.metrics = response_metrics if response.metrics is None else response.metrics + response_metrics
+
             return response
 
     async def batch_completion(
@@ -457,9 +543,14 @@ class InferenceRouter(Inference):
             prompt_logprobs=prompt_logprobs,
             suffix=suffix,
         )
-
+        prompt_tokens = await self._count_tokens(openai_messages_to_messages(messages=prompt))
         provider = self.routing_table.get_provider_impl(model_obj.identifier)
-        return await provider.openai_completion(**params)
+        response = await provider.openai_completion(**params)
+        metrics = await self.count_tokens_and_compute_metrics(
+            response=response, prompt_tokens=prompt_tokens, model=model_obj
+        )
+        response.metrics = metrics if response.metrics is None else response.metrics + metrics
+        return response
 
     async def openai_chat_completion(
         self,
@@ -537,17 +628,65 @@ class InferenceRouter(Inference):
             top_p=top_p,
             user=user,
         )
+        messages_non_openai = openai_messages_to_messages(messages=messages)
+        prompt_tokens = await self._count_tokens(messages_non_openai)
+
+        # TODO: evaluate if this level of metrics is necessary or if we can do one final update at the end
+        # Log prompt tokens immediately when we have them
+        if self.telemetry and prompt_tokens:
+            prompt_metrics = self._construct_metrics(
+                prompt_tokens,
+                0,  # completion_tokens not known yet
+                prompt_tokens,  # total_tokens = prompt_tokens for now
+                model_obj,
+            )
+            for metric in prompt_metrics:
+                if metric.metric == "prompt_tokens":  # Only log prompt tokens now (its all we have)
+                    await self.telemetry.log_event(metric)
 
         provider = self.routing_table.get_provider_impl(model_obj.identifier)
         if stream:
             response_stream = await provider.openai_chat_completion(**params)
-            if self.store:
-                return stream_and_store_openai_completion(response_stream, model, self.store, messages)
-            return response_stream
+
+            async def stream_generator():
+                async for chunk in self.stream_tokens_and_compute_metrics(
+                    response=process_chat_completion_stream_response(
+                        stream=response_stream,
+                        request=ChatCompletionRequest(
+                            model=model,
+                            messages=messages_non_openai,
+                            tools=tools or [],
+                            response_format=response_format,
+                            stream=stream,
+                            logprobs=logprobs,
+                        ),
+                    ),
+                    prompt_tokens=prompt_tokens,
+                    model=model_obj,
+                ):
+                    yield chunk
+
+            return stream_generator()
         else:
             response = await self._nonstream_openai_chat_completion(provider, params)
             if self.store:
                 await self.store.store_chat_completion(response, messages)
+            metrics = await self.count_tokens_and_compute_metrics(
+                response=process_chat_completion_response(
+                    response=response,
+                    request=ChatCompletionRequest(
+                        model=model,
+                        messages=messages_non_openai,
+                        tools=tools or [],
+                        response_format=response_format,
+                        stream=stream,
+                        logprobs=logprobs,
+                    ),
+                ),
+                prompt_tokens=prompt_tokens,
+                model=model_obj,
+            )
+            response.metrics = metrics if response.metrics is None else response.metrics + metrics
             return response
 
     async def openai_embeddings(
@@ -625,3 +764,120 @@ class InferenceRouter(Inference):
                     status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}"
                 )
         return health_statuses
+
+    async def stream_tokens_and_compute_metrics(
+        self,
+        response,
+        prompt_tokens,
+        model,
+    ) -> AsyncGenerator[ChatCompletionResponseStreamChunk, None]:
+        completion_text = ""
+        async for chunk in response:
+            if chunk.event.event_type == ChatCompletionResponseEventType.progress:
+                if chunk.event.delta.type == "text":
+                    completion_text += chunk.event.delta.text
+            if chunk.event.event_type == ChatCompletionResponseEventType.complete:
+                completion_tokens = await self._count_tokens(
+                    [
+                        CompletionMessage(
+                            content=completion_text,
+                            stop_reason=StopReason.end_of_turn,
+                        )
+                    ],
+                )
+                total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+
+                # Create a separate span for streaming completion metrics
+                if self.telemetry:
+                    from llama_stack.providers.utils.telemetry.tracing import span
+
+                    async with span(
+                        "streaming_completion_metrics",
+                        {
+                            "model_id": model.model_id,
+                            "provider_id": model.provider_id,
+                            "prompt_tokens": prompt_tokens or 0,
+                            "completion_tokens": completion_tokens or 0,
+                            "total_tokens": total_tokens,
+                        },
+                    ):
+                        # Log metrics in the new span context
+                        completion_metrics = self._construct_metrics(
+                            prompt_tokens=prompt_tokens,
+                            completion_tokens=completion_tokens,
+                            total_tokens=total_tokens,
+                            model=model,
+                        )
+                        for metric in completion_metrics:
+                            if metric.metric in [
+                                "completion_tokens",
+                                "total_tokens",
+                            ]:  # Only log completion and total tokens
+                                await self.telemetry.log_event(metric)
+
+                        # Return metrics in response
+                        async_metrics = [
+                            MetricInResponse(metric=metric.metric, value=metric.value) for metric in completion_metrics
+                        ]
+                        chunk.metrics = async_metrics if chunk.metrics is None else chunk.metrics + async_metrics
+                else:
+                    # Fallback if no telemetry
+                    completion_metrics = self._construct_metrics(
+                        prompt_tokens or 0,
+                        completion_tokens or 0,
+                        total_tokens,
+                        model,
+                    )
+                    async_metrics = [
+                        MetricInResponse(metric=metric.metric, value=metric.value) for metric in completion_metrics
+                    ]
+                    chunk.metrics = async_metrics if chunk.metrics is None else chunk.metrics + async_metrics
+            yield chunk
+
+    async def count_tokens_and_compute_metrics(
+        self,
+        response,
+        prompt_tokens,
+        model,
+    ):
+        completion_tokens = await self._count_tokens(
+            [response.completion_message],
+        )
+        total_tokens = (prompt_tokens or 0) + (completion_tokens or 0)
+
+        # Create a separate span for completion metrics
+        if self.telemetry:
+            from llama_stack.providers.utils.telemetry.tracing import span
+
+            async with span(
+                "completion_metrics",
+                {
+                    "model_id": model.model_id,
+                    "provider_id": model.provider_id,
+                    "prompt_tokens": prompt_tokens or 0,
+                    "completion_tokens": completion_tokens or 0,
+                    "total_tokens": total_tokens,
+                },
+            ):
+                # Log metrics in the new span context
+                completion_metrics = self._construct_metrics(
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    total_tokens=total_tokens,
+                    model=model,
+                )
+                for metric in completion_metrics:
+                    if metric.metric in ["completion_tokens", "total_tokens"]:  # Only log completion and total tokens
+                        await self.telemetry.log_event(metric)
+
+                # Return metrics in response
+                return [MetricInResponse(metric=metric.metric, value=metric.value) for metric in completion_metrics]
+
+        # Fallback if no telemetry
+        metrics = self._construct_metrics(
+            prompt_tokens or 0,
+            completion_tokens or 0,
+            total_tokens,
+            model,
+        )
+        return [MetricInResponse(metric=metric.metric, value=metric.value) for metric in metrics]
