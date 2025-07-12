@@ -117,7 +117,7 @@ if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
     set -x
 
     if [ -n "$yaml_config" ]; then
-        yaml_config_arg="--config $yaml_config"
+        yaml_config_arg="$yaml_config"
     else
         yaml_config_arg=""
     fi

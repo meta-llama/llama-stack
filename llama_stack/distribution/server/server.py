@@ -32,6 +32,7 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
+from llama_stack.cli.utils import add_config_template_args
 from llama_stack.distribution.access_control.access_control import AccessDeniedError
 from llama_stack.distribution.datatypes import (
     AuthenticationRequiredError,
@@ -52,6 +53,7 @@ from llama_stack.distribution.stack import (
     validate_env_pair,
 )
 from llama_stack.distribution.utils.config import redact_sensitive_fields
+from llama_stack.distribution.utils.config_resolution import Mode, resolve_config_or_template
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
@@ -376,20 +378,8 @@ class ClientVersionMiddleware:
 def main(args: argparse.Namespace | None = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
-    parser.add_argument(
-        "--yaml-config",
-        dest="config",
-        help="(Deprecated) Path to YAML configuration file - use --config instead",
-    )
-    parser.add_argument(
-        "--config",
-        dest="config",
-        help="Path to YAML configuration file",
-    )
-    parser.add_argument(
-        "--template",
-        help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
-    )
+
+    add_config_template_args(parser)
     parser.add_argument(
         "--port",
         type=int,
@@ -408,20 +398,7 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    log_line = ""
-    if hasattr(args, "config") and args.config:
-        # if the user provided a config file, use it, even if template was specified
-        config_file = Path(args.config)
-        if not config_file.exists():
-            raise ValueError(f"Config file {config_file} does not exist")
-        log_line = f"Using config file: {config_file}"
-    elif hasattr(args, "template") and args.template:
-        config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
-        if not config_file.exists():
-            raise ValueError(f"Template {args.template} does not exist")
-        log_line = f"Using template {args.template} config file: {config_file}"
-    else:
-        raise ValueError("Either --config or --template must be provided")
+    config_file = resolve_config_or_template(args.config, Mode.RUN)
 
     logger_config = None
     with open(config_file) as fp:
@@ -440,9 +417,6 @@ def main(args: argparse.Namespace | None = None):
                     sys.exit(1)
         config = replace_env_vars(config_contents)
         config = StackRunConfig(**config)
-
-    # now that the logger is initialized, print the line about which type of config we are using.
-    logger.info(log_line)
 
     logger.info("Run configuration:")
     safe_config = redact_sensitive_fields(config.model_dump(mode="json"))
