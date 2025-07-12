@@ -202,7 +202,6 @@ def test_http_auth_request_payload(http_client, valid_api_key, mock_auth_endpoin
         assert "param2" in payload["request"]["params"]
 
 
-@pytest.mark.asyncio
 async def test_http_middleware_with_access_attributes(mock_http_middleware, mock_scope):
     """Test HTTP middleware behavior with access attributes"""
     middleware, mock_app = mock_http_middleware

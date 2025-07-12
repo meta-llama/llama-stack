@@ -87,18 +87,15 @@ def helper(known_provider_model: ProviderModelEntry, known_provider_model2: Prov
     return ModelRegistryHelper([known_provider_model, known_provider_model2])
 
 
-@pytest.mark.asyncio
 async def test_lookup_unknown_model(helper: ModelRegistryHelper, unknown_model: Model) -> None:
     assert helper.get_provider_model_id(unknown_model.model_id) is None
 
 
-@pytest.mark.asyncio
 async def test_register_unknown_provider_model(helper: ModelRegistryHelper, unknown_model: Model) -> None:
     with pytest.raises(ValueError):
         await helper.register_model(unknown_model)
 
 
-@pytest.mark.asyncio
 async def test_register_model(helper: ModelRegistryHelper, known_model: Model) -> None:
     model = Model(
         provider_id=known_model.provider_id,
@@ -110,7 +107,6 @@ async def test_register_model(helper: ModelRegistryHelper, known_model: Model) -
     assert helper.get_provider_model_id(model.model_id) == model.provider_resource_id
 
 
-@pytest.mark.asyncio
 async def test_register_model_from_alias(helper: ModelRegistryHelper, known_model: Model) -> None:
     model = Model(
         provider_id=known_model.provider_id,
@@ -122,13 +118,11 @@ async def test_register_model_from_alias(helper: ModelRegistryHelper, known_mode
     assert helper.get_provider_model_id(model.model_id) == known_model.provider_resource_id
 
 
-@pytest.mark.asyncio
 async def test_register_model_existing(helper: ModelRegistryHelper, known_model: Model) -> None:
     await helper.register_model(known_model)
     assert helper.get_provider_model_id(known_model.model_id) == known_model.provider_resource_id
 
 
-@pytest.mark.asyncio
 async def test_register_model_existing_different(
     helper: ModelRegistryHelper, known_model: Model, known_model2: Model
 ) -> None:
@@ -137,7 +131,6 @@ async def test_register_model_existing_different(
         await helper.register_model(known_model)
 
 
-@pytest.mark.asyncio
 async def test_unregister_model(helper: ModelRegistryHelper, known_model: Model) -> None:
     await helper.register_model(known_model)  # duplicate entry
     assert helper.get_provider_model_id(known_model.model_id) == known_model.provider_model_id
@@ -145,18 +138,15 @@ async def test_unregister_model(helper: ModelRegistryHelper, known_model: Model)
     assert helper.get_provider_model_id(known_model.model_id) is None
 
 
-@pytest.mark.asyncio
 async def test_unregister_unknown_model(helper: ModelRegistryHelper, unknown_model: Model) -> None:
     with pytest.raises(ValueError):
         await helper.unregister_model(unknown_model.model_id)
 
 
-@pytest.mark.asyncio
 async def test_register_model_during_init(helper: ModelRegistryHelper, known_model: Model) -> None:
     assert helper.get_provider_model_id(known_model.provider_resource_id) == known_model.provider_model_id
 
 
-@pytest.mark.asyncio
 async def test_unregister_model_during_init(helper: ModelRegistryHelper, known_model: Model) -> None:
     assert helper.get_provider_model_id(known_model.provider_resource_id) == known_model.provider_model_id
     await helper.unregister_model(known_model.provider_resource_id)

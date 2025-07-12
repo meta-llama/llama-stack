@@ -10,7 +10,6 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
 
 from llama_stack.apis.inference import EmbeddingsResponse, Inference
 from llama_stack.apis.vector_io import (
@@ -68,7 +67,7 @@ def mock_api_service(sample_embeddings):
     return mock_api_service
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service, loop) -> QdrantVectorIOAdapter:
     adapter = QdrantVectorIOAdapter(config=qdrant_config, inference_api=mock_api_service)
     adapter.vector_db_store = mock_vector_db_store
@@ -80,7 +79,6 @@ async def qdrant_adapter(qdrant_config, mock_vector_db_store, mock_api_service, 
 __QUERY = "Sample query"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("max_query_chunks, expected_chunks", [(2, 2), (100, 60)])
 async def test_qdrant_adapter_returns_expected_chunks(
     qdrant_adapter: QdrantVectorIOAdapter,
@@ -111,7 +109,6 @@ def _prepare_for_json(value: Any) -> str:
 
 
 @patch("llama_stack.providers.utils.telemetry.trace_protocol._prepare_for_json", new=_prepare_for_json)
-@pytest.mark.asyncio
 async def test_qdrant_register_and_unregister_vector_db(
     qdrant_adapter: QdrantVectorIOAdapter,
     mock_vector_db,
