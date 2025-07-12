@@ -393,6 +393,7 @@ async def test_process_vllm_chat_completion_stream_response_no_choices():
     assert chunks[0].event.event_type.value == "start"
 
 
+@pytest.mark.allow_network
 def test_chat_completion_doesnt_block_event_loop(caplog):
     loop = asyncio.new_event_loop()
     loop.set_debug(True)
