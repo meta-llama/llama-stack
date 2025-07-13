@@ -13,7 +13,7 @@ Before running Llama Stack, you need to start the llama.cpp server:
 
 ```bash
 # Example: Start llama.cpp server with a model
-./llama-server -m /path/to/your/model.gguf -c 4096 --host 0.0.0.0 --port 8080
+./llama-server -m /path/to/your/YOUR_MODEL.gguf -c 4096 --host 0.0.0.0 --port 8080 --api-key YOUR_API_KEY --jinja -cb
 ```
 
 Common llama.cpp server options:
@@ -31,14 +31,17 @@ Set these environment variables before running Llama Stack:
 
 ```bash
 export LLAMACPP_URL=http://localhost:8080  # URL of your llama.cpp server (without /v1 suffix)
-export INFERENCE_MODEL=your-model-name     # Name/identifier for your model
-export LLAMACPP_API_KEY=""                 # API key (leave empty for local servers)
+export INFERENCE_MODEL=your-model-name     # Name/identifier without gguf extension
+export LLAMACPP_API_KEY="YOUR_API_KEY"                 # API key (leave empty for local servers)
 ```
 
 ## Running Llama Stack
 
+The model name will be you gguf file name without the extension.
+
 ```bash
-llama stack run llamacpp
+llama stack build --template llamacpp --image-type conda
+llama stack run llamacpp --image-type conda
 ```
 
 ## Configuration
