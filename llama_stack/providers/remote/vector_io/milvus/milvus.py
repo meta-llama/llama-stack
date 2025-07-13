@@ -74,7 +74,9 @@ class MilvusIndex(EmbeddingIndex):
         assert len(chunks) == len(embeddings), (
             f"Chunk length {len(chunks)} does not match embedding length {len(embeddings)}"
         )
+
         if not await asyncio.to_thread(self.client.has_collection, self.collection_name):
+            logger.info(f"Creating new collection {self.collection_name} with nullable sparse field")
             # Create schema for vector search
             schema = self.client.create_schema()
             schema.add_field(
@@ -98,7 +100,7 @@ class MilvusIndex(EmbeddingIndex):
                 field_name="chunk_content",
                 datatype=DataType.JSON,
             )
-            # Add sparse vector field for BM25
+            # Add sparse vector field for BM25 (required by the function)
             schema.add_field(
                 field_name="sparse",
                 datatype=DataType.SPARSE_FLOAT_VECTOR,
@@ -110,6 +112,12 @@ class MilvusIndex(EmbeddingIndex):
                 field_name="vector",
                 index_type="FLAT",
                 metric_type="COSINE",
+            )
+            # Add index for sparse field (required by BM25 function)
+            index_params.add_index(
+                field_name="sparse",
+                index_type="SPARSE_INVERTED_INDEX",
+                metric_type="BM25",
             )
 
             # Add BM25 function for full-text search
@@ -137,7 +145,7 @@ class MilvusIndex(EmbeddingIndex):
                     "content": chunk.content,
                     "vector": embedding,
                     "chunk_content": chunk.model_dump(),
-                    # sparse field will be automatically populated by BM25 function
+                    # sparse field will be handled by BM25 function automatically
                 }
             )
         try:
@@ -220,7 +228,8 @@ class MilvusIndex(EmbeddingIndex):
         search_res = await asyncio.to_thread(
             self.client.query,
             collection_name=self.collection_name,
-            filter=f'content like "%{query_string}%"',
+            filter='content like "%{content}%"',
+            filter_params={"content": query_string},
             output_fields=["*"],
             limit=k,
         )

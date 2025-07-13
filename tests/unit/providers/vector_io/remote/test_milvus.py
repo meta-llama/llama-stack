@@ -34,7 +34,7 @@ MILVUS_PROVIDER = "milvus"
 
 
 @pytest_asyncio.fixture
-async def mock_milvus_client():
+async def mock_milvus_client() -> MagicMock:
     """Create a mock Milvus client with common method behaviors."""
     client = MagicMock()
 
@@ -171,10 +171,11 @@ async def test_bm25_fallback_to_simple_search(milvus_index, sample_chunks, sampl
     mock_milvus_client.query.assert_called_once()
     mock_milvus_client.search.assert_called_once()  # Called once but failed
 
-    # Verify the query filter contains the search term
+    # Verify the query uses parameterized filter with filter_params
     query_call_args = mock_milvus_client.query.call_args
     assert "filter" in query_call_args[1], "Query should include filter for text search"
-    assert "Python" in query_call_args[1]["filter"], "Filter should contain the search term"
+    assert "filter_params" in query_call_args[1], "Query should use parameterized filter"
+    assert query_call_args[1]["filter_params"]["content"] == "Python", "Filter params should contain the search term"
 
     # Verify all returned chunks have score 1.0 (simple binary scoring)
     assert all(score == 1.0 for score in response.scores), "Simple text search should use binary scoring"
