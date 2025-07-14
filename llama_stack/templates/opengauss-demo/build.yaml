@@ -1,0 +1,27 @@
+version: 2
+distribution_spec:
+  description: "Custom configuration using Opengauss for vector storage and metadata"
+  providers:
+    inference:
+      - remote::together-openai-compat
+    vector_io:
+      - remote::opengauss
+    agents:
+      - inline::meta-reference
+    tool_runtime:
+      - inline::rag-runtime
+    files:
+      - inline::localfs
+    telemetry:
+      - inline::meta-reference
+    safety:
+      - inline::llama-guard
+
+image_type: venv
+additional_pip_packages:
+  - psycopg2-binary>=2.9.3
+  - pgvector>=0.2.0
+  - asyncpg>=0.27.0
+# rm -rf ~/.llama/distributions/opengauss-demo
+# uv run --with llama-stack llama stack build --template opengauss-demo --image-type venv
+# uv run --env-file .env --with llama-stack llama stack run /home/gt/.llama/distributions/opengauss-demo/opengauss-demo-run.yaml

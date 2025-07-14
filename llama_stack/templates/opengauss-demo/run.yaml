@@ -1,0 +1,96 @@
+version: 2
+image_name: opengauss-demo
+apis:
+  - agents
+  - inference
+  - vector_io
+  - tool_runtime
+  - files
+  - models
+  - telemetry
+  - safety
+
+providers:
+  inference:
+    - provider_id: together
+      provider_type: remote::together
+      config:
+        api_key: ${env.TOGETHER_API_KEY}
+        url: ${env.TOGETHER_API_BASE_URL}
+    - provider_id: sentence-transformers
+      provider_type: inline::sentence-transformers
+      config: {}
+
+  vector_io:
+    - provider_id: opengauss
+      provider_type: remote::opengauss
+      config:
+        host: ${env.OPENGAUSS_HOST}
+        port: ${env.OPENGAUSS_PORT:=5432}
+        db: ${env.OPENGAUSS_DB}
+        user: ${env.OPENGAUSS_USER}
+        password: ${env.OPENGAUSS_PASSWORD}
+
+  agents:
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
+      config:
+        persistence_store:
+          type: sqlite
+          db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/agent_store.db
+        responses_store:
+          type: sqlite
+          db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/agent_responses.db
+        tool_store:
+          type: sqlite
+          db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/agent_tools.db
+
+  tool_runtime:
+    - provider_id: rag-runtime
+      provider_type: inline::rag-runtime
+      config: {}
+
+  files:
+    - provider_id: localfs
+      provider_type: inline::localfs
+      config:
+        storage_dir: ${env.LOCALFS_BASE_PATH:=~/.llama/distributions/opengauss-demo/files}
+        metadata_store:
+          type: sqlite
+          db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/files_metadata.db
+
+  telemetry:
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
+      config: {}
+
+  safety:
+    - provider_id: llama-guard
+      provider_type: inline::llama-guard
+      config: {}
+
+models:
+  - model_id: meta-llama/Llama-3.3-70B-Instruct-Turbo
+    model_type: llm
+    provider_id: together
+    provider_model_id: meta-llama/Llama-3.3-70B-Instruct-Turbo
+    metadata: {}
+
+  - model_id: all-MiniLM-L6-v2
+    model_type: embedding
+    provider_id: sentence-transformers
+    provider_model_id: all-MiniLM-L6-v2
+    metadata:
+      embedding_dimension: 384
+
+metadata_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/registry.db
+
+inference_store:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/opengauss-demo}/inference_store.db
+
+tool_groups:
+  - toolgroup_id: builtin::rag
+    provider_id: rag-runtime

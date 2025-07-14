@@ -11,6 +11,7 @@ This section contains documentation for all available providers for the **vector
 - [inline::sqlite_vec](inline_sqlite_vec.md)
 - [remote::chromadb](remote_chromadb.md)
 - [remote::milvus](remote_milvus.md)
+- [remote::opengauss](remote_opengauss.md)
 - [remote::pgvector](remote_pgvector.md)
 - [remote::qdrant](remote_qdrant.md)
 - [remote::weaviate](remote_weaviate.md)
