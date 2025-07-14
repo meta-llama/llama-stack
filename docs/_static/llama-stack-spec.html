@@ -14796,7 +14796,8 @@
                         "description": "Template for formatting each retrieved chunk in the context. Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict). Default: \"Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n\""
                     },
                     "mode": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/RAGSearchMode",
+                        "default": "vector",
                         "description": "Search mode for retrieval—either \"vector\", \"keyword\", or \"hybrid\". Default \"vector\"."
                     },
                     "ranker": {
@@ -14830,6 +14831,16 @@
                         "llm": "#/components/schemas/LLMRAGQueryGeneratorConfig"
                     }
                 }
+            },
+            "RAGSearchMode": {
+                "type": "string",
+                "enum": [
+                    "vector",
+                    "keyword",
+                    "hybrid"
+                ],
+                "title": "RAGSearchMode",
+                "description": "Search modes for RAG query retrieval: - VECTOR: Uses vector similarity search for semantic matching - KEYWORD: Uses keyword-based search for exact matching - HYBRID: Combines both vector and keyword search for better results"
             },
             "RRFRanker": {
                 "type": "object",
