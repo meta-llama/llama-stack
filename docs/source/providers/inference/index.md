@@ -18,6 +18,7 @@ This section contains documentation for all available providers for the **infere
 - [remote::hf::endpoint](remote_hf_endpoint.md)
 - [remote::hf::serverless](remote_hf_serverless.md)
 - [remote::llama-openai-compat](remote_llama-openai-compat.md)
+- [remote::llamacpp](remote_llamacpp.md)
 - [remote::nvidia](remote_nvidia.md)
 - [remote::ollama](remote_ollama.md)
 - [remote::openai](remote_openai.md)
