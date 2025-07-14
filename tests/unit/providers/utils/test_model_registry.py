@@ -184,7 +184,6 @@ async def test_unregister_model_during_init(helper: ModelRegistryHelper, known_m
     assert helper.get_provider_model_id(known_model.provider_resource_id) is None
 
 
-@pytest.mark.asyncio
 async def test_register_model_from_check_model_availability(
     helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, dynamic_model: Model
 ) -> None:
@@ -206,7 +205,6 @@ async def test_register_model_from_check_model_availability(
     )
 
 
-@pytest.mark.asyncio
 async def test_register_model_not_in_static_or_dynamic(
     helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, unknown_model: Model
 ) -> None:
@@ -227,7 +225,6 @@ async def test_register_model_not_in_static_or_dynamic(
     assert "..." in error_str  # "..." should be in error message
 
 
-@pytest.mark.asyncio
 async def test_register_alias_for_dynamic_model(
     helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, dynamic_model: Model
 ) -> None:
