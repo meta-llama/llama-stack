@@ -89,9 +89,14 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
 
         self._config = config
 
-    async def query_available_models(self) -> list[str]:
-        """Query available models from the NVIDIA API."""
-        return [model.id async for model in self._get_client().models.list()]
+    async def check_model_availability(self, model: str) -> bool:
+        """Check if a specific model is available from the NVIDIA API."""
+        try:
+            await self._get_client().models.retrieve(model)
+            return True
+        except Exception:
+            # If we can't retrieve the model, it's not available
+            return False
 
     @lru_cache  # noqa: B019
     def _get_client(self, provider_model_id: str | None = None) -> AsyncOpenAI:

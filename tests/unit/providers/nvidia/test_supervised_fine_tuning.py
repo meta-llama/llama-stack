@@ -344,8 +344,8 @@ class TestNvidiaPostTraining(unittest.TestCase):
         )
 
         # simulate a NIM where default/job-1234 is an available model
-        with patch.object(self.inference_adapter, "query_available_models", new_callable=AsyncMock) as mock_query:
-            mock_query.return_value = [model_id]
+        with patch.object(self.inference_adapter, "check_model_availability", new_callable=AsyncMock) as mock_check:
+            mock_check.return_value = True
             result = self.run_async(self.inference_adapter.register_model(model))
         assert result == model
         assert len(self.inference_adapter.alias_to_provider_id_map) > 1
