@@ -87,6 +87,37 @@ def helper(known_provider_model: ProviderModelEntry, known_provider_model2: Prov
     return ModelRegistryHelper([known_provider_model, known_provider_model2])
 
 
+class MockModelRegistryHelperWithDynamicModels(ModelRegistryHelper):
+    """Test helper that simulates a provider with dynamically available models."""
+
+    def __init__(self, model_entries: list[ProviderModelEntry], available_models: list[str]):
+        super().__init__(model_entries)
+        self._available_models = available_models
+
+    async def check_model_availability(self, model: str) -> bool:
+        return model in self._available_models
+
+
+@pytest.fixture
+def dynamic_model() -> Model:
+    """A model that's not in static config but available dynamically."""
+    return Model(
+        provider_id="provider",
+        identifier="dynamic-model",
+        provider_resource_id="dynamic-provider-id",
+    )
+
+
+@pytest.fixture
+def helper_with_dynamic_models(
+    known_provider_model: ProviderModelEntry, known_provider_model2: ProviderModelEntry, dynamic_model: Model
+) -> MockModelRegistryHelperWithDynamicModels:
+    """Helper that includes dynamically available models."""
+    return MockModelRegistryHelperWithDynamicModels(
+        [known_provider_model, known_provider_model2], [dynamic_model.provider_resource_id]
+    )
+
+
 async def test_lookup_unknown_model(helper: ModelRegistryHelper, unknown_model: Model) -> None:
     assert helper.get_provider_model_id(unknown_model.model_id) is None
 
@@ -151,3 +182,63 @@ async def test_unregister_model_during_init(helper: ModelRegistryHelper, known_m
     assert helper.get_provider_model_id(known_model.provider_resource_id) == known_model.provider_model_id
     await helper.unregister_model(known_model.provider_resource_id)
     assert helper.get_provider_model_id(known_model.provider_resource_id) is None
+
+
+async def test_register_model_from_check_model_availability(
+    helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, dynamic_model: Model
+) -> None:
+    """Test that models returned by check_model_availability can be registered."""
+    # Verify the model is not in static config
+    assert helper_with_dynamic_models.get_provider_model_id(dynamic_model.provider_resource_id) is None
+
+    # But it should be available via check_model_availability
+    is_available = await helper_with_dynamic_models.check_model_availability(dynamic_model.provider_resource_id)
+    assert is_available
+
+    # Registration should succeed
+    registered_model = await helper_with_dynamic_models.register_model(dynamic_model)
+    assert registered_model == dynamic_model
+
+    # Model should now be registered and accessible
+    assert (
+        helper_with_dynamic_models.get_provider_model_id(dynamic_model.model_id) == dynamic_model.provider_resource_id
+    )
+
+
+async def test_register_model_not_in_static_or_dynamic(
+    helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, unknown_model: Model
+) -> None:
+    """Test that models not in static config or dynamic models are rejected."""
+    # Verify the model is not in static config
+    assert helper_with_dynamic_models.get_provider_model_id(unknown_model.provider_resource_id) is None
+
+    # And not available via check_model_availability
+    is_available = await helper_with_dynamic_models.check_model_availability(unknown_model.provider_resource_id)
+    assert not is_available
+
+    # Registration should fail with comprehensive error message
+    with pytest.raises(Exception) as exc_info:  # UnsupportedModelError
+        await helper_with_dynamic_models.register_model(unknown_model)
+
+    # Error should include static models and "..." for dynamic models
+    error_str = str(exc_info.value)
+    assert "..." in error_str  # "..." should be in error message
+
+
+async def test_register_alias_for_dynamic_model(
+    helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, dynamic_model: Model
+) -> None:
+    """Test that we can register an alias that maps to a dynamically available model."""
+    # Create a model with a different identifier but same provider_resource_id
+    alias_model = Model(
+        provider_id=dynamic_model.provider_id,
+        identifier="dynamic-model-alias",
+        provider_resource_id=dynamic_model.provider_resource_id,
+    )
+
+    # Registration should succeed since the provider_resource_id is available dynamically
+    registered_model = await helper_with_dynamic_models.register_model(alias_model)
+    assert registered_model == alias_model
+
+    # Both the original provider_resource_id and the new alias should work
+    assert helper_with_dynamic_models.get_provider_model_id(alias_model.model_id) == dynamic_model.provider_resource_id
