@@ -11,7 +11,7 @@
 
 ```yaml
 openai_compat_api_base: ${env.LLAMACPP_URL:http://localhost:8080}/v1
-api_key: ${env.LLAMACPP_API_KEY:}
+api_key: ${env.LLAMACPP_API_KEY:=}
 
 ```
 

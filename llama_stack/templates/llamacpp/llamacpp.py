@@ -21,7 +21,7 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::llamacpp"],
+        "inference": ["remote::llamacpp", "inline::sentence-transformers"],
         "vector_io": ["inline::faiss", "remote::chromadb", "remote::pgvector"],
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
@@ -44,6 +44,11 @@ def get_distribution_template() -> DistributionTemplate:
         provider_type="remote::llamacpp",
         config=LlamaCppImplConfig.sample_run_config(),
     )
+    sentence_transformers_provider = Provider(
+        provider_id="sentence-transformers",
+        provider_type="inline::sentence-transformers",
+        config={},
+    )
     vector_io_provider_faiss = Provider(
         provider_id="faiss",
         provider_type="inline::faiss",
@@ -52,9 +57,7 @@ def get_distribution_template() -> DistributionTemplate:
     files_provider = Provider(
         provider_id="meta-reference-files",
         provider_type="inline::localfs",
-        config=LocalfsFilesImplConfig.sample_run_config(
-            f"~/.llama/distributions/{name}"
-        ),
+        config=LocalfsFilesImplConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
     inference_model = ModelInput(
         model_id="${env.INFERENCE_MODEL}",
@@ -97,7 +100,7 @@ def get_distribution_template() -> DistributionTemplate:
         run_configs={
             "run.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, sentence_transformers_provider],
                     "vector_io": [vector_io_provider_faiss],
                     "files": [files_provider],
                 },
@@ -106,7 +109,7 @@ def get_distribution_template() -> DistributionTemplate:
             ),
             "run-with-safety.yaml": RunConfigSettings(
                 provider_overrides={
-                    "inference": [inference_provider],
+                    "inference": [inference_provider, sentence_transformers_provider],
                     "vector_io": [vector_io_provider_faiss],
                     "files": [files_provider],
                     "safety": [

@@ -32,7 +32,7 @@ Set these environment variables before running Llama Stack:
 ```bash
 export LLAMACPP_URL=http://localhost:8080  # URL of your llama.cpp server (without /v1 suffix)
 export INFERENCE_MODEL=your-model-name     # Name/identifier without gguf extension
-export LLAMACPP_API_KEY="YOUR_API_KEY"                 # API key (leave empty for local servers)
+export LLAMACPP_API_KEY="YOUR_API_KEY"     # API key (leave empty for local servers)
 ```
 
 ## Running Llama Stack
