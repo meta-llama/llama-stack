@@ -60,6 +60,17 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
         # litellm specific model names, an abstraction leak.
         self.is_openai_compat = True
 
+    async def query_available_models(self) -> list[str]:
+        """Query available models from the OpenAI API"""
+        try:
+            openai_client = self._get_openai_client()
+            available_models = await openai_client.models.list()
+            logger.info(f"Available models from OpenAI: {available_models.data}")
+            return [model.id for model in available_models.data]
+        except Exception as e:
+            logger.warning(f"Failed to query available models from OpenAI: {e}")
+            return []
+
     async def initialize(self) -> None:
         await super().initialize()
 

@@ -29,6 +29,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "jsonschema",
     "llama-stack-client>=0.2.15",
+    "llama-api-client>=0.1.2",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
