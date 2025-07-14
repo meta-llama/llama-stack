@@ -15,7 +15,7 @@ Groq inference provider for ultra-fast inference using Groq's LPU technology.
 
 ```yaml
 url: https://api.groq.com
-api_key: ${env.GROQ_API_KEY}
+api_key: ${env.GROQ_API_KEY:=}
 
 ```
 

@@ -15,7 +15,7 @@ Together AI OpenAI-compatible provider for using Together models with OpenAI API
 
 ```yaml
 openai_compat_api_base: https://api.together.xyz/v1
-api_key: ${env.TOGETHER_API_KEY}
+api_key: ${env.TOGETHER_API_KEY:=}
 
 ```
 

@@ -14,8 +14,8 @@ Databricks inference provider for running models on Databricks' unified analytic
 ## Sample Configuration
 
 ```yaml
-url: ${env.DATABRICKS_URL}
-api_token: ${env.DATABRICKS_API_TOKEN}
+url: ${env.DATABRICKS_URL:=}
+api_token: ${env.DATABRICKS_API_TOKEN:=}
 
 ```
 

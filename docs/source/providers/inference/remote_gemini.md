@@ -13,7 +13,7 @@ Google Gemini inference provider for accessing Gemini models and Google's AI ser
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.GEMINI_API_KEY}
+api_key: ${env.GEMINI_API_KEY:=}
 
 ```
 

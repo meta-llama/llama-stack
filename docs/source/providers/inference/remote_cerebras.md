@@ -15,7 +15,7 @@ Cerebras inference provider for running models on Cerebras Cloud platform.
 
 ```yaml
 base_url: https://api.cerebras.ai
-api_key: ${env.CEREBRAS_API_KEY}
+api_key: ${env.CEREBRAS_API_KEY:=}
 
 ```
 

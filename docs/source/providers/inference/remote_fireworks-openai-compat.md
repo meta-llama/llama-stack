@@ -15,7 +15,7 @@ Fireworks AI OpenAI-compatible provider for using Fireworks models with OpenAI A
 
 ```yaml
 openai_compat_api_base: https://api.fireworks.ai/inference/v1
-api_key: ${env.FIREWORKS_API_KEY}
+api_key: ${env.FIREWORKS_API_KEY:=}
 
 ```
 

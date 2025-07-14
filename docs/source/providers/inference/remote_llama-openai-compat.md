@@ -15,7 +15,7 @@ Llama OpenAI-compatible provider for using Llama models with OpenAI API format.
 
 ```yaml
 openai_compat_api_base: https://api.llama.com/compat/v1/
-api_key: ${env.LLAMA_API_KEY}
+api_key: ${env.LLAMA_API_KEY:=}
 
 ```
 

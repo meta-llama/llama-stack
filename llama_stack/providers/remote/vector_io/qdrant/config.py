@@ -27,5 +27,5 @@ class QdrantVectorIOConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
         return {
-            "api_key": "${env.QDRANT_API_KEY}",
+            "api_key": "${env.QDRANT_API_KEY:=}",
         }
