@@ -246,3 +246,21 @@ class WeaviateVectorIOAdapter(
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
         return await index.query_chunks(query, params)
+
+    # OpenAI Vector Stores File operations are not supported in Weaviate
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
