@@ -121,7 +121,21 @@ class OllamaInferenceAdapter(
         except Exception as e:
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
-    async def query_available_models(self) -> list[str]:
+    async def check_model_availability(self, model: str) -> bool:
+        """
+        Check if a specific model is available in Ollama.
+
+        :param model: The model identifier to check.
+        :return: True if the model is available, False otherwise.
+        """
+        try:
+            available_models = await self._query_available_models()
+            return model in available_models
+        except Exception as e:
+            logger.error(f"Error checking model availability: {e}")
+            return False
+
+    async def _query_available_models(self) -> list[str]:
         """
         Query Ollama for available models.
 
@@ -365,9 +379,10 @@ class OllamaInferenceAdapter(
 
     async def register_model(self, model: Model) -> Model:
         if model.model_type == ModelType.embedding:
+            assert model.provider_resource_id, "Embedding models must have a provider_resource_id set"
             logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
             # TODO: you should pull here only if the model is not found in a list
-            if model.provider_resource_id not in await self.query_available_models():
+            if not await self.check_model_availability(model.provider_resource_id):
                 await self.client.pull(model.provider_resource_id)
 
         return await ModelRegistryHelper.register_model(self, model)
