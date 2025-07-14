@@ -82,35 +82,35 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
     def get_llama_model(self, provider_model_id: str) -> str | None:
         return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
-    async def query_available_models(self) -> list[str]:
+    async def check_model_availability(self, model: str) -> bool:
         """
-        Return a list of available models.
+        Check if a specific model is available from the provider (non-static check).
 
-        This is for subclassing purposes, so providers can lookup a list of
-        of currently available models.
+        This is for subclassing purposes, so providers can check if a specific
+        model is currently available for use through dynamic means (e.g., API calls).
 
-        This is combined with the statically configured model entries in
-        `self.alias_to_provider_id_map` to determine which models are
-        available for registration.
+        This method should NOT check statically configured model entries in
+        `self.alias_to_provider_id_map` - that is handled separately in register_model.
 
-        Default implementation returns no models.
+        Default implementation returns False (no dynamic models available).
 
-        :return: A list of model identifiers (provider_model_ids).
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
         """
-        return []
+        return False
 
     async def register_model(self, model: Model) -> Model:
         # Check if model is supported in static configuration
         supported_model_id = self.get_provider_model_id(model.provider_resource_id)
 
-        # If not found in static config, check if it's available from provider
+        # If not found in static config, check if it's available dynamically from provider
         if not supported_model_id:
-            available_models = await self.query_available_models()
-            if model.provider_resource_id in available_models:
+            if await self.check_model_availability(model.provider_resource_id):
                 supported_model_id = model.provider_resource_id
             else:
-                # Combine static and dynamic models for error message
-                all_supported_models = list(self.alias_to_provider_id_map.keys()) + available_models
+                # note: we cannot provide a complete list of supported models without
+                #       getting a complete list from the provider, so we return "..."
+                all_supported_models = [*self.alias_to_provider_id_map.keys(), "..."]
                 raise UnsupportedModelError(model.provider_resource_id, all_supported_models)
 
         provider_resource_id = self.get_provider_model_id(model.model_id)

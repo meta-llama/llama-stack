@@ -94,8 +94,8 @@ class MockModelRegistryHelperWithDynamicModels(ModelRegistryHelper):
         super().__init__(model_entries)
         self._available_models = available_models
 
-    async def query_available_models(self) -> list[str]:
-        return self._available_models
+    async def check_model_availability(self, model: str) -> bool:
+        return model in self._available_models
 
 
 @pytest.fixture
@@ -195,16 +195,16 @@ async def test_unregister_model_during_init(helper: ModelRegistryHelper, known_m
 
 
 @pytest.mark.asyncio
-async def test_register_model_from_query_available_models(
+async def test_register_model_from_check_model_availability(
     helper_with_dynamic_models: MockModelRegistryHelperWithDynamicModels, dynamic_model: Model
 ) -> None:
-    """Test that models returned by query_available_models can be registered."""
+    """Test that models returned by check_model_availability can be registered."""
     # Verify the model is not in static config
     assert helper_with_dynamic_models.get_provider_model_id(dynamic_model.provider_resource_id) is None
 
-    # But it should be available via query_available_models
-    available_models = await helper_with_dynamic_models.query_available_models()
-    assert dynamic_model.provider_resource_id in available_models
+    # But it should be available via check_model_availability
+    is_available = await helper_with_dynamic_models.check_model_availability(dynamic_model.provider_resource_id)
+    assert is_available
 
     # Registration should succeed
     registered_model = await helper_with_dynamic_models.register_model(dynamic_model)
@@ -224,17 +224,17 @@ async def test_register_model_not_in_static_or_dynamic(
     # Verify the model is not in static config
     assert helper_with_dynamic_models.get_provider_model_id(unknown_model.provider_resource_id) is None
 
-    # And not in dynamic models
-    available_models = await helper_with_dynamic_models.query_available_models()
-    assert unknown_model.provider_resource_id not in available_models
+    # And not available via check_model_availability
+    is_available = await helper_with_dynamic_models.check_model_availability(unknown_model.provider_resource_id)
+    assert not is_available
 
     # Registration should fail with comprehensive error message
     with pytest.raises(Exception) as exc_info:  # UnsupportedModelError
         await helper_with_dynamic_models.register_model(unknown_model)
 
-    # Error should include both static and dynamic models
+    # Error should include static models and "..." for dynamic models
     error_str = str(exc_info.value)
-    assert "dynamic-provider-id" in error_str  # dynamic model should be in error
+    assert "..." in error_str  # "..." should be in error message
 
 
 @pytest.mark.asyncio
