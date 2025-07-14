@@ -241,6 +241,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="${env.ENABLE_PGVECTOR:=__disabled__}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}",
                 db="${env.PGVECTOR_DB:=}",
                 user="${env.PGVECTOR_USER:=}",
                 password="${env.PGVECTOR_PASSWORD:=}",

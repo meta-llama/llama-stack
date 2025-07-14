@@ -13,24 +13,18 @@ from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
 from pydantic import BaseModel, TypeAdapter
 
+from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
     Chunk,
     QueryChunksResponse,
-    SearchRankingOptions,
     VectorIO,
-    VectorStoreChunkingStrategy,
-    VectorStoreDeleteResponse,
-    VectorStoreFileContentsResponse,
-    VectorStoreFileObject,
-    VectorStoreFileStatus,
-    VectorStoreListFilesResponse,
-    VectorStoreListResponse,
-    VectorStoreObject,
-    VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.api import KVStore
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
@@ -39,6 +33,13 @@ from llama_stack.providers.utils.memory.vector_store import (
 from .config import PGVectorVectorIOConfig
 
 log = logging.getLogger(__name__)
+
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"
+VECTOR_INDEX_PREFIX = f"vector_index:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:pgvector:{VERSION}::"
 
 
 def check_extension_version(cur):
@@ -69,7 +70,7 @@ def load_models(cur, cls):
 
 
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, vector_db: VectorDB, dimension: int, conn):
+    def __init__(self, vector_db: VectorDB, dimension: int, conn, kvstore: KVStore | None = None):
         self.conn = conn
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Sanitize the table name by replacing hyphens with underscores
@@ -77,6 +78,7 @@ class PGVectorIndex(EmbeddingIndex):
             # when created with patterns like "test-vector-db-{uuid4()}"
             sanitized_identifier = vector_db.identifier.replace("-", "_")
             self.table_name = f"vector_store_{sanitized_identifier}"
+            self.kvstore = kvstore
 
             cur.execute(
                 f"""
@@ -158,15 +160,28 @@ class PGVectorIndex(EmbeddingIndex):
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
 
 
-class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: PGVectorVectorIOConfig, inference_api: Api.inference) -> None:
+class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
+    def __init__(
+        self,
+        config: PGVectorVectorIOConfig,
+        inference_api: Api.inference,
+        files_api: Files | None = None,
+    ) -> None:
         self.config = config
         self.inference_api = inference_api
         self.conn = None
         self.cache = {}
+        self.files_api = files_api
+        self.kvstore: KVStore | None = None
+        self.vector_db_store = None
+        self.openai_vector_store: dict[str, dict[str, Any]] = {}
+        self.metadatadata_collection_name = "openai_vector_stores_metadata"
 
     async def initialize(self) -> None:
         log.info(f"Initializing PGVector memory adapter with config: {self.config}")
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        await self.initialize_openai_vector_stores()
+
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -201,14 +216,31 @@ class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             log.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
+        # Persist vector DB metadata in the KV store
+        assert self.kvstore is not None
+        key = f"{VECTOR_DBS_PREFIX}{vector_db.identifier}"
+        await self.kvstore.set(key=key, value=vector_db.model_dump_json())
+
+        # Upsert model metadata in Postgres
         upsert_models(self.conn, [(vector_db.identifier, vector_db)])
 
-        index = PGVectorIndex(vector_db, vector_db.embedding_dimension, self.conn)
-        self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
+        # Create and cache the PGVector index table for the vector DB
+        index = VectorDBWithIndex(
+            vector_db,
+            index=PGVectorIndex(vector_db, vector_db.embedding_dimension, self.conn, kvstore=self.kvstore),
+            inference_api=self.inference_api,
+        )
+        self.cache[vector_db.identifier] = index
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
-        await self.cache[vector_db_id].index.delete()
-        del self.cache[vector_db_id]
+        # Remove provider index and cache
+        if vector_db_id in self.cache:
+            await self.cache[vector_db_id].index.delete()
+            del self.cache[vector_db_id]
+
+        # Delete vector DB metadata from KV store
+        assert self.kvstore is not None
+        await self.kvstore.delete(key=f"{VECTOR_DBS_PREFIX}{vector_db_id}")
 
     async def insert_chunks(
         self,
@@ -237,107 +269,20 @@ class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]
 
-    async def openai_create_vector_store(
-        self,
-        name: str,
-        file_ids: list[str] | None = None,
-        expires_after: dict[str, Any] | None = None,
-        chunking_strategy: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-        embedding_model: str | None = None,
-        embedding_dimension: int | None = 384,
-        provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
-    ) -> VectorStoreObject:
+    # OpenAI Vector Stores File operations are not supported in PGVector
+    async def _save_openai_vector_store_file(
+        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
+    ) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
 
-    async def openai_list_vector_stores(
-        self,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-    ) -> VectorStoreListResponse:
+    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
 
-    async def openai_retrieve_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreObject:
+    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
 
-    async def openai_update_vector_store(
-        self,
-        vector_store_id: str,
-        name: str | None = None,
-        expires_after: dict[str, Any] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> VectorStoreObject:
+    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
 
-    async def openai_delete_vector_store(
-        self,
-        vector_store_id: str,
-    ) -> VectorStoreDeleteResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_search_vector_store(
-        self,
-        vector_store_id: str,
-        query: str | list[str],
-        filters: dict[str, Any] | None = None,
-        max_num_results: int | None = 10,
-        ranking_options: SearchRankingOptions | None = None,
-        rewrite_query: bool | None = False,
-        search_mode: str | None = "vector",
-    ) -> VectorStoreSearchResponsePage:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_attach_file_to_vector_store(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-        chunking_strategy: VectorStoreChunkingStrategy | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_list_files_in_vector_store(
-        self,
-        vector_store_id: str,
-        limit: int | None = 20,
-        order: str | None = "desc",
-        after: str | None = None,
-        before: str | None = None,
-        filter: VectorStoreFileStatus | None = None,
-    ) -> VectorStoreListFilesResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_retrieve_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_retrieve_vector_store_file_contents(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileContentsResponse:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_update_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-        attributes: dict[str, Any] | None = None,
-    ) -> VectorStoreFileObject:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
-
-    async def openai_delete_vector_store_file(
-        self,
-        vector_store_id: str,
-        file_id: str,
-    ) -> VectorStoreFileObject:
+    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
