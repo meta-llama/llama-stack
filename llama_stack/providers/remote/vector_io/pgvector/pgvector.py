@@ -216,27 +216,31 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
             log.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
-        start_key = VECTOR_DBS_PREFIX
-        end_key = f"{VECTOR_DBS_PREFIX}\xff"
-        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
-        for vector_db_data in stored_vector_dbs:
-            vector_db = VectorDB.model_validate_json(vector_db_data)
-            index = VectorDBWithIndex(
-                vector_db,
-                index=PGVectorIndex(
-                    vector_db,
-                    vector_db.embedding_dimension,
-                    self.conn,
-                    kvstore=self.kvstore,
-                ),
-                inference_api=self.inference_api,
-            )
-            upsert_models(self.conn, [(vector_db.identifier, vector_db)])
-            self.cache[vector_db.identifier] = index
+        # Persist vector DB metadata in the KV store
+        assert self.kvstore is not None
+        key = f"{VECTOR_DBS_PREFIX}{vector_db.identifier}"
+        await self.kvstore.set(key=key, value=vector_db.model_dump_json())
+
+        # Upsert model metadata in Postgres
+        upsert_models(self.conn, [(vector_db.identifier, vector_db)])
+
+        # Create and cache the PGVector index table for the vector DB
+        index = VectorDBWithIndex(
+            vector_db,
+            index=PGVectorIndex(vector_db, vector_db.embedding_dimension, self.conn, kvstore=self.kvstore),
+            inference_api=self.inference_api,
+        )
+        self.cache[vector_db.identifier] = index
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
-        await self.cache[vector_db_id].index.delete()
-        del self.cache[vector_db_id]
+        # Remove provider index and cache
+        if vector_db_id in self.cache:
+            await self.cache[vector_db_id].index.delete()
+            del self.cache[vector_db_id]
+
+        # Delete vector DB metadata from KV store
+        assert self.kvstore is not None
+        await self.kvstore.delete(key=f"{VECTOR_DBS_PREFIX}{vector_db_id}")
 
     async def insert_chunks(
         self,
