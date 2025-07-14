@@ -54,6 +54,9 @@ providers:
       db: ${env.PGVECTOR_DB:=}
       user: ${env.PGVECTOR_USER:=}
       password: ${env.PGVECTOR_PASSWORD:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/open-benchmark}/pgvector_registry.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
