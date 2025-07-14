@@ -13,7 +13,7 @@ Latest Release Notes: [link](https://github.com/meta-llama/llama-stack-client-ko
 *Tagged releases are stable versions of the project. While we strive to maintain a stable main branch, it's not guaranteed to be free of bugs or issues.*
 
 ## Android Demo App
-Check out our demo app to see how to integrate Llama Stack into your Android app: [Android Demo App](https://github.com/meta-llama/llama-stack-client-kotlin/tree/examples/android_app)
+Check out our demo app to see how to integrate Llama Stack into your Android app: [Android Demo App](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/examples/android_app)
 
 The key files in the app are `ExampleLlamaStackLocalInference.kt`, `ExampleLlamaStackRemoteInference.kts`, and `MainActivity.java`. With encompassed business logic, the app shows how to use Llama Stack for both the environments.
 
@@ -68,7 +68,7 @@ Ensure the Llama Stack server version is the same as the Kotlin SDK Library for 
 
 Other inference providers: [Table](https://llama-stack.readthedocs.io/en/latest/index.html#supported-llama-stack-implementations)
 
-How to set remote localhost in Demo App: [Settings](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app#settings)
+How to set remote localhost in Demo App: [Settings](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/examples/android_app#settings)
 
 ### Initialize the Client
 A client serves as the primary interface for interacting with a specific inference type and its associated parameters. Only after client is initialized then you can configure and start inferences.
@@ -135,7 +135,7 @@ val result = client!!.inference().chatCompletionStreaming(
 
 ### Setup Custom Tool Calling
 
-Android demo app for more details: [Custom Tool Calling](https://github.com/meta-llama/llama-stack-apps/tree/main/examples/android_app#tool-calling)
+Android demo app for more details: [Custom Tool Calling](https://github.com/meta-llama/llama-stack-client-kotlin/tree/latest-release/examples/android_app#tool-calling)
 
 ## Advanced Users
 

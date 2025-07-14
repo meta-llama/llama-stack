@@ -11,7 +11,7 @@ from llama_stack.apis.inference import *  # noqa: F403
 from llama_stack.apis.inference import OpenAIEmbeddingsResponse
 
 # from llama_stack.providers.datatypes import ModelsProtocolPrivate
-from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
+from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper, build_hf_repo_model_entry
 from llama_stack.providers.utils.inference.openai_compat import (
     OpenAIChatCompletionToLlamaStackMixin,
     OpenAICompletionToLlamaStackMixin,
@@ -25,6 +25,8 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import RunpodImplConfig
 
+# https://docs.runpod.io/serverless/vllm/overview#compatible-models
+# https://github.com/runpod-workers/worker-vllm/blob/main/README.md#compatible-model-architectures
 RUNPOD_SUPPORTED_MODELS = {
     "Llama3.1-8B": "meta-llama/Llama-3.1-8B",
     "Llama3.1-70B": "meta-llama/Llama-3.1-70B",
@@ -39,6 +41,14 @@ RUNPOD_SUPPORTED_MODELS = {
     "Llama3.2-1B": "meta-llama/Llama-3.2-1B",
     "Llama3.2-3B": "meta-llama/Llama-3.2-3B",
 }
+
+SAFETY_MODELS_ENTRIES = []
+
+# Create MODEL_ENTRIES from RUNPOD_SUPPORTED_MODELS for compatibility with starter template
+MODEL_ENTRIES = [
+    build_hf_repo_model_entry(provider_model_id, model_descriptor)
+    for provider_model_id, model_descriptor in RUNPOD_SUPPORTED_MODELS.items()
+] + SAFETY_MODELS_ENTRIES
 
 
 class RunpodInferenceAdapter(

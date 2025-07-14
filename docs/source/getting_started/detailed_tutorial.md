@@ -54,7 +54,7 @@ Llama Stack is a server that exposes multiple APIs, you connect with it using th
 You can use Python to build and run the Llama Stack server, which is useful for testing and development.
 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
-which defines the providers and their settings.
+which defines the providers and their settings. The generated configuration serves as a starting point that you can [customize for your specific needs](../distributions/customizing_run_yaml.md).
 Now let's build and run the Llama Stack config for Ollama.
 We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 
@@ -77,7 +77,7 @@ ENABLE_OLLAMA=ollama INFERENCE_MODEL="llama3.2:3b" llama stack build --template 
 You can use a container image to run the Llama Stack server. We provide several container images for the server
 component that works with different inference providers out of the box. For this guide, we will use
 `llamastack/distribution-starter` as the container image. If you'd like to build your own image or customize the
-configurations, please check out [this guide](../references/index.md).
+configurations, please check out [this guide](../distributions/building_distro.md).
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
 export INFERENCE_MODEL="llama3.2:3b"

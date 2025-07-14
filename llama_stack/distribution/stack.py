@@ -98,6 +98,7 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
+            logger.debug(f"registering {rsrc.capitalize()} {obj} for provider {obj.provider_id}")
             # Do not register models on disabled providers
             if hasattr(obj, "provider_id") and obj.provider_id is not None and obj.provider_id == "__disabled__":
                 logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
@@ -112,6 +113,11 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
             ):
                 logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled model.")
                 continue
+
+            if hasattr(obj, "shield_id") and obj.shield_id is not None and obj.shield_id == "__disabled__":
+                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled shield.")
+                continue
+
             # we want to maintain the type information in arguments to method.
             # instead of method(**obj.model_dump()), which may convert a typed attr to a dict,
             # we use model_dump() to find all the attrs and then getattr to get the still typed value.

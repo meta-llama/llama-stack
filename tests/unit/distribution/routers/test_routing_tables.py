@@ -8,8 +8,6 @@
 
 from unittest.mock import AsyncMock
 
-import pytest
-
 from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.datasets.datasets import Dataset, DatasetPurpose, URIDataSource
 from llama_stack.apis.datatypes import Api
@@ -119,7 +117,6 @@ class ToolGroupsImpl(Impl):
         )
 
 
-@pytest.mark.asyncio
 async def test_models_routing_table(cached_disk_dist_registry):
     table = ModelsRoutingTable({"test_provider": InferenceImpl()}, cached_disk_dist_registry, {})
     await table.initialize()
@@ -161,7 +158,6 @@ async def test_models_routing_table(cached_disk_dist_registry):
     assert len(openai_models.data) == 0
 
 
-@pytest.mark.asyncio
 async def test_shields_routing_table(cached_disk_dist_registry):
     table = ShieldsRoutingTable({"test_provider": SafetyImpl()}, cached_disk_dist_registry, {})
     await table.initialize()
@@ -177,7 +173,6 @@ async def test_shields_routing_table(cached_disk_dist_registry):
     assert "test-shield-2" in shield_ids
 
 
-@pytest.mark.asyncio
 async def test_vectordbs_routing_table(cached_disk_dist_registry):
     table = VectorDBsRoutingTable({"test_provider": VectorDBImpl()}, cached_disk_dist_registry, {})
     await table.initialize()
@@ -233,7 +228,6 @@ async def test_datasets_routing_table(cached_disk_dist_registry):
     assert len(datasets.data) == 0
 
 
-@pytest.mark.asyncio
 async def test_scoring_functions_routing_table(cached_disk_dist_registry):
     table = ScoringFunctionsRoutingTable({"test_provider": ScoringFunctionsImpl()}, cached_disk_dist_registry, {})
     await table.initialize()
@@ -259,7 +253,6 @@ async def test_scoring_functions_routing_table(cached_disk_dist_registry):
     assert "test-scoring-fn-2" in scoring_fn_ids
 
 
-@pytest.mark.asyncio
 async def test_benchmarks_routing_table(cached_disk_dist_registry):
     table = BenchmarksRoutingTable({"test_provider": BenchmarksImpl()}, cached_disk_dist_registry, {})
     await table.initialize()
@@ -277,7 +270,6 @@ async def test_benchmarks_routing_table(cached_disk_dist_registry):
     assert "test-benchmark" in benchmark_ids
 
 
-@pytest.mark.asyncio
 async def test_tool_groups_routing_table(cached_disk_dist_registry):
     table = ToolGroupsRoutingTable({"test_provider": ToolGroupsImpl()}, cached_disk_dist_registry, {})
     await table.initialize()

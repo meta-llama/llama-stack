@@ -7,8 +7,6 @@
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-import pytest
-
 from llama_stack.distribution.access_control.access_control import default_policy, is_action_allowed
 from llama_stack.distribution.access_control.datatypes import Action
 from llama_stack.distribution.datatypes import User
@@ -18,7 +16,6 @@ from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemyS
 from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_fetch_with_where_sql_access_control(mock_get_authenticated_user):
     """Test that fetch_all works correctly with where_sql for access control"""
@@ -81,7 +78,6 @@ async def test_authorized_fetch_with_where_sql_access_control(mock_get_authentic
         assert row["title"] == "User Document"
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_sql_policy_consistency(mock_get_authenticated_user):
     """Test that SQL WHERE clause logic exactly matches is_action_allowed policy logic"""
@@ -153,7 +149,9 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
             policy_ids = set()
             for scenario in test_scenarios:
                 sql_record = SqlRecord(
-                    record_id=scenario["id"], table_name="resources", access_attributes=scenario["access_attributes"]
+                    record_id=scenario["id"],
+                    table_name="resources",
+                    owner=User(principal="test-user", attributes=scenario["access_attributes"]),
                 )
 
                 if is_action_allowed(policy, Action.READ, sql_record, user):
@@ -166,7 +164,6 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
             )
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_store_user_attribute_capture(mock_get_authenticated_user):
     """Test that user attributes are properly captured during insert"""
