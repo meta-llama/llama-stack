@@ -13,6 +13,7 @@ from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
 from pydantic import BaseModel, TypeAdapter
 
+from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
@@ -31,6 +32,9 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.api import KVStore
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
@@ -39,6 +43,13 @@ from llama_stack.providers.utils.memory.vector_store import (
 from .config import PGVectorVectorIOConfig
 
 log = logging.getLogger(__name__)
+
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"
+VECTOR_INDEX_PREFIX = f"vector_index:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:pgvector:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:pgvector:{VERSION}::"
 
 
 def check_extension_version(cur):
@@ -69,7 +80,7 @@ def load_models(cur, cls):
 
 
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, vector_db: VectorDB, dimension: int, conn):
+    def __init__(self, vector_db: VectorDB, dimension: int, conn, kvstore: KVStore | None = None):
         self.conn = conn
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Sanitize the table name by replacing hyphens with underscores
@@ -77,6 +88,7 @@ class PGVectorIndex(EmbeddingIndex):
             # when created with patterns like "test-vector-db-{uuid4()}"
             sanitized_identifier = vector_db.identifier.replace("-", "_")
             self.table_name = f"vector_store_{sanitized_identifier}"
+            self.kvstore = kvstore
 
             cur.execute(
                 f"""
@@ -158,15 +170,28 @@ class PGVectorIndex(EmbeddingIndex):
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
 
 
-class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
-    def __init__(self, config: PGVectorVectorIOConfig, inference_api: Api.inference) -> None:
+class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
+    def __init__(
+        self,
+        config: PGVectorVectorIOConfig,
+        inference_api: Api.inference,
+        files_api: Files | None,
+    ) -> None:
         self.config = config
         self.inference_api = inference_api
         self.conn = None
         self.cache = {}
+        self.files_api = files_api
+        self.kvstore: KVStore | None = None
+        self.vector_db_store = None
+        self.openai_vector_store: dict[str, dict[str, Any]] = {}
+        self.metadatadata_collection_name = "openai_vector_stores_metadata"
 
     async def initialize(self) -> None:
         log.info(f"Initializing PGVector memory adapter with config: {self.config}")
+        self.kvstore = await kvstore_impl(self.config.kvstore)
+        await self.initialize_openai_vector_stores()
+
         try:
             self.conn = psycopg2.connect(
                 host=self.config.host,
@@ -201,10 +226,23 @@ class PGVectorVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
             log.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
-        upsert_models(self.conn, [(vector_db.identifier, vector_db)])
-
-        index = PGVectorIndex(vector_db, vector_db.embedding_dimension, self.conn)
-        self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
+        start_key = VECTOR_DBS_PREFIX
+        end_key = f"{VECTOR_DBS_PREFIX}\xff"
+        stored_vector_dbs = await self.kvstore.values_in_range(start_key, end_key)
+        for vector_db_data in stored_vector_dbs:
+            vector_db = VectorDB.model_validate_json(vector_db_data)
+            index = VectorDBWithIndex(
+                vector_db,
+                index=PGVectorIndex(
+                    vector_db,
+                    vector_db.embedding_dimension,
+                    self.conn,
+                    kvstore=self.kvstore,
+                ),
+                inference_api=self.inference_api,
+            )
+            upsert_models(self.conn, [(vector_db.identifier, vector_db)])
+            self.cache[vector_db.identifier] = index
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         await self.cache[vector_db_id].index.delete()

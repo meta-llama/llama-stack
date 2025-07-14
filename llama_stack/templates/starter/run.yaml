@@ -166,6 +166,9 @@ providers:
       db: ${env.PGVECTOR_DB:=}
       user: ${env.PGVECTOR_USER:=}
       password: ${env.PGVECTOR_PASSWORD:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/pgvector_registry.db
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
