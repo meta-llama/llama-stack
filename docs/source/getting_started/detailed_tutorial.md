@@ -54,7 +54,7 @@ Llama Stack is a server that exposes multiple APIs, you connect with it using th
 You can use Python to build and run the Llama Stack server, which is useful for testing and development.
 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
-which defines the providers and their settings.
+which defines the providers and their settings. The generated configuration serves as a starting point that you can [customize for your specific needs](../distributions/customizing_run_yaml.md).
 Now let's build and run the Llama Stack config for Ollama.
 We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 

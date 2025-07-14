@@ -96,7 +96,7 @@ FROM $container_base
 WORKDIR /app
 
 # We install the Python 3.12 dev headers and build tools so that any
-# C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
+# C-extension wheels (e.g. polyleven, faiss-cpu) can compile successfully.
 
 RUN dnf -y update && dnf install -y iputils git net-tools wget \
     vim-minimal python3.12 python3.12-pip python3.12-wheel \
@@ -169,7 +169,7 @@ if [ -n "$run_config" ]; then
     echo "Copying external providers directory: $external_providers_dir"
     cp -r "$external_providers_dir" "$BUILD_CONTEXT_DIR/providers.d"
     add_to_container << EOF
-COPY --chmod=g+w providers.d /.llama/providers.d
+COPY providers.d /.llama/providers.d
 EOF
     fi
 

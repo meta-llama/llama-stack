@@ -146,10 +146,9 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        if shield.provider_resource_id not in LLAMA_GUARD_MODEL_IDS:
-            raise ValueError(
-                f"Unsupported Llama Guard type: {shield.provider_resource_id}. Allowed types: {LLAMA_GUARD_MODEL_IDS}"
-            )
+        # Allow any model to be registered as a shield
+        # The model will be validated during runtime when making inference calls
+        pass
 
     async def run_shield(
         self,
@@ -167,11 +166,25 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         if len(messages) > 0 and messages[0].role != Role.user.value:
             messages[0] = UserMessage(content=messages[0].content)
 
-        model = LLAMA_GUARD_MODEL_IDS[shield.provider_resource_id]
+        # Use the inference API's model resolution instead of hardcoded mappings
+        # This allows the shield to work with any registered model
+        model_id = shield.provider_resource_id
+
+        # Determine safety categories based on the model type
+        # For known Llama Guard models, use specific categories
+        if model_id in LLAMA_GUARD_MODEL_IDS:
+            # Use the mapped model for categories but the original model_id for inference
+            mapped_model = LLAMA_GUARD_MODEL_IDS[model_id]
+            safety_categories = MODEL_TO_SAFETY_CATEGORIES_MAP.get(mapped_model, DEFAULT_LG_V3_SAFETY_CATEGORIES)
+        else:
+            # For unknown models, use default Llama Guard 3 8B categories
+            safety_categories = DEFAULT_LG_V3_SAFETY_CATEGORIES + [CAT_CODE_INTERPRETER_ABUSE]
+
         impl = LlamaGuardShield(
-            model=model,
+            model=model_id,
             inference_api=self.inference_api,
             excluded_categories=self.config.excluded_categories,
+            safety_categories=safety_categories,
         )
 
         return await impl.run(messages)
@@ -183,20 +196,21 @@ class LlamaGuardShield:
         model: str,
         inference_api: Inference,
         excluded_categories: list[str] | None = None,
+        safety_categories: list[str] | None = None,
     ):
         if excluded_categories is None:
             excluded_categories = []
+        if safety_categories is None:
+            safety_categories = []
 
         assert len(excluded_categories) == 0 or all(
             x in SAFETY_CATEGORIES_TO_CODE_MAP.values() for x in excluded_categories
         ), "Invalid categories in excluded categories. Expected format is ['S1', 'S2', ..]"
 
-        if model not in MODEL_TO_SAFETY_CATEGORIES_MAP:
-            raise ValueError(f"Unsupported model: {model}")
-
         self.model = model
         self.inference_api = inference_api
         self.excluded_categories = excluded_categories
+        self.safety_categories = safety_categories
 
     def check_unsafe_response(self, response: str) -> str | None:
         match = re.match(r"^unsafe\n(.*)$", response)
@@ -214,7 +228,7 @@ class LlamaGuardShield:
 
         final_categories = []
 
-        all_categories = MODEL_TO_SAFETY_CATEGORIES_MAP[self.model]
+        all_categories = self.safety_categories
         for cat in all_categories:
             cat_code = SAFETY_CATEGORIES_TO_CODE_MAP[cat]
             if cat_code in excluded_categories:

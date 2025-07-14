@@ -68,19 +68,12 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
     def __init__(self, config: TogetherImplConfig) -> None:
         ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
         self.config = config
-        self._client = None
-        self._openai_client = None
 
     async def initialize(self) -> None:
         pass
 
     async def shutdown(self) -> None:
-        if self._client:
-            # Together client has no close method, so just set to None
-            self._client = None
-        if self._openai_client:
-            await self._openai_client.close()
-            self._openai_client = None
+        pass
 
     async def completion(
         self,
@@ -108,29 +101,25 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             return await self._nonstream_completion(request)
 
     def _get_client(self) -> AsyncTogether:
-        if not self._client:
-            together_api_key = None
-            config_api_key = self.config.api_key.get_secret_value() if self.config.api_key else None
-            if config_api_key:
-                together_api_key = config_api_key
-            else:
-                provider_data = self.get_request_provider_data()
-                if provider_data is None or not provider_data.together_api_key:
-                    raise ValueError(
-                        'Pass Together API Key in the header X-LlamaStack-Provider-Data as { "together_api_key": <your api key>}'
-                    )
-                together_api_key = provider_data.together_api_key
-            self._client = AsyncTogether(api_key=together_api_key)
-        return self._client
+        together_api_key = None
+        config_api_key = self.config.api_key.get_secret_value() if self.config.api_key else None
+        if config_api_key:
+            together_api_key = config_api_key
+        else:
+            provider_data = self.get_request_provider_data()
+            if provider_data is None or not provider_data.together_api_key:
+                raise ValueError(
+                    'Pass Together API Key in the header X-LlamaStack-Provider-Data as { "together_api_key": <your api key>}'
+                )
+            together_api_key = provider_data.together_api_key
+        return AsyncTogether(api_key=together_api_key)
 
     def _get_openai_client(self) -> AsyncOpenAI:
-        if not self._openai_client:
-            together_client = self._get_client().client
-            self._openai_client = AsyncOpenAI(
-                base_url=together_client.base_url,
-                api_key=together_client.api_key,
-            )
-        return self._openai_client
+        together_client = self._get_client().client
+        return AsyncOpenAI(
+            base_url=together_client.base_url,
+            api_key=together_client.api_key,
+        )
 
     async def _nonstream_completion(self, request: CompletionRequest) -> ChatCompletionResponse:
         params = await self._get_params(request)

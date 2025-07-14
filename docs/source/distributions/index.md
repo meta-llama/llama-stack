@@ -9,6 +9,7 @@ This section provides an overview of the distributions available in Llama Stack.
 
 importing_as_library
 configuration
+customizing_run_yaml
 list_of_distributions
 kubernetes_deployment
 building_distro

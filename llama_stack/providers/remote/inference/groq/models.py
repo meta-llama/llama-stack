@@ -10,6 +10,8 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_model_entry,
 )
 
+SAFETY_MODELS_ENTRIES = []
+
 MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "groq/llama3-8b-8192",
@@ -51,4 +53,4 @@ MODEL_ENTRIES = [
         "groq/meta-llama/llama-4-maverick-17b-128e-instruct",
         CoreModelId.llama4_maverick_17b_128e_instruct.value,
     ),
-]
+] + SAFETY_MODELS_ENTRIES
