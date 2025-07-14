@@ -28,6 +28,8 @@ certifi==2025.1.31
     #   httpcore
     #   httpx
     #   requests
+cffi==1.17.1 ; platform_python_implementation != 'PyPy'
+    # via cryptography
 charset-normalizer==3.4.1
     # via requests
 click==8.1.8
@@ -38,6 +40,8 @@ colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   click
     #   tqdm
+cryptography==45.0.5
+    # via python-jose
 deprecated==1.2.18
     # via
     #   opentelemetry-api
@@ -156,6 +160,8 @@ pyasn1==0.4.8
     # via
     #   python-jose
     #   rsa
+pycparser==2.22 ; platform_python_implementation != 'PyPy'
+    # via cffi
 pydantic==2.10.6
     # via
     #   fastapi

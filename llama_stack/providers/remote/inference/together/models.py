@@ -11,6 +11,16 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 
+SAFETY_MODELS_ENTRIES = [
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-Guard-3-8B",
+        CoreModelId.llama_guard_3_8b.value,
+    ),
+    build_hf_repo_model_entry(
+        "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
+        CoreModelId.llama_guard_3_11b_vision.value,
+    ),
+]
 MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
@@ -39,14 +49,6 @@ MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         CoreModelId.llama3_3_70b_instruct.value,
-    ),
-    build_hf_repo_model_entry(
-        "meta-llama/Meta-Llama-Guard-3-8B",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-    build_hf_repo_model_entry(
-        "meta-llama/Llama-Guard-3-11B-Vision-Turbo",
-        CoreModelId.llama_guard_3_11b_vision.value,
     ),
     ProviderModelEntry(
         provider_model_id="togethercomputer/m2-bert-80M-8k-retrieval",
@@ -78,4 +80,4 @@ MODEL_ENTRIES = [
             "together/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
         ],
     ),
-]
+] + SAFETY_MODELS_ENTRIES

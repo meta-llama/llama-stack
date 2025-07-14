@@ -12,6 +12,19 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_model_entry,
 )
 
+SAFETY_MODELS_ENTRIES = [
+    # The Llama Guard models don't have their full fp16 versions
+    # so we are going to alias their default version to the canonical SKU
+    build_hf_repo_model_entry(
+        "llama-guard3:8b",
+        CoreModelId.llama_guard_3_8b.value,
+    ),
+    build_hf_repo_model_entry(
+        "llama-guard3:1b",
+        CoreModelId.llama_guard_3_1b.value,
+    ),
+]
+
 MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "llama3.1:8b-instruct-fp16",
@@ -73,16 +86,6 @@ MODEL_ENTRIES = [
         "llama3.3:70b",
         CoreModelId.llama3_3_70b_instruct.value,
     ),
-    # The Llama Guard models don't have their full fp16 versions
-    # so we are going to alias their default version to the canonical SKU
-    build_hf_repo_model_entry(
-        "llama-guard3:8b",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-    build_hf_repo_model_entry(
-        "llama-guard3:1b",
-        CoreModelId.llama_guard_3_1b.value,
-    ),
     ProviderModelEntry(
         provider_model_id="all-minilm:l6-v2",
         aliases=["all-minilm"],
@@ -100,4 +103,4 @@ MODEL_ENTRIES = [
             "context_length": 8192,
         },
     ),
-]
+] + SAFETY_MODELS_ENTRIES

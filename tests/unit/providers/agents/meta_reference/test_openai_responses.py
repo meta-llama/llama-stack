@@ -122,7 +122,6 @@ async def fake_stream(fixture: str = "simple_chat_completion.yaml"):
     )
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_string_input(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with a simple string input."""
     # Setup
@@ -155,7 +154,6 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
     assert result.output[0].content[0].text == "Dublin"
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_string_input_with_tools(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with a simple string input and tools."""
     # Setup
@@ -224,7 +222,6 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
         assert result.output[1].content[0].annotations == []
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_tool_call_type_none(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with a tool call response that has a type of None."""
     # Setup
@@ -294,7 +291,6 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
     assert chunks[1].response.output[0].name == "get_weather"
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_multiple_messages(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with multiple messages."""
     # Setup
@@ -340,7 +336,6 @@ async def test_create_openai_response_with_multiple_messages(openai_responses_im
             assert isinstance(inference_messages[i], OpenAIDeveloperMessageParam)
 
 
-@pytest.mark.asyncio
 async def test_prepend_previous_response_none(openai_responses_impl):
     """Test prepending no previous response to a new response."""
 
@@ -348,7 +343,6 @@ async def test_prepend_previous_response_none(openai_responses_impl):
     assert input == "fake_input"
 
 
-@pytest.mark.asyncio
 async def test_prepend_previous_response_basic(openai_responses_impl, mock_responses_store):
     """Test prepending a basic previous response to a new response."""
 
@@ -388,7 +382,6 @@ async def test_prepend_previous_response_basic(openai_responses_impl, mock_respo
     assert input[2].content == "fake_input"
 
 
-@pytest.mark.asyncio
 async def test_prepend_previous_response_web_search(openai_responses_impl, mock_responses_store):
     """Test prepending a web search previous response to a new response."""
     input_item_message = OpenAIResponseMessage(
@@ -434,7 +427,6 @@ async def test_prepend_previous_response_web_search(openai_responses_impl, mock_
     assert input[3].content == "fake_input"
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_instructions(openai_responses_impl, mock_inference_api):
     # Setup
     input_text = "What is the capital of Ireland?"
@@ -463,7 +455,6 @@ async def test_create_openai_response_with_instructions(openai_responses_impl, m
     assert sent_messages[1].content == input_text
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_instructions_and_multiple_messages(
     openai_responses_impl, mock_inference_api
 ):
@@ -508,7 +499,6 @@ async def test_create_openai_response_with_instructions_and_multiple_messages(
     assert sent_messages[3].content == "Which is the largest?"
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_instructions_and_previous_response(
     openai_responses_impl, mock_responses_store, mock_inference_api
 ):
@@ -565,7 +555,6 @@ async def test_create_openai_response_with_instructions_and_previous_response(
     assert sent_messages[3].content == "Which is the largest?"
 
 
-@pytest.mark.asyncio
 async def test_list_openai_response_input_items_delegation(openai_responses_impl, mock_responses_store):
     """Test that list_openai_response_input_items properly delegates to responses_store with correct parameters."""
     # Setup
@@ -601,7 +590,6 @@ async def test_list_openai_response_input_items_delegation(openai_responses_impl
     assert result.data[0].id == "msg_123"
 
 
-@pytest.mark.asyncio
 async def test_responses_store_list_input_items_logic():
     """Test ResponsesStore list_response_input_items logic - mocks get_response_object to test actual ordering/limiting."""
 
@@ -680,7 +668,6 @@ async def test_responses_store_list_input_items_logic():
     assert len(result.data) == 0  # Should return no items
 
 
-@pytest.mark.asyncio
 async def test_store_response_uses_rehydrated_input_with_previous_response(
     openai_responses_impl, mock_responses_store, mock_inference_api
 ):
@@ -747,7 +734,6 @@ async def test_store_response_uses_rehydrated_input_with_previous_response(
     assert result.status == "completed"
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "text_format, response_format",
     [
@@ -787,7 +773,6 @@ async def test_create_openai_response_with_text_format(
     assert first_call.kwargs["response_format"] == response_format
 
 
-@pytest.mark.asyncio
 async def test_create_openai_response_with_invalid_text_format(openai_responses_impl, mock_inference_api):
     """Test creating an OpenAI response with an invalid text format."""
     # Setup

@@ -31,6 +31,15 @@ from llama_stack.providers.registry.inference import available_providers
 from llama_stack.providers.remote.inference.anthropic.models import (
     MODEL_ENTRIES as ANTHROPIC_MODEL_ENTRIES,
 )
+from llama_stack.providers.remote.inference.bedrock.models import (
+    MODEL_ENTRIES as BEDROCK_MODEL_ENTRIES,
+)
+from llama_stack.providers.remote.inference.cerebras.models import (
+    MODEL_ENTRIES as CEREBRAS_MODEL_ENTRIES,
+)
+from llama_stack.providers.remote.inference.databricks.databricks import (
+    MODEL_ENTRIES as DATABRICKS_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.fireworks.models import (
     MODEL_ENTRIES as FIREWORKS_MODEL_ENTRIES,
 )
@@ -40,8 +49,14 @@ from llama_stack.providers.remote.inference.gemini.models import (
 from llama_stack.providers.remote.inference.groq.models import (
     MODEL_ENTRIES as GROQ_MODEL_ENTRIES,
 )
+from llama_stack.providers.remote.inference.nvidia.models import (
+    MODEL_ENTRIES as NVIDIA_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.inference.openai.models import (
     MODEL_ENTRIES as OPENAI_MODEL_ENTRIES,
+)
+from llama_stack.providers.remote.inference.runpod.runpod import (
+    MODEL_ENTRIES as RUNPOD_MODEL_ENTRIES,
 )
 from llama_stack.providers.remote.inference.sambanova.models import (
     MODEL_ENTRIES as SAMBANOVA_MODEL_ENTRIES,
@@ -59,6 +74,7 @@ from llama_stack.templates.template import (
     DistributionTemplate,
     RunConfigSettings,
     get_model_registry,
+    get_shield_registry,
 )
 
 
@@ -72,6 +88,11 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
         "gemini": GEMINI_MODEL_ENTRIES,
         "groq": GROQ_MODEL_ENTRIES,
         "sambanova": SAMBANOVA_MODEL_ENTRIES,
+        "cerebras": CEREBRAS_MODEL_ENTRIES,
+        "bedrock": BEDROCK_MODEL_ENTRIES,
+        "databricks": DATABRICKS_MODEL_ENTRIES,
+        "nvidia": NVIDIA_MODEL_ENTRIES,
+        "runpod": RUNPOD_MODEL_ENTRIES,
     }
 
     # Special handling for providers with dynamic model entries
@@ -79,6 +100,10 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
         return [
             ProviderModelEntry(
                 provider_model_id="${env.OLLAMA_INFERENCE_MODEL:=__disabled__}",
+                model_type=ModelType.llm,
+            ),
+            ProviderModelEntry(
+                provider_model_id="${env.SAFETY_MODEL:=__disabled__}",
                 model_type=ModelType.llm,
             ),
             ProviderModelEntry(
@@ -98,6 +123,20 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
         ]
 
     return model_entries_map.get(provider_type, [])
+
+
+def _get_model_safety_entries_for_provider(provider_type: str) -> list[ProviderModelEntry]:
+    """Get model entries for a specific provider type."""
+    safety_model_entries_map = {
+        "ollama": [
+            ProviderModelEntry(
+                provider_model_id="${env.SAFETY_MODEL:=__disabled__}",
+                model_type=ModelType.llm,
+            ),
+        ],
+    }
+
+    return safety_model_entries_map.get(provider_type, [])
 
 
 def _get_config_for_provider(provider_spec: ProviderSpec) -> dict[str, Any]:
@@ -155,6 +194,23 @@ def get_remote_inference_providers() -> tuple[list[Provider], dict[str, list[Pro
     return inference_providers, available_models
 
 
+# build a list of shields for all possible providers
+def get_safety_models_for_providers(providers: list[Provider]) -> dict[str, list[ProviderModelEntry]]:
+    available_models = {}
+    for provider in providers:
+        provider_type = provider.provider_type.split("::")[1]
+        safety_model_entries = _get_model_safety_entries_for_provider(provider_type)
+        if len(safety_model_entries) == 0:
+            continue
+
+        env_var = f"ENABLE_{provider_type.upper().replace('-', '_').replace('::', '_')}"
+        provider_id = f"${{env.{env_var}:=__disabled__}}"
+
+        available_models[provider_id] = safety_model_entries
+
+    return available_models
+
+
 def get_distribution_template() -> DistributionTemplate:
     remote_inference_providers, available_models = get_remote_inference_providers()
 
@@ -185,6 +241,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="${env.ENABLE_PGVECTOR:=__disabled__}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}",
                 db="${env.PGVECTOR_DB:=}",
                 user="${env.PGVECTOR_USER:=}",
                 password="${env.PGVECTOR_PASSWORD:=}",
@@ -244,7 +301,10 @@ def get_distribution_template() -> DistributionTemplate:
         },
     )
 
-    default_models = get_model_registry(available_models)
+    default_models, ids_conflict_in_models = get_model_registry(available_models)
+
+    available_safety_models = get_safety_models_for_providers(remote_inference_providers)
+    shields = get_shield_registry(available_safety_models, ids_conflict_in_models)
 
     return DistributionTemplate(
         name=name,
@@ -266,9 +326,7 @@ def get_distribution_template() -> DistributionTemplate:
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,
                 # TODO: add a way to enable/disable shields on the fly
-                # default_shields=[
-                #     ShieldInput(provider_id="llama-guard", shield_id="${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}")
-                # ],
+                default_shields=shields,
             ),
         },
         run_config_env_vars={

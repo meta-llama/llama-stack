@@ -39,22 +39,10 @@ SQL_OPTIMIZED_POLICY = [
 
 
 class SqlRecord(ProtectedResource):
-    """Simple ProtectedResource implementation for SQL records."""
-
-    def __init__(self, record_id: str, table_name: str, access_attributes: dict[str, list[str]] | None = None):
+    def __init__(self, record_id: str, table_name: str, owner: User):
         self.type = f"sql_record::{table_name}"
         self.identifier = record_id
-
-        if access_attributes:
-            self.owner = User(
-                principal="system",
-                attributes=access_attributes,
-            )
-        else:
-            self.owner = User(
-                principal="system_public",
-                attributes=None,
-            )
+        self.owner = owner
 
 
 class AuthorizedSqlStore:
@@ -101,22 +89,27 @@ class AuthorizedSqlStore:
 
     async def create_table(self, table: str, schema: Mapping[str, ColumnType | ColumnDefinition]) -> None:
         """Create a table with built-in access control support."""
-        await self.sql_store.add_column_if_not_exists(table, "access_attributes", ColumnType.JSON)
 
         enhanced_schema = dict(schema)
         if "access_attributes" not in enhanced_schema:
             enhanced_schema["access_attributes"] = ColumnType.JSON
+        if "owner_principal" not in enhanced_schema:
+            enhanced_schema["owner_principal"] = ColumnType.STRING
 
         await self.sql_store.create_table(table, enhanced_schema)
+        await self.sql_store.add_column_if_not_exists(table, "access_attributes", ColumnType.JSON)
+        await self.sql_store.add_column_if_not_exists(table, "owner_principal", ColumnType.STRING)
 
     async def insert(self, table: str, data: Mapping[str, Any]) -> None:
         """Insert a row with automatic access control attribute capture."""
         enhanced_data = dict(data)
 
         current_user = get_authenticated_user()
-        if current_user and current_user.attributes:
+        if current_user:
+            enhanced_data["owner_principal"] = current_user.principal
             enhanced_data["access_attributes"] = current_user.attributes
         else:
+            enhanced_data["owner_principal"] = None
             enhanced_data["access_attributes"] = None
 
         await self.sql_store.insert(table, enhanced_data)
@@ -146,9 +139,12 @@ class AuthorizedSqlStore:
 
         for row in rows.data:
             stored_access_attrs = row.get("access_attributes")
+            stored_owner_principal = row.get("owner_principal") or ""
 
             record_id = row.get("id", "unknown")
-            sql_record = SqlRecord(str(record_id), table, stored_access_attrs)
+            sql_record = SqlRecord(
+                str(record_id), table, User(principal=stored_owner_principal, attributes=stored_access_attrs)
+            )
 
             if is_action_allowed(policy, Action.READ, sql_record, current_user):
                 filtered_rows.append(row)
@@ -186,8 +182,10 @@ class AuthorizedSqlStore:
         Only applies SQL filtering for the default policy to ensure correctness.
         For custom policies, uses conservative filtering to avoid blocking legitimate access.
         """
+        current_user = get_authenticated_user()
+
         if not policy or policy == SQL_OPTIMIZED_POLICY:
-            return self._build_default_policy_where_clause()
+            return self._build_default_policy_where_clause(current_user)
         else:
             return self._build_conservative_where_clause()
 
@@ -227,29 +225,27 @@ class AuthorizedSqlStore:
 
     def _get_public_access_conditions(self) -> list[str]:
         """Get the SQL conditions for public access."""
+        # Public records are records that have no owner_principal or access_attributes
+        conditions = ["owner_principal = ''"]
         if self.database_type == SqlStoreType.postgres:
             # Postgres stores JSON null as 'null'
-            return ["access_attributes::text = 'null'"]
+            conditions.append("access_attributes::text = 'null'")
         elif self.database_type == SqlStoreType.sqlite:
-            return ["access_attributes = 'null'"]
+            conditions.append("access_attributes = 'null'")
         else:
             raise ValueError(f"Unsupported database type: {self.database_type}")
+        return conditions
 
-    def _build_default_policy_where_clause(self) -> str:
+    def _build_default_policy_where_clause(self, current_user: User | None) -> str:
         """Build SQL WHERE clause for the default policy.
 
         Default policy: permit all actions when user in owners [roles, teams, projects, namespaces]
         This means user must match ALL attribute categories that exist in the resource.
         """
-        current_user = get_authenticated_user()
-
         base_conditions = self._get_public_access_conditions()
-        if not current_user or not current_user.attributes:
-            # Only allow public records
-            return f"({' OR '.join(base_conditions)})"
-        else:
-            user_attr_conditions = []
+        user_attr_conditions = []
 
+        if current_user and current_user.attributes:
             for attr_key, user_values in current_user.attributes.items():
                 if user_values:
                     value_conditions = []
@@ -269,7 +265,7 @@ class AuthorizedSqlStore:
                 all_requirements_met = f"({' AND '.join(user_attr_conditions)})"
                 base_conditions.append(all_requirements_met)
 
-            return f"({' OR '.join(base_conditions)})"
+        return f"({' OR '.join(base_conditions)})"
 
     def _build_conservative_where_clause(self) -> str:
         """Conservative SQL filtering for custom policies.
