@@ -18,6 +18,7 @@ inline_sqlite-vec
 inline_sqlite_vec
 remote_chromadb
 remote_milvus
+remote_opengauss
 remote_pgvector
 remote_qdrant
 remote_weaviate
