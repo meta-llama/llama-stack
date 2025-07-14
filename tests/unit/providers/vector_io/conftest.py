@@ -13,9 +13,11 @@ from pymilvus import MilvusClient, connections
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata
 from llama_stack.providers.inline.vector_io.milvus.config import MilvusVectorIOConfig, SqliteKVStoreConfig
+from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import SQLiteVecIndex, SQLiteVecVectorIOAdapter
 from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusIndex, MilvusVectorIOAdapter
+from llama_stack.providers.remote.vector_io.qdrant.qdrant import QdrantVectorIOAdapter
 
 EMBEDDING_DIMENSION = 384
 COLLECTION_PREFIX = "test_collection"
@@ -90,7 +92,7 @@ def sample_embeddings_with_metadata(sample_chunks_with_metadata):
     return np.array([np.random.rand(EMBEDDING_DIMENSION).astype(np.float32) for _ in sample_chunks_with_metadata])
 
 
-@pytest.fixture(params=["milvus", "sqlite_vec"])
+@pytest.fixture(params=["milvus", "sqlite_vec", "qdrant"])
 def vector_provider(request):
     return request.param
 
@@ -129,7 +131,7 @@ async def sqlite_vec_vec_index(embedding_dimension, tmp_path_factory):
     await index.initialize()
     index.db_path = db_path
     yield index
-    index.delete()
+    await index.delete()
 
 
 @pytest.fixture
@@ -199,10 +201,63 @@ async def milvus_vec_adapter(milvus_vec_db_path, mock_inference_api):
 
 
 @pytest.fixture
+def qdrant_vec_db_path(tmp_path_factory):
+    import uuid
+
+    db_path = str(tmp_path_factory.getbasetemp() / f"test_qdrant_{uuid.uuid4()}.db")
+    return db_path
+
+
+@pytest.fixture
+async def qdrant_vec_adapter(qdrant_vec_db_path, mock_inference_api, embedding_dimension):
+    import uuid
+
+    config = QdrantVectorIOConfig(
+        path=qdrant_vec_db_path,
+        kvstore=SqliteKVStoreConfig(),
+    )
+    adapter = QdrantVectorIOAdapter(
+        config=config,
+        inference_api=mock_inference_api,
+        files_api=None,
+    )
+    collection_id = f"qdrant_test_collection_{uuid.uuid4()}"
+    await adapter.initialize()
+    await adapter.register_vector_db(
+        VectorDB(
+            identifier=collection_id,
+            provider_id="test_provider",
+            embedding_model="test_model",
+            embedding_dimension=embedding_dimension,
+        )
+    )
+    adapter.test_collection_id = collection_id
+    yield adapter
+    await adapter.shutdown()
+
+
+@pytest.fixture
+async def qdrant_vec_index(qdrant_vec_db_path, embedding_dimension):
+    import uuid
+
+    from qdrant_client import AsyncQdrantClient
+
+    from llama_stack.providers.remote.vector_io.qdrant.qdrant import QdrantIndex
+
+    client = AsyncQdrantClient(path=qdrant_vec_db_path)
+    collection_name = f"qdrant_test_collection_{uuid.uuid4()}"
+    index = QdrantIndex(client, collection_name)
+    yield index
+    await index.delete()
+
+
+@pytest.fixture
 def vector_io_adapter(vector_provider, request):
     """Returns the appropriate vector IO adapter based on the provider parameter."""
     if vector_provider == "milvus":
         return request.getfixturevalue("milvus_vec_adapter")
+    elif vector_provider == "qdrant":
+        return request.getfixturevalue("qdrant_vec_adapter")
     else:
         return request.getfixturevalue("sqlite_vec_adapter")
 
