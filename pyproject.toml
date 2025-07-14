@@ -42,8 +42,8 @@ dependencies = [
     "h11>=0.16.0",
     "python-multipart>=0.0.20",               # For fastapi Form
     "uvicorn>=0.34.0",                        # server
-    "opentelemetry-sdk",                      # server
-    "opentelemetry-exporter-otlp-proto-http", # server
+    "opentelemetry-sdk>=1.30.0",              # server
+    "opentelemetry-exporter-otlp-proto-http>=1.30.0", # server
     "aiosqlite>=0.21.0",                      # server - for metadata store
     "asyncpg",                                # for metadata store
 ]
@@ -58,12 +58,13 @@ ui = [
 
 [dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=8.4",
     "pytest-timeout",
-    "pytest-asyncio",
+    "pytest-asyncio>=1.0",
     "pytest-cov",
     "pytest-html",
     "pytest-json-report",
+    "pytest-socket",      # For blocking network access in unit tests
     "nbval",              # For notebook testing
     "black",
     "ruff",
@@ -87,6 +88,8 @@ unit = [
     "blobfile",
     "faiss-cpu",
     "pymilvus>=2.5.12",
+    "litellm",
+    "together",
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
@@ -339,3 +342,9 @@ warn_required_dynamic_aliases = true
 
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "allow_network: Allow network access for specific unit tests",
+]

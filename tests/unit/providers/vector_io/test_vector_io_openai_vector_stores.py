@@ -25,12 +25,10 @@ from llama_stack.providers.remote.vector_io.milvus.milvus import VECTOR_DBS_PREF
 # -v -s --tb=short --disable-warnings --asyncio-mode=auto
 
 
-@pytest.mark.asyncio
 async def test_initialize_index(vector_index):
     await vector_index.initialize()
 
 
-@pytest.mark.asyncio
 async def test_add_chunks_query_vector(vector_index, sample_chunks, sample_embeddings):
     vector_index.delete()
     vector_index.initialize()
@@ -40,7 +38,6 @@ async def test_add_chunks_query_vector(vector_index, sample_chunks, sample_embed
     vector_index.delete()
 
 
-@pytest.mark.asyncio
 async def test_chunk_id_conflict(vector_index, sample_chunks, embedding_dimension):
     embeddings = np.random.rand(len(sample_chunks), embedding_dimension).astype(np.float32)
     await vector_index.add_chunks(sample_chunks, embeddings)
@@ -54,7 +51,6 @@ async def test_chunk_id_conflict(vector_index, sample_chunks, embedding_dimensio
     assert len(contents) == len(set(contents))
 
 
-@pytest.mark.asyncio
 async def test_initialize_adapter_with_existing_kvstore(vector_io_adapter):
     key = f"{VECTOR_DBS_PREFIX}db1"
     dummy = VectorDB(
@@ -65,7 +61,6 @@ async def test_initialize_adapter_with_existing_kvstore(vector_io_adapter):
     await vector_io_adapter.initialize()
 
 
-@pytest.mark.asyncio
 async def test_persistence_across_adapter_restarts(vector_io_adapter):
     await vector_io_adapter.initialize()
     dummy = VectorDB(
@@ -79,7 +74,6 @@ async def test_persistence_across_adapter_restarts(vector_io_adapter):
     await vector_io_adapter.shutdown()
 
 
-@pytest.mark.asyncio
 async def test_register_and_unregister_vector_db(vector_io_adapter):
     unique_id = f"foo_db_{np.random.randint(1e6)}"
     dummy = VectorDB(
@@ -92,14 +86,12 @@ async def test_register_and_unregister_vector_db(vector_io_adapter):
     assert dummy.identifier not in vector_io_adapter.cache
 
 
-@pytest.mark.asyncio
 async def test_query_unregistered_raises(vector_io_adapter):
     fake_emb = np.zeros(8, dtype=np.float32)
     with pytest.raises(ValueError):
         await vector_io_adapter.query_chunks("no_such_db", fake_emb)
 
 
-@pytest.mark.asyncio
 async def test_insert_chunks_calls_underlying_index(vector_io_adapter):
     fake_index = AsyncMock()
     vector_io_adapter.cache["db1"] = fake_index
@@ -110,7 +102,6 @@ async def test_insert_chunks_calls_underlying_index(vector_io_adapter):
     fake_index.insert_chunks.assert_awaited_once_with(chunks)
 
 
-@pytest.mark.asyncio
 async def test_insert_chunks_missing_db_raises(vector_io_adapter):
     vector_io_adapter._get_and_cache_vector_db_index = AsyncMock(return_value=None)
 
@@ -118,7 +109,6 @@ async def test_insert_chunks_missing_db_raises(vector_io_adapter):
         await vector_io_adapter.insert_chunks("db_not_exist", [])
 
 
-@pytest.mark.asyncio
 async def test_query_chunks_calls_underlying_index_and_returns(vector_io_adapter):
     expected = QueryChunksResponse(chunks=[Chunk(content="c1")], scores=[0.1])
     fake_index = AsyncMock(query_chunks=AsyncMock(return_value=expected))
@@ -130,7 +120,6 @@ async def test_query_chunks_calls_underlying_index_and_returns(vector_io_adapter
     assert response is expected
 
 
-@pytest.mark.asyncio
 async def test_query_chunks_missing_db_raises(vector_io_adapter):
     vector_io_adapter._get_and_cache_vector_db_index = AsyncMock(return_value=None)
 
@@ -138,7 +127,6 @@ async def test_query_chunks_missing_db_raises(vector_io_adapter):
         await vector_io_adapter.query_chunks("db_missing", "q", None)
 
 
-@pytest.mark.asyncio
 async def test_save_openai_vector_store(vector_io_adapter):
     store_id = "vs_1234"
     openai_vector_store = {
@@ -155,7 +143,6 @@ async def test_save_openai_vector_store(vector_io_adapter):
     assert vector_io_adapter.openai_vector_stores[openai_vector_store["id"]] == openai_vector_store
 
 
-@pytest.mark.asyncio
 async def test_update_openai_vector_store(vector_io_adapter):
     store_id = "vs_1234"
     openai_vector_store = {
@@ -172,7 +159,6 @@ async def test_update_openai_vector_store(vector_io_adapter):
     assert vector_io_adapter.openai_vector_stores[openai_vector_store["id"]] == openai_vector_store
 
 
-@pytest.mark.asyncio
 async def test_delete_openai_vector_store(vector_io_adapter):
     store_id = "vs_1234"
     openai_vector_store = {
@@ -188,7 +174,6 @@ async def test_delete_openai_vector_store(vector_io_adapter):
     assert openai_vector_store["id"] not in vector_io_adapter.openai_vector_stores
 
 
-@pytest.mark.asyncio
 async def test_load_openai_vector_stores(vector_io_adapter):
     store_id = "vs_1234"
     openai_vector_store = {
@@ -204,7 +189,6 @@ async def test_load_openai_vector_stores(vector_io_adapter):
     assert loaded_stores[store_id] == openai_vector_store
 
 
-@pytest.mark.asyncio
 async def test_save_openai_vector_store_file(vector_io_adapter, tmp_path_factory):
     store_id = "vs_1234"
     file_id = "file_1234"
@@ -226,7 +210,6 @@ async def test_save_openai_vector_store_file(vector_io_adapter, tmp_path_factory
     await vector_io_adapter._save_openai_vector_store_file(store_id, file_id, file_info, file_contents)
 
 
-@pytest.mark.asyncio
 async def test_update_openai_vector_store_file(vector_io_adapter, tmp_path_factory):
     store_id = "vs_1234"
     file_id = "file_1234"
@@ -260,7 +243,6 @@ async def test_update_openai_vector_store_file(vector_io_adapter, tmp_path_facto
     assert loaded_contents != file_info
 
 
-@pytest.mark.asyncio
 async def test_load_openai_vector_store_file_contents(vector_io_adapter, tmp_path_factory):
     store_id = "vs_1234"
     file_id = "file_1234"
@@ -284,7 +266,6 @@ async def test_load_openai_vector_store_file_contents(vector_io_adapter, tmp_pat
     assert loaded_contents == file_contents
 
 
-@pytest.mark.asyncio
 async def test_delete_openai_vector_store_file_from_storage(vector_io_adapter, tmp_path_factory):
     store_id = "vs_1234"
     file_id = "file_1234"
