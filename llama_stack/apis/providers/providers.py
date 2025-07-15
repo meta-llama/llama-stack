@@ -7,6 +7,7 @@
 from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic_core import PydanticCustomError
 
 from llama_stack.providers.datatypes import HealthResponse
 from llama_stack.schema_utils import json_schema_type, webmethod
@@ -20,7 +21,7 @@ class ProviderInfo(BaseModel):
     config: dict[str, Any]
     health: HealthResponse
     metrics: str | None = Field(
-        default=None, description="endpoint for metrics from providers. Must be a valid HTTP URL if provided."
+        default=None, description="Endpoint for metrics from providers. Must be a valid HTTP URL if provided."
     )
 
     @field_validator("metrics")
@@ -29,9 +30,12 @@ class ProviderInfo(BaseModel):
         if v is None:
             return None
         if not isinstance(v, str):
-            raise ValueError("metrics must be a string URL or None")
-        HttpUrl(v)
-        return v
+            raise ValueError("'metrics' must be a string URL or None")
+        try:
+            HttpUrl(v)  # Validate the URL
+            return v
+        except (PydanticCustomError, ValueError) as e:
+            raise ValueError(f"'metrics' must be a valid HTTP or HTTPS URL: {str(e)}") from e
 
 
 class ListProvidersResponse(BaseModel):
