@@ -1340,6 +1340,7 @@ docs = [
     { name = "sphinx-autobuild" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
+    { name = "sphinx-reredirects" },
     { name = "sphinx-rtd-dark-mode" },
     { name = "sphinx-rtd-theme" },
     { name = "sphinx-tabs" },
@@ -1449,6 +1450,7 @@ docs = [
     { name = "sphinx-autobuild" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-design" },
+    { name = "sphinx-reredirects" },
     { name = "sphinx-rtd-dark-mode" },
     { name = "sphinx-rtd-theme" },
     { name = "sphinx-tabs" },
@@ -3127,6 +3129,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b6/a7/c9a7888bb2187fdb06955d71e75f6f266b7e179b356ac76138d160a5b7eb/sphinx_mdinclude-0.6.2.tar.gz", hash = "sha256:447462e82cb8be61404a2204227f920769eb923d2f57608e3325f3bb88286b4c", size = 65257, upload-time = "2024-08-03T19:07:37.643Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/42/3d/6b41fe1637cd53c4b10d56e0e6f396546f837973dabf9c4b2a1de44620ac/sphinx_mdinclude-0.6.2-py3-none-any.whl", hash = "sha256:648e78edb067c0e4bffc22943278d49d54a0714494743592032fa3ad82a86984", size = 16911, upload-time = "2024-08-03T19:07:30.406Z" },
+]
+
+[[package]]
+name = "sphinx-reredirects"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sphinx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/72/61/d3039bc2b688c73e81f515afe771b7cc9631dfef63b3e3ac3aab3d73c685/sphinx_reredirects-1.0.0.tar.gz", hash = "sha256:7c9bada9f1330489fcf4c7297a2d6da2a49ca4877d3f42d1388ae1de1019bf5c", size = 711970, upload-time = "2025-05-31T14:45:55.428Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/7f/adb886a3db417a2ccea6a13dcb4b88d08f82104aed17e347346f79480a5f/sphinx_reredirects-1.0.0-py3-none-any.whl", hash = "sha256:1d0102710a8f633c6c885f940f440f7195ada675c1739976f0135790747dea06", size = 6173, upload-time = "2025-05-31T14:45:53.014Z" },
 ]
 
 [[package]]

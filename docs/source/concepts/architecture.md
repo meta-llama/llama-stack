@@ -1,30 +1,38 @@
-# Why Llama Stack?
+## Llama Stack architecture
 
-Building production AI applications today requires solving multiple challenges:
-
-**Infrastructure Complexity**
-- Running large language models efficiently requires specialized infrastructure.
-- Different deployment scenarios (local development, cloud, edge) need different solutions.
-- Moving from development to production often requires significant rework.
-
-**Essential Capabilities**
-- Safety guardrails and content filtering are necessary in an enterprise setting.
-- Just model inference is not enough - Knowledge retrieval and RAG capabilities are required.
-- Nearly any application needs composable multi-step workflows.
-- Finally, without monitoring, observability and evaluation, you end up operating in the dark.
-
-**Lack of Flexibility and Choice**
-- Directly integrating with multiple providers creates tight coupling.
-- Different providers have different APIs and abstractions.
-- Changing providers requires significant code changes.
-
-
-### Our Solution: A Universal Stack
+Llama Stack allows you to build different layers of distributions for your AI workloads using various SDKs and API providers.
 
 ```{image} ../../_static/llama-stack.png
 :alt: Llama Stack
 :width: 400px
 ```
+
+### Benefits of Llama stack
+
+#### Current challenges in custom AI applications
+
+Building production AI applications today requires solving multiple challenges:
+
+Infrastructure Complexity
+
+- Running large language models efficiently requires specialized infrastructure.
+- Different deployment scenarios (local development, cloud, edge) need different solutions.
+- Moving from development to production often requires significant rework.
+
+**Essential Capabilities**
+
+- Safety guardrails and content filtering are necessary in an enterprise setting.
+- Just model inference is not enough - Knowledge retrieval and RAG capabilities are required.
+- Nearly any application needs composable multi-step workflows.
+- Without monitoring, observability and evaluation, you end up operating in the dark.
+
+**Lack of Flexibility and Choice**
+
+- Directly integrating with multiple providers creates tight coupling.
+- Different providers have different APIs and abstractions.
+- Changing providers requires significant code changes.
+
+#### Our Solution: A Universal Stack
 
 Llama Stack addresses these challenges through a service-oriented, API-first approach:
 
