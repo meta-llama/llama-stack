@@ -40,6 +40,8 @@ See [PGVector's documentation](https://github.com/pgvector/pgvector) for more de
 | `db` | `str \| None` | No | postgres |  |
 | `user` | `str \| None` | No | postgres |  |
 | `password` | `str \| None` | No | mysecretpassword |  |
+| `embedding_model` | `str \| None` | No |  | Optional default embedding model for this provider. If not specified, will use system default. |
+| `embedding_dimension` | `int \| None` | No |  | Optional embedding dimension override. Only needed for models with variable dimensions (e.g., Matryoshka embeddings). If not specified, will auto-lookup from model registry. |
 
 ## Sample Configuration
 

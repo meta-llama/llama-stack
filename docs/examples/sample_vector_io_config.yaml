@@ -1,0 +1,127 @@
+# Sample Vector IO Configuration with Embedding Model Defaults
+# This example demonstrates the new provider-level embedding configuration features
+
+# Image and version info
+version: 3
+image_name: my-embedding-app
+
+# APIs to serve
+apis:
+  - inference
+  - vector_io
+
+# Provider configurations
+providers:
+  # Inference provider for embedding models
+  inference:
+    - provider_id: local_inference
+      provider_type: inline::ollama
+      config:
+        url: http://localhost:11434
+
+  # Vector IO providers with embedding model defaults
+  vector_io:
+    # FAISS for fast local search with lightweight embeddings
+    - provider_id: fast_local_search
+      provider_type: inline::faiss
+      config:
+        kvstore:
+          provider_type: sqlite
+          config:
+            db_path: ~/.llama/distributions/my-app/faiss_store.db
+        # NEW: Default embedding model for this provider
+        embedding_model: "all-MiniLM-L6-v2"
+        # Dimension auto-lookup: 384 (from model registry)
+
+    # SQLite Vec for lightweight vector storage with Matryoshka embeddings
+    - provider_id: compact_storage
+      provider_type: inline::sqlite_vec
+      config:
+        db_path: ~/.llama/distributions/my-app/sqlite_vec.db
+        kvstore:
+          provider_type: sqlite
+          config:
+            db_name: sqlite_vec_registry.db
+        # Matryoshka embedding with custom dimension
+        embedding_model: "nomic-embed-text"
+        embedding_dimension: 256  # Reduced from default 768 for efficiency
+
+    # Chroma for persistent local storage
+    - provider_id: persistent_search
+      provider_type: inline::chroma
+      config:
+        db_path: ~/.llama/distributions/my-app/chroma.db
+        # High-quality embeddings for semantic search
+        embedding_model: "sentence-transformers/all-mpnet-base-v2"
+        # Auto-lookup dimension from model registry
+
+    # Qdrant Cloud for production-scale search (when available)
+    - provider_id: cloud_search
+      provider_type: remote::qdrant
+      config:
+        api_key: "${env.QDRANT_API_KEY}"
+        url: "${env.QDRANT_URL}"
+        # Production-grade embedding model
+        embedding_model: "text-embedding-3-small"
+        embedding_dimension: 512  # Custom dimension for performance
+
+# Model registry - ensure embedding models are properly configured
+models:
+  # Lightweight embedding model (384 dimensions)
+  - model_id: all-MiniLM-L6-v2
+    provider_id: local_inference
+    provider_model_id: sentence-transformers/all-MiniLM-L6-v2
+    model_type: embedding
+    metadata:
+      embedding_dimension: 384
+      description: "Fast, lightweight embeddings for general use"
+
+  # Matryoshka embedding model (variable dimensions)
+  - model_id: nomic-embed-text
+    provider_id: local_inference
+    provider_model_id: nomic-embed-text
+    model_type: embedding
+    metadata:
+      embedding_dimension: 768  # Default, can be overridden
+      description: "Flexible Matryoshka embeddings supporting variable dimensions"
+
+  # High-quality embedding model (768 dimensions)
+  - model_id: sentence-transformers/all-mpnet-base-v2
+    provider_id: local_inference
+    provider_model_id: sentence-transformers/all-mpnet-base-v2
+    model_type: embedding
+    metadata:
+      embedding_dimension: 768
+      description: "High-quality embeddings for semantic search"
+
+  # OpenAI embedding model (for cloud usage)
+  - model_id: text-embedding-3-small
+    provider_id: openai_inference  # Would need OpenAI provider configured
+    provider_model_id: text-embedding-3-small
+    model_type: embedding
+    metadata:
+      embedding_dimension: 1536  # Default OpenAI dimension
+      description: "OpenAI's efficient embedding model"
+
+# Optional: Configure specific vector databases (will use provider defaults)
+vector_dbs:
+  # Uses fast_local_search provider defaults (all-MiniLM-L6-v2, 384 dims)
+  - vector_db_id: general_docs
+    provider_id: fast_local_search
+
+  # Uses compact_storage provider defaults (nomic-embed-text, 256 dims)
+  - vector_db_id: compressed_knowledge
+    provider_id: compact_storage
+
+  # Uses persistent_search provider defaults (all-mpnet-base-v2, 768 dims)
+  - vector_db_id: semantic_library
+    provider_id: persistent_search
+
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 5000
+
+# Logging configuration
+logging:
+  level: INFO

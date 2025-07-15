@@ -6,7 +6,7 @@
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class WeaviateRequestProviderData(BaseModel):
@@ -15,6 +15,19 @@ class WeaviateRequestProviderData(BaseModel):
 
 
 class WeaviateVectorIOConfig(BaseModel):
+    embedding_model: str | None = Field(
+        default=None,
+        description="Optional default embedding model for this provider. If not specified, will use system default.",
+    )
+    embedding_dimension: int | None = Field(
+        default=None,
+        description="Optional embedding dimension override. Only needed for models with variable dimensions (e.g., Matryoshka embeddings). If not specified, will auto-lookup from model registry.",
+    )
+
     @classmethod
     def sample_run_config(cls, **kwargs: Any) -> dict[str, Any]:
-        return {}
+        return {
+            # Optional: Configure default embedding model for this provider
+            # "embedding_model": "all-MiniLM-L6-v2",
+            # "embedding_dimension": 384,  # Only needed for variable-dimension models
+        }

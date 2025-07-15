@@ -51,6 +51,8 @@ See the [Qdrant documentation](https://qdrant.tech/documentation/) for more deta
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `path` | `<class 'str'>` | No | PydanticUndefined |  |
+| `embedding_model` | `str \| None` | No |  | Optional default embedding model for this provider. If not specified, will use system default. |
+| `embedding_dimension` | `int \| None` | No |  | Optional embedding dimension override. Only needed for models with variable dimensions (e.g., Matryoshka embeddings). If not specified, will auto-lookup from model registry. |
 
 ## Sample Configuration
 
