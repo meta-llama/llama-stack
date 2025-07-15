@@ -217,6 +217,7 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         # Persist vector DB metadata in the KV store
+        assert self.kvstore is not None
         # Upsert model metadata in Postgres
         upsert_models(self.conn, [(vector_db.identifier, vector_db)])
 
