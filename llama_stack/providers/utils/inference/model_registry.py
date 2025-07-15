@@ -83,9 +83,37 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
     def get_llama_model(self, provider_model_id: str) -> str | None:
         return self.provider_id_to_llama_model_map.get(provider_model_id, None)
 
+    async def check_model_availability(self, model: str) -> bool:
+        """
+        Check if a specific model is available from the provider (non-static check).
+
+        This is for subclassing purposes, so providers can check if a specific
+        model is currently available for use through dynamic means (e.g., API calls).
+
+        This method should NOT check statically configured model entries in
+        `self.alias_to_provider_id_map` - that is handled separately in register_model.
+
+        Default implementation returns False (no dynamic models available).
+
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
+        """
+        return False
+
     async def register_model(self, model: Model) -> Model:
-        if not (supported_model_id := self.get_provider_model_id(model.provider_resource_id)):
-            raise UnsupportedModelError(model.provider_resource_id, self.alias_to_provider_id_map.keys())
+        # Check if model is supported in static configuration
+        supported_model_id = self.get_provider_model_id(model.provider_resource_id)
+
+        # If not found in static config, check if it's available dynamically from provider
+        if not supported_model_id:
+            if await self.check_model_availability(model.provider_resource_id):
+                supported_model_id = model.provider_resource_id
+            else:
+                # note: we cannot provide a complete list of supported models without
+                #       getting a complete list from the provider, so we return "..."
+                all_supported_models = [*self.alias_to_provider_id_map.keys(), "..."]
+                raise UnsupportedModelError(model.provider_resource_id, all_supported_models)
+
         provider_resource_id = self.get_provider_model_id(model.model_id)
         if model.model_type == ModelType.embedding:
             # embedding models are always registered by their provider model id and does not need to be mapped to a llama model
@@ -114,6 +142,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                         ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR[llama_model]
                     )
 
+        # Register the model alias, ensuring it maps to the correct provider model id
         self.alias_to_provider_id_map[model.model_id] = supported_model_id
 
         return model

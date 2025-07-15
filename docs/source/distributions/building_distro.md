@@ -145,6 +145,10 @@ $ llama stack build --template starter
 ...
 You can now edit ~/.llama/distributions/llamastack-starter/starter-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-starter/starter-run.yaml`
 ```
+
+```{tip}
+The generated `run.yaml` file is a starting point for your configuration. For comprehensive guidance on customizing it for your specific needs, infrastructure, and deployment scenarios, see [Customizing Your run.yaml Configuration](customizing_run_yaml.md).
+```
 :::
 :::{tab-item} Building from Scratch
 
