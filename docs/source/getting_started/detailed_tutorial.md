@@ -77,7 +77,7 @@ ENABLE_OLLAMA=ollama INFERENCE_MODEL="llama3.2:3b" llama stack build --template 
 You can use a container image to run the Llama Stack server. We provide several container images for the server
 component that works with different inference providers out of the box. For this guide, we will use
 `llamastack/distribution-starter` as the container image. If you'd like to build your own image or customize the
-configurations, please check out [this guide](../references/index.md).
+configurations, please check out [this guide](../distributions/building_distro.md).
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
 export INFERENCE_MODEL="llama3.2:3b"
