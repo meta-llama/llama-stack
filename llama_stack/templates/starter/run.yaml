@@ -6,7 +6,6 @@ apis:
 - eval
 - files
 - inference
-- post_training
 - safety
 - scoring
 - telemetry
@@ -200,13 +199,6 @@ providers:
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/trace_store.db
       otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
-  post_training:
-  - provider_id: huggingface
-    provider_type: inline::huggingface
-    config:
-      checkpoint_format: huggingface
-      distributed_backend: null
-      device: cpu
   eval:
   - provider_id: meta-reference
     provider_type: inline::meta-reference

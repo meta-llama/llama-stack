@@ -19,7 +19,6 @@ from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplCo
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.providers.inline.post_training.huggingface import HuggingFacePostTrainingConfig
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.milvus.config import (
     MilvusVectorIOConfig,
@@ -256,7 +255,6 @@ def get_distribution_template() -> DistributionTemplate:
         "safety": ["inline::llama-guard"],
         "agents": ["inline::meta-reference"],
         "telemetry": ["inline::meta-reference"],
-        "post_training": ["inline::huggingface"],
         "eval": ["inline::meta-reference"],
         "datasetio": ["remote::huggingface", "inline::localfs"],
         "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
@@ -276,11 +274,6 @@ def get_distribution_template() -> DistributionTemplate:
         provider_id="${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}",
         provider_type="inline::sentence-transformers",
         config=SentenceTransformersInferenceConfig.sample_run_config(),
-    )
-    post_training_provider = Provider(
-        provider_id="huggingface",
-        provider_type="inline::huggingface",
-        config=HuggingFacePostTrainingConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )
     default_tool_groups = [
         ToolGroupInput(
@@ -321,7 +314,6 @@ def get_distribution_template() -> DistributionTemplate:
                     "inference": remote_inference_providers + [embedding_provider],
                     "vector_io": vector_io_providers,
                     "files": [files_provider],
-                    "post_training": [post_training_provider],
                 },
                 default_models=default_models + [embedding_model],
                 default_tool_groups=default_tool_groups,

@@ -42,8 +42,6 @@ distribution_spec:
     - inline::meta-reference
     telemetry:
     - inline::meta-reference
-    post_training:
-    - inline::huggingface
     eval:
     - inline::meta-reference
     datasetio:
