@@ -31,7 +31,7 @@ class LlamaCppImplConfig(BaseModel):
     )
 
     @classmethod
-    def sample_run_config(cls, api_key: str = "${env.LLAMACPP_API_KEY:=}") -> dict[str, Any]:
+    def sample_run_config(cls, api_key: str = "${env.LLAMACPP_API_KEY:=}", **kwargs) -> dict[str, Any]:
         return {
             "openai_compat_api_base": "${env.LLAMACPP_URL:=http://localhost:8080}",
             "api_key": api_key,
