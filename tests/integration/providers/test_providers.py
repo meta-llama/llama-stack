@@ -20,7 +20,6 @@ class TestProviders:
             provider = llama_stack_client.providers.retrieve(pid)
             assert provider is not None
 
-    @pytest.mark.asyncio
     def test_providers_metrics_field(self, llama_stack_client: LlamaStackAsLibraryClient | LlamaStackClient):
         """Test metrics field is in provider responses."""
         provider_list = llama_stack_client.providers.list()
