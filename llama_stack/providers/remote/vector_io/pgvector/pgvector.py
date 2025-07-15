@@ -273,16 +273,105 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
     async def _save_openai_vector_store_file(
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
     ) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
+        """Save vector store file metadata to Postgres database."""
+        if self.conn is None:
+            raise RuntimeError("PostgreSQL connection is not initialized")
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files (
+                        store_id TEXT,
+                        file_id TEXT,
+                        metadata JSONB,
+                        PRIMARY KEY (store_id, file_id)
+                    )
+                    """
+                )
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS openai_vector_store_files_contents (
+                        store_id TEXT,
+                        file_id TEXT,
+                        contents JSONB,
+                        PRIMARY KEY (store_id, file_id)
+                    )
+                    """
+                )
+                cur.execute(
+                    "INSERT INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (%s, %s, %s)"
+                    " ON CONFLICT (store_id, file_id) DO UPDATE SET metadata = EXCLUDED.metadata",
+                    (store_id, file_id, Json(file_info)),
+                )
+                cur.execute(
+                    "INSERT INTO openai_vector_store_files_contents (store_id, file_id, contents) VALUES (%s, %s, %s)"
+                    " ON CONFLICT (store_id, file_id) DO UPDATE SET contents = EXCLUDED.contents",
+                    (store_id, file_id, Json(file_contents)),
+                )
+        except Exception as e:
+            log.error(f"Error saving openai vector store file {file_id} for store {store_id}: {e}")
+            raise
 
     async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
+        """Load vector store file metadata from Postgres database."""
+        if self.conn is None:
+            raise RuntimeError("PostgreSQL connection is not initialized")
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "SELECT metadata FROM openai_vector_store_files WHERE store_id = %s AND file_id = %s",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                return row[0] if row and row[0] is not None else {}
+        except Exception as e:
+            log.error(f"Error loading openai vector store file {file_id} for store {store_id}: {e}")
+            return {}
 
     async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
+        """Load vector store file contents from Postgres database."""
+        if self.conn is None:
+            raise RuntimeError("PostgreSQL connection is not initialized")
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "SELECT contents FROM openai_vector_store_files_contents WHERE store_id = %s AND file_id = %s",
+                    (store_id, file_id),
+                )
+                row = cur.fetchone()
+                return row[0] if row and row[0] is not None else []
+        except Exception as e:
+            log.error(f"Error loading openai vector store file contents for {file_id} in store {store_id}: {e}")
+            return []
 
     async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
+        """Update vector store file metadata in Postgres database."""
+        if self.conn is None:
+            raise RuntimeError("PostgreSQL connection is not initialized")
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE openai_vector_store_files SET metadata = %s WHERE store_id = %s AND file_id = %s",
+                    (Json(file_info), store_id, file_id),
+                )
+        except Exception as e:
+            log.error(f"Error updating openai vector store file {file_id} for store {store_id}: {e}")
+            raise
 
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in PGVector")
+        """Delete vector store file metadata from Postgres database."""
+        if self.conn is None:
+            raise RuntimeError("PostgreSQL connection is not initialized")
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM openai_vector_store_files WHERE store_id = %s AND file_id = %s",
+                    (store_id, file_id),
+                )
+                cur.execute(
+                    "DELETE FROM openai_vector_store_files_contents WHERE store_id = %s AND file_id = %s",
+                    (store_id, file_id),
+                )
+        except Exception as e:
+            log.error(f"Error deleting openai vector store file {file_id} for store {store_id}: {e}")
+            raise
