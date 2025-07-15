@@ -26,13 +26,13 @@ class LlamaCppImplConfig(BaseModel):
     )
 
     openai_compat_api_base: str = Field(
-        default="http://localhost:8080/v1",
+        default="http://localhost:8080",
         description="The URL for the llama.cpp server with OpenAI-compatible API",
     )
 
     @classmethod
     def sample_run_config(cls, api_key: str = "${env.LLAMACPP_API_KEY:=}") -> dict[str, Any]:
         return {
-            "openai_compat_api_base": "${env.LLAMACPP_URL:http://localhost:8080}/v1",
+            "openai_compat_api_base": "${env.LLAMACPP_URL:=http://localhost:8080}",
             "api_key": api_key,
         }

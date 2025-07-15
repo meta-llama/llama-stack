@@ -133,7 +133,7 @@ providers:
   - provider_id: ${env.ENABLE_LLAMACPP:=__disabled__}
     provider_type: remote::llamacpp
     config:
-      openai_compat_api_base: ${env.LLAMACPP_URL:http://localhost:8080}/v1
+      openai_compat_api_base: ${env.LLAMACPP_URL:=http://localhost:8080}
       api_key: ${env.LLAMACPP_API_KEY:=}
   - provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
     provider_type: inline::sentence-transformers
