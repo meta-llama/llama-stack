@@ -1,6 +1,9 @@
 # Llama Stack with llama.cpp
 
-This template shows you how to run Llama Stack with [llama.cpp](https://github.com/ggerganov/llama.cpp) as the inference provider.
+This template demonstrates how to utilize Llama Stack with [llama.cpp](https://github.com/ggerganov/llama.cpp) as the inference provider. \n
+Previously, the use of quantized models with Llama Stack was restricted, but now it is fully supported through llama.cpp. \n
+You can employ any .gguf models available on [Hugging Face](https://huggingface.co/models) with this template.
+
 
 ## Prerequisites
 
@@ -13,7 +16,7 @@ Before running Llama Stack, you need to start the llama.cpp server:
 
 ```bash
 # Example: Start llama.cpp server with a model
-./llama-server -m /path/to/your/YOUR_MODEL.gguf -c 4096 --host 0.0.0.0 --port 8080 --api-key YOUR_API_KEY --jinja -cb
+./llama-server -m /path/to/your/YOUR_MODEL.gguf -c 4096 --host 0.0.0.0 --port 8080 --api-key YOUR_API_KEY --jinja -cb --alias llama-model
 ```
 
 Common llama.cpp server options:
@@ -24,6 +27,10 @@ Common llama.cpp server options:
 - `--port`: Port to bind to (default: 8080)
 - `-ngl`: Number of layers to offload to GPU
 - `--chat-template`: Chat template to use
+- `--api-key`: API key to use for authentication
+- `--alias`: Alias name for the model
+- `--jinja`: Enable jinja template support for tool calling in llama-stack
+- `--cb`: Enable continuous batching to improve throughput
 
 ## Environment Variables
 
@@ -31,7 +38,7 @@ Set these environment variables before running Llama Stack:
 
 ```bash
 export LLAMACPP_URL=http://localhost:8080  # URL of your llama.cpp server (without /v1 suffix)
-export INFERENCE_MODEL=your-model-name     # Name/identifier without gguf extension
+export INFERENCE_MODEL=llama-model         # Use aliased Name/identifier
 export LLAMACPP_API_KEY="YOUR_API_KEY"     # API key (leave empty for local servers)
 ```
 
