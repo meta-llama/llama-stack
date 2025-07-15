@@ -28,3 +28,4 @@ pytest-report.xml
 .python-version
 CLAUDE.md
 .claude/
+.worktrees/
