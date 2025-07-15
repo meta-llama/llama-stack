@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       test-all-client-versions:
-        description: 'Test against all client versions'
+        description: 'Test against both the latest and published versions'
         type: boolean
         default: false
 
