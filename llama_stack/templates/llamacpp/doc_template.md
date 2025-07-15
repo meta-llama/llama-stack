@@ -1,7 +1,8 @@
 # Llama Stack with llama.cpp
 
-This template demonstrates how to utilize Llama Stack with [llama.cpp](https://github.com/ggerganov/llama.cpp) as the inference provider. \n
-Previously, the use of quantized models with Llama Stack was restricted, but now it is fully supported through llama.cpp. \n
+This template demonstrates how to utilize Llama Stack with [llama.cpp](https://github.com/ggerganov/llama.cpp) as the inference provider.
+
+Previously, the use of quantized models with Llama Stack was restricted, but now it is fully supported through llama.cpp.
 You can employ any .gguf models available on [Hugging Face](https://huggingface.co/models) with this template.
 
 
