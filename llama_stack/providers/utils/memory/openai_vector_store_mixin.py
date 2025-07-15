@@ -148,8 +148,8 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreObject:
         """Creates a vector store."""
         created_at = int(time.time())
-        if provider_vector_db_id is None:
-            provider_vector_db_id = f"vs_{uuid.uuid4()}"
+        # Derive the canonical vector_db_id (allow override, else generate)
+        vector_db_id = provider_vector_db_id or f"vs_{uuid.uuid4()}"
 
         if provider_id is None:
             raise ValueError("Provider ID is required")
@@ -157,19 +157,19 @@ class OpenAIVectorStoreMixin(ABC):
         if embedding_model is None:
             raise ValueError("Embedding model is required")
 
-        # Use provided embedding dimension or default to 384
+        # Embedding dimension is required (defaulted to 384 if not provided)
         if embedding_dimension is None:
             raise ValueError("Embedding dimension is required")
 
+        # Register the VectorDB backing this vector store
         vector_db = VectorDB(
-            identifier=provider_vector_db_id,
+            identifier=vector_db_id,
             embedding_dimension=embedding_dimension,
             embedding_model=embedding_model,
             provider_id=provider_id,
-            provider_resource_id=provider_vector_db_id,
+            provider_resource_id=vector_db_id,
             vector_db_name=name,
         )
-        # Register the vector DB
         await self.register_vector_db(vector_db)
 
         # Create OpenAI vector store metadata
@@ -184,7 +184,7 @@ class OpenAIVectorStoreMixin(ABC):
             total=0,
         )
         store_info: dict[str, Any] = {
-            "id": provider_vector_db_id,
+            "id": vector_db_id,
             "object": "vector_store",
             "created_at": created_at,
             "name": name,
@@ -207,18 +207,18 @@ class OpenAIVectorStoreMixin(ABC):
         store_info["metadata"] = metadata
 
         # Save to persistent storage (provider-specific)
-        await self._save_openai_vector_store(provider_vector_db_id, store_info)
+        await self._save_openai_vector_store(vector_db_id, store_info)
 
         # Store in memory cache
-        self.openai_vector_stores[provider_vector_db_id] = store_info
+        self.openai_vector_stores[vector_db_id] = store_info
 
         # Now that our vector store is created, attach any files that were provided
         file_ids = file_ids or []
-        tasks = [self.openai_attach_file_to_vector_store(provider_vector_db_id, file_id) for file_id in file_ids]
+        tasks = [self.openai_attach_file_to_vector_store(vector_db_id, file_id) for file_id in file_ids]
         await asyncio.gather(*tasks)
 
         # Get the updated store info and return it
-        store_info = self.openai_vector_stores[provider_vector_db_id]
+        store_info = self.openai_vector_stores[vector_db_id]
         return VectorStoreObject.model_validate(store_info)
 
     async def openai_list_vector_stores(

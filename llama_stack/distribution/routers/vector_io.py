@@ -126,7 +126,6 @@ class VectorIORouter(VectorIO):
         embedding_model: str | None = None,
         embedding_dimension: int | None = None,
         provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         logger.debug(f"VectorIORouter.openai_create_vector_store: name={name}, provider_id={provider_id}")
 
@@ -144,7 +143,7 @@ class VectorIORouter(VectorIO):
             embedding_model,
             embedding_dimension,
             provider_id,
-            provider_vector_db_id,
+            vector_db_id,
             name,
         )
         return await self.routing_table.get_provider_impl(registered_vector_db.identifier).openai_create_vector_store(
