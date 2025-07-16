@@ -13,7 +13,7 @@ Llama Stack allows you to build different layers of distributions for your AI wo
 
 Building production AI applications today requires solving multiple challenges:
 
-Infrastructure Complexity
+**Infrastructure Complexity**
 
 - Running large language models efficiently requires specialized infrastructure.
 - Different deployment scenarios (local development, cloud, edge) need different solutions.
