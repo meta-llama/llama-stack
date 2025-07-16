@@ -123,6 +123,7 @@ class TestVectorStore:
         content = await content_from_doc(doc)
         assert content in DUMMY_PDF_TEXT_CHOICES
 
+    @pytest.mark.allow_network
     async def test_downloads_pdf_and_returns_content(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
@@ -135,6 +136,7 @@ class TestVectorStore:
         content = await content_from_doc(doc)
         assert content in DUMMY_PDF_TEXT_CHOICES
 
+    @pytest.mark.allow_network
     async def test_downloads_pdf_and_returns_content_with_url_object(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"

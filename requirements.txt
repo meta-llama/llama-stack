@@ -13,6 +13,7 @@ annotated-types==0.7.0
 anyio==4.8.0
     # via
     #   httpx
+    #   llama-api-client
     #   llama-stack-client
     #   openai
     #   starlette
@@ -49,6 +50,7 @@ deprecated==1.2.18
     #   opentelemetry-semantic-conventions
 distro==1.9.0
     # via
+    #   llama-api-client
     #   llama-stack-client
     #   openai
 ecdsa==0.19.1
@@ -80,6 +82,7 @@ httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via
+    #   llama-api-client
     #   llama-stack
     #   llama-stack-client
     #   openai
@@ -101,7 +104,9 @@ jsonschema==4.23.0
     # via llama-stack
 jsonschema-specifications==2024.10.1
     # via jsonschema
-llama-stack-client==0.2.14
+llama-api-client==0.1.2
+    # via llama-stack
+llama-stack-client==0.2.15
     # via llama-stack
 markdown-it-py==3.0.0
     # via rich
@@ -165,6 +170,7 @@ pycparser==2.22 ; platform_python_implementation != 'PyPy'
 pydantic==2.10.6
     # via
     #   fastapi
+    #   llama-api-client
     #   llama-stack
     #   llama-stack-client
     #   openai
@@ -215,6 +221,7 @@ six==1.17.0
 sniffio==1.3.1
     # via
     #   anyio
+    #   llama-api-client
     #   llama-stack-client
     #   openai
 starlette==0.45.3
@@ -239,6 +246,7 @@ typing-extensions==4.12.2
     #   anyio
     #   fastapi
     #   huggingface-hub
+    #   llama-api-client
     #   llama-stack-client
     #   openai
     #   opentelemetry-sdk

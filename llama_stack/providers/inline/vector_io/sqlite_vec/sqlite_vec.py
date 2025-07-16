@@ -7,6 +7,7 @@
 import asyncio
 import json
 import logging
+import re
 import sqlite3
 import struct
 from typing import Any
@@ -117,6 +118,10 @@ def _rrf_rerank(
     return rrf_scores
 
 
+def _make_sql_identifier(name: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_]", "_", name)
+
+
 class SQLiteVecIndex(EmbeddingIndex):
     """
     An index implementation that stores embeddings in a SQLite virtual table using sqlite-vec.
@@ -130,9 +135,9 @@ class SQLiteVecIndex(EmbeddingIndex):
         self.dimension = dimension
         self.db_path = db_path
         self.bank_id = bank_id
-        self.metadata_table = f"chunks_{bank_id}".replace("-", "_")
-        self.vector_table = f"vec_chunks_{bank_id}".replace("-", "_")
-        self.fts_table = f"fts_chunks_{bank_id}".replace("-", "_")
+        self.metadata_table = _make_sql_identifier(f"chunks_{bank_id}")
+        self.vector_table = _make_sql_identifier(f"vec_chunks_{bank_id}")
+        self.fts_table = _make_sql_identifier(f"fts_chunks_{bank_id}")
         self.kvstore = kvstore
 
     @classmethod
@@ -148,14 +153,14 @@ class SQLiteVecIndex(EmbeddingIndex):
             try:
                 # Create the table to store chunk metadata.
                 cur.execute(f"""
-                    CREATE TABLE IF NOT EXISTS {self.metadata_table} (
+                    CREATE TABLE IF NOT EXISTS [{self.metadata_table}] (
                         id TEXT PRIMARY KEY,
                         chunk TEXT
                     );
                 """)
                 # Create the virtual table for embeddings.
                 cur.execute(f"""
-                    CREATE VIRTUAL TABLE IF NOT EXISTS {self.vector_table}
+                    CREATE VIRTUAL TABLE IF NOT EXISTS [{self.vector_table}]
                     USING vec0(embedding FLOAT[{self.dimension}], id TEXT);
                 """)
                 connection.commit()
@@ -163,7 +168,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                 # based on query. Implementation of the change on client side will allow passing the search_mode option
                 # during initialization to make it easier to create the table that is required.
                 cur.execute(f"""
-                            CREATE VIRTUAL TABLE IF NOT EXISTS {self.fts_table}
+                            CREATE VIRTUAL TABLE IF NOT EXISTS [{self.fts_table}]
                             USING fts5(id, content);
                         """)
                 connection.commit()
@@ -178,9 +183,9 @@ class SQLiteVecIndex(EmbeddingIndex):
             connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
             try:
-                cur.execute(f"DROP TABLE IF EXISTS {self.metadata_table};")
-                cur.execute(f"DROP TABLE IF EXISTS {self.vector_table};")
-                cur.execute(f"DROP TABLE IF EXISTS {self.fts_table};")
+                cur.execute(f"DROP TABLE IF EXISTS [{self.metadata_table}];")
+                cur.execute(f"DROP TABLE IF EXISTS [{self.vector_table}];")
+                cur.execute(f"DROP TABLE IF EXISTS [{self.fts_table}];")
                 connection.commit()
             finally:
                 cur.close()
@@ -212,7 +217,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                     metadata_data = [(chunk.chunk_id, chunk.model_dump_json()) for chunk in batch_chunks]
                     cur.executemany(
                         f"""
-                        INSERT INTO {self.metadata_table} (id, chunk)
+                        INSERT INTO [{self.metadata_table}] (id, chunk)
                         VALUES (?, ?)
                         ON CONFLICT(id) DO UPDATE SET chunk = excluded.chunk;
                         """,
@@ -230,7 +235,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                         for chunk, emb in zip(batch_chunks, batch_embeddings, strict=True)
                     ]
                     cur.executemany(
-                        f"INSERT INTO {self.vector_table} (id, embedding) VALUES (?, ?);",
+                        f"INSERT INTO [{self.vector_table}] (id, embedding) VALUES (?, ?);",
                         embedding_data,
                     )
 
@@ -238,13 +243,13 @@ class SQLiteVecIndex(EmbeddingIndex):
                     fts_data = [(chunk.chunk_id, chunk.content) for chunk in batch_chunks]
                     # DELETE existing entries with same IDs (FTS5 doesn't support ON CONFLICT)
                     cur.executemany(
-                        f"DELETE FROM {self.fts_table} WHERE id = ?;",
+                        f"DELETE FROM [{self.fts_table}] WHERE id = ?;",
                         [(row[0],) for row in fts_data],
                     )
 
                     # INSERT new entries
                     cur.executemany(
-                        f"INSERT INTO {self.fts_table} (id, content) VALUES (?, ?);",
+                        f"INSERT INTO [{self.fts_table}] (id, content) VALUES (?, ?);",
                         fts_data,
                     )
 
@@ -280,8 +285,8 @@ class SQLiteVecIndex(EmbeddingIndex):
                 emb_blob = serialize_vector(emb_list)
                 query_sql = f"""
                     SELECT m.id, m.chunk, v.distance
-                    FROM {self.vector_table} AS v
-                    JOIN {self.metadata_table} AS m ON m.id = v.id
+                    FROM [{self.vector_table}] AS v
+                    JOIN [{self.metadata_table}] AS m ON m.id = v.id
                     WHERE v.embedding MATCH ? AND k = ?
                     ORDER BY v.distance;
                 """
@@ -322,9 +327,9 @@ class SQLiteVecIndex(EmbeddingIndex):
             cur = connection.cursor()
             try:
                 query_sql = f"""
-                    SELECT DISTINCT m.id, m.chunk, bm25({self.fts_table}) AS score
-                    FROM {self.fts_table} AS f
-                    JOIN {self.metadata_table} AS m ON m.id = f.id
+                    SELECT DISTINCT m.id, m.chunk, bm25([{self.fts_table}]) AS score
+                    FROM [{self.fts_table}] AS f
+                    JOIN [{self.metadata_table}] AS m ON m.id = f.id
                     WHERE f.content MATCH ?
                     ORDER BY score ASC
                     LIMIT ?;
@@ -452,8 +457,8 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
             )
             self.cache[vector_db.identifier] = VectorDBWithIndex(vector_db, index, self.inference_api)
 
-        # load any existing OpenAI vector stores
-        self.openai_vector_stores = await self._load_openai_vector_stores()
+        # Load existing OpenAI vector stores into the in-memory cache
+        await self.initialize_openai_vector_stores()
 
     async def shutdown(self) -> None:
         # nothing to do since we don't maintain a persistent connection
@@ -500,41 +505,6 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
             return
         await self.cache[vector_db_id].index.delete()
         del self.cache[vector_db_id]
-
-    # OpenAI Vector Store Mixin abstract method implementations
-    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Save vector store metadata to SQLite database."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.set(key=key, value=json.dumps(store_info))
-        self.openai_vector_stores[store_id] = store_info
-
-    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
-        """Load all vector store metadata from SQLite database."""
-        assert self.kvstore is not None
-        start_key = OPENAI_VECTOR_STORES_PREFIX
-        end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
-        stored_openai_stores = await self.kvstore.values_in_range(start_key, end_key)
-        stores = {}
-        for store_data in stored_openai_stores:
-            store_info = json.loads(store_data)
-            stores[store_info["id"]] = store_info
-        return stores
-
-    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Update vector store metadata in SQLite database."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.set(key=key, value=json.dumps(store_info))
-        self.openai_vector_stores[store_id] = store_info
-
-    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
-        """Delete vector store metadata from SQLite database."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.delete(key)
-        if store_id in self.openai_vector_stores:
-            del self.openai_vector_stores[store_id]
 
     async def _save_openai_vector_store_file(
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]

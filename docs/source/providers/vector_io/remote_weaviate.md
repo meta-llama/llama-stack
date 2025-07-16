@@ -36,7 +36,9 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 ## Sample Configuration
 
 ```yaml
-{}
+kvstore:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/weaviate_registry.db
 
 ```
 
