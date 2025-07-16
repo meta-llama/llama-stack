@@ -9,7 +9,7 @@ import warnings
 from collections.abc import AsyncIterator
 from typing import Any
 
-from openai import APIConnectionError, AsyncOpenAI, BadRequestError
+from openai import APIConnectionError, AsyncOpenAI, BadRequestError, NotFoundError
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -89,13 +89,20 @@ class NVIDIAInferenceAdapter(Inference, ModelRegistryHelper):
         self._config = config
 
     async def check_model_availability(self, model: str) -> bool:
-        """Check if a specific model is available from the NVIDIA API."""
+        """
+        Check if a specific model is available.
+
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
+        """
         try:
-            await self._get_client().models.retrieve(model)
+            await self._client.models.retrieve(model)
             return True
-        except Exception:
-            # If we can't retrieve the model, it's not available
-            return False
+        except NotFoundError:
+            logger.error(f"Model {model} is not available")
+        except Exception as e:
+            logger.error(f"Failed to check model availability: {e}")
+        return False
 
     @property
     def _client(self) -> AsyncOpenAI:
