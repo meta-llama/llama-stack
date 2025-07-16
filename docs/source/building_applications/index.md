@@ -1,4 +1,4 @@
-# Building AI Applications (Examples)
+# AI Application Examples
 
 Llama Stack provides all the building blocks needed to create sophisticated AI applications.
 
@@ -27,4 +27,5 @@ tools
 evals
 telemetry
 safety
+playground/index
 ```

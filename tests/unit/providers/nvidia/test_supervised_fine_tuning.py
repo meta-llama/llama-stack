@@ -54,7 +54,8 @@ class TestNvidiaPostTraining(unittest.TestCase):
         self.mock_client.chat.completions.create = unittest.mock.AsyncMock()
         self.inference_mock_make_request = self.mock_client.chat.completions.create
         self.inference_make_request_patcher = patch(
-            "llama_stack.providers.remote.inference.nvidia.nvidia.NVIDIAInferenceAdapter._get_client",
+            "llama_stack.providers.remote.inference.nvidia.nvidia.NVIDIAInferenceAdapter._client",
+            new_callable=unittest.mock.PropertyMock,
             return_value=self.mock_client,
         )
         self.inference_make_request_patcher.start()

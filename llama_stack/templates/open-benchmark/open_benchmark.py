@@ -128,6 +128,7 @@ def get_distribution_template() -> DistributionTemplate:
             provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}",
                 db="${env.PGVECTOR_DB:=}",
                 user="${env.PGVECTOR_USER:=}",
                 password="${env.PGVECTOR_PASSWORD:=}",
@@ -146,7 +147,8 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models) + [
+    models, _ = get_model_registry(available_models)
+    default_models = models + [
         ModelInput(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
             provider_id="groq",

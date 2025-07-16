@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from llama_stack.providers.utils.kvstore.config import KVStoreConfig
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.schema_utils import json_schema_type
 
 
@@ -17,7 +17,7 @@ class MilvusVectorIOConfig(BaseModel):
     uri: str = Field(description="The URI of the Milvus server")
     token: str | None = Field(description="The token of the Milvus server")
     consistency_level: str = Field(description="The consistency level of the Milvus server", default="Strong")
-    kvstore: KVStoreConfig | None = Field(description="Config for KV store backend (SQLite only for now)", default=None)
+    kvstore: KVStoreConfig = Field(description="Config for KV store backend")
     embedding_model: str | None = Field(
         default=None,
         description="Optional default embedding model for this provider. If not specified, will use system default.",
@@ -36,6 +36,10 @@ class MilvusVectorIOConfig(BaseModel):
         return {
             "uri": "${env.MILVUS_ENDPOINT}",
             "token": "${env.MILVUS_TOKEN}",
+            "kvstore": SqliteKVStoreConfig.sample_run_config(
+                __distro_dir__=__distro_dir__,
+                db_name="milvus_remote_registry.db",
+            ),
             # Optional: Configure default embedding model for this provider
             # "embedding_model": "all-MiniLM-L6-v2",
             # "embedding_dimension": 384,  # Only needed for variable-dimension models
