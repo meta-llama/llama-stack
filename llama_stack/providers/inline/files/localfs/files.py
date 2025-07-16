@@ -51,6 +51,9 @@ class LocalfsFilesImpl(Files):
             },
         )
 
+    async def shutdown(self) -> None:
+        pass
+
     def _generate_file_id(self) -> str:
         """Generate a unique file ID for OpenAI API."""
         return f"file-{uuid.uuid4().hex}"

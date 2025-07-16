@@ -112,7 +112,7 @@ uv run pre-commit run --all-files
 
 ## Running tests
 
-You can find the Llama Stack testing documentation here [here](tests/README.md).
+You can find the Llama Stack testing documentation [here](https://github.com/meta-llama/llama-stack/blob/main/tests/README.md).
 
 ## Adding a new dependency to the project
 

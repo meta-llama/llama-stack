@@ -8,7 +8,7 @@ import logging
 from collections.abc import AsyncIterator
 from typing import Any
 
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, NotFoundError
 
 from llama_stack.apis.inference import (
     OpenAIChatCompletion,
@@ -59,6 +59,27 @@ class OpenAIInferenceAdapter(LiteLLMOpenAIMixin):
         # if we do not set this, users will be exposed to the
         # litellm specific model names, an abstraction leak.
         self.is_openai_compat = True
+
+    async def check_model_availability(self, model: str) -> bool:
+        """
+        Check if a specific model is available from OpenAI.
+
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
+        """
+        try:
+            openai_client = self._get_openai_client()
+            retrieved_model = await openai_client.models.retrieve(model)
+            logger.info(f"Model {retrieved_model.id} is available from OpenAI")
+            return True
+
+        except NotFoundError:
+            logger.error(f"Model {model} is not available from OpenAI")
+            return False
+
+        except Exception as e:
+            logger.error(f"Failed to check model availability from OpenAI: {e}")
+            return False
 
     async def initialize(self) -> None:
         await super().initialize()

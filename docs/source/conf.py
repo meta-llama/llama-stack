@@ -52,7 +52,18 @@ extensions = [
     "sphinxcontrib.redoc",
     "sphinxcontrib.mermaid",
     "sphinxcontrib.video",
+    "sphinx_reredirects"
 ]
+
+redirects = {
+    "providers/post_training/index": "../../advanced_apis/post_training/index.html",
+    "providers/eval/index": "../../advanced_apis/eval/index.html",
+    "providers/scoring/index": "../../advanced_apis/scoring/index.html",
+    "playground/index": "../../building_applications/playground/index.html",
+    "openai/index": "../../providers/index.html#openai-api-compatibility",
+    "introduction/index": "../concepts/index.html#llama-stack-architecture"
+}
+
 myst_enable_extensions = ["colon_fence"]
 
 html_theme = "sphinx_rtd_theme"

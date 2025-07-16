@@ -19,6 +19,7 @@ class VectorDB(Resource):
 
     embedding_model: str
     embedding_dimension: int
+    vector_db_name: str | None = None
 
     @property
     def vector_db_id(self) -> str:
@@ -70,6 +71,7 @@ class VectorDBs(Protocol):
         embedding_model: str,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
+        vector_db_name: str | None = None,
         provider_vector_db_id: str | None = None,
     ) -> VectorDB:
         """Register a vector database.
@@ -78,6 +80,7 @@ class VectorDBs(Protocol):
         :param embedding_model: The embedding model to use.
         :param embedding_dimension: The dimension of the embedding model.
         :param provider_id: The identifier of the provider.
+        :param vector_db_name: The name of the vector database.
         :param provider_vector_db_id: The identifier of the vector database in the provider.
         :returns: A VectorDB.
         """

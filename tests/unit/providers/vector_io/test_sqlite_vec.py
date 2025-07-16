@@ -37,7 +37,7 @@ def loop():
 async def sqlite_vec_index(embedding_dimension, tmp_path_factory):
     temp_dir = tmp_path_factory.getbasetemp()
     db_path = str(temp_dir / "test_sqlite.db")
-    index = await SQLiteVecIndex.create(dimension=embedding_dimension, db_path=db_path, bank_id="test_bank")
+    index = await SQLiteVecIndex.create(dimension=embedding_dimension, db_path=db_path, bank_id="test_bank.123")
     yield index
     await index.delete()
 
@@ -110,7 +110,7 @@ async def test_chunk_id_conflict(sqlite_vec_index, sample_chunks, embedding_dime
     cur = connection.cursor()
 
     # Retrieve all chunk IDs to check for duplicates
-    cur.execute(f"SELECT id FROM {sqlite_vec_index.metadata_table}")
+    cur.execute(f"SELECT id FROM [{sqlite_vec_index.metadata_table}]")
     chunk_ids = [row[0] for row in cur.fetchall()]
     cur.close()
     connection.close()

@@ -267,6 +267,13 @@ def _convert_string_to_proper_type(value: str) -> Any:
     return value
 
 
+def cast_image_name_to_string(config_dict: dict[str, Any]) -> dict[str, Any]:
+    """Ensure that any value for a key 'image_name' in a config_dict is a string"""
+    if "image_name" in config_dict and config_dict["image_name"] is not None:
+        config_dict["image_name"] = str(config_dict["image_name"])
+    return config_dict
+
+
 def validate_env_pair(env_pair: str) -> tuple[str, str]:
     """Validate and split an environment variable key-value pair."""
     try:

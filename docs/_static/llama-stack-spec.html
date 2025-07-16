@@ -11340,6 +11340,9 @@
                     },
                     "embedding_dimension": {
                         "type": "integer"
+                    },
+                    "vector_db_name": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -13590,10 +13593,6 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The ID of the provider to use for this vector store."
-                    },
-                    "provider_vector_db_id": {
-                        "type": "string",
-                        "description": "The provider-specific vector database ID."
                     }
                 },
                 "additionalProperties": false,
@@ -15633,6 +15632,10 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The identifier of the provider."
+                    },
+                    "vector_db_name": {
+                        "type": "string",
+                        "description": "The name of the vector database."
                     },
                     "provider_vector_db_id": {
                         "type": "string",
