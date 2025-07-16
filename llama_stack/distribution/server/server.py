@@ -47,6 +47,7 @@ from llama_stack.distribution.server.routes import (
     initialize_route_impls,
 )
 from llama_stack.distribution.stack import (
+    cast_image_name_to_string,
     construct_stack,
     replace_env_vars,
     validate_env_pair,
@@ -439,13 +440,13 @@ def main(args: argparse.Namespace | None = None):
                     logger.error(f"Error: {str(e)}")
                     sys.exit(1)
         config = replace_env_vars(config_contents)
-        config = StackRunConfig(**config)
+        config = StackRunConfig(**cast_image_name_to_string(config))
 
     # now that the logger is initialized, print the line about which type of config we are using.
     logger.info(log_line)
 
     logger.info("Run configuration:")
-    safe_config = redact_sensitive_fields(config.model_dump())
+    safe_config = redact_sensitive_fields(config.model_dump(mode="json"))
     logger.info(yaml.dump(safe_config, indent=2))
 
     app = FastAPI(

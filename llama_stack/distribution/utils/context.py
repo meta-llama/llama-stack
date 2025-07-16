@@ -6,12 +6,9 @@
 
 from collections.abc import AsyncGenerator
 from contextvars import ContextVar
-from typing import TypeVar
-
-T = TypeVar("T")
 
 
-def preserve_contexts_async_generator(
+def preserve_contexts_async_generator[T](
     gen: AsyncGenerator[T, None], context_vars: list[ContextVar]
 ) -> AsyncGenerator[T, None]:
     """

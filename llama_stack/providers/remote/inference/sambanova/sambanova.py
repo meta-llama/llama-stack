@@ -7,6 +7,7 @@
 import json
 from collections.abc import Iterable
 
+import requests
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam as OpenAIChatCompletionAssistantMessage,
 )
@@ -56,6 +57,7 @@ from llama_stack.apis.inference import (
     ToolResponseMessage,
     UserMessage,
 )
+from llama_stack.apis.models import Model
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import BuiltinTool
 from llama_stack.providers.utils.inference.litellm_openai_mixin import LiteLLMOpenAIMixin
@@ -176,10 +178,11 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
 
     def __init__(self, config: SambaNovaImplConfig):
         self.config = config
+        self.environment_available_models = []
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
-            api_key_from_config=self.config.api_key,
+            api_key_from_config=self.config.api_key.get_secret_value() if self.config.api_key else None,
             provider_data_api_key_field="sambanova_api_key",
         )
 
@@ -245,6 +248,22 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
         }
+
+    async def register_model(self, model: Model) -> Model:
+        model_id = self.get_provider_model_id(model.provider_resource_id)
+
+        list_models_url = self.config.url + "/models"
+        if len(self.environment_available_models) == 0:
+            try:
+                response = requests.get(list_models_url)
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                raise RuntimeError(f"Request to {list_models_url} failed") from e
+            self.environment_available_models = [model.get("id") for model in response.json().get("data", {})]
+
+        if model_id.split("sambanova/")[-1] not in self.environment_available_models:
+            logger.warning(f"Model {model_id} not available in {list_models_url}")
+        return model
 
     async def initialize(self):
         await super().initialize()

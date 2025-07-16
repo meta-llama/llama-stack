@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import uuid
 from typing import Any
 
 from llama_stack.apis.common.content_types import (
@@ -81,6 +82,7 @@ class VectorIORouter(VectorIO):
         embedding_model: str,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
+        vector_db_name: str | None = None,
         provider_vector_db_id: str | None = None,
     ) -> None:
         logger.debug(f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}")
@@ -89,6 +91,7 @@ class VectorIORouter(VectorIO):
             embedding_model,
             embedding_dimension,
             provider_id,
+            vector_db_name,
             provider_vector_db_id,
         )
 
@@ -123,7 +126,6 @@ class VectorIORouter(VectorIO):
         embedding_model: str | None = None,
         embedding_dimension: int | None = None,
         provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         logger.debug(f"VectorIORouter.openai_create_vector_store: name={name}, provider_id={provider_id}")
 
@@ -135,17 +137,17 @@ class VectorIORouter(VectorIO):
             embedding_model, embedding_dimension = embedding_model_info
             logger.info(f"No embedding model specified, using first available: {embedding_model}")
 
-        vector_db_id = name
+        vector_db_id = f"vs_{uuid.uuid4()}"
         registered_vector_db = await self.routing_table.register_vector_db(
-            vector_db_id,
-            embedding_model,
-            embedding_dimension,
-            provider_id,
-            provider_vector_db_id,
+            vector_db_id=vector_db_id,
+            embedding_model=embedding_model,
+            embedding_dimension=embedding_dimension,
+            provider_id=provider_id,
+            provider_vector_db_id=vector_db_id,
+            vector_db_name=name,
         )
-
         return await self.routing_table.get_provider_impl(registered_vector_db.identifier).openai_create_vector_store(
-            vector_db_id,
+            name=name,
             file_ids=file_ids,
             expires_after=expires_after,
             chunking_strategy=chunking_strategy,

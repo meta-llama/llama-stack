@@ -42,7 +42,6 @@ def create_test_chat_completion(
     )
 
 
-@pytest.mark.asyncio
 async def test_inference_store_pagination_basic():
     """Test basic pagination functionality."""
     with TemporaryDirectory() as tmp_dir:
@@ -88,7 +87,6 @@ async def test_inference_store_pagination_basic():
         assert result3.has_more is False
 
 
-@pytest.mark.asyncio
 async def test_inference_store_pagination_ascending():
     """Test pagination with ascending order."""
     with TemporaryDirectory() as tmp_dir:
@@ -123,7 +121,6 @@ async def test_inference_store_pagination_ascending():
         assert result2.has_more is True
 
 
-@pytest.mark.asyncio
 async def test_inference_store_pagination_with_model_filter():
     """Test pagination combined with model filtering."""
     with TemporaryDirectory() as tmp_dir:
@@ -161,7 +158,6 @@ async def test_inference_store_pagination_with_model_filter():
         assert result2.has_more is False
 
 
-@pytest.mark.asyncio
 async def test_inference_store_pagination_invalid_after():
     """Test error handling for invalid 'after' parameter."""
     with TemporaryDirectory() as tmp_dir:
@@ -174,7 +170,6 @@ async def test_inference_store_pagination_invalid_after():
             await store.list_chat_completions(after="non-existent", limit=2)
 
 
-@pytest.mark.asyncio
 async def test_inference_store_pagination_no_limit():
     """Test pagination behavior when no limit is specified."""
     with TemporaryDirectory() as tmp_dir:
