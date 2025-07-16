@@ -445,9 +445,7 @@ def main(args: argparse.Namespace | None = None):
     # now that the logger is initialized, print the line about which type of config we are using.
     logger.info(log_line)
 
-    logger.info("Run configuration:")
-    safe_config = redact_sensitive_fields(config.model_dump(mode="json"))
-    logger.info(yaml.dump(safe_config, indent=2))
+    _log_run_config(run_config=config)
 
     app = FastAPI(
         lifespan=lifespan,
@@ -594,12 +592,35 @@ def main(args: argparse.Namespace | None = None):
     uvicorn.run(**uvicorn_config)
 
 
+def _log_run_config(run_config: StackRunConfig):
+    """Logs the run config with redacted fields and disabled providers removed."""
+    logger.info("Run configuration:")
+    safe_config = redact_sensitive_fields(run_config.model_dump(mode="json"))
+    clean_config = remove_disabled_providers(safe_config)
+    logger.info(yaml.dump(clean_config, indent=2))
+
+
 def extract_path_params(route: str) -> list[str]:
     segments = route.split("/")
     params = [seg[1:-1] for seg in segments if seg.startswith("{") and seg.endswith("}")]
     # to handle path params like {param:path}
     params = [param.split(":")[0] for param in params]
     return params
+
+
+def remove_disabled_providers(obj):
+    if isinstance(obj, dict):
+        if (
+            obj.get("provider_id") == "__disabled__"
+            or obj.get("shield_id") == "__disabled__"
+            or obj.get("provider_model_id") == "__disabled__"
+        ):
+            return None
+        return {k: v for k, v in ((k, remove_disabled_providers(v)) for k, v in obj.items()) if v is not None}
+    elif isinstance(obj, list):
+        return [item for item in (remove_disabled_providers(i) for i in obj) if item is not None]
+    else:
+        return obj
 
 
 if __name__ == "__main__":

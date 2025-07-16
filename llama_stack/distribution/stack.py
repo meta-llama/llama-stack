@@ -172,7 +172,6 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
                             # Create a copy with resolved provider_id but original config
                             disabled_provider = v.copy()
                             disabled_provider["provider_id"] = resolved_provider_id
-                            result.append(disabled_provider)
                             continue
                     except EnvVarError:
                         # If we can't resolve the provider_id, continue with normal processing
