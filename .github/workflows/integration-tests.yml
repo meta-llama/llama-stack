@@ -12,6 +12,7 @@ on:
       - 'pyproject.toml'
       - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
+      - '.github/actions/setup-ollama/action.yml'
   schedule:
     - cron: '0 0 * * *'  # Daily at 12 AM UTC
   workflow_dispatch:
