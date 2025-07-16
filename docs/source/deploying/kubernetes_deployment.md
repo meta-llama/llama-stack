@@ -1,4 +1,4 @@
-# Kubernetes Deployment Guide
+## Kubernetes Deployment Guide
 
 Instead of starting the Llama Stack and vLLM servers locally. We can deploy them in a Kubernetes cluster.
 

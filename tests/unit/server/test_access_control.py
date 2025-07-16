@@ -7,7 +7,6 @@
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import pytest_asyncio
 import yaml
 from pydantic import TypeAdapter, ValidationError
 
@@ -27,7 +26,7 @@ def _return_model(model):
     return model
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_setup(cached_disk_dist_registry):
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
@@ -41,7 +40,6 @@ async def test_setup(cached_disk_dist_registry):
     yield cached_disk_dist_registry, routing_table
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_with_cache(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
@@ -106,7 +104,6 @@ async def test_access_control_with_cache(mock_get_authenticated_user, test_setup
         await routing_table.get_model("model-admin")
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_and_updates(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
@@ -145,7 +142,6 @@ async def test_access_control_and_updates(mock_get_authenticated_user, test_setu
     assert model.identifier == "model-updates"
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_control_empty_attributes(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
@@ -170,7 +166,6 @@ async def test_access_control_empty_attributes(mock_get_authenticated_user, test
     assert "model-empty-attrs" in model_ids
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_no_user_attributes(mock_get_authenticated_user, test_setup):
     registry, routing_table = test_setup
@@ -201,7 +196,6 @@ async def test_no_user_attributes(mock_get_authenticated_user, test_setup):
     assert all_models.data[0].identifier == "model-public-2"
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_automatic_access_attributes(mock_get_authenticated_user, test_setup):
     """Test that newly created resources inherit access attributes from their creator."""
@@ -246,7 +240,7 @@ async def test_automatic_access_attributes(mock_get_authenticated_user, test_set
     assert model.identifier == "auto-access-model"
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def test_setup_with_access_policy(cached_disk_dist_registry):
     mock_inference = Mock()
     mock_inference.__provider_spec__ = MagicMock()
@@ -281,7 +275,6 @@ async def test_setup_with_access_policy(cached_disk_dist_registry):
     yield routing_table
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.distribution.routing_tables.common.get_authenticated_user")
 async def test_access_policy(mock_get_authenticated_user, test_setup_with_access_policy):
     routing_table = test_setup_with_access_policy

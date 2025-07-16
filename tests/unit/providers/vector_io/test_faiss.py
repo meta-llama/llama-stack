@@ -9,7 +9,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import numpy as np
 import pytest
-import pytest_asyncio
 
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import EmbeddingsResponse, Inference
@@ -91,13 +90,13 @@ def faiss_config():
     return config
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def faiss_index(embedding_dimension):
     index = await FaissIndex.create(dimension=embedding_dimension)
     yield index
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def faiss_adapter(faiss_config, mock_inference_api, mock_files_api) -> FaissVectorIOAdapter:
     # Create the adapter
     adapter = FaissVectorIOAdapter(config=faiss_config, inference_api=mock_inference_api, files_api=mock_files_api)
@@ -113,7 +112,6 @@ async def faiss_adapter(faiss_config, mock_inference_api, mock_files_api) -> Fai
         yield adapter
 
 
-@pytest.mark.asyncio
 async def test_faiss_query_vector_returns_infinity_when_query_and_embedding_are_identical(
     faiss_index, sample_chunks, sample_embeddings, embedding_dimension
 ):
@@ -136,7 +134,6 @@ async def test_faiss_query_vector_returns_infinity_when_query_and_embedding_are_
         assert response.chunks[1] == sample_chunks[1]
 
 
-@pytest.mark.asyncio
 async def test_health_success():
     """Test that the health check returns OK status when faiss is working correctly."""
     # Create a fresh instance of FaissVectorIOAdapter for testing
@@ -160,7 +157,6 @@ async def test_health_success():
         mock_index_flat.assert_called_once_with(128)  # VECTOR_DIMENSION is 128
 
 
-@pytest.mark.asyncio
 async def test_health_failure():
     """Test that the health check returns ERROR status when faiss encounters an error."""
     # Create a fresh instance of FaissVectorIOAdapter for testing
