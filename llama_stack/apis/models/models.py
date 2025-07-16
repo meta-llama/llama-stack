@@ -7,7 +7,7 @@
 from enum import StrEnum
 from typing import Any, Literal, Protocol, runtime_checkable
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from llama_stack.apis.resource import Resource, ResourceType
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
@@ -43,6 +43,13 @@ class Model(CommonModelFields, Resource):
     model_config = ConfigDict(protected_namespaces=())
 
     model_type: ModelType = Field(default=ModelType.llm)
+
+    @field_validator("provider_resource_id")
+    @classmethod
+    def validate_provider_resource_id(cls, v):
+        if v is None:
+            raise ValueError("provider_resource_id cannot be None")
+        return v
 
 
 class ModelInput(CommonModelFields):
