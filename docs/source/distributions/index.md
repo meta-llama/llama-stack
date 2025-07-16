@@ -8,6 +8,7 @@ This section provides an overview of the distributions available in Llama Stack.
 :maxdepth: 3
 list_of_distributions
 building_distro
+starting_llama_stack_server
 customizing_run_yaml
 importing_as_library
 configuration

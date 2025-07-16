@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # Post_Training Providers
 
 This section contains documentation for all available providers for the **post_training** API.

@@ -11,4 +11,5 @@ See the [Adding a New API Provider](new_api_provider.md) which describes how to 
 :hidden:
 
 new_api_provider
+testing
 ```
