@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: llama-stack
-        image: llamastack/distribution-remote-vllm:latest
+        image: llamastack/distribution-starter:latest
         imagePullPolicy: Always # since we have specified latest instead of a version
         env:
         - name: ENABLE_CHROMADB
