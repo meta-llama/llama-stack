@@ -262,6 +262,11 @@ inference_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/inference_store.db
 models:
+- metadata:
+    embedding_dimension: 384
+  model_id: all-MiniLM-L6-v2
+  provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
+  model_type: embedding
 - metadata: {}
   model_id: ${env.ENABLE_CEREBRAS:=__disabled__}/llama3.1-8b
   provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
@@ -1168,11 +1173,6 @@ models:
   provider_id: ${env.ENABLE_SAMBANOVA:=__disabled__}
   provider_model_id: sambanova/Meta-Llama-Guard-3-8B
   model_type: llm
-- metadata:
-    embedding_dimension: 384
-  model_id: all-MiniLM-L6-v2
-  provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
-  model_type: embedding
 shields:
 - shield_id: ${env.SAFETY_MODEL:=__disabled__}
   provider_shield_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=__disabled__}
