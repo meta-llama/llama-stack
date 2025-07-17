@@ -10111,20 +10111,20 @@ components:
     DPOAlignmentConfig:
       type: object
       properties:
-        reward_scale:
+        beta:
           type: number
-        reward_clip:
-          type: number
-        epsilon:
-          type: number
-        gamma:
-          type: number
+        loss_type:
+          type: string
+          enum:
+            - sigmoid
+            - hinge
+            - ipo
+            - kto_pair
+          default: sigmoid
       additionalProperties: false
       required:
-        - reward_scale
-        - reward_clip
-        - epsilon
-        - gamma
+        - beta
+        - loss_type
       title: DPOAlignmentConfig
     DataConfig:
       type: object

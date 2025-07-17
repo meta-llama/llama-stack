@@ -106,10 +106,8 @@ class RLHFAlgorithm(Enum):
 
 @json_schema_type
 class DPOAlignmentConfig(BaseModel):
-    reward_scale: float
-    reward_clip: float
-    epsilon: float
-    gamma: float
+    beta: float
+    loss_type: Literal["sigmoid", "hinge", "ipo", "kto_pair"] = "sigmoid"
 
 
 @json_schema_type
