@@ -105,7 +105,7 @@ curl -X DELETE "$NEMO_URL/v1/deployment/model-deployments/meta/llama-3.1-8b-inst
 
 ## Running Llama Stack with NVIDIA
 
-You can do this via Conda or venv (build code), or Docker which has a pre-built image.
+You can do this via venv (build code), or Docker which has a pre-built image.
 
 ### Via Docker
 
@@ -122,17 +122,6 @@ docker run \
   --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
-```
-
-### Via Conda
-
-```bash
-INFERENCE_MODEL=meta-llama/Llama-3.1-8b-Instruct
-llama stack build --template nvidia --image-type conda
-llama stack run ./run.yaml \
-  --port 8321 \
-  --env NVIDIA_API_KEY=$NVIDIA_API_KEY \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL
 ```
 
 ### Via venv

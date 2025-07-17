@@ -18,7 +18,7 @@ This provider enables running inference using NVIDIA NIM.
 Build the NVIDIA environment:
 
 ```bash
-llama stack build --template nvidia --image-type conda
+llama stack build --template nvidia --image-type venv
 ```
 
 ### Basic Usage using the LlamaStack Python Client
