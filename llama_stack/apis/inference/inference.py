@@ -819,6 +819,12 @@ class OpenAIEmbeddingsResponse(BaseModel):
 class ModelStore(Protocol):
     async def get_model(self, identifier: str) -> Model: ...
 
+    async def update_registered_models(
+        self,
+        provider_id: str,
+        models: list[Model],
+    ) -> None: ...
+
 
 class TextTruncation(Enum):
     """Config for how to truncate text for embedding when text is longer than the model's max sequence length. Start and End semantics depend on whether the language is left-to-right or right-to-left.

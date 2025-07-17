@@ -80,3 +80,34 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         if existing_model is None:
             raise ValueError(f"Model {model_id} not found")
         await self.unregister_object(existing_model)
+
+    async def update_registered_models(
+        self,
+        provider_id: str,
+        models: list[Model],
+    ) -> None:
+        existing_models = await self.get_all_with_type("model")
+
+        # we may have an alias for the model registered by the user (or during initialization
+        # from run.yaml) that we need to keep track of
+        model_ids = {}
+        for model in existing_models:
+            if model.provider_id == provider_id:
+                model_ids[model.provider_resource_id] = model.identifier
+                logger.debug(f"unregistering model {model.identifier}")
+                await self.unregister_object(model)
+
+        for model in models:
+            if model.provider_resource_id in model_ids:
+                model.identifier = model_ids[model.provider_resource_id]
+
+            logger.debug(f"registering model {model.identifier} ({model.provider_resource_id})")
+            await self.register_object(
+                ModelWithOwner(
+                    identifier=model.identifier,
+                    provider_resource_id=model.provider_resource_id,
+                    provider_id=provider_id,
+                    metadata=model.metadata,
+                    model_type=model.model_type,
+                )
+            )
