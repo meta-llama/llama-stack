@@ -41,6 +41,8 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `url` | `str \| None` | No | PydanticUndefined |  |
+| `embedding_model` | `str \| None` | No |  | Optional default embedding model for this provider. If not specified, will use system default. |
+| `embedding_dimension` | `int \| None` | No |  | Optional embedding dimension override. Only needed for models with variable dimensions (e.g., Matryoshka embeddings). If not specified, will auto-lookup from model registry. |
 
 ## Sample Configuration
 

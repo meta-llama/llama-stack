@@ -1,0 +1,133 @@
+# Sample Vector IO Configuration with Configurable Embedding Models
+#
+# This example demonstrates how to configure embedding models for different vector IO providers.
+# Each provider can have its own default embedding model and dimension configuration.
+
+# Vector IO providers with different embedding configurations
+vector_io:
+  # Fast local search with lightweight embeddings
+  - provider_id: fast_local_search
+    provider_type: inline::faiss
+    config:
+      db_path: ~/.llama/distributions/together/faiss_fast.db
+      # Use lightweight embedding model for fast processing
+      embedding_model: "all-MiniLM-L6-v2"
+      embedding_dimension: 384  # Fixed dimension for this model
+
+  # Compact storage with variable dimension embeddings
+  - provider_id: compact_storage
+    provider_type: inline::faiss
+    config:
+      db_path: ~/.llama/distributions/together/faiss_compact.db
+      # Use Matryoshka embeddings with custom dimension
+      embedding_model: "nomic-embed-text"
+      embedding_dimension: 256  # Reduced from default 768 for storage efficiency
+
+  # High-quality persistent search
+  - provider_id: persistent_search
+    provider_type: inline::sqlite_vec
+    config:
+      db_path: ~/.llama/distributions/together/sqlite_vec.db
+      # Use high-quality embedding model
+      embedding_model: "sentence-transformers/all-mpnet-base-v2"
+      embedding_dimension: 768  # Full dimension for best quality
+
+  # Remote Qdrant with cloud embeddings
+  - provider_id: cloud_search
+    provider_type: remote::qdrant
+    config:
+      api_key: "${env.QDRANT_API_KEY}"
+      url: "${env.QDRANT_URL}"
+      # Use OpenAI embeddings for cloud deployment
+      embedding_model: "text-embedding-3-small"
+      embedding_dimension: 1536  # OpenAI's default dimension
+
+  # Remote ChromaDB without explicit embedding config (uses system default)
+  - provider_id: default_search
+    provider_type: remote::chroma
+    config:
+      host: "${env.CHROMA_HOST:=localhost}"
+      port: 8000
+      # No embedding_model specified - will use system default from model registry
+
+  # Milvus with production-grade configuration
+  - provider_id: production_search
+    provider_type: remote::milvus
+    config:
+      uri: "${env.MILVUS_ENDPOINT}"
+      token: "${env.MILVUS_TOKEN}"
+      kvstore:
+        type: sqlite
+        db_path: ~/.llama/distributions/together/milvus_registry.db
+      # High-performance embedding model for production
+      embedding_model: "text-embedding-3-large"
+      embedding_dimension: 3072  # Large dimension for maximum quality
+
+# Model registry - ensure embedding models are properly configured
+models:
+  # Lightweight embedding model (384 dimensions)
+  - model_id: all-MiniLM-L6-v2
+    provider_id: local_inference
+    provider_model_id: sentence-transformers/all-MiniLM-L6-v2
+    model_type: embedding
+    metadata:
+      embedding_dimension: 384
+      description: "Fast, lightweight embeddings for general use"
+
+  # Matryoshka embedding model (variable dimensions)
+  - model_id: nomic-embed-text
+    provider_id: local_inference
+    provider_model_id: nomic-embed-text
+    model_type: embedding
+    metadata:
+      embedding_dimension: 768  # Default, can be overridden
+      description: "Flexible Matryoshka embeddings supporting variable dimensions"
+
+  # High-quality embedding model (768 dimensions)
+  - model_id: sentence-transformers/all-mpnet-base-v2
+    provider_id: local_inference
+    provider_model_id: sentence-transformers/all-mpnet-base-v2
+    model_type: embedding
+    metadata:
+      embedding_dimension: 768
+      description: "High-quality embeddings for semantic search"
+
+  # OpenAI embedding models (for cloud usage)
+  - model_id: text-embedding-3-small
+    provider_id: openai_inference  # Would need OpenAI provider configured
+    provider_model_id: text-embedding-3-small
+    model_type: embedding
+    metadata:
+      embedding_dimension: 1536  # Default OpenAI dimension
+      description: "OpenAI's efficient embedding model"
+
+  - model_id: text-embedding-3-large
+    provider_id: openai_inference
+    provider_model_id: text-embedding-3-large
+    model_type: embedding
+    metadata:
+      embedding_dimension: 3072  # Large dimension for maximum quality
+      description: "OpenAI's highest quality embedding model"
+
+# Optional: Configure specific vector databases (will use provider defaults)
+vector_dbs:
+  # Uses fast_local_search provider defaults (all-MiniLM-L6-v2, 384 dims)
+  - vector_db_id: general_docs
+    provider_id: fast_local_search
+
+  # Uses compact_storage provider defaults (nomic-embed-text, 256 dims)
+  - vector_db_id: compressed_knowledge
+    provider_id: compact_storage
+
+  # Uses persistent_search provider defaults (all-mpnet-base-v2, 768 dims)
+  - vector_db_id: semantic_library
+    provider_id: persistent_search
+
+# Server configuration
+server:
+  host: 0.0.0.0
+  port: 5000
+
+# Logging configuration
+logging:
+  level: INFO

@@ -20,6 +20,8 @@ Please refer to the inline provider documentation.
 | `prefix` | `str \| None` | No |  |  |
 | `timeout` | `int \| None` | No |  |  |
 | `host` | `str \| None` | No |  |  |
+| `embedding_model` | `str \| None` | No |  | Optional default embedding model for this provider. If not specified, will use system default. |
+| `embedding_dimension` | `int \| None` | No |  | Optional embedding dimension override. Only needed for models with variable dimensions (e.g., Matryoshka embeddings). If not specified, will auto-lookup from model registry. |
 
 ## Sample Configuration
 
