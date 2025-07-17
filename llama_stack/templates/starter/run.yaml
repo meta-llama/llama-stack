@@ -166,6 +166,9 @@ providers:
       db: ${env.PGVECTOR_DB:=}
       user: ${env.PGVECTOR_USER:=}
       password: ${env.PGVECTOR_PASSWORD:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/pgvector_registry.db
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
@@ -1172,24 +1175,8 @@ models:
   provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
   model_type: embedding
 shields:
-- shield_id: ${env.ENABLE_OLLAMA:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=llama-guard3:1b}
-- shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}/${env.SAFETY_MODEL:=accounts/fireworks/models/llama-guard-3-8b}
-- shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_FIREWORKS:=__disabled__}/${env.SAFETY_MODEL:=accounts/fireworks/models/llama-guard-3-11b-vision}
-- shield_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_TOGETHER:=__disabled__}/${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-8B}
-- shield_id: ${env.ENABLE_TOGETHER:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_TOGETHER:=__disabled__}/${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-11B-Vision-Turbo}
-- shield_id: ${env.ENABLE_SAMBANOVA:=__disabled__}
-  provider_id: llama-guard
-  provider_shield_id: ${env.ENABLE_SAMBANOVA:=__disabled__}/${env.SAFETY_MODEL:=sambanova/Meta-Llama-Guard-3-8B}
+- shield_id: ${env.SAFETY_MODEL:=__disabled__}
+  provider_shield_id: ${env.ENABLE_OLLAMA:=__disabled__}/${env.SAFETY_MODEL:=__disabled__}
 vector_dbs: []
 datasets: []
 scoring_fns: []

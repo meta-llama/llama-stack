@@ -17,10 +17,10 @@ export const MessageBlock: React.FC<MessageBlockProps> = ({
 }) => {
   return (
     <div className={`mb-4 ${className}`}>
-      <p className="py-1 font-semibold text-gray-800 mb-1">
+      <p className="py-1 font-semibold text-muted-foreground mb-1">
         {label}
         {labelDetail && (
-          <span className="text-xs text-gray-500 font-normal ml-1">
+          <span className="text-xs text-muted-foreground font-normal ml-1">
             {labelDetail}
           </span>
         )}

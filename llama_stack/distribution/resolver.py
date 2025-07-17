@@ -200,7 +200,7 @@ def validate_and_prepare_providers(
         specs = {}
         for provider in providers:
             if not provider.provider_id or provider.provider_id == "__disabled__":
-                logger.warning(f"Provider `{provider.provider_type}` for API `{api}` is disabled")
+                logger.debug(f"Provider `{provider.provider_type}` for API `{api}` is disabled")
                 continue
 
             validate_provider(provider, api, provider_registry)
