@@ -129,13 +129,32 @@ class VectorIORouter(VectorIO):
     ) -> VectorStoreObject:
         logger.debug(f"VectorIORouter.openai_create_vector_store: name={name}, provider_id={provider_id}")
 
-        # If no embedding model is provided, use the first available one
+        # If no embedding model is provided, try provider defaults then fallback
         if embedding_model is None:
-            embedding_model_info = await self._get_first_embedding_model()
-            if embedding_model_info is None:
-                raise ValueError("No embedding model provided and no embedding models available in the system")
-            embedding_model, embedding_dimension = embedding_model_info
-            logger.info(f"No embedding model specified, using first available: {embedding_model}")
+            # Try to get provider-specific embedding model configuration
+            if provider_id:
+                try:
+                    provider_impl = self.routing_table.get_provider_impl(provider_id)
+                    provider_config = getattr(provider_impl, "config", None)
+
+                    if provider_config:
+                        if hasattr(provider_config, "embedding_model") and provider_config.embedding_model:
+                            embedding_model = provider_config.embedding_model
+                            logger.info(f"Using provider config default embedding model: {embedding_model}")
+
+                        if hasattr(provider_config, "embedding_dimension") and provider_config.embedding_dimension:
+                            embedding_dimension = provider_config.embedding_dimension
+                            logger.info(f"Using provider config embedding dimension: {embedding_dimension}")
+                except Exception as e:
+                    logger.debug(f"Could not get provider config for {provider_id}: {e}")
+
+            # If still no embedding model, use system fallback
+            if embedding_model is None:
+                embedding_model_info = await self._get_first_embedding_model()
+                if embedding_model_info is None:
+                    raise ValueError("No embedding model provided and no embedding models available in the system")
+                embedding_model, embedding_dimension = embedding_model_info
+                logger.info(f"No embedding model specified, using first available: {embedding_model}")
 
         vector_db_id = f"vs_{uuid.uuid4()}"
         registered_vector_db = await self.routing_table.register_vector_db(
