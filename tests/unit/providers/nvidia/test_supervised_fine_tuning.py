@@ -7,7 +7,7 @@
 import os
 import unittest
 import warnings
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -343,7 +343,11 @@ class TestNvidiaPostTraining(unittest.TestCase):
             provider_resource_id=model_id,
             model_type=model_type,
         )
-        result = self.run_async(self.inference_adapter.register_model(model))
+
+        # simulate a NIM where default/job-1234 is an available model
+        with patch.object(self.inference_adapter, "check_model_availability", new_callable=AsyncMock) as mock_check:
+            mock_check.return_value = True
+            result = self.run_async(self.inference_adapter.register_model(model))
         assert result == model
         assert len(self.inference_adapter.alias_to_provider_id_map) > 1
         assert self.inference_adapter.get_provider_model_id(model.provider_model_id) == model_id
