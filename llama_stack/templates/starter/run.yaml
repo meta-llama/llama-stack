@@ -26,7 +26,7 @@ providers:
   - provider_id: ${env.ENABLE_VLLM:=__disabled__}
     provider_type: remote::vllm
     config:
-      url: ${env.VLLM_URL}
+      url: ${env.VLLM_URL:=}
       max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
       api_token: ${env.VLLM_API_TOKEN:=fake}
       tls_verify: ${env.VLLM_TLS_VERIFY:=true}
