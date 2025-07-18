@@ -242,7 +242,6 @@ exclude = [
     "^llama_stack/distribution/store/registry\\.py$",
     "^llama_stack/distribution/utils/exec\\.py$",
     "^llama_stack/distribution/utils/prompt_for_config\\.py$",
-    "^llama_stack/models/llama/llama3/chat_format\\.py$",
     "^llama_stack/models/llama/llama3/interface\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
