@@ -75,7 +75,13 @@ class SQLiteTraceStore(TraceStore):
                 {where_clause}
             ),
             filtered_traces AS (
-                SELECT t.trace_id, t.root_span_id, t.start_time, t.end_time
+                SELECT t.trace_id,
+                       COALESCE(t.root_span_id,
+                               (SELECT s.span_id FROM spans s
+                                WHERE s.trace_id = t.trace_id
+                                AND s.parent_span_id IS NULL
+                                ORDER BY s.start_time LIMIT 1)) as root_span_id,
+                       t.start_time, t.end_time
                 FROM matching_traces mt
                 JOIN traces t ON mt.trace_id = t.trace_id
                 LEFT JOIN spans s ON t.trace_id = s.trace_id
@@ -83,6 +89,7 @@ class SQLiteTraceStore(TraceStore):
             )
             SELECT DISTINCT trace_id, root_span_id, start_time, end_time
             FROM filtered_traces
+            WHERE root_span_id IS NOT NULL
             LIMIT {limit} OFFSET {offset}
         """
 
@@ -166,14 +173,31 @@ class SQLiteTraceStore(TraceStore):
                 return spans_by_id
 
     async def get_trace(self, trace_id: str) -> Trace:
-        query = "SELECT * FROM traces WHERE trace_id = ?"
+        query = """
+            SELECT t.trace_id,
+                   COALESCE(t.root_span_id,
+                           (SELECT s.span_id FROM spans s
+                            WHERE s.trace_id = t.trace_id
+                            AND s.parent_span_id IS NULL
+                            ORDER BY s.start_time LIMIT 1)) as root_span_id,
+                   t.start_time, t.end_time
+            FROM traces t
+            WHERE t.trace_id = ?
+        """
         async with aiosqlite.connect(self.conn_string) as conn:
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, (trace_id,)) as cursor:
                 row = await cursor.fetchone()
                 if row is None:
                     raise ValueError(f"Trace {trace_id} not found")
-                return Trace(**row)
+                if row["root_span_id"] is None:
+                    raise ValueError(f"Trace {trace_id} has no valid root span and has not completed execution")
+                return Trace(
+                    trace_id=row["trace_id"],
+                    root_span_id=row["root_span_id"],
+                    start_time=datetime.fromisoformat(row["start_time"]),
+                    end_time=datetime.fromisoformat(row["end_time"]),
+                )
 
     async def get_span(self, trace_id: str, span_id: str) -> Span:
         query = "SELECT * FROM spans WHERE trace_id = ? AND span_id = ?"
