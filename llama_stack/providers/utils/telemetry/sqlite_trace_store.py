@@ -11,6 +11,9 @@ from typing import Protocol
 import aiosqlite
 
 from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithStatus, Trace
+from llama_stack.log import get_logger
+
+logger = get_logger(__name__, category="core")
 
 
 class TraceStore(Protocol):
@@ -99,15 +102,21 @@ class SQLiteTraceStore(TraceStore):
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, params) as cursor:
                 rows = await cursor.fetchall()
-                return [
-                    Trace(
-                        trace_id=row["trace_id"],
-                        root_span_id=row["root_span_id"],
-                        start_time=datetime.fromisoformat(row["start_time"]),
-                        end_time=datetime.fromisoformat(row["end_time"]),
-                    )
-                    for row in rows
-                ]
+                results = []
+                for row in rows:
+                    try:
+                        results.append(
+                            Trace(
+                                trace_id=row["trace_id"],
+                                root_span_id=row["root_span_id"],
+                                start_time=datetime.fromisoformat(row["start_time"]),
+                                end_time=datetime.fromisoformat(row["end_time"]),
+                            )
+                        )
+                    except (KeyError, TypeError, ValueError) as e:
+                        logger.warning(f"Could not construct Trace due to missing information in row: {e}")
+                        continue
+                return results
 
     async def get_span_tree(
         self,
