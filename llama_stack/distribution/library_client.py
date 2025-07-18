@@ -151,6 +151,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self.skip_logger_removal = skip_logger_removal
         self.provider_data = provider_data
 
+        self.loop = asyncio.new_event_loop()
+
     def initialize(self):
         if in_notebook():
             import nest_asyncio
@@ -159,7 +161,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             if not self.skip_logger_removal:
                 self._remove_root_logger_handlers()
 
-        return asyncio.run(self.async_client.initialize())
+        return self.loop.run_until_complete(self.async_client.initialize())
 
     def _remove_root_logger_handlers(self):
         """
@@ -172,10 +174,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
-        # NOTE: We are using AsyncLlamaStackClient under the hood
-        # A new event loop is needed to convert the AsyncStream
-        # from async client into SyncStream return type for streaming
-        loop = asyncio.new_event_loop()
+        loop = self.loop
         asyncio.set_event_loop(loop)
 
         if kwargs.get("stream"):
@@ -192,7 +191,6 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
                     pending = asyncio.all_tasks(loop)
                     if pending:
                         loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                    loop.close()
 
             return sync_generator()
         else:
@@ -202,7 +200,6 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
                 pending = asyncio.all_tasks(loop)
                 if pending:
                     loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                loop.close()
             return result
 
 
