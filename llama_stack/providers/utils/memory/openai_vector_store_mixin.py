@@ -779,12 +779,6 @@ class OpenAIVectorStoreMixin(ABC):
         file = await self.openai_retrieve_vector_store_file(vector_store_id, file_id)
         await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
 
-        # TODO: We need to actually delete the embeddings from the underlying vector store...
-        # Also uncomment the corresponding integration test marked as xfail
-        #
-        # test_openai_vector_store_delete_file_removes_from_vector_store in
-        # tests/integration/vector_io/test_openai_vector_stores.py
-
         # Update in-memory cache
         store_info["file_ids"].remove(file_id)
         store_info["file_counts"][file.status] -= 1
