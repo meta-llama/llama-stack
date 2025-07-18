@@ -3,8 +3,8 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+import asyncio
 import json
-import logging
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -38,6 +38,7 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    ModelStore,
     OpenAIChatCompletion,
     OpenAICompletion,
     OpenAIEmbeddingData,
@@ -54,6 +55,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import (
@@ -84,7 +86,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import VLLMInferenceAdapterConfig
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 def build_hf_repo_model_entries():
@@ -288,16 +290,76 @@ async def _process_vllm_chat_completion_stream_response(
 
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
+    # automatically set by the resolver when instantiating the provider
+    __provider_id__: str
+    model_store: ModelStore | None = None
+    _refresh_task: asyncio.Task | None = None
+
     def __init__(self, config: VLLMInferenceAdapterConfig) -> None:
         self.register_helper = ModelRegistryHelper(build_hf_repo_model_entries())
         self.config = config
         self.client = None
 
     async def initialize(self) -> None:
-        pass
+        if not self.config.url:
+            # intentionally don't raise an error here, we want to allow the provider to be "dormant"
+            # or available in distributions like "starter" without causing a ruckus
+            return
+
+        if self.config.refresh_models:
+            self._refresh_task = asyncio.create_task(self._refresh_models())
+
+            def cb(task):
+                import traceback
+
+                if task.cancelled():
+                    log.error(f"vLLM background refresh task canceled:\n{''.join(traceback.format_stack())}")
+                elif task.exception():
+                    # print the stack trace for the exception
+                    exc = task.exception()
+                    log.error(f"vLLM background refresh task died: {exc}")
+                    traceback.print_exception(exc)
+                else:
+                    log.error("vLLM background refresh task completed unexpectedly")
+
+            self._refresh_task.add_done_callback(cb)
+
+    async def _refresh_models(self) -> None:
+        provider_id = self.__provider_id__
+        waited_time = 0
+        while not self.model_store and waited_time < 60:
+            await asyncio.sleep(1)
+            waited_time += 1
+
+        if not self.model_store:
+            raise ValueError("Model store not set after waiting 60 seconds")
+
+        self._lazy_initialize_client()
+        assert self.client is not None  # mypy
+        while True:
+            try:
+                models = []
+                async for m in self.client.models.list():
+                    model_type = ModelType.llm  # unclear how to determine embedding vs. llm models
+                    models.append(
+                        Model(
+                            identifier=m.id,
+                            provider_resource_id=m.id,
+                            provider_id=provider_id,
+                            metadata={},
+                            model_type=model_type,
+                        )
+                    )
+                await self.model_store.update_registered_llm_models(provider_id, models)
+                log.debug(f"vLLM refreshed model list ({len(models)} models)")
+            except Exception as e:
+                log.error(f"vLLM background refresh task failed: {e}")
+            await asyncio.sleep(self.config.refresh_models_interval)
 
     async def shutdown(self) -> None:
-        pass
+        if self._refresh_task:
+            self._refresh_task.cancel()
+            self._refresh_task = None
 
     async def unregister_model(self, model_id: str) -> None:
         pass
@@ -312,6 +374,9 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             HealthResponse: A dictionary containing the health status.
         """
         try:
+            if not self.config.url:
+                return HealthResponse(status=HealthStatus.ERROR, message="vLLM URL is not set")
+
             client = self._create_client() if self.client is None else self.client
             _ = [m async for m in client.models.list()]  # Ensure the client is initialized
             return HealthResponse(status=HealthStatus.OK)
@@ -326,6 +391,11 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     def _lazy_initialize_client(self):
         if self.client is not None:
             return
+
+        if not self.config.url:
+            raise ValueError(
+                "You must provide a vLLM URL in the run.yaml file (or set the VLLM_URL environment variable)"
+            )
 
         log.info(f"Initializing vLLM client with base_url={self.config.url}")
         self.client = self._create_client()

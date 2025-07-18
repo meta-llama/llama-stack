@@ -819,7 +819,7 @@ class OpenAIEmbeddingsResponse(BaseModel):
 class ModelStore(Protocol):
     async def get_model(self, identifier: str) -> Model: ...
 
-    async def update_registered_models(
+    async def update_registered_llm_models(
         self,
         provider_id: str,
         models: list[Model],

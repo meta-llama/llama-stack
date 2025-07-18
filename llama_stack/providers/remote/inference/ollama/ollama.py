@@ -159,18 +159,18 @@ class OllamaInferenceAdapter(
             models = []
             for m in response.models:
                 model_type = ModelType.embedding if m.details.family in ["bert"] else ModelType.llm
-                # unfortunately, ollama does not provide embedding dimension in the model list :(
-                # we should likely add a hard-coded mapping of model name to embedding dimension
+                if model_type == ModelType.embedding:
+                    continue
                 models.append(
                     Model(
                         identifier=m.model,
                         provider_resource_id=m.model,
                         provider_id=provider_id,
-                        metadata={"embedding_dimension": 384} if model_type == ModelType.embedding else {},
+                        metadata={},
                         model_type=model_type,
                     )
                 )
-            await self.model_store.update_registered_models(provider_id, models)
+            await self.model_store.update_registered_llm_models(provider_id, models)
             logger.debug(f"ollama refreshed model list ({len(models)} models)")
 
             await asyncio.sleep(self.config.refresh_models_interval)

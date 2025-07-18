@@ -81,7 +81,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             raise ValueError(f"Model {model_id} not found")
         await self.unregister_object(existing_model)
 
-    async def update_registered_models(
+    async def update_registered_llm_models(
         self,
         provider_id: str,
         models: list[Model],
@@ -92,12 +92,14 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         # from run.yaml) that we need to keep track of
         model_ids = {}
         for model in existing_models:
-            if model.provider_id == provider_id:
+            if model.provider_id == provider_id and model.model_type == ModelType.llm:
                 model_ids[model.provider_resource_id] = model.identifier
                 logger.debug(f"unregistering model {model.identifier}")
                 await self.unregister_object(model)
 
         for model in models:
+            if model.model_type != ModelType.llm:
+                continue
             if model.provider_resource_id in model_ids:
                 model.identifier = model_ids[model.provider_resource_id]
 
