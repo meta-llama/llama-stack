@@ -7838,8 +7838,30 @@ components:
         - start_time
       title: Trace
     Checkpoint:
-      description: Checkpoint created during training runs
+      type: object
+      properties:
+        identifier:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        epoch:
+          type: integer
+        post_training_job_id:
+          type: string
+        path:
+          type: string
+        training_metrics:
+          $ref: '#/components/schemas/PostTrainingMetric'
+      additionalProperties: false
+      required:
+        - identifier
+        - created_at
+        - epoch
+        - post_training_job_id
+        - path
       title: Checkpoint
+      description: Checkpoint created during training runs
     PostTrainingJobArtifactsResponse:
       type: object
       properties:
@@ -7855,6 +7877,24 @@ components:
         - checkpoints
       title: PostTrainingJobArtifactsResponse
       description: Artifacts of a finetuning job.
+    PostTrainingMetric:
+      type: object
+      properties:
+        epoch:
+          type: integer
+        train_loss:
+          type: number
+        validation_loss:
+          type: number
+        perplexity:
+          type: number
+      additionalProperties: false
+      required:
+        - epoch
+        - train_loss
+        - validation_loss
+        - perplexity
+      title: PostTrainingMetric
     PostTrainingJobStatusResponse:
       type: object
       properties:
@@ -7944,6 +7984,8 @@ components:
           type: string
         embedding_dimension:
           type: integer
+        vector_db_name:
+          type: string
       additionalProperties: false
       required:
         - identifier
@@ -9454,10 +9496,6 @@ components:
           type: string
           description: >-
             The ID of the provider to use for this vector store.
-        provider_vector_db_id:
-          type: string
-          description: >-
-            The provider-specific vector database ID.
       additionalProperties: false
       required:
         - name
@@ -10306,7 +10344,8 @@ components:
             content string), {metadata} (chunk metadata dict). Default: "Result {index}\nContent:
             {chunk.content}\nMetadata: {metadata}\n"
         mode:
-          type: string
+          $ref: '#/components/schemas/RAGSearchMode'
+          default: vector
           description: >-
             Search mode for retrieval—either "vector", "keyword", or "hybrid". Default
             "vector".
@@ -10333,6 +10372,17 @@ components:
         mapping:
           default: '#/components/schemas/DefaultRAGQueryGeneratorConfig'
           llm: '#/components/schemas/LLMRAGQueryGeneratorConfig'
+    RAGSearchMode:
+      type: string
+      enum:
+        - vector
+        - keyword
+        - hybrid
+      title: RAGSearchMode
+      description: >-
+        Search modes for RAG query retrieval: - VECTOR: Uses vector similarity search
+        for semantic matching - KEYWORD: Uses keyword-based search for exact matching
+        - HYBRID: Combines both vector and keyword search for better results
     RRFRanker:
       type: object
       properties:
@@ -10893,6 +10943,9 @@ components:
         provider_id:
           type: string
           description: The identifier of the provider.
+        vector_db_name:
+          type: string
+          description: The name of the vector database.
         provider_vector_db_id:
           type: string
           description: >-

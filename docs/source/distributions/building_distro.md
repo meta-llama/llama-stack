@@ -145,6 +145,10 @@ $ llama stack build --template starter
 ...
 You can now edit ~/.llama/distributions/llamastack-starter/starter-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-starter/starter-run.yaml`
 ```
+
+```{tip}
+The generated `run.yaml` file is a starting point for your configuration. For comprehensive guidance on customizing it for your specific needs, infrastructure, and deployment scenarios, see [Customizing Your run.yaml Configuration](customizing_run_yaml.md).
+```
 :::
 :::{tab-item} Building from Scratch
 
@@ -393,17 +397,17 @@ llama stack list
 ```
 
 ```
-------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| Stack Name                  | Path                                                                        | Build Config | Run Config |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| together                    | /home/wenzhou/.llama/distributions/together                                 | Yes          | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| bedrock                     | /home/wenzhou/.llama/distributions/bedrock                                  | Yes          | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| starter                     | /home/wenzhou/.llama/distributions/starter                                  | No           | No         |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
-| remote-vllm                 | /home/wenzhou/.llama/distributions/remote-vllm                              | Yes          | Yes        |
-+------------------------------+-----------------------------------------------------------------------------+--------------+------------+
+------------------------------+-----------------------------------------------------------------+--------------+------------+
+| Stack Name                  | Path                                                            | Build Config | Run Config |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| together                    | ~/.llama/distributions/together                                 | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| bedrock                     | ~/.llama/distributions/bedrock                                  | Yes          | No         |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| starter                     | ~/.llama/distributions/starter                                  | Yes          | Yes        |
++------------------------------+-----------------------------------------------------------------------------+--------------+
+| remote-vllm                 | ~/.llama/distributions/remote-vllm                              | Yes          | Yes        |
++------------------------------+-----------------------------------------------------------------------------+--------------+
 ```
 
 ### Removing a Distribution

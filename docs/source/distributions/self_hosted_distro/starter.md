@@ -17,18 +17,18 @@ The `llamastack/distribution-starter` distribution is a comprehensive, multi-pro
 
 The starter distribution consists of the following provider configurations:
 
-| API | Provider(s) |
-|-----|-------------|
-| agents | `inline::meta-reference` |
-| datasetio | `remote::huggingface`, `inline::localfs` |
-| eval | `inline::meta-reference` |
-| files | `inline::localfs` |
+| API | Provider(s)                                                                                                                                                                                                                                                                                                                                    |
+|-----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| agents | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| datasetio | `remote::huggingface`, `inline::localfs`                                                                                                                                                                                                                                                                                                       |
+| eval | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| files | `inline::localfs`                                                                                                                                                                                                                                                                                                                              |
 | inference | `remote::openai`, `remote::fireworks`, `remote::together`, `remote::ollama`, `remote::anthropic`, `remote::gemini`, `remote::groq`, `remote::sambanova`, `remote::vllm`, `remote::tgi`, `remote::cerebras`, `remote::llama-openai-compat`, `remote::nvidia`, `remote::hf::serverless`, `remote::hf::endpoint`, `inline::sentence-transformers` |
-| safety | `inline::llama-guard` |
-| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust` |
-| telemetry | `inline::meta-reference` |
-| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol` |
-| vector_io | `inline::faiss`, `inline::sqlite-vec`, `remote::chromadb`, `remote::pgvector` |
+| safety | `inline::llama-guard`                                                                                                                                                                                                                                                                                                                          |
+| scoring | `inline::basic`, `inline::llm-as-judge`, `inline::braintrust`                                                                                                                                                                                                                                                                                  |
+| telemetry | `inline::meta-reference`                                                                                                                                                                                                                                                                                                                       |
+| tool_runtime | `remote::brave-search`, `remote::tavily-search`, `inline::rag-runtime`, `remote::model-context-protocol`                                                                                                                                                                                                                                       |
+| vector_io | `inline::faiss`, `inline::sqlite-vec`, `inline::milvus`, `remote::chromadb`, `remote::pgvector`                                                                                                                                                                                                                                                 |
 
 ## Inference Providers
 
@@ -167,7 +167,7 @@ When using the `:` pattern (like `${env.OLLAMA_INFERENCE_MODEL:__disabled__}`), 
 
 ## Running the Distribution
 
-You can run the starter distribution via Docker or Conda.
+You can run the starter distribution via Docker, Conda, or venv.
 
 ### Via Docker
 
@@ -186,17 +186,12 @@ docker run \
   --port $LLAMA_STACK_PORT
 ```
 
-### Via Conda
+### Via Conda or venv
 
-Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
+Ensure you have configured the starter distribution using the environment variables explained above.
 
 ```bash
-llama stack build --template starter --image-type conda
-llama stack run distributions/starter/run.yaml \
-  --port 8321 \
-  --env OPENAI_API_KEY=your_openai_key \
-  --env FIREWORKS_API_KEY=your_fireworks_key \
-  --env TOGETHER_API_KEY=your_together_key
+uv run --with llama-stack llama stack build --template starter --image-type <conda|venv> --run
 ```
 
 ## Example Usage

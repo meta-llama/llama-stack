@@ -39,7 +39,7 @@ class MetaReferenceInferenceConfig(BaseModel):
     def validate_model(cls, model: str) -> str:
         permitted_models = supported_inference_models()
         descriptors = [m.descriptor() for m in permitted_models]
-        repos = [m.huggingface_repo for m in permitted_models]
+        repos = [m.huggingface_repo for m in permitted_models if m.huggingface_repo is not None]
         if model not in (descriptors + repos):
             model_list = "\n\t".join(repos)
             raise ValueError(f"Unknown model: `{model}`. Choose from [\n\t{model_list}\n]")

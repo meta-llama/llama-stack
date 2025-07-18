@@ -6,6 +6,7 @@
 
 import inspect
 import os
+import signal
 import socket
 import subprocess
 import tempfile
@@ -42,9 +43,11 @@ def start_llama_stack_server(config_name: str) -> subprocess.Popen:
     process = subprocess.Popen(
         cmd,
         stdout=devnull,  # redirect stdout to devnull to prevent deadlock
-        stderr=devnull,  # redirect stderr to devnull to prevent deadlock
+        stderr=subprocess.PIPE,  # keep stderr to see errors
         text=True,
         env={**os.environ, "LLAMA_STACK_LOG_FILE": "server.log"},
+        # Create new process group so we can kill all child processes
+        preexec_fn=os.setsid,
     )
     return process
 
@@ -57,6 +60,7 @@ def wait_for_server_ready(base_url: str, timeout: int = 30, process: subprocess.
     while time.time() - start_time < timeout:
         if process and process.poll() is not None:
             print(f"Server process terminated with return code: {process.returncode}")
+            print(f"Server stderr: {process.stderr.read()}")
             return False
 
         try:
@@ -196,7 +200,7 @@ def llama_stack_client(request, provider_data):
             server_process = start_llama_stack_server(config_name)
 
             # Wait for server to be ready
-            if not wait_for_server_ready(base_url, timeout=30, process=server_process):
+            if not wait_for_server_ready(base_url, timeout=120, process=server_process):
                 print("Server failed to start within timeout")
                 server_process.terminate()
                 raise RuntimeError(
@@ -214,6 +218,7 @@ def llama_stack_client(request, provider_data):
         return LlamaStackClient(
             base_url=base_url,
             provider_data=provider_data,
+            timeout=int(os.environ.get("LLAMA_STACK_CLIENT_TIMEOUT", "30")),
         )
 
     # check if this looks like a URL using proper URL parsing
@@ -266,14 +271,17 @@ def cleanup_server_process(request):
                 print(f"Server process already terminated with return code: {server_process.returncode}")
                 return
             try:
-                server_process.terminate()
+                print(f"Terminating process {server_process.pid} and its group...")
+                # Kill the entire process group
+                os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
                 server_process.wait(timeout=10)
-                print("Server process terminated gracefully")
+                print("Server process and children terminated gracefully")
             except subprocess.TimeoutExpired:
                 print("Server process did not terminate gracefully, killing it")
-                server_process.kill()
+                # Force kill the entire process group
+                os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
                 server_process.wait()
-                print("Server process killed")
+                print("Server process and children killed")
             except Exception as e:
                 print(f"Error during server cleanup: {e}")
         else:

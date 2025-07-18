@@ -10,8 +10,7 @@ import {
   extractTextFromContentPart,
   extractDisplayableText,
 } from "@/lib/format-message-content";
-import { usePagination } from "@/hooks/usePagination";
-import { client } from "@/lib/client";
+import { usePagination } from "@/hooks/use-pagination";
 
 interface ChatCompletionsTableProps {
   /** Optional pagination configuration */
@@ -32,12 +31,15 @@ function formatChatCompletionToRow(completion: ChatCompletion): LogTableRow {
 export function ChatCompletionsTable({
   paginationOptions,
 }: ChatCompletionsTableProps) {
-  const fetchFunction = async (params: {
-    after?: string;
-    limit: number;
-    model?: string;
-    order?: string;
-  }) => {
+  const fetchFunction = async (
+    client: ReturnType<typeof import("@/hooks/use-auth-client").useAuthClient>,
+    params: {
+      after?: string;
+      limit: number;
+      model?: string;
+      order?: string;
+    },
+  ) => {
     const response = await client.chat.completions.list({
       after: params.after,
       limit: params.limit,

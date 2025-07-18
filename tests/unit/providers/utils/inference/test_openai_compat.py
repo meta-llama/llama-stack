@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import pytest
 
 from llama_stack.apis.common.content_types import TextContentItem
 from llama_stack.apis.inference import (
@@ -23,7 +22,6 @@ from llama_stack.providers.utils.inference.openai_compat import (
 )
 
 
-@pytest.mark.asyncio
 async def test_convert_message_to_openai_dict():
     message = UserMessage(content=[TextContentItem(text="Hello, world!")], role="user")
     assert await convert_message_to_openai_dict(message) == {
@@ -33,7 +31,6 @@ async def test_convert_message_to_openai_dict():
 
 
 # Test convert_message_to_openai_dict with a tool call
-@pytest.mark.asyncio
 async def test_convert_message_to_openai_dict_with_tool_call():
     message = CompletionMessage(
         content="",
@@ -54,7 +51,6 @@ async def test_convert_message_to_openai_dict_with_tool_call():
     }
 
 
-@pytest.mark.asyncio
 async def test_convert_message_to_openai_dict_with_builtin_tool_call():
     message = CompletionMessage(
         content="",
@@ -80,7 +76,6 @@ async def test_convert_message_to_openai_dict_with_builtin_tool_call():
     }
 
 
-@pytest.mark.asyncio
 async def test_openai_messages_to_messages_with_content_str():
     openai_messages = [
         OpenAISystemMessageParam(content="system message"),
@@ -98,7 +93,6 @@ async def test_openai_messages_to_messages_with_content_str():
     assert llama_messages[2].content == "assistant message"
 
 
-@pytest.mark.asyncio
 async def test_openai_messages_to_messages_with_content_list():
     openai_messages = [
         OpenAISystemMessageParam(content=[OpenAIChatCompletionContentPartTextParam(text="system message")]),

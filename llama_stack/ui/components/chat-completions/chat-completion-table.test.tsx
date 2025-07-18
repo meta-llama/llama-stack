@@ -12,24 +12,34 @@ jest.mock("next/navigation", () => ({
   }),
 }));
 
+// Mock next-auth
+jest.mock("next-auth/react", () => ({
+  useSession: () => ({
+    status: "authenticated",
+    data: { accessToken: "mock-token" },
+  }),
+}));
+
 // Mock helper functions
 jest.mock("@/lib/truncate-text");
 jest.mock("@/lib/format-message-content");
 
-// Mock the client
-jest.mock("@/lib/client", () => ({
-  client: {
-    chat: {
-      completions: {
-        list: jest.fn(),
-      },
+// Mock the auth client hook
+const mockClient = {
+  chat: {
+    completions: {
+      list: jest.fn(),
     },
   },
+};
+
+jest.mock("@/hooks/use-auth-client", () => ({
+  useAuthClient: () => mockClient,
 }));
 
 // Mock the usePagination hook
 const mockLoadMore = jest.fn();
-jest.mock("@/hooks/usePagination", () => ({
+jest.mock("@/hooks/use-pagination", () => ({
   usePagination: jest.fn(() => ({
     data: [],
     status: "idle",
@@ -47,7 +57,7 @@ import {
 } from "@/lib/format-message-content";
 
 // Import the mocked hook
-import { usePagination } from "@/hooks/usePagination";
+import { usePagination } from "@/hooks/use-pagination";
 const mockedUsePagination = usePagination as jest.MockedFunction<
   typeof usePagination
 >;

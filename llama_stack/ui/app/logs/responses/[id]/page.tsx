@@ -5,11 +5,12 @@ import { useParams } from "next/navigation";
 import type { ResponseObject } from "llama-stack-client/resources/responses/responses";
 import { OpenAIResponse, InputItemListResponse } from "@/lib/types";
 import { ResponseDetailView } from "@/components/responses/responses-detail";
-import { client } from "@/lib/client";
+import { useAuthClient } from "@/hooks/use-auth-client";
 
 export default function ResponseDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const client = useAuthClient();
 
   const [responseDetail, setResponseDetail] = useState<OpenAIResponse | null>(
     null,
@@ -109,7 +110,7 @@ export default function ResponseDetailPage() {
     };
 
     fetchResponseDetail();
-  }, [id]);
+  }, [id, client]);
 
   return (
     <ResponseDetailView

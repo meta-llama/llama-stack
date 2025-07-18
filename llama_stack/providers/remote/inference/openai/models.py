@@ -48,16 +48,20 @@ EMBEDDING_MODEL_IDS: dict[str, EmbeddingModelInfo] = {
     "text-embedding-3-small": EmbeddingModelInfo(1536, 8192),
     "text-embedding-3-large": EmbeddingModelInfo(3072, 8192),
 }
+SAFETY_MODELS_ENTRIES = []
 
-
-MODEL_ENTRIES = [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS] + [
-    ProviderModelEntry(
-        provider_model_id=model_id,
-        model_type=ModelType.embedding,
-        metadata={
-            "embedding_dimension": model_info.embedding_dimension,
-            "context_length": model_info.context_length,
-        },
-    )
-    for model_id, model_info in EMBEDDING_MODEL_IDS.items()
-]
+MODEL_ENTRIES = (
+    [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS]
+    + [
+        ProviderModelEntry(
+            provider_model_id=model_id,
+            model_type=ModelType.embedding,
+            metadata={
+                "embedding_dimension": model_info.embedding_dimension,
+                "context_length": model_info.context_length,
+            },
+        )
+        for model_id, model_info in EMBEDDING_MODEL_IDS.items()
+    ]
+    + SAFETY_MODELS_ENTRIES
+)

@@ -6,6 +6,7 @@
 [![Discord](https://img.shields.io/discord/1257833999603335178?color=6A7EC2&logo=discord&logoColor=ffffff)](https://discord.gg/llama-stack)
 [![Unit Tests](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml?query=branch%3Amain)
 [![Integration Tests](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml?query=branch%3Amain)
+![coverage badge](./coverage.svg)
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb) | [**Discord**](https://discord.gg/llama-stack)
 
@@ -77,7 +78,7 @@ As more providers start supporting Llama 4, you can use them in Llama Stack as w
 To try Llama Stack locally, run:
 
 ```bash
-curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/install.sh | bash
+curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/scripts/install.sh | bash
 ```
 
 ### Overview

@@ -6,8 +6,7 @@ import {
   UsePaginationOptions,
 } from "@/lib/types";
 import { LogsTable, LogTableRow } from "@/components/logs/logs-table";
-import { usePagination } from "@/hooks/usePagination";
-import { client } from "@/lib/client";
+import { usePagination } from "@/hooks/use-pagination";
 import type { ResponseListResponse } from "llama-stack-client/resources/responses/responses";
 import {
   isMessageInput,
@@ -125,12 +124,15 @@ function formatResponseToRow(response: OpenAIResponse): LogTableRow {
 }
 
 export function ResponsesTable({ paginationOptions }: ResponsesTableProps) {
-  const fetchFunction = async (params: {
-    after?: string;
-    limit: number;
-    model?: string;
-    order?: string;
-  }) => {
+  const fetchFunction = async (
+    client: ReturnType<typeof import("@/hooks/use-auth-client").useAuthClient>,
+    params: {
+      after?: string;
+      limit: number;
+      model?: string;
+      order?: string;
+    },
+  ) => {
     const response = await client.responses.list({
       after: params.after,
       limit: params.limit,

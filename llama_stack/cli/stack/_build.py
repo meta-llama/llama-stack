@@ -93,7 +93,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             )
             sys.exit(1)
     elif args.providers:
-        providers = dict()
+        providers_list: dict[str, str | list[str]] = dict()
         for api_provider in args.providers.split(","):
             if "=" not in api_provider:
                 cprint(
@@ -112,7 +112,15 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
             if provider in providers_for_api:
-                providers.setdefault(api, []).append(provider)
+                if api not in providers_list:
+                    providers_list[api] = []
+                # Use type guarding to ensure we have a list
+                provider_value = providers_list[api]
+                if isinstance(provider_value, list):
+                    provider_value.append(provider)
+                else:
+                    # Convert string to list and append
+                    providers_list[api] = [provider_value, provider]
             else:
                 cprint(
                     f"{provider} is not a valid provider for the {api} API.",
@@ -121,7 +129,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
         distribution_spec = DistributionSpec(
-            providers=providers,
+            providers=providers_list,
             description=",".join(args.providers),
         )
         if not args.image_type:
@@ -182,7 +190,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         cprint("Tip: use <TAB> to see options for the providers.\n", color="green", file=sys.stderr)
 
-        providers = dict()
+        providers: dict[str, str | list[str]] = dict()
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
             if not available_providers:
@@ -371,10 +379,16 @@ def _run_stack_build_command_from_build_config(
         if not image_name:
             raise ValueError("Please specify an image name when building a venv image")
 
+    # At this point, image_name should be guaranteed to be a string
+    if image_name is None:
+        raise ValueError("image_name should not be None after validation")
+
     if template_name:
         build_dir = DISTRIBS_BASE_DIR / template_name
         build_file_path = build_dir / f"{template_name}-build.yaml"
     else:
+        if image_name is None:
+            raise ValueError("image_name cannot be None")
         build_dir = DISTRIBS_BASE_DIR / image_name
         build_file_path = build_dir / f"{image_name}-build.yaml"
 
@@ -395,7 +409,7 @@ def _run_stack_build_command_from_build_config(
         build_file_path,
         image_name,
         template_or_config=template_name or config_path or str(build_file_path),
-        run_config=run_config_file,
+        run_config=run_config_file.as_posix() if run_config_file else None,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
@@ -403,15 +417,16 @@ def _run_stack_build_command_from_build_config(
     if template_name:
         # copy run.yaml from template to build_dir instead of generating it again
         template_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/run.yaml"
+        run_config_file = build_dir / f"{template_name}-run.yaml"
+
         with importlib.resources.as_file(template_path) as path:
-            run_config_file = build_dir / f"{template_name}-run.yaml"
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green", file=sys.stderr)
-        cprint(f"You can find the newly-built template here: {template_path}", color="blue", file=sys.stderr)
+        cprint(f"You can find the newly-built template here: {run_config_file}", color="blue", file=sys.stderr)
         cprint(
             "You can run the new Llama Stack distro via: "
-            + colored(f"llama stack run {template_path} --image-type {build_config.image_type}", "blue"),
+            + colored(f"llama stack run {run_config_file} --image-type {build_config.image_type}", "blue"),
             color="green",
             file=sys.stderr,
         )

@@ -244,35 +244,41 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         engine = create_async_engine(self.config.engine_str)
 
         try:
-            inspector = inspect(engine)
-
-            table_names = inspector.get_table_names()
-            if table not in table_names:
-                return
-
-            existing_columns = inspector.get_columns(table)
-            column_names = [col["name"] for col in existing_columns]
-
-            if column_name in column_names:
-                return
-
-            sqlalchemy_type = TYPE_MAPPING.get(column_type)
-            if not sqlalchemy_type:
-                raise ValueError(f"Unsupported column type '{column_type}' for column '{column_name}'.")
-
-            # Create the ALTER TABLE statement
-            # Note: We need to get the dialect-specific type name
-            dialect = engine.dialect
-            type_impl = sqlalchemy_type()
-            compiled_type = type_impl.compile(dialect=dialect)
-
-            nullable_clause = "" if nullable else " NOT NULL"
-            add_column_sql = text(f"ALTER TABLE {table} ADD COLUMN {column_name} {compiled_type}{nullable_clause}")
-
             async with engine.begin() as conn:
+
+                def check_column_exists(sync_conn):
+                    inspector = inspect(sync_conn)
+
+                    table_names = inspector.get_table_names()
+                    if table not in table_names:
+                        return False, False  # table doesn't exist, column doesn't exist
+
+                    existing_columns = inspector.get_columns(table)
+                    column_names = [col["name"] for col in existing_columns]
+
+                    return True, column_name in column_names  # table exists, column exists or not
+
+                table_exists, column_exists = await conn.run_sync(check_column_exists)
+                if not table_exists or column_exists:
+                    return
+
+                sqlalchemy_type = TYPE_MAPPING.get(column_type)
+                if not sqlalchemy_type:
+                    raise ValueError(f"Unsupported column type '{column_type}' for column '{column_name}'.")
+
+                # Create the ALTER TABLE statement
+                # Note: We need to get the dialect-specific type name
+                dialect = engine.dialect
+                type_impl = sqlalchemy_type()
+                compiled_type = type_impl.compile(dialect=dialect)
+
+                nullable_clause = "" if nullable else " NOT NULL"
+                add_column_sql = text(f"ALTER TABLE {table} ADD COLUMN {column_name} {compiled_type}{nullable_clause}")
+
                 await conn.execute(add_column_sql)
 
-        except Exception:
+        except Exception as e:
             # If any error occurs during migration, log it but don't fail
             # The table creation will handle adding the column
+            logger.error(f"Error adding column {column_name} to table {table}: {e}")
             pass

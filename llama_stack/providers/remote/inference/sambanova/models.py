@@ -9,6 +9,14 @@ from llama_stack.providers.utils.inference.model_registry import (
     build_hf_repo_model_entry,
 )
 
+SAFETY_MODELS_ENTRIES = [
+    build_hf_repo_model_entry(
+        "sambanova/Meta-Llama-Guard-3-8B",
+        CoreModelId.llama_guard_3_8b.value,
+    ),
+]
+
+
 MODEL_ENTRIES = [
     build_hf_repo_model_entry(
         "sambanova/Meta-Llama-3.1-8B-Instruct",
@@ -46,8 +54,4 @@ MODEL_ENTRIES = [
         "sambanova/Llama-4-Maverick-17B-128E-Instruct",
         CoreModelId.llama4_maverick_17b_128e_instruct.value,
     ),
-    build_hf_repo_model_entry(
-        "sambanova/Meta-Llama-Guard-3-8B",
-        CoreModelId.llama_guard_3_8b.value,
-    ),
-]
+] + SAFETY_MODELS_ENTRIES

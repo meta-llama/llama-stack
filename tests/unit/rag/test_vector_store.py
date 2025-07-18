@@ -112,7 +112,6 @@ class TestValidateEmbedding:
 
 
 class TestVectorStore:
-    @pytest.mark.asyncio
     async def test_returns_content_from_pdf_data_uri(self):
         data_uri = data_url_from_file(DUMMY_PDF_PATH)
         doc = RAGDocument(
@@ -124,7 +123,7 @@ class TestVectorStore:
         content = await content_from_doc(doc)
         assert content in DUMMY_PDF_TEXT_CHOICES
 
-    @pytest.mark.asyncio
+    @pytest.mark.allow_network
     async def test_downloads_pdf_and_returns_content(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
@@ -137,7 +136,7 @@ class TestVectorStore:
         content = await content_from_doc(doc)
         assert content in DUMMY_PDF_TEXT_CHOICES
 
-    @pytest.mark.asyncio
+    @pytest.mark.allow_network
     async def test_downloads_pdf_and_returns_content_with_url_object(self):
         # Using GitHub to host the PDF file
         url = "https://raw.githubusercontent.com/meta-llama/llama-stack/da035d69cfca915318eaf485770a467ca3c2a238/llama_stack/providers/tests/memory/fixtures/dummy.pdf"
@@ -204,7 +203,6 @@ class TestVectorStore:
 
 
 class TestVectorDBWithIndex:
-    @pytest.mark.asyncio
     async def test_insert_chunks_without_embeddings(self):
         mock_vector_db = MagicMock()
         mock_vector_db.embedding_model = "test-model without embeddings"
@@ -230,7 +228,6 @@ class TestVectorDBWithIndex:
         assert args[0] == chunks
         assert np.array_equal(args[1], np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], dtype=np.float32))
 
-    @pytest.mark.asyncio
     async def test_insert_chunks_with_valid_embeddings(self):
         mock_vector_db = MagicMock()
         mock_vector_db.embedding_model = "test-model with embeddings"
@@ -255,7 +252,6 @@ class TestVectorDBWithIndex:
         assert args[0] == chunks
         assert np.array_equal(args[1], np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]], dtype=np.float32))
 
-    @pytest.mark.asyncio
     async def test_insert_chunks_with_invalid_embeddings(self):
         mock_vector_db = MagicMock()
         mock_vector_db.embedding_dimension = 3
@@ -295,7 +291,6 @@ class TestVectorDBWithIndex:
         mock_inference_api.embeddings.assert_not_called()
         mock_index.add_chunks.assert_not_called()
 
-    @pytest.mark.asyncio
     async def test_insert_chunks_with_partially_precomputed_embeddings(self):
         mock_vector_db = MagicMock()
         mock_vector_db.embedding_model = "test-model with partial embeddings"

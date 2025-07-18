@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ChatCompletion } from "@/lib/types";
 import { ChatCompletionDetailView } from "@/components/chat-completions/chat-completion-detail";
-import { client } from "@/lib/client";
+import { useAuthClient } from "@/hooks/use-auth-client";
 
 export default function ChatCompletionDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const client = useAuthClient();
 
   const [completionDetail, setCompletionDetail] =
     useState<ChatCompletion | null>(null);
@@ -45,7 +46,7 @@ export default function ChatCompletionDetailPage() {
     };
 
     fetchCompletionDetail();
-  }, [id]);
+  }, [id, client]);
 
   return (
     <ChatCompletionDetailView
