@@ -7,15 +7,16 @@
 from io import BytesIO
 
 import pytest
+from openai import OpenAI
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
 
-def test_openai_client_basic_operations(openai_client, client_with_models):
+def test_openai_client_basic_operations(compat_client, client_with_models):
     """Test basic file operations through OpenAI client."""
-    if isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI files are not supported when testing with library client yet.")
-    client = openai_client
+    if isinstance(client_with_models, LlamaStackAsLibraryClient) and isinstance(compat_client, OpenAI):
+        pytest.skip("OpenAI files are not supported when testing with LlamaStackAsLibraryClient")
+    client = compat_client
 
     test_content = b"files test content"
 
@@ -41,7 +42,12 @@ def test_openai_client_basic_operations(openai_client, client_with_models):
         # Retrieve file content - OpenAI client returns httpx Response object
         content_response = client.files.content(uploaded_file.id)
         # The response is an httpx Response object with .content attribute containing bytes
-        content = content_response.content
+        if isinstance(content_response, str):
+            # Llama Stack Client returns a str
+            # TODO: fix Llama Stack Client
+            content = bytes(content_response, "utf-8")
+        else:
+            content = content_response.content
         assert content == test_content
 
         # Delete file

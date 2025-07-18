@@ -257,6 +257,11 @@ def openai_client(client_with_models):
     return OpenAI(base_url=base_url, api_key="fake")
 
 
+@pytest.fixture(params=["openai_client", "llama_stack_client"])
+def compat_client(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def cleanup_server_process(request):
     """Cleanup server process at the end of the test session."""
