@@ -167,7 +167,7 @@ When using the `:` pattern (like `${env.OLLAMA_INFERENCE_MODEL:__disabled__}`), 
 
 ## Running the Distribution
 
-You can run the starter distribution via Docker or Conda.
+You can run the starter distribution via Docker, Conda, or venv.
 
 ### Via Docker
 
@@ -186,17 +186,12 @@ docker run \
   --port $LLAMA_STACK_PORT
 ```
 
-### Via Conda
+### Via Conda or venv
 
-Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
+Ensure you have configured the starter distribution using the environment variables explained above.
 
 ```bash
-llama stack build --template starter --image-type conda
-llama stack run distributions/starter/run.yaml \
-  --port 8321 \
-  --env OPENAI_API_KEY=your_openai_key \
-  --env FIREWORKS_API_KEY=your_fireworks_key \
-  --env TOGETHER_API_KEY=your_together_key
+uv run --with llama-stack llama stack build --template starter --image-type <conda|venv> --run
 ```
 
 ## Example Usage
