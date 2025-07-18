@@ -82,39 +82,6 @@ class StackRun(Subcommand):
             return ImageType.CONDA.value, args.image_name
         return args.image_type, args.image_name
 
-    def _resolve_config_and_template(self, args: argparse.Namespace) -> tuple[Path | None, str | None]:
-        """Resolve config file path and template name from args.config"""
-        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
-
-        if not args.config:
-            return None, None
-
-        config_file = Path(args.config)
-        has_yaml_suffix = args.config.endswith(".yaml")
-        template_name = None
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if this is a template
-            config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
-            if config_file.exists():
-                template_name = args.config
-
-        if not config_file.exists() and not has_yaml_suffix:
-            # check if it's a build config saved to ~/.llama dir
-            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
-
-        if not config_file.exists():
-            self.parser.error(
-                f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
-            )
-
-        if not config_file.is_file():
-            self.parser.error(
-                f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
-            )
-
-        return config_file, template_name
-
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
 
@@ -125,8 +92,15 @@ class StackRun(Subcommand):
             self._start_ui_development_server(args.port)
         image_type, image_name = self._get_image_type_and_name(args)
 
-        # Resolve config file and template name first
-        config_file, template_name = self._resolve_config_and_template(args)
+        if args.config:
+            try:
+                from llama_stack.distribution.utils.config_resolution import Mode, resolve_config_or_template
+
+                config_file = resolve_config_or_template(args.config, Mode.RUN)
+            except ValueError as e:
+                self.parser.error(str(e))
+        else:
+            config_file = None
 
         # Check if config is required based on image type
         if (image_type in [ImageType.CONDA.value, ImageType.VENV.value]) and not config_file:
@@ -164,18 +138,14 @@ class StackRun(Subcommand):
                 if callable(getattr(args, arg)):
                     continue
                 if arg == "config":
-                    if template_name:
-                        server_args.template = str(template_name)
-                    else:
-                        # Set the config file path
-                        server_args.config = str(config_file)
+                    server_args.config = str(config_file)
                 else:
                     setattr(server_args, arg, getattr(args, arg))
 
             # Run the server
             server_main(server_args)
         else:
-            run_args = formulate_run_args(image_type, image_name, config, template_name)
+            run_args = formulate_run_args(image_type, image_name)
 
             run_args.extend([str(args.port)])
 
