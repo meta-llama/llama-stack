@@ -98,7 +98,7 @@ class ProcessingMessageWrapper(BaseModel):
 
 
 def mp_rank_0() -> bool:
-    return get_model_parallel_rank() == 0
+    return bool(get_model_parallel_rank() == 0)
 
 
 def encode_msg(msg: ProcessingMessage) -> bytes:
@@ -125,7 +125,7 @@ def retrieve_requests(reply_socket_url: str):
         reply_socket.send_multipart([client_id, encode_msg(obj)])
 
     while True:
-        tasks = [None]
+        tasks: list[ProcessingMessage | None] = [None]
         if mp_rank_0():
             client_id, maybe_task_json = maybe_get_work(reply_socket)
             if maybe_task_json is not None:
@@ -152,7 +152,7 @@ def retrieve_requests(reply_socket_url: str):
                     break
 
                 for obj in out:
-                    updates = [None]
+                    updates: list[ProcessingMessage | None] = [None]
                     if mp_rank_0():
                         _, update_json = maybe_get_work(reply_socket)
                         update = maybe_parse_message(update_json)

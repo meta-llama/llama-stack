@@ -123,14 +123,14 @@ class TestPostTraining:
         logger.info(f"Job artifacts: {artifacts}")
 
     # TODO: Fix these tests to properly represent the Jobs API in training
-    # @pytest.mark.asyncio
+    #
     # async def test_get_training_jobs(self, post_training_stack):
     #     post_training_impl = post_training_stack
     #     jobs_list = await post_training_impl.get_training_jobs()
     #     assert isinstance(jobs_list, list)
     #     assert jobs_list[0].job_uuid == "1234"
 
-    # @pytest.mark.asyncio
+    #
     # async def test_get_training_job_status(self, post_training_stack):
     #     post_training_impl = post_training_stack
     #     job_status = await post_training_impl.get_training_job_status("1234")
@@ -139,7 +139,7 @@ class TestPostTraining:
     #     assert job_status.status == JobStatus.completed
     #     assert isinstance(job_status.checkpoints[0], Checkpoint)
 
-    # @pytest.mark.asyncio
+    #
     # async def test_get_training_job_artifacts(self, post_training_stack):
     #     post_training_impl = post_training_stack
     #     job_artifacts = await post_training_impl.get_training_job_artifacts("1234")

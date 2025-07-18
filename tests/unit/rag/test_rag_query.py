@@ -64,7 +64,6 @@ class TestRagQuery:
         with pytest.raises(ValueError):
             RAGQueryConfig(mode="invalid_mode")
 
-    @pytest.mark.asyncio
     async def test_query_accepts_valid_modes(self):
         RAGQueryConfig()  # Test default (vector)
         RAGQueryConfig(mode="vector")  # Test vector

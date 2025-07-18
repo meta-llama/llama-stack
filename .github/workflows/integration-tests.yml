@@ -7,7 +7,7 @@ on:
     branches: [ main ]
     paths:
       - 'llama_stack/**'
-      - 'tests/integration/**'
+      - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
       - 'requirements.txt'
