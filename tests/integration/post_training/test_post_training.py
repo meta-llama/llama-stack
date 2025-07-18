@@ -101,7 +101,7 @@ class TestPostTraining:
         # train with HF trl SFTTrainer as the default
         _ = llama_stack_client.post_training.supervised_fine_tune(
             job_uuid=job_uuid,
-            model="ibm-granite/granite-3.3-2b-instruct",
+            model="distilgpt2",  # Much smaller model for faster CI testing
             algorithm_config=algorithm_config,
             training_config=training_config,
             hyperparam_search_config={},
@@ -162,12 +162,12 @@ class TestPostTraining:
                 "post-training/messages",
                 {
                     "type": "uri",
-                    "uri": "huggingface://datasets/trl-internal-testing/hh-rlhf-helpful-base-trl-style?split=train[:100]", #first 100 samples for testing
+                    "uri": "huggingface://datasets/trl-internal-testing/hh-rlhf-helpful-base-trl-style?split=train[:4]",  # Just 4 samples for fast CI testing
                 },
             ),
         ],
     )
-    @pytest.mark.timeout(360)  # 6 minutes timeout
+    @pytest.mark.timeout(360)
     def test_preference_optimize(self, llama_stack_client, purpose, source):
         logger.info("Starting DPO preference optimization test")
 
@@ -205,7 +205,7 @@ class TestPostTraining:
         # train with HuggingFace DPO implementation
         _ = llama_stack_client.post_training.preference_optimize(
             job_uuid=job_uuid,
-            finetuned_model="ibm-granite/granite-3.3-2b-instruct",
+            finetuned_model="distilgpt2",  # Much smaller model for faster CI testing
             algorithm_config=algorithm_config,
             training_config=training_config,
             hyperparam_search_config={},
