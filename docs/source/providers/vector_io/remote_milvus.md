@@ -114,7 +114,7 @@ For more details on TLS configuration, refer to the [TLS setup guide](https://mi
 | `uri` | `<class 'str'>` | No | PydanticUndefined | The URI of the Milvus server |
 | `token` | `str \| None` | No | PydanticUndefined | The token of the Milvus server |
 | `consistency_level` | `<class 'str'>` | No | Strong | The consistency level of the Milvus server |
-| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend |
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig, annotation=NoneType, required=False, default='sqlite', discriminator='type'` | No |  | Config for KV store backend (SQLite only for now). Optional for remote Milvus connections - only needed for vector database registry persistence across server restarts. |
 | `config` | `dict` | No | {} | This configuration allows additional fields to be passed through to the underlying Milvus client. See the [Milvus](https://milvus.io/docs/install-overview.md) documentation for more details about Milvus in general. |
 
 > **Note**: This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider.
