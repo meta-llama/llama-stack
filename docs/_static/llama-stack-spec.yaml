@@ -10114,18 +10114,21 @@ components:
         beta:
           type: number
         loss_type:
-          type: string
-          enum:
-            - sigmoid
-            - hinge
-            - ipo
-            - kto_pair
+          $ref: '#/components/schemas/DPOLossType'
           default: sigmoid
       additionalProperties: false
       required:
         - beta
         - loss_type
       title: DPOAlignmentConfig
+    DPOLossType:
+      type: string
+      enum:
+        - sigmoid
+        - hinge
+        - ipo
+        - kto_pair
+      title: DPOLossType
     DataConfig:
       type: object
       properties:
