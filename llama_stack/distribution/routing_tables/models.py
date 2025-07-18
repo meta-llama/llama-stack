@@ -92,6 +92,8 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         # from run.yaml) that we need to keep track of
         model_ids = {}
         for model in existing_models:
+            # we leave embeddings models alone because often we don't get metadata
+            # (embedding dimension, etc.) from the provider
             if model.provider_id == provider_id and model.model_type == ModelType.llm:
                 model_ids[model.provider_resource_id] = model.identifier
                 logger.debug(f"unregistering model {model.identifier}")
