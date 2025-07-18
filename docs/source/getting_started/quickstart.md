@@ -19,7 +19,7 @@ ollama run llama3.2:3b --keepalive 60m
 #### Step 2: Run the Llama Stack server
 We will use `uv` to run the Llama Stack server.
 ```bash
-INFERENCE_MODEL=llama3.2:3b uv run --with llama-stack llama stack build --template starter --image-type venv --run
+ENABLE_OLLAMA=ollama OLLAMA_INFERENCE_MODEL=llama3.2:3b uv run --with llama-stack llama stack build --template starter --image-type venv --run
 ```
 #### Step 3: Run the demo
 Now open up a new terminal and copy the following script into a file named `demo_script.py`.
@@ -110,6 +110,12 @@ To further clarify, I would suggest that doing great work involves:
 Ultimately, great work is about making a meaningful contribution and leaving a lasting impression.
 ```
 Congratulations! You've successfully built your first RAG application using Llama Stack! 🎉🥳
+
+```{admonition} HuggingFace access
+:class: tip
+
+If you are getting a **401 Client Error** from HuggingFace for the **all-MiniLM-L6-v2** model, try setting **HF_TOKEN** to a valid HuggingFace token in your environment
+```
 
 ### Next Steps
 
