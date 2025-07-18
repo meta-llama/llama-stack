@@ -101,7 +101,7 @@ class TestPostTraining:
         # train with HF trl SFTTrainer as the default
         _ = llama_stack_client.post_training.supervised_fine_tune(
             job_uuid=job_uuid,
-            model="distilgpt2",  # Much smaller model for faster CI testing
+            model="ibm-granite/granite-3.3-2b-instruct",
             algorithm_config=algorithm_config,
             training_config=training_config,
             hyperparam_search_config={},
@@ -162,7 +162,7 @@ class TestPostTraining:
                 "post-training/messages",
                 {
                     "type": "uri",
-                    "uri": "huggingface://datasets/trl-internal-testing/hh-rlhf-helpful-base-trl-style?split=train[:4]",  # Just 4 samples for fast CI testing
+                    "uri": "huggingface://datasets/trl-internal-testing/hh-rlhf-helpful-base-trl-style?split=train[:20]",
                 },
             ),
         ],
