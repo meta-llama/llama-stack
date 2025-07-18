@@ -56,7 +56,6 @@ providers:
       api_key: ${env.TOGETHER_API_KEY}
   - provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
     provider_type: remote::bedrock
-    config: {}
   - provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
     provider_type: remote::databricks
     config:
@@ -132,7 +131,6 @@ providers:
       api_key: ${env.PASSTHROUGH_API_KEY}
   - provider_id: ${env.ENABLE_SENTENCE_TRANSFORMERS:=sentence-transformers}
     provider_type: inline::sentence-transformers
-    config: {}
   vector_io:
   - provider_id: ${env.ENABLE_FAISS:=faiss}
     provider_type: inline::faiss
@@ -230,10 +228,8 @@ providers:
   scoring:
   - provider_id: basic
     provider_type: inline::basic
-    config: {}
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
-    config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
@@ -251,10 +247,8 @@ providers:
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
-    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/registry.db
