@@ -71,7 +71,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template starter --image-type venv
+          uv run llama stack build --template ci-tests --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -92,9 +92,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="starter"
+            stack_config="ci-tests"
           else
-            stack_config="server:starter"
+            stack_config="server:ci-tests"
           fi
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
