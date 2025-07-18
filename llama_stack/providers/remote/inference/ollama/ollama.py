@@ -139,12 +139,10 @@ class OllamaInferenceAdapter(
 
     async def _refresh_models(self) -> None:
         # Wait for model store to be available (with timeout)
-        wait_interval = 1  # check every 3 seconds
         waited_time = 0
-
         while not self.model_store and waited_time < 60:
-            await asyncio.sleep(wait_interval)
-            waited_time += wait_interval
+            await asyncio.sleep(1)
+            waited_time += 1
 
         if not self.model_store:
             raise ValueError("Model store not set after waiting 60 seconds")
