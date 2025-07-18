@@ -39,16 +39,6 @@ def available_providers() -> list[ProviderSpec]:
         ),
         InlineProviderSpec(
             api=Api.inference,
-            provider_type="inline::vllm",
-            pip_packages=[
-                "vllm",
-            ],
-            module="llama_stack.providers.inline.inference.vllm",
-            config_class="llama_stack.providers.inline.inference.vllm.VLLMConfig",
-            description="vLLM inference provider for high-performance model serving with PagedAttention and continuous batching.",
-        ),
-        InlineProviderSpec(
-            api=Api.inference,
             provider_type="inline::sentence-transformers",
             pip_packages=[
                 "torch torchvision --index-url https://download.pytorch.org/whl/cpu",
