@@ -48,16 +48,9 @@ async def client_wrapper(endpoint: str, headers: dict[str, str]) -> AsyncGenerat
 
     for i, strategy in enumerate(connection_strategies):
         try:
-            if strategy == MCPProtol.STREAMABLE_HTTP:
-                client = streamablehttp_client
-            elif strategy == MCPProtol.SSE:
+            client = streamablehttp_client
+            if strategy == MCPProtol.SSE:
                 client = sse_client
-            else:
-                # this should not happen
-                logger.warning(
-                    "tried to establish MCP connection with UNKNOWN protocol, defaulting to try with STREAMABLE_HTTP"
-                )
-                client = streamablehttp_client
             async with client(endpoint, headers=headers) as client_streams:
                 async with ClientSession(read_stream=client_streams[0], write_stream=client_streams[1]) as session:
                     await session.initialize()
