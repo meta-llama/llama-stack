@@ -47,10 +47,12 @@ def setup_telemetry_data(llama_stack_client, text_model_id):
     if len(traces) < 4:
         pytest.fail(f"Failed to create sufficient telemetry data after 30s. Got {len(traces)} traces.")
 
+    # Wait for 5 seconds to ensure traces has completed logging
+    time.sleep(5)
+
     yield
 
 
-@pytest.mark.skip(reason="Skipping telemetry tests for now")
 def test_query_traces_basic(llama_stack_client):
     """Test basic trace querying functionality with proper data validation."""
     all_traces = llama_stack_client.telemetry.query_traces(limit=5)
@@ -106,7 +108,6 @@ def test_query_traces_basic(llama_stack_client):
         assert hasattr(trace, "root_span_id") and trace.root_span_id, "Each trace should have non-empty root_span_id"
 
 
-@pytest.mark.skip(reason="Skipping telemetry tests for now")
 def test_query_spans_basic(llama_stack_client):
     """Test basic span querying functionality with proper validation."""
     spans = llama_stack_client.telemetry.query_spans(attribute_filters=[], attributes_to_return=[])
@@ -155,7 +156,6 @@ def test_query_spans_basic(llama_stack_client):
             assert hasattr(span, attr) and getattr(span, attr), f"All spans should have non-empty {attr}"
 
 
-@pytest.mark.skip(reason="Skipping telemetry tests for now")
 def test_telemetry_pagination(llama_stack_client):
     """Test pagination in telemetry queries."""
     # Get total count of traces
