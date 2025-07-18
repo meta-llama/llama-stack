@@ -455,6 +455,7 @@ def main(args: argparse.Namespace | None = None):
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
@@ -493,7 +494,13 @@ def main(args: argparse.Namespace | None = None):
         )
 
     try:
-        impls = asyncio.run(construct_stack(config))
+        # Create and set the event loop that will be used for both construction and server runtime
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Construct the stack in the persistent event loop
+        impls = loop.run_until_complete(construct_stack(config))
+
     except InvalidProviderError as e:
         logger.error(f"Error: {str(e)}")
         sys.exit(1)
@@ -591,7 +598,8 @@ def main(args: argparse.Namespace | None = None):
     if ssl_config:
         uvicorn_config.update(ssl_config)
 
-    uvicorn.run(**uvicorn_config)
+    # Run uvicorn in the existing event loop to preserve background tasks
+    loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
 
 
 def extract_path_params(route: str) -> list[str]:
