@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import pytest
 
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
@@ -32,7 +31,6 @@ MODEL = "Llama3.1-8B-Instruct"
 MODEL3_2 = "Llama3.2-3B-Instruct"
 
 
-@pytest.mark.asyncio
 async def test_system_default():
     content = "Hello !"
     request = ChatCompletionRequest(
@@ -47,7 +45,6 @@ async def test_system_default():
     assert "Cutting Knowledge Date: December 2023" in interleaved_content_as_str(messages[0].content)
 
 
-@pytest.mark.asyncio
 async def test_system_builtin_only():
     content = "Hello !"
     request = ChatCompletionRequest(
@@ -67,7 +64,6 @@ async def test_system_builtin_only():
     assert "Tools: brave_search" in interleaved_content_as_str(messages[0].content)
 
 
-@pytest.mark.asyncio
 async def test_system_custom_only():
     content = "Hello !"
     request = ChatCompletionRequest(
@@ -98,7 +94,6 @@ async def test_system_custom_only():
     assert messages[-1].content == content
 
 
-@pytest.mark.asyncio
 async def test_system_custom_and_builtin():
     content = "Hello !"
     request = ChatCompletionRequest(
@@ -132,7 +127,6 @@ async def test_system_custom_and_builtin():
     assert messages[-1].content == content
 
 
-@pytest.mark.asyncio
 async def test_completion_message_encoding():
     request = ChatCompletionRequest(
         model=MODEL3_2,
@@ -174,7 +168,6 @@ async def test_completion_message_encoding():
     assert '{"type": "function", "name": "custom1", "parameters": {"param1": "value1"}}' in prompt
 
 
-@pytest.mark.asyncio
 async def test_user_provided_system_message():
     content = "Hello !"
     system_prompt = "You are a pirate"
@@ -195,7 +188,6 @@ async def test_user_provided_system_message():
     assert messages[-1].content == content
 
 
-@pytest.mark.asyncio
 async def test_replace_system_message_behavior_builtin_tools():
     content = "Hello !"
     system_prompt = "You are a pirate"
@@ -221,7 +213,6 @@ async def test_replace_system_message_behavior_builtin_tools():
     assert messages[-1].content == content
 
 
-@pytest.mark.asyncio
 async def test_replace_system_message_behavior_custom_tools():
     content = "Hello !"
     system_prompt = "You are a pirate"
@@ -259,7 +250,6 @@ async def test_replace_system_message_behavior_custom_tools():
     assert messages[-1].content == content
 
 
-@pytest.mark.asyncio
 async def test_replace_system_message_behavior_custom_tools_with_template():
     content = "Hello !"
     system_prompt = "You are a pirate {{ function_description }}"
