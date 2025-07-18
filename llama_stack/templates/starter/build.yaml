@@ -63,3 +63,4 @@ additional_pip_packages:
 - aiosqlite
 - asyncpg
 - sqlalchemy[asyncio]
+- datasets

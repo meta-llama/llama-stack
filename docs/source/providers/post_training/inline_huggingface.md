@@ -24,6 +24,9 @@ HuggingFace-based post-training provider for fine-tuning models using the Huggin
 | `weight_decay` | `<class 'float'>` | No | 0.01 |  |
 | `dataloader_num_workers` | `<class 'int'>` | No | 4 |  |
 | `dataloader_pin_memory` | `<class 'bool'>` | No | True |  |
+| `dpo_beta` | `<class 'float'>` | No | 0.1 |  |
+| `use_reference_model` | `<class 'bool'>` | No | True |  |
+| `dpo_loss_type` | `Literal['sigmoid', 'hinge', 'ipo', 'kto_pair'` | No | sigmoid |  |
 
 ## Sample Configuration
 
