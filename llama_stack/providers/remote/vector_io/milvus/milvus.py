@@ -247,6 +247,16 @@ class MilvusIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Hybrid search is not supported in Milvus")
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        """Remove a chunk from the Milvus collection."""
+        try:
+            await asyncio.to_thread(
+                self.client.delete, collection_name=self.collection_name, filter=f'chunk_id == "{chunk_id}"'
+            )
+        except Exception as e:
+            logger.error(f"Error deleting chunk {chunk_id} from Milvus collection {self.collection_name}: {e}")
+            raise
+
 
 class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     def __init__(
@@ -372,4 +382,9 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
     async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
         """Delete a chunk from a milvus vector store."""
-        pass  # TODO
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
+
+        # Use the index's delete_chunk method
+        await index.index.delete_chunk(chunk_id)
