@@ -129,6 +129,22 @@ repos:
         require_serial: true
         always_run: true
         files: ^llama_stack/.*$
+      - id: forbid-pytest-asyncio
+        name: Block @pytest.mark.asyncio and @pytest_asyncio.fixture
+        entry: bash
+        language: system
+        types: [python]
+        pass_filenames: true
+        args:
+          - -c
+          - |
+            grep -EnH '^[^#]*@pytest\.mark\.asyncio|@pytest_asyncio\.fixture' "$@" && {
+              echo;
+              echo "❌ Do not use @pytest.mark.asyncio or @pytest_asyncio.fixture."
+              echo "   pytest is already configured with async-mode=auto."
+              echo;
+              exit 1;
+            } || true
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-import pytest_asyncio
 
 from llama_stack.apis.vector_io import QueryChunksResponse
 
@@ -33,7 +32,7 @@ with patch.dict("sys.modules", {"pymilvus": pymilvus_mock}):
 MILVUS_PROVIDER = "milvus"
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def mock_milvus_client() -> MagicMock:
     """Create a mock Milvus client with common method behaviors."""
     client = MagicMock()
@@ -84,7 +83,7 @@ async def mock_milvus_client() -> MagicMock:
     return client
 
 
-@pytest_asyncio.fixture
+@pytest.fixture
 async def milvus_index(mock_milvus_client):
     """Create a MilvusIndex with mocked client."""
     index = MilvusIndex(client=mock_milvus_client, collection_name="test_collection")
@@ -92,7 +91,6 @@ async def milvus_index(mock_milvus_client):
     # No real cleanup needed since we're using mocks
 
 
-@pytest.mark.asyncio
 async def test_add_chunks(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
     # Setup: collection doesn't exist initially, then exists after creation
     mock_milvus_client.has_collection.side_effect = [False, True]
@@ -108,7 +106,6 @@ async def test_add_chunks(milvus_index, sample_chunks, sample_embeddings, mock_m
     assert len(insert_call[1]["data"]) == len(sample_chunks)
 
 
-@pytest.mark.asyncio
 async def test_query_chunks_vector(
     milvus_index, sample_chunks, sample_embeddings, embedding_dimension, mock_milvus_client
 ):
@@ -125,7 +122,6 @@ async def test_query_chunks_vector(
     mock_milvus_client.search.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_query_chunks_keyword_search(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
     mock_milvus_client.has_collection.return_value = True
     await milvus_index.add_chunks(sample_chunks, sample_embeddings)
@@ -138,7 +134,6 @@ async def test_query_chunks_keyword_search(milvus_index, sample_chunks, sample_e
     assert len(response.chunks) == 2
 
 
-@pytest.mark.asyncio
 async def test_bm25_fallback_to_simple_search(milvus_index, sample_chunks, sample_embeddings, mock_milvus_client):
     """Test that when BM25 search fails, the system falls back to simple text search."""
     mock_milvus_client.has_collection.return_value = True
@@ -181,7 +176,6 @@ async def test_bm25_fallback_to_simple_search(milvus_index, sample_chunks, sampl
     assert all(score == 1.0 for score in response.scores), "Simple text search should use binary scoring"
 
 
-@pytest.mark.asyncio
 async def test_delete_collection(milvus_index, mock_milvus_client):
     # Test collection deletion
     mock_milvus_client.has_collection.return_value = True
