@@ -99,6 +99,7 @@ class ToolDefinition(BaseModel):
     tool_name: BuiltinTool | str
     description: str | None = None
     parameters: dict[str, ToolParamDefinition] | None = None
+    toolgroup_name: str | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod
