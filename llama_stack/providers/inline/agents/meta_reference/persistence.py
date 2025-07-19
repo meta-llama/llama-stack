@@ -12,8 +12,8 @@ from datetime import UTC, datetime
 from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
 from llama_stack.distribution.access_control.datatypes import AccessRule
-from llama_stack.distribution.datatypes import User
 from llama_stack.distribution.request_headers import get_authenticated_user
+from llama_stack.distribution.user import User
 from llama_stack.providers.utils.kvstore import KVStore
 
 log = logging.getLogger(__name__)

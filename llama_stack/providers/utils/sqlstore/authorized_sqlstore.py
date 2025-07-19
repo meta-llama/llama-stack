@@ -10,8 +10,8 @@ from typing import Any, Literal
 from llama_stack.distribution.access_control.access_control import default_policy, is_action_allowed
 from llama_stack.distribution.access_control.conditions import ProtectedResource
 from llama_stack.distribution.access_control.datatypes import AccessRule, Action, Scope
-from llama_stack.distribution.datatypes import User
 from llama_stack.distribution.request_headers import get_authenticated_user
+from llama_stack.distribution.user import User
 from llama_stack.log import get_logger
 
 from .api import ColumnDefinition, ColumnType, PaginatedResponse, SqlStore

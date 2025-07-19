@@ -6,7 +6,7 @@
 
 from typing import Any
 
-from llama_stack.distribution.datatypes import User
+from llama_stack.distribution.user import User
 
 from .conditions import (
     Condition,

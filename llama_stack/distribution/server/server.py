@@ -23,7 +23,6 @@ from typing import Annotated, Any, get_origin
 
 import rich.pretty
 import yaml
-from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
@@ -39,13 +38,9 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
+from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, request_provider_data_context, user_from_scope
 from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.server.routes import (
-    find_matching_route,
-    get_all_api_routes,
-    initialize_route_impls,
-)
+from llama_stack.distribution.server.routes import get_all_api_routes
 from llama_stack.distribution.stack import (
     cast_image_name_to_string,
     construct_stack,
@@ -67,7 +62,9 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
+from .access_control import AccessControlMiddleware
 from .auth import AuthenticationMiddleware
+from .middleware_base import BaseServerMiddleware
 from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
@@ -220,9 +217,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
     @functools.wraps(func)
     async def route_handler(request: Request, **kwargs):
         # Get auth attributes from the request scope
-        user_attributes = request.scope.get("user_attributes", {})
-        principal = request.scope.get("principal", "")
-        user = User(principal=principal, attributes=user_attributes)
+        user = user_from_scope(request.scope)
 
         await log_request_pre_validation(request)
 
@@ -279,34 +274,15 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
     return route_handler
 
 
-class TracingMiddleware:
-    def __init__(self, app, impls):
-        self.app = app
-        self.impls = impls
-        # FastAPI built-in paths that should bypass custom routing
-        self.fastapi_paths = ("/docs", "/redoc", "/openapi.json", "/favicon.ico", "/static")
-
-    async def __call__(self, scope, receive, send):
-        if scope.get("type") == "lifespan":
-            return await self.app(scope, receive, send)
-
+class TracingMiddleware(BaseServerMiddleware):
+    async def process_request(self, scope, receive, send, route, impl, webmethod):
         path = scope.get("path", "")
 
-        # Check if the path is a FastAPI built-in path
-        if path.startswith(self.fastapi_paths):
-            # Pass through to FastAPI's built-in handlers
-            logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
-            return await self.app(scope, receive, send)
-
-        if not hasattr(self, "route_impls"):
-            self.route_impls = initialize_route_impls(self.impls)
-
-        try:
-            _, _, trace_path = find_matching_route(scope.get("method", hdrs.METH_GET), path, self.route_impls)
-        except ValueError:
-            # If no matching endpoint is found, pass through to FastAPI
-            logger.debug(f"No matching route found for path: {path}, falling back to FastAPI")
-            return await self.app(scope, receive, send)
+        # Extract trace path from webmethod or fall back to path
+        if webmethod:
+            trace_path = webmethod.descriptive_name or webmethod.route or path
+        else:
+            trace_path = path
 
         trace_attributes = {"__location__": "server", "raw_path": path}
 
@@ -457,11 +433,7 @@ def main(args: argparse.Namespace | None = None):
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
-    # Add authentication middleware if configured
-    if config.server.auth:
-        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
-        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
-    else:
+    if not config.server.auth:
         if config.server.quota:
             quota = config.server.quota
             logger.warning(
@@ -507,6 +479,14 @@ def main(args: argparse.Namespace | None = None):
         setup_logger(impls[Api.telemetry])
     else:
         setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
+
+    # Note: FastAPI executes middleware in reverse order of addition
+    if config.server.auth:
+        # Add access control middleware FIRST so it executes AFTER auth middleware
+        app.add_middleware(AccessControlMiddleware, impls=impls)
+        # Add auth middleware SECOND so it executes FIRST (and populates scope)
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
+        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
 
     all_routes = get_all_api_routes()
 

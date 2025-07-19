@@ -25,6 +25,7 @@ from llama_stack.apis.tools import Tool, ToolGroup, ToolGroupInput, ToolRuntime
 from llama_stack.apis.vector_dbs import VectorDB, VectorDBInput
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.distribution.access_control.datatypes import AccessRule
+from llama_stack.distribution.user import User
 from llama_stack.providers.datatypes import Api, ProviderSpec
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import SqlStoreConfig
@@ -34,15 +35,6 @@ LLAMA_STACK_RUN_CONFIG_VERSION = 2
 
 
 RoutingKey = str | list[str]
-
-
-class User(BaseModel):
-    principal: str
-    # further attributes that may be used for access control decisions
-    attributes: dict[str, list[str]] | None = None
-
-    def __init__(self, principal: str, attributes: dict[str, list[str]] | None):
-        super().__init__(principal=principal, attributes=attributes)
 
 
 class ResourceWithOwner(Resource):

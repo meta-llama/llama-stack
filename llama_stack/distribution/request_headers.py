@@ -10,7 +10,7 @@ import logging
 from contextlib import AbstractContextManager
 from typing import Any
 
-from llama_stack.distribution.datatypes import User
+from llama_stack.distribution.user import User
 
 from .utils.dynamic import instantiate_class_type
 
@@ -101,3 +101,15 @@ def get_authenticated_user() -> User | None:
     if not provider_data:
         return None
     return provider_data.get("__authenticated_user")
+
+
+def user_from_scope(scope: dict) -> User | None:
+    """Create a User object from ASGI scope data (set by authentication middleware)"""
+    user_attributes = scope.get("user_attributes", {})
+    principal = scope.get("principal", "")
+
+    # auth not enabled
+    if not principal and not user_attributes:
+        return None
+
+    return User(principal=principal, attributes=user_attributes)

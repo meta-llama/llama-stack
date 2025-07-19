@@ -359,7 +359,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body, field_names = self._handle_file_uploads(options, body)
 
         body = self._convert_body(path, options.method, body, exclude_params=set(field_names))
-        await start_trace(route, {"__location__": "library_client"})
+        # Extract string from WebMethod for tracing
+        trace_path = route.descriptive_name or route.route or path if route else path
+        await start_trace(trace_path, {"__location__": "library_client"})
         try:
             result = await matched_func(**body)
         finally:
@@ -414,7 +416,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         body = self._convert_body(path, options.method, body)
 
-        await start_trace(route, {"__location__": "library_client"})
+        # Extract string from WebMethod for tracing
+        trace_path = route.descriptive_name or route.route or path if route else path
+        await start_trace(trace_path, {"__location__": "library_client"})
 
         async def gen():
             try:
