@@ -47,6 +47,8 @@ def setup_telemetry_data(llama_stack_client, text_model_id):
     if len(traces) < 4:
         pytest.fail(f"Failed to create sufficient telemetry data after 30s. Got {len(traces)} traces.")
 
+    time.sleep(5)
+
     yield
 
 
