@@ -21,6 +21,10 @@ from llama_stack.distribution.datatypes import (
     OAuth2TokenAuthConfig,
     User,
 )
+from llama_stack.distribution.server.oauth2_scopes import (
+    scope_grants_admin_access,
+    validate_scopes,
+)
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="auth")
@@ -128,13 +132,34 @@ class OAuth2TokenAuthProvider(AuthProvider):
         except Exception as exc:
             raise ValueError("Invalid JWT token") from exc
 
-        # There are other standard claims, the most relevant of which is `scope`.
-        # We should incorporate these into the access attributes.
-        principal = claims["sub"]
-        access_attributes = get_attributes_from_claims(claims, self.config.claims_mapping)
+        # Extract and validate OAuth2 scopes - deny by default if no valid scopes
+        token_scopes = set(claims.get("scope", "").split()) if claims.get("scope") else set()
+
+        # Validate scopes against standard Llama Stack scopes
+        valid_scopes = validate_scopes(token_scopes)
+
+        logger.info(f"User {claims['sub']} authenticated with scopes: {valid_scopes}")
+
+        # Convert scopes to user attributes for the existing ABAC system
+        attributes = {"scopes": list(valid_scopes)}
+
+        # Add admin role if user has admin scope
+        if scope_grants_admin_access(valid_scopes):
+            attributes["roles"] = ["admin"]
+
+        # Maintain backward compatibility with existing claims mapping
+        legacy_attributes = get_attributes_from_claims(claims, self.config.claims_mapping)
+        if legacy_attributes:
+            for key, values in legacy_attributes.items():
+                if key not in attributes:
+                    attributes[key] = values
+                else:
+                    # Merge lists, avoiding duplicates
+                    attributes[key] = list(set(attributes[key] + values))
+
         return User(
-            principal=principal,
-            attributes=access_attributes,
+            principal=claims["sub"],
+            attributes=attributes,
         )
 
     async def introspect_token(self, token: str, scope: dict | None = None) -> User:
