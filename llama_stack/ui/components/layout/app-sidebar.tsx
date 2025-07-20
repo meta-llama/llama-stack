@@ -5,6 +5,7 @@ import {
   MessagesSquare,
   MoveUpRight,
   Database,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,6 +24,11 @@ import {
 } from "@/components/ui/sidebar";
 
 const logItems = [
+  {
+    title: "Chat Playground",
+    url: "/chat-playground",
+    icon: MessageCircle,
+  },
   {
     title: "Chat Completions",
     url: "/logs/chat-completions",
