@@ -29,6 +29,14 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default=True,
         description="Whether to verify TLS certificates. Can be a boolean or a path to a CA certificate file.",
     )
+    refresh_models: bool = Field(
+        default=False,
+        description="Whether to refresh models periodically",
+    )
+    refresh_models_interval: int = Field(
+        default=300,
+        description="Interval in seconds to refresh models",
+    )
 
     @field_validator("tls_verify")
     @classmethod
@@ -46,7 +54,7 @@ class VLLMInferenceAdapterConfig(BaseModel):
     @classmethod
     def sample_run_config(
         cls,
-        url: str = "${env.VLLM_URL}",
+        url: str = "${env.VLLM_URL:=}",
         **kwargs,
     ):
         return {
