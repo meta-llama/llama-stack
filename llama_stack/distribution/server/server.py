@@ -592,6 +592,7 @@ def main(args: argparse.Namespace | None = None):
         "port": port,
         "lifespan": "on",
         "log_level": logger.getEffectiveLevel(),
+        "log_config": logger_config,
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)
