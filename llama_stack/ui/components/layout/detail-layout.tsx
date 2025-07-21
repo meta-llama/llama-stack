@@ -1,6 +1,6 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/chat/card";
+import { Skeleton } from "@/components/chat/skeleton";
 
 export function DetailLoadingView({ title }: { title: string }) {
   return (

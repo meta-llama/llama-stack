@@ -8,10 +8,10 @@ import { omit } from "remeda"
 import { cn } from "@/lib/utils"
 import { useAudioRecording } from "@/hooks/use-audio-recording"
 import { useAutosizeTextArea } from "@/hooks/use-autosize-textarea"
-import { AudioVisualizer } from "@/components/ui/audio-visualizer"
-import { Button } from "@/components/ui/button"
-import { FilePreview } from "@/components/ui/file-preview"
-import { InterruptPrompt } from "@/components/ui/interrupt-prompt"
+import { AudioVisualizer } from "@/components/chat/audio-visualizer"
+import { Button } from "@/components/chat/button"
+import { FilePreview } from "@/components/chat/file-preview"
+import { InterruptPrompt } from "@/components/chat/interrupt-prompt"
 
 interface MessageInputBaseProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -254,6 +254,7 @@ export function MessageInput({
             variant="outline"
             className="h-8 w-8"
             aria-label="Attach a file"
+            disabled={true}
             onClick={async () => {
               const files = await showFileUploadDialog()
               addFiles(files)

@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/chat/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Chat } from "@/components/ui/chat";
-import { type Message } from "@/components/ui/chat-message";
+} from "@/components/chat/select";
+import { Chat } from "@/components/chat/chat";
+import { type Message } from "@/components/chat/chat-message";
 import { useAuthClient } from "@/hooks/use-auth-client";
 import type { CompletionCreateParams } from "llama-stack-client/resources/chat/completions";
 import type { Model } from "llama-stack-client/resources/models";

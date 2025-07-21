@@ -2,8 +2,8 @@
 
 import type { VectorStore } from "llama-stack-client/resources/vector-stores/vector-stores";
 import type { VectorStoreFile } from "llama-stack-client/resources/vector-stores/files";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/chat/card";
+import { Skeleton } from "@/components/chat/skeleton";
 import {
   DetailLoadingView,
   DetailErrorView,
@@ -20,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/chat/table";
 
 interface VectorStoreDetailViewProps {
   store: VectorStore | null;
