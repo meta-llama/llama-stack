@@ -91,7 +91,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template ci-tests --image-type venv
+          uv run llama stack build --template starter --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -108,9 +108,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="ci-tests"
+            stack_config="starter"
           else
-            stack_config="server:ci-tests"
+            stack_config="server:starter"
           fi
 
           EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
