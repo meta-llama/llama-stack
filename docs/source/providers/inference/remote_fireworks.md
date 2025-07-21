@@ -16,7 +16,7 @@ Fireworks AI inference provider for Llama models and other AI models on the Fire
 
 ```yaml
 url: https://api.fireworks.ai/inference/v1
-api_key: ${env.FIREWORKS_API_KEY}
+api_key: ${env.FIREWORKS_API_KEY:=}
 
 ```
 

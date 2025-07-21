@@ -25,7 +25,8 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def refresh(self) -> None:
         for provider_id, provider in self.impls_by_provider_id.items():
             refresh = await provider.should_refresh_models()
-            if not (refresh or provider_id in self.listed_providers):
+            refresh = refresh or provider_id not in self.listed_providers
+            if not refresh:
                 continue
 
             try:
@@ -137,6 +138,9 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             if model.provider_resource_id in model_ids:
                 # avoid overwriting a non-provider-registered model entry
                 continue
+
+            if model.identifier == model.provider_resource_id:
+                model.identifier = f"{provider_id}/{model.provider_resource_id}"
 
             logger.debug(f"registering model {model.identifier} ({model.provider_resource_id})")
             await self.register_object(

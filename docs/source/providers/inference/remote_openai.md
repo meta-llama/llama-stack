@@ -13,7 +13,7 @@ OpenAI inference provider for accessing GPT models and other OpenAI services.
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.OPENAI_API_KEY}
+api_key: ${env.OPENAI_API_KEY:=}
 
 ```
 

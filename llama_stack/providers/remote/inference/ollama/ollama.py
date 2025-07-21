@@ -166,7 +166,7 @@ class OllamaInferenceAdapter(
         ]
         for m in response.models:
             # kill embedding models since we don't know dimensions for them
-            if m.details.family in ["bert"]:
+            if "bert" in m.details.family:
                 continue
             models.append(
                 Model(
