@@ -36,15 +36,28 @@ def setup_telemetry_data(llama_stack_client, text_model_id):
             model_id=text_model_id, messages=[{"role": "user", "content": f"Test trace {i}"}]
         )
 
+        # ensure openai_ route also produce metrics
+        llama_stack_client.chat.completions.create(
+            model=text_model_id,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Test trace openai {i}",
+                }
+            ],
+            # stream=False to always capture Metrics.
+            stream=False,
+        )
+
     start_time = time.time()
 
     while time.time() - start_time < 30:
         traces = llama_stack_client.telemetry.query_traces(limit=10)
-        if len(traces) >= 4:
+        if len(traces) >= 6:
             break
         time.sleep(1)
 
-    if len(traces) < 4:
+    if len(traces) < 6:
         pytest.fail(f"Failed to create sufficient telemetry data after 30s. Got {len(traces)} traces.")
 
     yield
@@ -52,7 +65,7 @@ def setup_telemetry_data(llama_stack_client, text_model_id):
 
 def test_query_traces_basic(llama_stack_client):
     """Test basic trace querying functionality with proper data validation."""
-    all_traces = llama_stack_client.telemetry.query_traces(limit=5)
+    all_traces = llama_stack_client.telemetry.query_traces(limit=6)
 
     assert isinstance(all_traces, list), "Should return a list of traces"
     assert len(all_traces) >= 4, "Should have at least 4 traces from setup"
@@ -158,7 +171,7 @@ def test_telemetry_pagination(llama_stack_client):
     # Get total count of traces
     all_traces = llama_stack_client.telemetry.query_traces(limit=20)
     total_count = len(all_traces)
-    assert total_count >= 4, "Should have at least 4 traces from setup"
+    assert total_count >= 6, "Should have at least 6 traces from setup"
 
     # Test trace pagination
     page1 = llama_stack_client.telemetry.query_traces(limit=2, offset=0)
@@ -174,7 +187,7 @@ def test_telemetry_pagination(llama_stack_client):
 
     # Test ordering
     ordered_traces = llama_stack_client.telemetry.query_traces(limit=5, order_by=["start_time"])
-    assert len(ordered_traces) >= 4, "Should have at least 4 traces for ordering test"
+    assert len(ordered_traces) >= 6, "Should have at least 6 traces for ordering test"
 
     # Verify ordering by start_time
     for i in range(len(ordered_traces) - 1):
