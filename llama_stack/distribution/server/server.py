@@ -597,7 +597,23 @@ def main(args: argparse.Namespace | None = None):
         uvicorn_config.update(ssl_config)
 
     # Run uvicorn in the existing event loop to preserve background tasks
-    loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
+    # We need to catch KeyboardInterrupt because uvicorn's signal handling
+    # re-raises SIGINT signals using signal.raise_signal(), which Python
+    # converts to KeyboardInterrupt. Without this catch, we'd get a confusing
+    # stack trace when using Ctrl+C or kill -2 (SIGINT).
+    # SIGTERM (kill -15) works fine without this because Python doesn't
+    # have a default handler for it.
+    #
+    # Another approach would be to ignore SIGINT entirely - let uvicorn handle it through its own
+    # signal handling but this is quite intrusive and not worth the effort.
+    try:
+        loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Received interrupt signal, shutting down gracefully...")
+    finally:
+        if not loop.is_closed():
+            logger.debug("Closing event loop")
+            loop.close()
 
 
 def _log_run_config(run_config: StackRunConfig):
