@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -15,6 +16,8 @@ from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: this class is more confusing than useful right now. We need to make it
@@ -98,6 +101,9 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         :param model: The model identifier to check.
         :return: True if the model is available dynamically, False otherwise.
         """
+        logger.info(
+            f"check_model_availability is not implemented for {self.__class__.__name__}. Returning False by default."
+        )
         return False
 
     async def register_model(self, model: Model) -> Model:
