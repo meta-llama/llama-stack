@@ -423,7 +423,7 @@ class InferenceRouter(Inference):
             prompt_logprobs=prompt_logprobs,
             suffix=suffix,
         )
-        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        provider = await self.routing_table.get_provider_impl(model_obj.identifier)
         if stream:
             return await provider.openai_completion(**params)
             # TODO: Metrics do NOT work with openai_completion stream=True due to the fact
@@ -523,7 +523,7 @@ class InferenceRouter(Inference):
             top_p=top_p,
             user=user,
         )
-        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        provider = await self.routing_table.get_provider_impl(model_obj.identifier)
         if stream:
             response_stream = await provider.openai_chat_completion(**params)
 
