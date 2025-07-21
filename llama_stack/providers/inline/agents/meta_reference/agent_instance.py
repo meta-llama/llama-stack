@@ -10,6 +10,7 @@ import re
 import secrets
 import string
 import uuid
+import warnings
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 
@@ -911,8 +912,16 @@ async def load_data_from_url(url: str) -> str:
 
 
 async def get_raw_document_text(document: Document) -> str:
-    if not document.mime_type.startswith("text/"):
+    # Handle deprecated text/yaml mime type with warning
+    if document.mime_type == "text/yaml":
+        warnings.warn(
+            "The 'text/yaml' MIME type is deprecated. Please use 'application/yaml' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    elif not (document.mime_type.startswith("text/") or document.mime_type == "application/yaml"):
         raise ValueError(f"Unexpected document mime type: {document.mime_type}")
+
     if isinstance(document.content, URL):
         return await load_data_from_url(document.content.uri)
     elif isinstance(document.content, str):
