@@ -112,6 +112,9 @@ class ChromaIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Chroma")
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        raise NotImplementedError("delete_chunk is not supported in Chroma")
+
     async def query_hybrid(
         self,
         embedding: NDArray,
@@ -208,3 +211,6 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
         self.cache[vector_db_id] = index
         return index
+
+    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
