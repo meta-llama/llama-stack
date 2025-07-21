@@ -9,6 +9,8 @@ Ollama inference provider for running local models through the Ollama runtime.
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `url` | `<class 'str'>` | No | http://localhost:11434 |  |
+| `refresh_models` | `<class 'bool'>` | No | False | refresh and re-register models periodically |
+| `refresh_models_interval` | `<class 'int'>` | No | 300 | interval in seconds to refresh models |
 
 ## Sample Configuration
 

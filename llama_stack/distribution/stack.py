@@ -172,7 +172,6 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
                             # Create a copy with resolved provider_id but original config
                             disabled_provider = v.copy()
                             disabled_provider["provider_id"] = resolved_provider_id
-                            result.append(disabled_provider)
                             continue
                     except EnvVarError:
                         # If we can't resolve the provider_id, continue with normal processing
@@ -265,6 +264,13 @@ def _convert_string_to_proper_type(value: str) -> Any:
         pass
 
     return value
+
+
+def cast_image_name_to_string(config_dict: dict[str, Any]) -> dict[str, Any]:
+    """Ensure that any value for a key 'image_name' in a config_dict is a string"""
+    if "image_name" in config_dict and config_dict["image_name"] is not None:
+        config_dict["image_name"] = str(config_dict["image_name"])
+    return config_dict
 
 
 def validate_env_pair(env_pair: str) -> tuple[str, str]:

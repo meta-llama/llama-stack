@@ -122,6 +122,9 @@ data:
       provider_id: rag-runtime
     server:
       port: 8321
+      auth:
+        provider_config:
+          type: github_token
 kind: ConfigMap
 metadata:
   creationTimestamp: null

@@ -68,7 +68,7 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models)
+    default_models, _ = get_model_registry(available_models)
     return DistributionTemplate(
         name="nvidia",
         distro_type="self_hosted",

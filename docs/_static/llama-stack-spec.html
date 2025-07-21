@@ -11340,6 +11340,9 @@
                     },
                     "embedding_dimension": {
                         "type": "integer"
+                    },
+                    "vector_db_name": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -13590,10 +13593,6 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The ID of the provider to use for this vector store."
-                    },
-                    "provider_vector_db_id": {
-                        "type": "string",
-                        "description": "The provider-specific vector database ID."
                     }
                 },
                 "additionalProperties": false,
@@ -14471,27 +14470,30 @@
             "DPOAlignmentConfig": {
                 "type": "object",
                 "properties": {
-                    "reward_scale": {
+                    "beta": {
                         "type": "number"
                     },
-                    "reward_clip": {
-                        "type": "number"
-                    },
-                    "epsilon": {
-                        "type": "number"
-                    },
-                    "gamma": {
-                        "type": "number"
+                    "loss_type": {
+                        "$ref": "#/components/schemas/DPOLossType",
+                        "default": "sigmoid"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
-                    "reward_scale",
-                    "reward_clip",
-                    "epsilon",
-                    "gamma"
+                    "beta",
+                    "loss_type"
                 ],
                 "title": "DPOAlignmentConfig"
+            },
+            "DPOLossType": {
+                "type": "string",
+                "enum": [
+                    "sigmoid",
+                    "hinge",
+                    "ipo",
+                    "kto_pair"
+                ],
+                "title": "DPOLossType"
             },
             "DataConfig": {
                 "type": "object",
@@ -15633,6 +15635,10 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The identifier of the provider."
+                    },
+                    "vector_db_name": {
+                        "type": "string",
+                        "description": "The name of the vector database."
                     },
                     "provider_vector_db_id": {
                         "type": "string",

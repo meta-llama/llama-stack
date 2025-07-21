@@ -4,7 +4,6 @@ This section contains documentation for all available providers for the **infere
 
 - [inline::meta-reference](inline_meta-reference.md)
 - [inline::sentence-transformers](inline_sentence-transformers.md)
-- [inline::vllm](inline_vllm.md)
 - [remote::anthropic](remote_anthropic.md)
 - [remote::bedrock](remote_bedrock.md)
 - [remote::cerebras](remote_cerebras.md)

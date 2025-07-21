@@ -16,4 +16,9 @@ if [ $FOUND_PYTHON -ne 0 ]; then
      uv python install "$PYTHON_VERSION"
 fi
 
-uv run --python "$PYTHON_VERSION" --with-editable . --group unit pytest -s -v tests/unit/ $@
+# Run unit tests with coverage
+uv run --python "$PYTHON_VERSION" --with-editable . --group unit \
+    coverage run --source=llama_stack -m pytest -s -v tests/unit/ "$@"
+
+# Generate HTML coverage report
+uv run --python "$PYTHON_VERSION" coverage html -d htmlcov-$PYTHON_VERSION
