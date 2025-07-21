@@ -10111,21 +10111,24 @@ components:
     DPOAlignmentConfig:
       type: object
       properties:
-        reward_scale:
+        beta:
           type: number
-        reward_clip:
-          type: number
-        epsilon:
-          type: number
-        gamma:
-          type: number
+        loss_type:
+          $ref: '#/components/schemas/DPOLossType'
+          default: sigmoid
       additionalProperties: false
       required:
-        - reward_scale
-        - reward_clip
-        - epsilon
-        - gamma
+        - beta
+        - loss_type
       title: DPOAlignmentConfig
+    DPOLossType:
+      type: string
+      enum:
+        - sigmoid
+        - hinge
+        - ipo
+        - kto_pair
+      title: DPOLossType
     DataConfig:
       type: object
       properties:

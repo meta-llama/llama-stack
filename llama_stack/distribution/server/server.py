@@ -445,9 +445,7 @@ def main(args: argparse.Namespace | None = None):
     # now that the logger is initialized, print the line about which type of config we are using.
     logger.info(log_line)
 
-    logger.info("Run configuration:")
-    safe_config = redact_sensitive_fields(config.model_dump(mode="json"))
-    logger.info(yaml.dump(safe_config, indent=2))
+    _log_run_config(run_config=config)
 
     app = FastAPI(
         lifespan=lifespan,
@@ -455,6 +453,7 @@ def main(args: argparse.Namespace | None = None):
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
@@ -493,7 +492,13 @@ def main(args: argparse.Namespace | None = None):
         )
 
     try:
-        impls = asyncio.run(construct_stack(config))
+        # Create and set the event loop that will be used for both construction and server runtime
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Construct the stack in the persistent event loop
+        impls = loop.run_until_complete(construct_stack(config))
+
     except InvalidProviderError as e:
         logger.error(f"Error: {str(e)}")
         sys.exit(1)
@@ -591,7 +596,16 @@ def main(args: argparse.Namespace | None = None):
     if ssl_config:
         uvicorn_config.update(ssl_config)
 
-    uvicorn.run(**uvicorn_config)
+    # Run uvicorn in the existing event loop to preserve background tasks
+    loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
+
+
+def _log_run_config(run_config: StackRunConfig):
+    """Logs the run config with redacted fields and disabled providers removed."""
+    logger.info("Run configuration:")
+    safe_config = redact_sensitive_fields(run_config.model_dump(mode="json"))
+    clean_config = remove_disabled_providers(safe_config)
+    logger.info(yaml.dump(clean_config, indent=2))
 
 
 def extract_path_params(route: str) -> list[str]:
@@ -600,6 +614,21 @@ def extract_path_params(route: str) -> list[str]:
     # to handle path params like {param:path}
     params = [param.split(":")[0] for param in params]
     return params
+
+
+def remove_disabled_providers(obj):
+    if isinstance(obj, dict):
+        if (
+            obj.get("provider_id") == "__disabled__"
+            or obj.get("shield_id") == "__disabled__"
+            or obj.get("provider_model_id") == "__disabled__"
+        ):
+            return None
+        return {k: v for k, v in ((k, remove_disabled_providers(v)) for k, v in obj.items()) if v is not None}
+    elif isinstance(obj, list):
+        return [item for item in (remove_disabled_providers(i) for i in obj) if item is not None]
+    else:
+        return obj
 
 
 if __name__ == "__main__":

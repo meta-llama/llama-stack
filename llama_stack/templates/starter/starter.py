@@ -323,7 +323,7 @@ def get_distribution_template() -> DistributionTemplate:
                     "files": [files_provider],
                     "post_training": [post_training_provider],
                 },
-                default_models=default_models + [embedding_model],
+                default_models=[embedding_model] + default_models,
                 default_tool_groups=default_tool_groups,
                 # TODO: add a way to enable/disable shields on the fly
                 default_shields=shields,

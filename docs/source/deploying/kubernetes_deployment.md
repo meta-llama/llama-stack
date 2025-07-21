@@ -222,10 +222,21 @@ llama-stack-client --endpoint http://localhost:5000 inference chat-completion --
 
 ## Deploying Llama Stack Server in AWS EKS
 
-We've also provided a script to deploy the Llama Stack server in an AWS EKS cluster. Once you have an [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html), you can run the following script to deploy the Llama Stack server.
+We've also provided a script to deploy the Llama Stack server in an AWS EKS cluster.
+
+Prerequisites:
+- Set up an [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/getting-started.html).
+- Create a [Github OAuth app](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app) and get the client ID and client secret.
+  - Set the `Authorization callback URL` to `http://<your-llama-stack-ui-url>/api/auth/callback/`
 
 
+Run the following script to deploy the Llama Stack server:
 ```
+export HF_TOKEN=<your-huggingface-token>
+export GITHUB_CLIENT_ID=<your-github-client-id>
+export GITHUB_CLIENT_SECRET=<your-github-client-secret>
+export LLAMA_STACK_UI_URL=<your-llama-stack-ui-url>
+
 cd docs/source/distributions/eks
 ./apply.sh
 ```

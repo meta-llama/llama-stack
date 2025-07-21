@@ -9,6 +9,7 @@ import pytest
 
 from llama_stack.apis.common.responses import Order
 from llama_stack.apis.files import OpenAIFilePurpose
+from llama_stack.distribution.access_control.access_control import default_policy
 from llama_stack.providers.inline.files.localfs import (
     LocalfsFilesImpl,
     LocalfsFilesImplConfig,
@@ -38,7 +39,7 @@ async def files_provider(tmp_path):
         storage_dir=storage_dir.as_posix(), metadata_store=SqliteSqlStoreConfig(db_path=db_path.as_posix())
     )
 
-    provider = LocalfsFilesImpl(config)
+    provider = LocalfsFilesImpl(config, default_policy())
     await provider.initialize()
     yield provider
 

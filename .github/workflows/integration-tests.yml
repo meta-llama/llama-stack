@@ -7,11 +7,12 @@ on:
     branches: [ main ]
     paths:
       - 'llama_stack/**'
-      - 'tests/integration/**'
+      - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
       - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
+      - '.github/actions/setup-ollama/action.yml'
   schedule:
     - cron: '0 0 * * *'  # Daily at 12 AM UTC
   workflow_dispatch:
@@ -70,7 +71,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template starter --image-type venv
+          uv run llama stack build --template ci-tests --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -91,9 +92,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="starter"
+            stack_config="ci-tests"
           else
-            stack_config="server:starter"
+            stack_config="server:ci-tests"
           fi
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
