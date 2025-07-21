@@ -210,7 +210,7 @@ class CommonRoutingTableImpl(RoutingTable):
             await self.dist_registry.register(obj)
             return obj
 
-    async def authorize_action(
+    async def assert_action_allowed(
         self,
         action: Action,
         type: str,
