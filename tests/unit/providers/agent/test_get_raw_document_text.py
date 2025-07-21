@@ -14,7 +14,6 @@ from llama_stack.apis.common.content_types import URL, TextContentItem
 from llama_stack.providers.inline.agents.meta_reference.agent_instance import get_raw_document_text
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_supports_text_mime_types():
     """Test that the function accepts text/* mime types."""
     document = Document(content="Sample text content", mime_type="text/plain")
@@ -23,7 +22,6 @@ async def test_get_raw_document_text_supports_text_mime_types():
     assert result == "Sample text content"
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_supports_yaml_mime_type():
     """Test that the function accepts application/yaml mime type."""
     yaml_content = """
@@ -40,7 +38,6 @@ async def test_get_raw_document_text_supports_yaml_mime_type():
     assert result == yaml_content
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_supports_deprecated_text_yaml_with_warning():
     """Test that the function accepts text/yaml but emits a deprecation warning."""
     yaml_content = """
@@ -68,7 +65,6 @@ async def test_get_raw_document_text_supports_deprecated_text_yaml_with_warning(
         assert "deprecated" in str(w[0].message).lower()
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_deprecated_text_yaml_with_url():
     """Test that text/yaml works with URL content and emits warning."""
     yaml_content = "name: test\nversion: 1.0"
@@ -92,7 +88,6 @@ async def test_get_raw_document_text_deprecated_text_yaml_with_url():
             assert "text/yaml" in str(w[0].message)
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_deprecated_text_yaml_with_text_content_item():
     """Test that text/yaml works with TextContentItem and emits warning."""
     yaml_content = "key: value\nlist:\n  - item1\n  - item2"
@@ -112,7 +107,6 @@ async def test_get_raw_document_text_deprecated_text_yaml_with_text_content_item
         assert "text/yaml" in str(w[0].message)
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_rejects_unsupported_mime_types():
     """Test that the function rejects unsupported mime types."""
     document = Document(
@@ -124,7 +118,6 @@ async def test_get_raw_document_text_rejects_unsupported_mime_types():
         await get_raw_document_text(document)
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_with_url_content():
     """Test that the function handles URL content correctly."""
     mock_response = AsyncMock()
@@ -140,7 +133,6 @@ async def test_get_raw_document_text_with_url_content():
         mock_load.assert_called_once_with("https://example.com/test.txt")
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_with_yaml_url():
     """Test that the function handles YAML URLs correctly."""
     yaml_content = "name: test\nversion: 1.0"
@@ -155,7 +147,6 @@ async def test_get_raw_document_text_with_yaml_url():
         mock_load.assert_called_once_with("https://example.com/config.yaml")
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_with_text_content_item():
     """Test that the function handles TextContentItem correctly."""
     document = Document(content=TextContentItem(text="Text content item"), mime_type="text/plain")
@@ -164,7 +155,6 @@ async def test_get_raw_document_text_with_text_content_item():
     assert result == "Text content item"
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_with_yaml_text_content_item():
     """Test that the function handles YAML TextContentItem correctly."""
     yaml_content = "key: value\nlist:\n  - item1\n  - item2"
@@ -175,7 +165,6 @@ async def test_get_raw_document_text_with_yaml_text_content_item():
     assert result == yaml_content
 
 
-@pytest.mark.asyncio
 async def test_get_raw_document_text_rejects_unexpected_content_type():
     """Test that the function rejects unexpected document content types."""
     # Create a mock document that bypasses Pydantic validation
