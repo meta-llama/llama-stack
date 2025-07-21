@@ -9,6 +9,7 @@ from typing import Any
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
+from llama_stack.distribution.access_control.datatypes import Action
 from llama_stack.distribution.datatypes import (
     AccessRule,
     RoutableObject,
@@ -208,6 +209,20 @@ class CommonRoutingTableImpl(RoutingTable):
         else:
             await self.dist_registry.register(obj)
             return obj
+
+    async def assert_action_allowed(
+        self,
+        action: Action,
+        type: str,
+        identifier: str,
+    ) -> None:
+        """Fetch a registered object by type/identifier and enforce the given action permission."""
+        obj = await self.get_object_by_identifier(type, identifier)
+        if obj is None:
+            raise ValueError(f"{type.capitalize()} '{identifier}' not found")
+        user = get_authenticated_user()
+        if not is_action_allowed(self.policy, action, obj, user):
+            raise AccessDeniedError(action, obj, user)
 
     async def get_all_with_type(self, type: str) -> list[RoutableObjectWithProvider]:
         objs = await self.dist_registry.get_all()
