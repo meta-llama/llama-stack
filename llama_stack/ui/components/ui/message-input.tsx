@@ -254,6 +254,7 @@ export function MessageInput({
             variant="outline"
             className="h-8 w-8"
             aria-label="Attach a file"
+            disabled={true}
             onClick={async () => {
               const files = await showFileUploadDialog()
               addFiles(files)
