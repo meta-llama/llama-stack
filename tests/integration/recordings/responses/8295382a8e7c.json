@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/chat/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Test trace openai 2"
+        }
+      ],
+      "stream": false
+    },
+    "endpoint": "/v1/chat/completions",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
+      "__data__": {
+        "id": "chatcmpl-99",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "I'd be happy to help you test the OpenAI 2 architecture!\n\nOpenAI 2 is a neural network model developed by OpenAI, and it's not exactly possible for me to directly \"test\" it. However, I can guide you through a simplified example of how to verify if OpenAI 2 has been implemented correctly in a specific codebase.\n\nHere's an outline of the steps:\n\n1. **Understand the basics**: Before we dive into testing, make sure you understand the architectural and functional details of OpenAI 2.\n2. **Get access to the model**: You'll need to obtain a trained OpenAI 2 model or implement it from scratch using a language like PyTorch or TensorFlow.\n3. **Implement a validation framework**: Create a simple validation framework that uses common tasks, such as classification on the GLUE benchmark, to evaluate the performance of your OpenAI 2 model.\n\nHere's a simplified code example in PyTorch:\n```python\nimport torch\nfrom transformers import AutoModelForSequenceClassification, AutoTokenizer\n\n# Load pre-trained OpenAI 2 Model(s)\nmodel_name = \"github/openai/OpenAIAccelerated-Text-To-Speech\"\nmodel_class = AutoModelForSequenceClassification\ntokenizer = AutoTokenizer.from_pretrained(model_name)\n\n# Initialize the model and tokenizer\nmodel = model_class(pretrained=True, num_labels=8)  # adjust label number according to your task\ntokenizer = tokenizer\n\ndef evaluate_model():\n    batch_size = 100\n    device = torch.device(\"cuda\" if torch.cuda.is_available() else \"cpu\")\n\n    # Create a validation dataset from the GLUE benchmark\n    glue_datasets = [ datasets[\"glue\"][\"sst2\"], datasets[\"glue\"][\"mnli\"] ]\n    val_dataset = []\n    for i, gds in enumerate(glue_datasets):\n        data = gds[:10000]  # take only first few examples to speed up evaluation\n        input_ids = tokenizer encodings(data[\"sentence1\"], \n                                        attention_mask=data[\"attention_mask\"],\n                                        max_length=512,\n                                        padding=\"max_length\",\n                                        truncation=True,\n                                        return_tensors=\"pt\")\n\n        for example in data:\n            for sentence in [example['sentence1'], example['sentence2']]:\n                input_ids = input_ids.to(device)\n                outputs = model(input_ids, labels=None)  # adjust label to empty\n              \n\n    # Compute evaluation metrics\n    predictions = []\n    labels = []\n    accuracy = torch.zeros(8).to(device)\n\n    for sentence in data.values():\n        sentenceids = [input_ids[\"input_ids\"].flatten()]\n        _, pred_labels = model(sentenceids)\n        if len(predictions) == 0:\n            labels.extend([1, 2])\n        else:\n            assert len(labels)==len(sentences), 'error'\n            labels.append(preds[-1]) \n\n        # Append the prediction to the list\n        predictions.append(pred)\n\n    return accuracy\n\naccuracy = evaluate_model()\nprint(\"Accuracy:\", accuracy)\n```\n\nAfter running this code, you should get an estimate of the model's performance on the GLUE benchmark. Keep in mind that this is a simplified example and real-world openai 2 testing may require more involved validation processes.\n\nI hope this helps! Let me know if you have any further questions or if there are any specific areas where you'd like more information.",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": null
+            }
+          }
+        ],
+        "created": 1754510064,
+        "model": "llama3.2:3b-instruct-fp16",
+        "object": "chat.completion",
+        "service_tier": null,
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 694,
+          "prompt_tokens": 31,
+          "total_tokens": 725,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        }
+      }
+    },
+    "is_streaming": false
+  }
+}
