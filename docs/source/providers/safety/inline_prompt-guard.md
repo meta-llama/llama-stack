@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # inline::prompt-guard
 
 ## Description

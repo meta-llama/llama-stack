@@ -90,3 +90,13 @@ Is associated with the ToolGroup resources.
 
 tool_runtime/index
 ```
+
+## Files Providers
+
+Is associated with the **files** APIs
+
+```{toctree}
+:maxdepth: 1
+
+files/index
+```
