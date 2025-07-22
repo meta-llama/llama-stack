@@ -338,7 +338,7 @@ class VectorIO(Protocol):
     @webmethod(route="/openai/v1/vector_stores", method="POST")
     async def openai_create_vector_store(
         self,
-        name: str,
+        name: str | None = None,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,

@@ -9497,8 +9497,6 @@ components:
           description: >-
             The ID of the provider to use for this vector store.
       additionalProperties: false
-      required:
-        - name
       title: OpenaiCreateVectorStoreRequest
     VectorStoreFileCounts:
       type: object
