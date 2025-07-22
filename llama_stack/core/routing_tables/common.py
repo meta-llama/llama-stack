@@ -60,6 +60,8 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_vector_db(obj.identifier)
     elif api == Api.inference:
         return await p.unregister_model(obj.identifier)
+    elif api == Api.safety:
+        return await p.unregister_shield(obj.identifier)
     elif api == Api.datasetio:
         return await p.unregister_dataset(obj.identifier)
     elif api == Api.tool_runtime:
