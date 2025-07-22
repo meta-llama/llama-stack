@@ -455,8 +455,21 @@ class OpenAIChatCompletionContentPartImageParam(BaseModel):
     image_url: OpenAIImageURL
 
 
+@json_schema_type
+class OpenAIFileFile(BaseModel):
+    file_data: str | None = None
+    file_id: str | None = None
+    filename: str | None = None
+
+
+@json_schema_type
+class OpenAIFile(BaseModel):
+    type: Literal["file"] = "file"
+    file: OpenAIFileFile
+
+
 OpenAIChatCompletionContentPartParam = Annotated[
-    OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam,
+    OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam | OpenAIFile,
     Field(discriminator="type"),
 ]
 register_schema(OpenAIChatCompletionContentPartParam, name="OpenAIChatCompletionContentPartParam")

@@ -9821,13 +9821,17 @@
                     },
                     {
                         "$ref": "#/components/schemas/OpenAIChatCompletionContentPartImageParam"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIFile"
                     }
                 ],
                 "discriminator": {
                     "propertyName": "type",
                     "mapping": {
                         "text": "#/components/schemas/OpenAIChatCompletionContentPartTextParam",
-                        "image_url": "#/components/schemas/OpenAIChatCompletionContentPartImageParam"
+                        "image_url": "#/components/schemas/OpenAIChatCompletionContentPartImageParam",
+                        "file": "#/components/schemas/OpenAIFile"
                     }
                 }
             },
@@ -9973,6 +9977,41 @@
                 ],
                 "title": "OpenAIDeveloperMessageParam",
                 "description": "A message from the developer in an OpenAI-compatible chat completion request."
+            },
+            "OpenAIFile": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "file",
+                        "default": "file"
+                    },
+                    "file": {
+                        "$ref": "#/components/schemas/OpenAIFileFile"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "file"
+                ],
+                "title": "OpenAIFile"
+            },
+            "OpenAIFileFile": {
+                "type": "object",
+                "properties": {
+                    "file_data": {
+                        "type": "string"
+                    },
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "filename": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "title": "OpenAIFileFile"
             },
             "OpenAIImageURL": {
                 "type": "object",
