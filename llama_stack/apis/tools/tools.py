@@ -145,6 +145,17 @@ class ToolGroups(Protocol):
         """
         ...
 
+    @webmethod(route="/toolgroups/{toolgroup_id:path}/refresh", method="POST")
+    async def refresh_tools(
+        self,
+        toolgroup_id: str,
+    ) -> None:
+        """Refresh tools for a specific toolgroup.
+
+        :param toolgroup_id: The ID of the toolgroup to refresh tools for.
+        """
+        ...
+
     @webmethod(route="/toolgroups/{toolgroup_id:path}", method="DELETE")
     async def unregister_toolgroup(
         self,

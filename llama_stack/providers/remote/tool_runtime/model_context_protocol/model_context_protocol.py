@@ -15,6 +15,7 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
     ToolRuntime,
 )
+from llama_stack.distribution.datatypes import AuthenticationRequiredError
 from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
@@ -44,14 +45,45 @@ class ModelContextProtocolToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime
         # this endpoint should be retrieved by getting the tool group right?
         if mcp_endpoint is None:
             raise ValueError("mcp_endpoint is required")
+
+        logger.debug(f"Listing runtime tools for toolgroup {tool_group_id} at endpoint {mcp_endpoint.uri}")
         headers = await self.get_headers_from_request(mcp_endpoint.uri)
-        return await list_mcp_tools(mcp_endpoint.uri, headers)
+
+        if headers:
+            logger.debug(f"Found {len(headers)} headers for MCP endpoint {mcp_endpoint.uri}")
+            # Log header keys but not values for security
+            header_keys = list(headers.keys())
+            logger.debug(f"Header keys: {header_keys}")
+        else:
+            logger.debug(f"No headers found for MCP endpoint {mcp_endpoint.uri}")
+
+        try:
+            result = await list_mcp_tools(mcp_endpoint.uri, headers)
+            logger.info(f"Successfully listed {len(result.data)} tools for toolgroup {tool_group_id}")
+            return result
+        except AuthenticationRequiredError as e:
+            logger.warning(f"Authentication required for MCP endpoint {mcp_endpoint.uri}: {e}")
+            logger.info(
+                f"Returning empty tool list for toolgroup {tool_group_id} - tools will be refreshed when authentication is available"
+            )
+            # Return empty list on authentication errors during startup
+            # Tools will be refreshed when a turn is created with proper auth
+            return ListToolDefsResponse(data=[])
+        except Exception as e:
+            logger.error(f"Failed to list tools for toolgroup {tool_group_id} at endpoint {mcp_endpoint.uri}: {e}")
+            # Return empty list on other errors too to prevent crashes
+            return ListToolDefsResponse(data=[])
 
     async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> ToolInvocationResult:
+        if self.tool_store is None:
+            raise ValueError(f"Tool store is not available for tool {tool_name}")
+
         tool = await self.tool_store.get_tool(tool_name)
         if tool.metadata is None or tool.metadata.get("endpoint") is None:
             raise ValueError(f"Tool {tool_name} does not have metadata")
         endpoint = tool.metadata.get("endpoint")
+        if endpoint is None:
+            raise ValueError(f"Tool {tool_name} does not have an endpoint")
         if urlparse(endpoint).scheme not in ("http", "https"):
             raise ValueError(f"Endpoint {endpoint} is not a valid HTTP(S) URL")
 
