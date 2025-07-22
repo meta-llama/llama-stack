@@ -245,6 +245,14 @@ def get_distribution_template() -> DistributionTemplate:
                 "",
                 "Gemini API Key",
             ),
+            "VERTEX_AI_PROJECT": (
+                "",
+                "Google Cloud Project ID for Vertex AI",
+            ),
+            "VERTEX_AI_LOCATION": (
+                "us-central1",
+                "Google Cloud Location for Vertex AI",
+            ),
             "SAMBANOVA_API_KEY": (
                 "",
                 "SambaNova API Key",
