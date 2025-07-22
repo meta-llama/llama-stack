@@ -22,9 +22,6 @@ from llama_stack.apis.post_training import (
 from llama_stack.providers.inline.post_training.huggingface.config import (
     HuggingFacePostTrainingConfig,
 )
-from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device import (
-    HFFinetuningSingleDevice,
-)
 from llama_stack.providers.utils.scheduler import JobArtifact, Scheduler
 from llama_stack.providers.utils.scheduler import JobStatus as SchedulerJobStatus
 from llama_stack.schema_utils import webmethod
@@ -82,6 +79,10 @@ class HuggingFacePostTrainingImpl:
     ) -> PostTrainingJob:
         async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
             on_log_message_cb("Starting HF finetuning")
+
+            from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device import (
+                HFFinetuningSingleDevice,
+            )
 
             recipe = HFFinetuningSingleDevice(
                 job_uuid=job_uuid,
