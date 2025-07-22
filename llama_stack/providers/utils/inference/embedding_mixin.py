@@ -88,7 +88,7 @@ class SentenceTransformerEmbeddingMixin:
         usage = OpenAIEmbeddingUsage(prompt_tokens=-1, total_tokens=-1)
         return OpenAIEmbeddingsResponse(
             data=data,
-            model=model_obj.provider_resource_id,
+            model=model,
             usage=usage,
         )
 

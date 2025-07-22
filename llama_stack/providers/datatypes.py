@@ -113,7 +113,7 @@ class ProviderSpec(BaseModel):
 
 
 class RoutingTable(Protocol):
-    def get_provider_impl(self, routing_key: str) -> Any: ...
+    async def get_provider_impl(self, routing_key: str) -> Any: ...
 
 
 # TODO: this can now be inlined into RemoteProviderSpec
