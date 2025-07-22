@@ -20,6 +20,13 @@ from llama_stack.providers.utils.inference import (
 logger = get_logger(name=__name__, category="core")
 
 
+class RemoteInferenceProviderConfig(BaseModel):
+    allowed_models: list[str] | None = Field(
+        default=None,
+        description="List of models that should be registered with the model registry. If None, all models are allowed.",
+    )
+
+
 # TODO: this class is more confusing than useful right now. We need to make it
 # more closer to the Model class.
 class ProviderModelEntry(BaseModel):
@@ -67,7 +74,8 @@ def build_model_entry(provider_model_id: str, model_descriptor: str) -> Provider
 class ModelRegistryHelper(ModelsProtocolPrivate):
     __provider_id__: str
 
-    def __init__(self, model_entries: list[ProviderModelEntry]):
+    def __init__(self, model_entries: list[ProviderModelEntry], allowed_models: list[str] | None = None):
+        self.allowed_models = allowed_models
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
         for entry in model_entries:
@@ -86,6 +94,8 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         for entry in self.model_entries:
             ids = [entry.provider_model_id] + entry.aliases
             for id in ids:
+                if self.allowed_models and id not in self.allowed_models:
+                    continue
                 models.append(
                     Model(
                         model_id=id,
