@@ -18,6 +18,7 @@ distribution_spec:
     - remote::openai
     - remote::anthropic
     - remote::gemini
+    - remote::vertexai
     - remote::groq
     - remote::llama-openai-compat
     - remote::sambanova

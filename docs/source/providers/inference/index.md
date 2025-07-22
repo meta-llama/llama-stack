@@ -22,5 +22,6 @@ This section contains documentation for all available providers for the **infere
 - [remote::sambanova](remote_sambanova.md)
 - [remote::tgi](remote_tgi.md)
 - [remote::together](remote_together.md)
+- [remote::vertexai](remote_vertexai.md)
 - [remote::vllm](remote_vllm.md)
 - [remote::watsonx](remote_watsonx.md)
