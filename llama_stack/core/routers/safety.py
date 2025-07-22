@@ -43,6 +43,10 @@ class SafetyRouter(Safety):
         logger.debug(f"SafetyRouter.register_shield: {shield_id}")
         return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
 
+    async def unregister_shield(self, identifier: str) -> None:
+        logger.debug(f"SafetyRouter.unregister_shield: {identifier}")
+        return await self.routing_table.unregister_shield(identifier)
+
     async def run_shield(
         self,
         shield_id: str,
