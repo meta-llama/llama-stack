@@ -27,7 +27,7 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.log import get_logger
 
-from .common import CommonRoutingTableImpl
+from .common import CommonRoutingTableImpl, lookup_model
 
 logger = get_logger(name=__name__, category="core")
 
@@ -51,8 +51,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
         provider_vector_db_id: str | None = None,
         vector_db_name: str | None = None,
     ) -> VectorDB:
-        if provider_vector_db_id is None:
-            provider_vector_db_id = vector_db_id
+        provider_vector_db_id = provider_vector_db_id or vector_db_id
         if provider_id is None:
             if len(self.impls_by_provider_id) > 0:
                 provider_id = list(self.impls_by_provider_id.keys())[0]
@@ -62,7 +61,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
                     )
             else:
                 raise ValueError("No provider available. Please configure a vector_io provider.")
-        model = await self.get_object_by_identifier("model", embedding_model)
+        model = await lookup_model(self, embedding_model)
         if model is None:
             raise ValueError(f"Model {embedding_model} not found")
         if model.model_type != ModelType.embedding:
