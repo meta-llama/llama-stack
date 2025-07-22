@@ -65,6 +65,11 @@ providers:
     provider_type: remote::gemini
     config:
       api_key: ${env.GEMINI_API_KEY:=}
+  - provider_id: ${env.VERTEX_AI_PROJECT:+vertexai}
+    provider_type: remote::vertexai
+    config:
+      project: ${env.VERTEX_AI_PROJECT:=}
+      location: ${env.VERTEX_AI_LOCATION:=us-central1}
   - provider_id: groq
     provider_type: remote::groq
     config:
