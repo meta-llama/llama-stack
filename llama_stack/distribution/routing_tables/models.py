@@ -68,7 +68,8 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                 provider_id = list(self.impls_by_provider_id.keys())[0]
             else:
                 raise ValueError(
-                    f"Please specify a provider_id for model {model_id} since multiple providers are available: {self.impls_by_provider_id.keys()}"
+                    f"Please specify a provider_id for model {model_id} since multiple providers are available: {self.impls_by_provider_id.keys()}.\n\n"
+                    "Use the provider_id as a prefix to disambiguate, e.g. 'provider_id/model_id'."
                 )
 
         provider_model_id = provider_model_id or model_id
