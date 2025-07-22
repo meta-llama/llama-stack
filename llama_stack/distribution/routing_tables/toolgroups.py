@@ -59,7 +59,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
         return ListToolsResponse(data=all_tools)
 
     async def _index_tools(self, toolgroup: ToolGroup):
-        provider_impl = super().get_provider_impl(toolgroup.identifier, toolgroup.provider_id)
+        provider_impl = await super().get_provider_impl(toolgroup.identifier, toolgroup.provider_id)
         tooldefs_response = await provider_impl.list_runtime_tools(toolgroup.identifier, toolgroup.mcp_endpoint)
 
         # TODO: kill this Tool vs ToolDef distinction
