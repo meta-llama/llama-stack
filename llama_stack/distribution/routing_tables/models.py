@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import time
 from typing import Any
 
@@ -19,6 +20,47 @@ logger = get_logger(name=__name__, category="core")
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
+    listed_providers: set[str] = set()
+    model_refresh_interval_seconds: int = 300
+
+    async def initialize(self) -> None:
+        await super().initialize()
+        task = asyncio.create_task(self._refresh_models())
+
+        def cb(task):
+            import traceback
+
+            if task.cancelled():
+                logger.error("Model refresh task cancelled")
+            elif task.exception():
+                logger.error(f"Model refresh task failed: {task.exception()}")
+                traceback.print_exception(task.exception())
+            else:
+                logger.debug("Model refresh task completed")
+
+        task.add_done_callback(cb)
+
+    async def _refresh_models(self) -> None:
+        while True:
+            for provider_id, provider in self.impls_by_provider_id.items():
+                refresh = await provider.should_refresh_models()
+                if not (refresh or provider_id in self.listed_providers):
+                    continue
+
+                try:
+                    models = await provider.list_models()
+                except Exception as e:
+                    logger.exception(f"Model refresh failed for provider {provider_id}: {e}")
+                    continue
+
+                self.listed_providers.add(provider_id)
+                if models is None:
+                    continue
+
+                await self.update_registered_llm_models(provider_id, models)
+
+            await asyncio.sleep(self.model_refresh_interval_seconds)
+
     async def list_models(self) -> ListModelsResponse:
         return ListModelsResponse(data=await self.get_all_with_type("model"))
 

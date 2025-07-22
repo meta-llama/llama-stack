@@ -50,6 +50,13 @@ class SentenceTransformersInferenceImpl(
     async def shutdown(self) -> None:
         pass
 
+    async def should_refresh_models(self) -> bool:
+        return False
+
+    async def list_models(self) -> list[Model] | None:
+        # TODO: add all-mini-lm models
+        return None
+
     async def register_model(self, model: Model) -> Model:
         return model
 

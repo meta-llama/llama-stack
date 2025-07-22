@@ -65,6 +65,8 @@ def build_model_entry(provider_model_id: str, model_descriptor: str) -> Provider
 
 
 class ModelRegistryHelper(ModelsProtocolPrivate):
+    __provider_id__: str
+
     def __init__(self, model_entries: list[ProviderModelEntry]):
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
@@ -78,6 +80,25 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             if entry.llama_model:
                 self.alias_to_provider_id_map[entry.llama_model] = entry.provider_model_id
                 self.provider_id_to_llama_model_map[entry.provider_model_id] = entry.llama_model
+
+    async def list_models(self) -> list[Model] | None:
+        models = []
+        for entry in self.model_entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for id in ids:
+                models.append(
+                    Model(
+                        model_id=id,
+                        provider_resource_id=entry.provider_model_id,
+                        model_type=ModelType.llm,
+                        metadata=entry.metadata,
+                        provider_id=self.__provider_id__,
+                    )
+                )
+        return models
+
+    async def should_refresh_models(self) -> bool:
+        return False
 
     def get_provider_model_id(self, identifier: str) -> str | None:
         return self.alias_to_provider_id_map.get(identifier, None)
