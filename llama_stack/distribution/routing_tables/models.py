@@ -38,6 +38,10 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def get_model(self, model_id: str) -> Model:
         return await lookup_model(self, model_id)
 
+    async def get_provider_impl(self, model_id: str) -> Any:
+        model = await lookup_model(self, model_id)
+        return self.impls_by_provider_id[model.provider_id]
+
     async def register_model(
         self,
         model_id: str,
