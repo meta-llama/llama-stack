@@ -57,7 +57,8 @@ class DatasetIORouter(DatasetIO):
         logger.debug(
             f"DatasetIORouter.iterrows: {dataset_id}, {start_index=} {limit=}",
         )
-        return await self.routing_table.get_provider_impl(dataset_id).iterrows(
+        provider = await self.routing_table.get_provider_impl(dataset_id)
+        return await provider.iterrows(
             dataset_id=dataset_id,
             start_index=start_index,
             limit=limit,
@@ -65,7 +66,8 @@ class DatasetIORouter(DatasetIO):
 
     async def append_rows(self, dataset_id: str, rows: list[dict[str, Any]]) -> None:
         logger.debug(f"DatasetIORouter.append_rows: {dataset_id}, {len(rows)} rows")
-        return await self.routing_table.get_provider_impl(dataset_id).append_rows(
+        provider = await self.routing_table.get_provider_impl(dataset_id)
+        return await provider.append_rows(
             dataset_id=dataset_id,
             rows=rows,
         )

@@ -30,7 +30,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     tool_to_toolgroup: dict[str, str] = {}
 
     # overridden
-    def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
+    async def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
         # we don't index tools in the registry anymore, but only keep a cache of them by toolgroup_id
         # TODO: we may want to invalidate the cache (for a given toolgroup_id) every once in a while?
 
@@ -40,7 +40,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
 
         if routing_key in self.tool_to_toolgroup:
             routing_key = self.tool_to_toolgroup[routing_key]
-        return super().get_provider_impl(routing_key, provider_id)
+        return await super().get_provider_impl(routing_key, provider_id)
 
     async def list_tools(self, toolgroup_id: str | None = None) -> ListToolsResponse:
         if toolgroup_id:
