@@ -56,6 +56,7 @@ ENABLED_INFERENCE_PROVIDERS = [
     "fireworks",
     "together",
     "gemini",
+    "vertexai",
     "groq",
     "sambanova",
     "anthropic",
@@ -245,6 +246,14 @@ def get_distribution_template() -> DistributionTemplate:
             "GEMINI_API_KEY": (
                 "",
                 "Gemini API Key",
+            ),
+            "VERTEX_AI_PROJECT": (
+                "",
+                "Google Cloud Project ID for Vertex AI",
+            ),
+            "VERTEX_AI_LOCATION": (
+                "us-central1",
+                "Google Cloud Location for Vertex AI",
             ),
             "SAMBANOVA_API_KEY": (
                 "",
