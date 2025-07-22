@@ -21,7 +21,7 @@ from pathlib import Path
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 
 
-def formulate_run_args(image_type, image_name, config, template_name) -> list:
+def formulate_run_args(image_type: str, image_name: str) -> list[str]:
     env_name = ""
 
     if image_type == LlamaStackImageType.CONDA.value:
