@@ -4,20 +4,20 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.models import ModelType
+from llama_stack.log import get_logger
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 # TODO: this class is more confusing than useful right now. We need to make it

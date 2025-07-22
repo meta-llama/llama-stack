@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from typing import Any
@@ -23,9 +22,10 @@ from llama_stack.apis.inference import (
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.openai_compat import prepare_openai_completion_params
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 class OpenAIMixin(ABC):
