@@ -150,6 +150,11 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         # The model will be validated during runtime when making inference calls
         pass
 
+    async def unregister_shield(self, identifier: str) -> None:
+        # LlamaGuard doesn't need to do anything special for unregistration
+        # The routing table handles the removal from the registry
+        pass
+
     async def run_shield(
         self,
         shield_id: str,

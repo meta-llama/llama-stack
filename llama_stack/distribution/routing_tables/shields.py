@@ -55,3 +55,10 @@ class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
         )
         await self.register_object(shield)
         return shield
+
+    async def unregister_shield(self, identifier: str) -> None:
+        existing_shield = await self.get_shield(identifier)
+        if existing_shield is None:
+            raise ValueError(f"Shield '{identifier}' not found")
+        logger.info(f"Shield {identifier} was unregistered successfully.")
+        await self.unregister_object(existing_shield)
