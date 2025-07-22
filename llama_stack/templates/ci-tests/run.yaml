@@ -90,36 +90,11 @@ providers:
     config:
       url: https://api.groq.com
       api_key: ${env.GROQ_API_KEY}
-  - provider_id: ${env.ENABLE_FIREWORKS_OPENAI_COMPAT:=__disabled__}
-    provider_type: remote::fireworks-openai-compat
-    config:
-      openai_compat_api_base: https://api.fireworks.ai/inference/v1
-      api_key: ${env.FIREWORKS_API_KEY}
   - provider_id: ${env.ENABLE_LLAMA_OPENAI_COMPAT:=__disabled__}
     provider_type: remote::llama-openai-compat
     config:
       openai_compat_api_base: https://api.llama.com/compat/v1/
       api_key: ${env.LLAMA_API_KEY}
-  - provider_id: ${env.ENABLE_TOGETHER_OPENAI_COMPAT:=__disabled__}
-    provider_type: remote::together-openai-compat
-    config:
-      openai_compat_api_base: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
-  - provider_id: ${env.ENABLE_GROQ_OPENAI_COMPAT:=__disabled__}
-    provider_type: remote::groq-openai-compat
-    config:
-      openai_compat_api_base: https://api.groq.com/openai/v1
-      api_key: ${env.GROQ_API_KEY}
-  - provider_id: ${env.ENABLE_SAMBANOVA_OPENAI_COMPAT:=__disabled__}
-    provider_type: remote::sambanova-openai-compat
-    config:
-      openai_compat_api_base: https://api.sambanova.ai/v1
-      api_key: ${env.SAMBANOVA_API_KEY}
-  - provider_id: ${env.ENABLE_CEREBRAS_OPENAI_COMPAT:=__disabled__}
-    provider_type: remote::cerebras-openai-compat
-    config:
-      openai_compat_api_base: https://api.cerebras.ai/v1
-      api_key: ${env.CEREBRAS_API_KEY}
   - provider_id: ${env.ENABLE_SAMBANOVA:=__disabled__}
     provider_type: remote::sambanova
     config:
