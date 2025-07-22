@@ -245,6 +245,11 @@ async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> 
     if model is not None:
         return model
 
+    logger.warning(
+        f"WARNING: model identifier '{model_id}' not found in routing table. Falling back to "
+        "searching in all providers. This is only for backwards compatibility and will stop working "
+        "soon. Migrate your calls to use fully scoped `provider_id/model_id` names."
+    )
     # if not found, this means model_id is an unscoped provider_model_id, we need
     # to iterate (given a lack of an efficient index on the KVStore)
     models = await routing_table.get_all_with_type("model")
