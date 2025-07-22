@@ -114,6 +114,7 @@ test = [
     "sqlalchemy[asyncio]>=2.0.41",
     "requests",
     "pymilvus>=2.5.12",
+    "reportlab",
 ]
 docs = [
     "setuptools",
