@@ -83,6 +83,7 @@ class SQLiteTraceStore(TraceStore):
             )
             SELECT DISTINCT trace_id, root_span_id, start_time, end_time
             FROM filtered_traces
+            WHERE root_span_id IS NOT NULL
             LIMIT {limit} OFFSET {offset}
         """
 
@@ -166,7 +167,11 @@ class SQLiteTraceStore(TraceStore):
                 return spans_by_id
 
     async def get_trace(self, trace_id: str) -> Trace:
-        query = "SELECT * FROM traces WHERE trace_id = ?"
+        query = """
+            SELECT *
+            FROM traces t
+            WHERE t.trace_id = ?
+        """
         async with aiosqlite.connect(self.conn_string) as conn:
             conn.row_factory = aiosqlite.Row
             async with conn.execute(query, (trace_id,)) as cursor:

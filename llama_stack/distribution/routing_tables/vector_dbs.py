@@ -4,11 +4,24 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from typing import Any
+
 from pydantic import TypeAdapter
 
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
+from llama_stack.apis.vector_io.vector_io import (
+    SearchRankingOptions,
+    VectorStoreChunkingStrategy,
+    VectorStoreDeleteResponse,
+    VectorStoreFileContentsResponse,
+    VectorStoreFileDeleteResponse,
+    VectorStoreFileObject,
+    VectorStoreFileStatus,
+    VectorStoreObject,
+    VectorStoreSearchResponsePage,
+)
 from llama_stack.distribution.datatypes import (
     VectorDBWithOwner,
 )
@@ -74,3 +87,135 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
         if existing_vector_db is None:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         await self.unregister_object(existing_vector_db)
+
+    async def openai_retrieve_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreObject:
+        await self.assert_action_allowed("read", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_retrieve_vector_store(vector_store_id)
+
+    async def openai_update_vector_store(
+        self,
+        vector_store_id: str,
+        name: str | None = None,
+        expires_after: dict[str, Any] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> VectorStoreObject:
+        await self.assert_action_allowed("update", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_update_vector_store(
+            vector_store_id=vector_store_id,
+            name=name,
+            expires_after=expires_after,
+            metadata=metadata,
+        )
+
+    async def openai_delete_vector_store(
+        self,
+        vector_store_id: str,
+    ) -> VectorStoreDeleteResponse:
+        await self.assert_action_allowed("delete", "vector_db", vector_store_id)
+        result = await self.get_provider_impl(vector_store_id).openai_delete_vector_store(vector_store_id)
+        await self.unregister_vector_db(vector_store_id)
+        return result
+
+    async def openai_search_vector_store(
+        self,
+        vector_store_id: str,
+        query: str | list[str],
+        filters: dict[str, Any] | None = None,
+        max_num_results: int | None = 10,
+        ranking_options: SearchRankingOptions | None = None,
+        rewrite_query: bool | None = False,
+        search_mode: str | None = "vector",
+    ) -> VectorStoreSearchResponsePage:
+        await self.assert_action_allowed("read", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_search_vector_store(
+            vector_store_id=vector_store_id,
+            query=query,
+            filters=filters,
+            max_num_results=max_num_results,
+            ranking_options=ranking_options,
+            rewrite_query=rewrite_query,
+            search_mode=search_mode,
+        )
+
+    async def openai_attach_file_to_vector_store(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any] | None = None,
+        chunking_strategy: VectorStoreChunkingStrategy | None = None,
+    ) -> VectorStoreFileObject:
+        await self.assert_action_allowed("update", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_attach_file_to_vector_store(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+            attributes=attributes,
+            chunking_strategy=chunking_strategy,
+        )
+
+    async def openai_list_files_in_vector_store(
+        self,
+        vector_store_id: str,
+        limit: int | None = 20,
+        order: str | None = "desc",
+        after: str | None = None,
+        before: str | None = None,
+        filter: VectorStoreFileStatus | None = None,
+    ) -> list[VectorStoreFileObject]:
+        await self.assert_action_allowed("read", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_list_files_in_vector_store(
+            vector_store_id=vector_store_id,
+            limit=limit,
+            order=order,
+            after=after,
+            before=before,
+            filter=filter,
+        )
+
+    async def openai_retrieve_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileObject:
+        await self.assert_action_allowed("read", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_retrieve_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+        )
+
+    async def openai_retrieve_vector_store_file_contents(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileContentsResponse:
+        await self.assert_action_allowed("read", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_retrieve_vector_store_file_contents(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+        )
+
+    async def openai_update_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+        attributes: dict[str, Any],
+    ) -> VectorStoreFileObject:
+        await self.assert_action_allowed("update", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_update_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+            attributes=attributes,
+        )
+
+    async def openai_delete_vector_store_file(
+        self,
+        vector_store_id: str,
+        file_id: str,
+    ) -> VectorStoreFileDeleteResponse:
+        await self.assert_action_allowed("delete", "vector_db", vector_store_id)
+        return await self.get_provider_impl(vector_store_id).openai_delete_vector_store_file(
+            vector_store_id=vector_store_id,
+            file_id=file_id,
+        )

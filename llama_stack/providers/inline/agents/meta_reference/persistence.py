@@ -128,6 +128,11 @@ class AgentPersistence:
             except Exception as e:
                 log.error(f"Error parsing turn: {e}")
                 continue
+
+        # The kvstore does not guarantee order, so we sort by started_at
+        # to ensure consistent ordering of turns.
+        turns.sort(key=lambda t: t.started_at)
+
         return turns
 
     async def get_session_turn(self, session_id: str, turn_id: str) -> Turn | None:

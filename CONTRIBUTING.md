@@ -10,8 +10,13 @@ If in doubt, please open a [discussion](https://github.com/meta-llama/llama-stac
 
 **I'd like to contribute!**
 
-All issues are actionable (please report if they are not.) Pick one and start working on it. Thank you.
-If you need help or guidance, comment on the issue. Issues that are extra friendly to new contributors are tagged with "contributor friendly".
+If you are new to the project, start by looking at the issues tagged with "good first issue". If you're interested
+leave a comment on the issue and a triager will assign it to you.
+
+Please avoid picking up too many issues at once. This helps you stay focused and ensures that others in the community also have opportunities to contribute.
+- Try to work on only 1–2 issues at a time, especially if you’re still getting familiar with the codebase.
+- Before taking an issue, check if it’s already assigned or being actively discussed.
+- If you’re blocked or can’t continue with an issue, feel free to unassign yourself or leave a comment so others can step in.
 
 **I have a bug!**
 
@@ -41,6 +46,15 @@ If you need help or guidance, comment on the issue. Issues that are extra friend
 4. Make sure your code lints using `pre-commit`.
 5. If you haven't already, complete the Contributor License Agreement ("CLA").
 6. Ensure your pull request follows the [conventional commits format](https://www.conventionalcommits.org/en/v1.0.0/).
+7. Ensure your pull request follows the [coding style](#coding-style).
+
+
+Please keep pull requests (PRs) small and focused. If you have a large set of changes, consider splitting them into logically grouped, smaller PRs to facilitate review and testing.
+
+> [!TIP]
+> As a general guideline:
+> - Experienced contributors should try to keep no more than 5 open PRs at a time.
+> - New contributors are encouraged to have only one open PR at a time until they’re familiar with the codebase and process.
 
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need
@@ -140,7 +154,9 @@ uv sync
 * Don't use unicode characters in the codebase. ASCII-only is preferred for compatibility or
   readability reasons.
 * Providers configuration class should be Pydantic Field class. It should have a `description` field
-  that describes the configuration. These descriptions will be used to generate the provider documentation.
+  that describes the configuration. These descriptions will be used to generate the provider
+  documentation.
+* When possible, use keyword arguments only when calling functions.
 
 ## Common Tasks
 

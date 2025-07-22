@@ -34,6 +34,7 @@ class VectorDBInput(BaseModel):
     vector_db_id: str
     embedding_model: str
     embedding_dimension: int
+    provider_id: str | None = None
     provider_vector_db_id: str | None = None
 
 

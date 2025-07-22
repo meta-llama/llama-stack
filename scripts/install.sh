@@ -15,7 +15,7 @@ set -Eeuo pipefail
 PORT=8321
 OLLAMA_PORT=11434
 MODEL_ALIAS="llama3.2:3b"
-SERVER_IMAGE="llamastack/distribution-ollama:0.2.2"
+SERVER_IMAGE="docker.io/llamastack/distribution-ollama:0.2.2"
 WAIT_TIMEOUT=300
 
 log(){ printf "\e[1;32m%s\e[0m\n" "$*"; }
@@ -165,7 +165,7 @@ log "🦙  Starting Ollama…"
 $ENGINE run -d "${PLATFORM_OPTS[@]}" --name ollama-server \
   --network llama-net \
   -p "${OLLAMA_PORT}:${OLLAMA_PORT}" \
-  ollama/ollama > /dev/null 2>&1
+  docker.io/ollama/ollama > /dev/null 2>&1
 
 if ! wait_for_service "http://localhost:${OLLAMA_PORT}/" "Ollama" "$WAIT_TIMEOUT" "Ollama daemon"; then
   log "❌  Ollama daemon did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"

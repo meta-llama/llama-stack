@@ -227,67 +227,12 @@ def available_providers() -> list[ProviderSpec]:
         remote_provider_spec(
             api=Api.inference,
             adapter=AdapterSpec(
-                adapter_type="fireworks-openai-compat",
-                pip_packages=["litellm"],
-                module="llama_stack.providers.remote.inference.fireworks_openai_compat",
-                config_class="llama_stack.providers.remote.inference.fireworks_openai_compat.config.FireworksCompatConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.fireworks_openai_compat.config.FireworksProviderDataValidator",
-                description="Fireworks AI OpenAI-compatible provider for using Fireworks models with OpenAI API format.",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
                 adapter_type="llama-openai-compat",
                 pip_packages=["litellm"],
                 module="llama_stack.providers.remote.inference.llama_openai_compat",
                 config_class="llama_stack.providers.remote.inference.llama_openai_compat.config.LlamaCompatConfig",
                 provider_data_validator="llama_stack.providers.remote.inference.llama_openai_compat.config.LlamaProviderDataValidator",
                 description="Llama OpenAI-compatible provider for using Llama models with OpenAI API format.",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_type="together-openai-compat",
-                pip_packages=["litellm"],
-                module="llama_stack.providers.remote.inference.together_openai_compat",
-                config_class="llama_stack.providers.remote.inference.together_openai_compat.config.TogetherCompatConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.together_openai_compat.config.TogetherProviderDataValidator",
-                description="Together AI OpenAI-compatible provider for using Together models with OpenAI API format.",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_type="groq-openai-compat",
-                pip_packages=["litellm"],
-                module="llama_stack.providers.remote.inference.groq_openai_compat",
-                config_class="llama_stack.providers.remote.inference.groq_openai_compat.config.GroqCompatConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.groq_openai_compat.config.GroqProviderDataValidator",
-                description="Groq OpenAI-compatible provider for using Groq models with OpenAI API format.",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_type="sambanova-openai-compat",
-                pip_packages=["litellm"],
-                module="llama_stack.providers.remote.inference.sambanova_openai_compat",
-                config_class="llama_stack.providers.remote.inference.sambanova_openai_compat.config.SambaNovaCompatConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.sambanova_openai_compat.config.SambaNovaProviderDataValidator",
-                description="SambaNova OpenAI-compatible provider for using SambaNova models with OpenAI API format.",
-            ),
-        ),
-        remote_provider_spec(
-            api=Api.inference,
-            adapter=AdapterSpec(
-                adapter_type="cerebras-openai-compat",
-                pip_packages=["litellm"],
-                module="llama_stack.providers.remote.inference.cerebras_openai_compat",
-                config_class="llama_stack.providers.remote.inference.cerebras_openai_compat.config.CerebrasCompatConfig",
-                provider_data_validator="llama_stack.providers.remote.inference.cerebras_openai_compat.config.CerebrasProviderDataValidator",
-                description="Cerebras OpenAI-compatible provider for using Cerebras models with OpenAI API format.",
             ),
         ),
         remote_provider_spec(
