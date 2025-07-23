@@ -336,7 +336,7 @@ $CONTAINER_BINARY build \
   "$BUILD_CONTEXT_DIR"
 
 # clean up tmp/configs
-rm -f "$BUILD_CONTEXT_DIR/run.yaml"
+rm -rf "$BUILD_CONTEXT_DIR/run.yaml" "$TEMP_DIR"
 set +x
 
 echo "Success!"
