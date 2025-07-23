@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field, field_validator
@@ -88,7 +88,7 @@ class RAGQueryGenerator(Enum):
 
 
 @json_schema_type
-class RAGSearchMode(Enum):
+class RAGSearchMode(StrEnum):
     """
     Search modes for RAG query retrieval:
     - VECTOR: Uses vector similarity search for semantic matching
