@@ -20,7 +20,8 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate, ModelType
+from llama_stack.apis.models import ModelType
+from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
 )
