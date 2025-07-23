@@ -133,6 +133,9 @@ providers:
     provider_type: remote::chromadb
     config:
       url: ${env.CHROMADB_URL:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter/}/chroma_remote_registry.db
   - provider_id: ${env.ENABLE_PGVECTOR:=__disabled__}
     provider_type: remote::pgvector
     config:

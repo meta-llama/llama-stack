@@ -235,7 +235,10 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="${env.ENABLE_CHROMADB:=__disabled__}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:=}"),
+            config=ChromaVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}/",
+                url="${env.CHROMADB_URL:=}",
+            ),
         ),
         Provider(
             provider_id="${env.ENABLE_PGVECTOR:=__disabled__}",

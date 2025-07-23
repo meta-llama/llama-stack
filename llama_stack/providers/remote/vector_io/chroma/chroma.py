@@ -22,6 +22,8 @@ from llama_stack.apis.vector_io import (
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
+from llama_stack.providers.utils.kvstore import kvstore_impl
+from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
@@ -34,6 +36,13 @@ log = logging.getLogger(__name__)
 
 ChromaClientType = chromadb.api.AsyncClientAPI | chromadb.api.ClientAPI
 
+VERSION = "v3"
+VECTOR_DBS_PREFIX = f"vector_dbs:chroma:{VERSION}::"
+VECTOR_INDEX_PREFIX = f"vector_index:chroma:{VERSION}::"
+OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:chroma:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:chroma:{VERSION}::"
+OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:chroma:{VERSION}::"
+
 
 # this is a helper to allow us to use async and non-async chroma clients interchangeably
 async def maybe_await(result):
@@ -43,9 +52,10 @@ async def maybe_await(result):
 
 
 class ChromaIndex(EmbeddingIndex):
-    def __init__(self, client: ChromaClientType, collection):
+    def __init__(self, client: ChromaClientType, collection, kvstore: KVStore | None = None):
         self.client = client
         self.collection = collection
+        self.kvstore = kvstore
 
     async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
@@ -124,11 +134,12 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
         self.config = config
         self.inference_api = inference_api
-
         self.client = None
         self.cache = {}
+        self.kvstore: KVStore | None = None
 
     async def initialize(self) -> None:
+        self.kvstore = await kvstore_impl(self.config.kvstore)
         if isinstance(self.config, RemoteChromaVectorIOConfig):
             log.info(f"Connecting to Chroma server at: {self.config.url}")
             url = self.config.url.rstrip("/")
