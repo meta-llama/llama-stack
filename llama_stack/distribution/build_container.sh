@@ -136,16 +136,20 @@ EOF
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
 if [ -n "$pip_dependencies" ]; then
+  read -ra pip_args <<< "$pip_dependencies"
+  quoted_deps=$(printf " %q" "${pip_args[@]}")
   add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install $pip_dependencies
+RUN $MOUNT_CACHE uv pip install $quoted_deps
 EOF
 fi
 
 if [ -n "$special_pip_deps" ]; then
   IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
+    read -ra pip_args <<< "$part"
+    quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN $MOUNT_CACHE uv pip install $part
+RUN $MOUNT_CACHE uv pip install $quoted_deps
 EOF
   done
 fi
