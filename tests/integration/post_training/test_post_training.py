@@ -46,6 +46,7 @@ sys.stdout.reconfigure(line_buffering=True)
 #   -v -s --tb=short --disable-warnings
 
 
+# SFT test
 class TestPostTraining:
     @pytest.mark.integration
     @pytest.mark.parametrize(
@@ -155,6 +156,7 @@ class TestPostTraining:
     #     assert job_artifacts.checkpoints[0].epoch == 0
     # assert "/.llama/checkpoints/Llama3.2-3B-Instruct-sft-0" in job_artifacts.checkpoints[0].path
 
+    # DPO test
     @pytest.mark.integration
     @pytest.mark.parametrize(
         "purpose, source",
