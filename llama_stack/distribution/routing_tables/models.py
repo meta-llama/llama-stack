@@ -11,6 +11,7 @@ from typing import Any
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse, OpenAIModel
 from llama_stack.distribution.datatypes import (
     ModelWithOwner,
+    RegistryEntrySource,
 )
 from llama_stack.log import get_logger
 
@@ -65,7 +66,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                 if models is None:
                     continue
 
-                await self.update_registered_llm_models(provider_id, models)
+                await self.update_registered_models(provider_id, models)
 
             await asyncio.sleep(self.model_refresh_interval_seconds)
 
@@ -131,6 +132,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             provider_id=provider_id,
             metadata=metadata,
             model_type=model_type,
+            source=RegistryEntrySource.default,
         )
         registered_model = await self.register_object(model)
         return registered_model
@@ -141,7 +143,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             raise ValueError(f"Model {model_id} not found")
         await self.unregister_object(existing_model)
 
-    async def update_registered_llm_models(
+    async def update_registered_models(
         self,
         provider_id: str,
         models: list[Model],
@@ -152,18 +154,19 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         # from run.yaml) that we need to keep track of
         model_ids = {}
         for model in existing_models:
-            # we leave embeddings models alone because often we don't get metadata
-            # (embedding dimension, etc.) from the provider
-            if model.provider_id == provider_id and model.model_type == ModelType.llm:
+            if model.provider_id != provider_id:
+                continue
+            if model.source == RegistryEntrySource.default:
                 model_ids[model.provider_resource_id] = model.identifier
-                logger.debug(f"unregistering model {model.identifier}")
-                await self.unregister_object(model)
+                continue
+
+            logger.debug(f"unregistering model {model.identifier}")
+            await self.unregister_object(model)
 
         for model in models:
-            if model.model_type != ModelType.llm:
-                continue
             if model.provider_resource_id in model_ids:
-                model.identifier = model_ids[model.provider_resource_id]
+                # avoid overwriting a non-provider-registered model entry
+                continue
 
             logger.debug(f"registering model {model.identifier} ({model.provider_resource_id})")
             await self.register_object(
@@ -173,5 +176,6 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                     provider_id=provider_id,
                     metadata=model.metadata,
                     model_type=model.model_type,
+                    source=RegistryEntrySource.provider,
                 )
             )

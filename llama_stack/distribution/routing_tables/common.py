@@ -206,7 +206,6 @@ class CommonRoutingTableImpl(RoutingTable):
         if obj.type == ResourceType.model.value:
             await self.dist_registry.register(registered_obj)
             return registered_obj
-
         else:
             await self.dist_registry.register(obj)
             return obj

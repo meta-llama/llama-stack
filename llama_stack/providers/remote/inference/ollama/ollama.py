@@ -126,10 +126,44 @@ class OllamaInferenceAdapter(
     async def list_models(self) -> list[Model] | None:
         provider_id = self.__provider_id__
         response = await self.client.list()
-        models = []
+
+        # always add the two embedding models which can be pulled on demand
+        models = [
+            Model(
+                identifier="all-minilm:l6-v2",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            # add all-minilm alias
+            Model(
+                identifier="all-minilm",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            Model(
+                identifier="nomic-embed-text",
+                provider_resource_id="nomic-embed-text",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 768,
+                    "context_length": 8192,
+                },
+                model_type=ModelType.embedding,
+            ),
+        ]
         for m in response.models:
-            model_type = ModelType.embedding if m.details.family in ["bert"] else ModelType.llm
-            if model_type == ModelType.embedding:
+            # kill embedding models since we don't know dimensions for them
+            if m.details.family in ["bert"]:
                 continue
             models.append(
                 Model(
@@ -137,7 +171,7 @@ class OllamaInferenceAdapter(
                     provider_resource_id=m.model,
                     provider_id=provider_id,
                     metadata={},
-                    model_type=model_type,
+                    model_type=ModelType.llm,
                 )
             )
         return models

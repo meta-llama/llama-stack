@@ -36,6 +36,11 @@ LLAMA_STACK_RUN_CONFIG_VERSION = 2
 RoutingKey = str | list[str]
 
 
+class RegistryEntrySource(StrEnum):
+    default = "default"
+    provider = "provider"
+
+
 class User(BaseModel):
     principal: str
     # further attributes that may be used for access control decisions
@@ -50,6 +55,7 @@ class ResourceWithOwner(Resource):
     resource. This can be used to constrain access to the resource."""
 
     owner: User | None = None
+    source: RegistryEntrySource = RegistryEntrySource.default
 
 
 # Use the extended Resource for all routable objects
