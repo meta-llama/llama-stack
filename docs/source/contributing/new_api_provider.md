@@ -14,6 +14,41 @@ Here are some example PRs to help you get started:
    - [Nvidia Inference Implementation](https://github.com/meta-llama/llama-stack/pull/355)
    - [Model context protocol Tool Runtime](https://github.com/meta-llama/llama-stack/pull/665)
 
+## Inference Provider Patterns
+
+When implementing Inference providers for OpenAI-compatible APIs, Llama Stack provides several mixin classes to simplify development and ensure consistent behavior across providers.
+
+### OpenAIMixin
+
+The `OpenAIMixin` class provides direct OpenAI API functionality for providers that work with OpenAI-compatible endpoints. It includes:
+
+#### Direct API Methods
+- **`openai_completion()`**: Legacy text completion API with full parameter support
+- **`openai_chat_completion()`**: Chat completion API supporting streaming, tools, and function calling
+- **`openai_embeddings()`**: Text embeddings generation with customizable encoding and dimensions
+
+#### Model Management
+- **`check_model_availability()`**: Queries the API endpoint to verify if a model exists and is accessible
+
+#### Client Management
+- **`client` property**: Automatically creates and configures AsyncOpenAI client instances using your provider's credentials
+
+#### Required Implementation
+
+To use `OpenAIMixin`, your provider must implement these abstract methods:
+
+```python
+@abstractmethod
+def get_api_key(self) -> str:
+    """Return the API key for authentication"""
+    pass
+
+
+@abstractmethod
+def get_base_url(self) -> str:
+    """Return the OpenAI-compatible API base URL"""
+    pass
+```
 
 ## Testing the Provider
 
