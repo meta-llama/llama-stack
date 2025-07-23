@@ -285,9 +285,15 @@ async def test_access_policy(mock_get_authenticated_user, test_setup_with_access
             "projects": ["foo", "bar"],
         },
     )
-    await routing_table.register_model("model-1", provider_id="test_provider")
-    await routing_table.register_model("model-2", provider_id="test_provider")
-    await routing_table.register_model("model-3", provider_id="test_provider")
+    await routing_table.register_model(
+        "model-1", provider_model_id="test_provider/model-1", provider_id="test_provider"
+    )
+    await routing_table.register_model(
+        "model-2", provider_model_id="test_provider/model-2", provider_id="test_provider"
+    )
+    await routing_table.register_model(
+        "model-3", provider_model_id="test_provider/model-3", provider_id="test_provider"
+    )
     model = await routing_table.get_model("model-1")
     assert model.identifier == "model-1"
     model = await routing_table.get_model("model-2")
