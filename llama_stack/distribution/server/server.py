@@ -32,7 +32,7 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.cli.utils import add_config_template_args
+from llama_stack.cli.utils import add_config_template_args, get_config_from_args
 from llama_stack.distribution.access_control.access_control import AccessDeniedError
 from llama_stack.distribution.datatypes import (
     AuthenticationRequiredError,
@@ -399,7 +399,8 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    config_file = resolve_config_or_template(args.config, Mode.RUN)
+    config_or_template = get_config_from_args(args)
+    config_file = resolve_config_or_template(config_or_template, Mode.RUN)
 
     logger_config = None
     with open(config_file) as fp:
