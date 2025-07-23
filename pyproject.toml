@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "aiohttp",
+    "anthropic>=0.58.2",
     "fastapi>=0.115.0,<1.0",                  # server
     "fire",                                   # for MCP in LLS client
     "httpx",
