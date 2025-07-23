@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import gc
-import json
 import logging
 import multiprocessing
 import os
@@ -29,20 +28,18 @@ os.environ["MKL_NUM_THREADS"] = "1"
 
 import torch
 from datasets import Dataset
-from peft import LoraConfig
 from transformers import (
     AutoConfig,
     AutoModelForCausalLM,
     AutoTokenizer,
 )
-from trl import SFTConfig, SFTTrainer
+from trl import DPOConfig, DPOTrainer
 
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
 from llama_stack.apis.post_training import (
     Checkpoint,
-    DataConfig,
-    LoraFinetuningConfig,
+    DPOAlignmentConfig,
     TrainingConfig,
 )
 
@@ -52,7 +49,7 @@ from ..utils import get_gb, get_memory_stats, setup_torch_device, setup_data
 logger = logging.getLogger(__name__)
 
 
-class HFFinetuningSingleDevice:
+class HFDPOAlignmentSingleDevice:
     def __init__(
         self,
         job_uuid: str,
@@ -64,151 +61,143 @@ class HFFinetuningSingleDevice:
         self.job_uuid = job_uuid
 
     def validate_dataset_format(self, rows: list[dict]) -> bool:
-        """Validate that the dataset has the required fields."""
-        required_fields = ["input_query", "expected_answer", "chat_completion_input"]
-        return all(field in row for row in rows for field in required_fields)
+        """Validate that the dataset has the required fields for DPO training."""
+        required_fields = ["prompt", "chosen", "rejected"]
 
-    def _process_instruct_format(self, row: dict) -> tuple[str | None, str | None]:
-        """Process a row in instruct format."""
-        if "chat_completion_input" in row and "expected_answer" in row:
-            try:
-                messages = json.loads(row["chat_completion_input"])
-                if not isinstance(messages, list) or len(messages) != 1:
-                    logger.warning(f"Invalid chat_completion_input format: {row['chat_completion_input']}")
-                    return None, None
-                if "content" not in messages[0]:
-                    logger.warning(f"Message missing content: {messages[0]}")
-                    return None, None
-                return messages[0]["content"], row["expected_answer"]
-            except json.JSONDecodeError:
-                logger.warning(f"Failed to parse chat_completion_input: {row['chat_completion_input']}")
-                return None, None
-        return None, None
+        if not rows:
+            logger.warning("Dataset is empty")
+            return False
 
-    def _process_dialog_format(self, row: dict) -> tuple[str | None, str | None]:
-        """Process a row in dialog format."""
-        if "dialog" in row:
-            try:
-                dialog = json.loads(row["dialog"])
-                if not isinstance(dialog, list) or len(dialog) < 2:
-                    logger.warning(f"Dialog must have at least 2 messages: {row['dialog']}")
-                    return None, None
-                if dialog[0].get("role") != "user":
-                    logger.warning(f"First message must be from user: {dialog[0]}")
-                    return None, None
-                if not any(msg.get("role") == "assistant" for msg in dialog):
-                    logger.warning("Dialog must have at least one assistant message")
-                    return None, None
+        for i, row in enumerate(rows):
+            if not isinstance(row, dict):
+                logger.warning(f"Row {i} is not a dictionary")
+                return False
 
-                # Convert to human/gpt format
-                role_map = {"user": "human", "assistant": "gpt"}
-                conversations = []
-                for msg in dialog:
-                    if "role" not in msg or "content" not in msg:
-                        logger.warning(f"Message missing role or content: {msg}")
-                        continue
-                    conversations.append({"from": role_map[msg["role"]], "value": msg["content"]})
+            for field in required_fields:
+                if field not in row:
+                    logger.warning(f"Row {i} missing required DPO field: {field}")
+                    return False
 
-                # Format as a single conversation
-                return conversations[0]["value"], conversations[1]["value"]
-            except json.JSONDecodeError:
-                logger.warning(f"Failed to parse dialog: {row['dialog']}")
-                return None, None
-        return None, None
+                # Handle both string and list formats
+                if field == "prompt":
+                    # Prompt should be a string
+                    if not isinstance(row[field], str):
+                        logger.warning(f"Row {i} field '{field}' is not a string")
+                        return False
+                    if not row[field].strip():
+                        logger.warning(f"Row {i} field '{field}' is empty")
+                        return False
+                else:
+                    # chosen/rejected can be either strings or lists of messages
+                    if isinstance(row[field], str):
+                        if not row[field].strip():
+                            logger.warning(f"Row {i} field '{field}' is empty")
+                            return False
+                    elif isinstance(row[field], list):
+                        if not row[field]:
+                            logger.warning(f"Row {i} field '{field}' is empty list")
+                            return False
+                    else:
+                        logger.warning(f"Row {i} field '{field}' is neither string nor list")
+                        return False
 
-    def _process_fallback_format(self, row: dict) -> tuple[str | None, str | None]:
-        """Process a row using fallback formats."""
-        if "input" in row and "output" in row:
-            return row["input"], row["output"]
-        elif "prompt" in row and "completion" in row:
-            return row["prompt"], row["completion"]
-        elif "question" in row and "answer" in row:
-            return row["question"], row["answer"]
-        return None, None
+        logger.info(f"DPO dataset validation passed: {len(rows)} preference examples")
+        return True
 
-    def _format_text(self, input_text: str, output_text: str, provider_config: HuggingFacePostTrainingConfig) -> str:
-        """Format input and output text based on model requirements."""
-        if hasattr(provider_config, "chat_template"):
-            return provider_config.chat_template.format(input=input_text, output=output_text)
-        return f"{input_text}\n{output_text}"
+    def _process_dpo_format(self, row: dict) -> tuple[str | None, str | None, str | None]:
+        """Process a row in DPO format, handling both string and conversation list formats."""
+        if all(field in row for field in ["prompt", "chosen", "rejected"]):
+            prompt = row["prompt"]
+
+            # Handle chosen field - convert list to string if needed
+            if isinstance(row["chosen"], list):
+                # For conversation format, concatenate messages
+                chosen = "\n".join(
+                    [msg.get("content", "") if isinstance(msg, dict) else str(msg) for msg in row["chosen"]]
+                )
+            else:
+                chosen = row["chosen"]
+
+            # Handle rejected field - convert list to string if needed
+            if isinstance(row["rejected"], list):
+                # For conversation format, concatenate messages
+                rejected = "\n".join(
+                    [msg.get("content", "") if isinstance(msg, dict) else str(msg) for msg in row["rejected"]]
+                )
+            else:
+                rejected = row["rejected"]
+
+            return prompt, chosen, rejected
+        return None, None, None
+
+    def _format_text_for_dpo(self, prompt: str, response: str, provider_config: HuggingFacePostTrainingConfig) -> str:
+        """Format prompt and response text based on model requirements."""
+        if hasattr(provider_config, "chat_template") and provider_config.chat_template:
+            # Use the chat template, supporting both {prompt}/{response} and {input}/{output}
+            template = provider_config.chat_template
+            # Try prompt/response first (DPO style)
+            if "{prompt}" in template and "{response}" in template:
+                return template.format(prompt=prompt, response=response)
+            # Fall back to input/output (SFT style)
+            elif "{input}" in template and "{output}" in template:
+                return template.format(input=prompt, output=response)
+            else:
+                # If template doesn't have expected placeholders, use default
+                return f"{prompt}\n{response}"
+        return f"{prompt}\n{response}"
 
     def _create_dataset(
         self, rows: list[dict], config: TrainingConfig, provider_config: HuggingFacePostTrainingConfig
     ) -> Dataset:
-        """Create and preprocess the dataset."""
-        formatted_rows = []
+        """Create and preprocess the dataset for DPO."""
+        dpo_examples = []
         for row in rows:
-            input_text = None
-            output_text = None
+            prompt, chosen, rejected = self._process_dpo_format(row)
 
-            # Process based on format
-            assert isinstance(config.data_config, DataConfig), "DataConfig must be initialized"
-            if config.data_config.data_format.value == "instruct":
-                input_text, output_text = self._process_instruct_format(row)
-            elif config.data_config.data_format.value == "dialog":
-                input_text, output_text = self._process_dialog_format(row)
-            else:
-                input_text, output_text = self._process_fallback_format(row)
+            if prompt and chosen and rejected:
+                # Format the texts
+                chosen_formatted = self._format_text_for_dpo(prompt, chosen, provider_config)
+                rejected_formatted = self._format_text_for_dpo(prompt, rejected, provider_config)
 
-            if input_text and output_text:
-                formatted_text = self._format_text(input_text, output_text, provider_config)
-                formatted_rows.append({"text": formatted_text})
+                dpo_examples.append(
+                    {
+                        "prompt": prompt,
+                        "chosen": chosen_formatted,
+                        "rejected": rejected_formatted,
+                    }
+                )
 
-        if not formatted_rows:
-            assert isinstance(config.data_config, DataConfig), "DataConfig must be initialized"
-            raise ValueError(
-                f"No valid input/output pairs found in the dataset for format: {config.data_config.data_format.value}"
-            )
+        if not dpo_examples:
+            raise ValueError("No valid preference examples found in dataset")
 
-        return Dataset.from_list(formatted_rows)
+        logger.info(f"Created DPO dataset with {len(dpo_examples)} preference pairs")
+        return Dataset.from_list(dpo_examples)
 
     def _preprocess_dataset(
         self, ds: Dataset, tokenizer: AutoTokenizer, provider_config: HuggingFacePostTrainingConfig
     ) -> Dataset:
-        """Preprocess the dataset with tokenizer."""
-
-        def tokenize_function(examples):
-            return tokenizer(
-                examples["text"],
-                padding=True,
-                truncation=True,
-                max_length=provider_config.max_seq_length,
-                return_tensors=None,
-            )
-
-        return ds.map(
-            tokenize_function,
-            batched=True,
-            remove_columns=ds.column_names,
-        )
+        """Preprocess the dataset with tokenizer for DPO."""
+        # DPOTrainer expects raw text, so we don't tokenize here
+        # Just return the dataset as is
+        return ds
 
     def _run_training_sync(
         self,
         model: str,
         provider_config: dict[str, Any],
-        peft_config: LoraConfig | None,
+        dpo_config: dict[str, Any],
         config: dict[str, Any],
         output_dir_path: Path | None,
     ) -> None:
-        """Synchronous wrapper for running training process.
-        This method serves as a bridge between the multiprocessing Process and the async training function.
-        It creates a new event loop to run the async training process.
-        Args:
-            model: The model identifier to load
-            dataset_id: ID of the dataset to use for training
-            provider_config: Configuration specific to the HuggingFace provider
-            peft_config: Optional LoRA configuration
-            config: General training configuration
-            output_dir_path: Optional path to save the model
-        """
+        """Synchronous wrapper for running DPO training process."""
         import asyncio
 
-        logger.info("Starting training process with async wrapper")
+        logger.info("Starting DPO training process with async wrapper")
         asyncio.run(
             self._run_training(
                 model=model,
                 provider_config=provider_config,
-                peft_config=peft_config,
+                dpo_config=dpo_config,
                 config=config,
                 output_dir_path=output_dir_path,
             )
@@ -220,23 +209,16 @@ class HFFinetuningSingleDevice:
         config: TrainingConfig,
         provider_config: HuggingFacePostTrainingConfig,
     ) -> tuple[Dataset, Dataset, AutoTokenizer]:
-        """Load and prepare the dataset for training.
-        Args:
-            model: The model identifier to load
-            config: Training configuration
-            provider_config: Provider-specific configuration
-        Returns:
-            tuple: (train_dataset, eval_dataset, tokenizer)
-        """
+        """Load and prepare the dataset for DPO training."""
         # Validate data config
         if not config.data_config:
-            raise ValueError("DataConfig is required for training")
+            raise ValueError("DataConfig is required for DPO training")
 
         # Load dataset
         logger.info(f"Loading dataset: {config.data_config.dataset_id}")
         rows = await setup_data(config.data_config.dataset_id, self.datasetio_api)
         if not self.validate_dataset_format(rows):
-            raise ValueError("Dataset is missing required fields: input_query, expected_answer, chat_completion_input")
+            raise ValueError("Dataset is missing required fields: prompt, chosen, rejected")
         logger.info(f"Loaded {len(rows)} rows from dataset")
 
         # Initialize tokenizer
@@ -245,29 +227,24 @@ class HFFinetuningSingleDevice:
             tokenizer = AutoTokenizer.from_pretrained(model, **provider_config.model_specific_config)
 
             # Set pad token to eos token if not present
-            # This is common for models that don't have a dedicated pad token
             if not tokenizer.pad_token:
                 tokenizer.pad_token = tokenizer.eos_token
 
-            # Set padding side to right for causal language modeling
-            # This ensures that padding tokens don't interfere with the model's ability
-            # to predict the next token in the sequence
-            tokenizer.padding_side = "right"
+            # Set padding side to left for DPO
+            tokenizer.padding_side = "left"
 
             # Set truncation side to right to keep the beginning of the sequence
-            # This is important for maintaining context and instruction format
             tokenizer.truncation_side = "right"
 
             # Set model max length to match provider config
-            # This ensures consistent sequence lengths across the training process
             tokenizer.model_max_length = provider_config.max_seq_length
 
-            logger.info("Tokenizer initialized successfully")
+            logger.info("Tokenizer initialized successfully for DPO")
         except Exception as e:
             raise RuntimeError(f"Failed to initialize tokenizer: {str(e)}") from e
 
         # Create and preprocess dataset
-        logger.info("Creating and preprocessing dataset")
+        logger.info("Creating and preprocessing dataset for DPO")
         try:
             ds = self._create_dataset(rows, config, provider_config)
             ds = self._preprocess_dataset(ds, tokenizer, provider_config)
@@ -290,17 +267,8 @@ class HFFinetuningSingleDevice:
         device: torch.device,
         provider_config: HuggingFacePostTrainingConfig,
     ) -> AutoModelForCausalLM:
-        """Load and initialize the model for training.
-        Args:
-            model: The model identifier to load
-            device: The device to load the model onto
-            provider_config: Provider-specific configuration
-        Returns:
-            The loaded and initialized model
-        Raises:
-            RuntimeError: If model loading fails
-        """
-        logger.info("Loading the base model")
+        """Load and initialize the model for DPO training."""
+        logger.info("Loading the base model for DPO")
         try:
             model_config = AutoConfig.from_pretrained(model, **provider_config.model_specific_config)
             model_obj = AutoModelForCausalLM.from_pretrained(
@@ -321,22 +289,14 @@ class HFFinetuningSingleDevice:
         self,
         config: TrainingConfig,
         provider_config: HuggingFacePostTrainingConfig,
+        dpo_config: DPOAlignmentConfig,
         device: torch.device,
         output_dir_path: Path | None,
         steps_per_epoch: int,
-    ) -> SFTConfig:
-        """Setup training arguments.
-        Args:
-            config: Training configuration
-            provider_config: Provider-specific configuration
-            device: The device to train on
-            output_dir_path: Optional path to save the model
-            steps_per_epoch: Number of steps per epoch
-        Returns:
-            Configured SFTConfig object
-        """
-        logger.info("Configuring training arguments")
-        lr = 2e-5
+    ) -> DPOConfig:
+        """Setup DPO training arguments."""
+        logger.info("Configuring DPO training arguments")
+        lr = 5e-7  # Lower learning rate for DPO
         if config.optimizer_config:
             lr = config.optimizer_config.lr
             logger.info(f"Using custom learning rate: {lr}")
@@ -351,11 +311,13 @@ class HFFinetuningSingleDevice:
         max_steps = min(config.max_steps_per_epoch, total_steps)
         logging_steps = max(1, steps_per_epoch // 50)  # Log 50 times per epoch
 
-        logger.info("Training configuration:")
+        logger.info("DPO training configuration:")
         logger.info(f"- Steps per epoch: {steps_per_epoch}")
         logger.info(f"- Total steps: {total_steps}")
         logger.info(f"- Max steps: {max_steps}")
         logger.info(f"- Logging steps: {logging_steps}")
+        logger.info(f"- DPO beta: {dpo_config.beta}")
+        logger.info(f"- DPO loss type: {provider_config.dpo_loss_type}")
 
         # Configure save strategy
         save_strategy = "no"
@@ -365,7 +327,10 @@ class HFFinetuningSingleDevice:
             eval_strategy = "epoch"
             logger.info(f"Will save checkpoints to {output_dir_path}")
 
-        return SFTConfig(
+        # Calculate max prompt length as half of max sequence length
+        max_prompt_length = provider_config.max_seq_length // 2
+
+        return DPOConfig(
             max_steps=max_steps,
             output_dir=str(output_dir_path) if output_dir_path is not None else None,
             num_train_epochs=config.n_epochs,
@@ -376,7 +341,8 @@ class HFFinetuningSingleDevice:
             use_cpu=True if device.type == "cpu" and not torch.backends.mps.is_available() else False,
             save_strategy=save_strategy,
             report_to="none",
-            max_seq_length=provider_config.max_seq_length,
+            max_length=provider_config.max_seq_length,
+            max_prompt_length=max_prompt_length,
             gradient_accumulation_steps=config.gradient_accumulation_steps,
             gradient_checkpointing=provider_config.gradient_checkpointing,
             learning_rate=lr,
@@ -385,50 +351,39 @@ class HFFinetuningSingleDevice:
             remove_unused_columns=False,
             dataloader_pin_memory=provider_config.dataloader_pin_memory,
             dataloader_num_workers=provider_config.dataloader_num_workers,
-            dataset_text_field="text",
-            packing=False,
             load_best_model_at_end=True if output_dir_path else False,
             metric_for_best_model="eval_loss",
             greater_is_better=False,
             logging_steps=logging_steps,
+            save_total_limit=provider_config.save_total_limit,
+            # DPO specific parameters
+            beta=dpo_config.beta,
+            loss_type=provider_config.dpo_loss_type,
         )
 
     def save_model(
         self,
-        model_obj: AutoModelForCausalLM,
-        trainer: SFTTrainer,
-        peft_config: LoraConfig | None,
+        trainer: DPOTrainer,
         output_dir_path: Path,
     ) -> None:
-        """Save the trained model.
-        Args:
-            model_obj: The model to save
-            trainer: The trainer instance
-            peft_config: Optional LoRA configuration
-            output_dir_path: Path to save the model
-        """
-        logger.info("Saving final model")
-        model_obj.config.use_cache = True
+        """Save the trained DPO model."""
+        logger.info("Saving final DPO model")
 
-        if peft_config:
-            logger.info("Merging LoRA weights with base model")
-            model_obj = trainer.model.merge_and_unload()
-        else:
-            model_obj = trainer.model
-
-        save_path = output_dir_path / "merged_model"
+        save_path = output_dir_path / "dpo_model"
         logger.info(f"Saving model to {save_path}")
-        model_obj.save_pretrained(save_path)
+
+        # Save model and tokenizer
+        trainer.save_model(str(save_path))
 
     async def _run_training(
         self,
         model: str,
         provider_config: dict[str, Any],
-        peft_config: LoraConfig | None,
+        dpo_config: dict[str, Any],
         config: dict[str, Any],
         output_dir_path: Path | None,
     ) -> None:
-        """Run the training process with signal handling."""
+        """Run the DPO training process with signal handling."""
 
         def signal_handler(signum, frame):
             """Handle termination signals gracefully."""
@@ -442,6 +397,7 @@ class HFFinetuningSingleDevice:
         logger.info("Initializing configuration objects")
         provider_config_obj = HuggingFacePostTrainingConfig(**provider_config)
         config_obj = TrainingConfig(**config)
+        dpo_config_obj = DPOAlignmentConfig(**dpo_config)
 
         # Initialize and validate device
         device = setup_torch_device(provider_config_obj.device)
@@ -459,53 +415,67 @@ class HFFinetuningSingleDevice:
         training_args = self.setup_training_args(
             config_obj,
             provider_config_obj,
+            dpo_config_obj,
             device,
             output_dir_path,
             steps_per_epoch,
         )
 
-        # Load model
+        # Load model and reference model
         model_obj = self.load_model(model, device, provider_config_obj)
+        ref_model = None
+        if provider_config_obj.use_reference_model:
+            logger.info("Loading separate reference model for DPO")
+            ref_model = self.load_model(model, device, provider_config_obj)
+        else:
+            logger.info("Using shared reference model for DPO")
 
-        # Initialize trainer
-        logger.info("Initializing SFTTrainer")
-        trainer = SFTTrainer(
+        # Initialize DPO trainer
+        logger.info("Initializing DPOTrainer")
+        trainer = DPOTrainer(
             model=model_obj,
+            ref_model=ref_model,
+            args=training_args,
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            peft_config=peft_config,
-            args=training_args,
+            processing_class=tokenizer,
         )
 
         try:
             # Train
-            logger.info("Starting training")
+            logger.info("Starting DPO training")
             trainer.train()
-            logger.info("Training completed successfully")
+            logger.info("DPO training completed successfully")
 
             # Save final model if output directory is provided
             if output_dir_path:
-                self.save_model(model_obj, trainer, peft_config, output_dir_path)
+                logger.info(f"Saving model to output directory: {output_dir_path}")
+                self.save_model(trainer, output_dir_path)
+                logger.info("Model save completed")
 
         finally:
             # Clean up resources
             logger.info("Cleaning up resources")
             if hasattr(trainer, "model"):
                 evacuate_model_from_device(trainer.model, device.type)
+            if ref_model:
+                evacuate_model_from_device(ref_model, device.type)
             del trainer
+            del ref_model
             gc.collect()
             logger.info("Cleanup completed")
+            logger.info("DPO training process finishing successfully")
 
     async def train(
         self,
         model: str,
         output_dir: str | None,
         job_uuid: str,
-        lora_config: LoraFinetuningConfig,
+        dpo_config: DPOAlignmentConfig,
         config: TrainingConfig,
         provider_config: HuggingFacePostTrainingConfig,
     ) -> tuple[dict[str, Any], list[Checkpoint] | None]:
-        """Train a model using HuggingFace's SFTTrainer"""
+        """Train a model using HuggingFace's DPOTrainer"""
         # Initialize and validate device
         device = setup_torch_device(provider_config.device)
         logger.info(f"Using device '{device}'")
@@ -521,24 +491,12 @@ class HFFinetuningSingleDevice:
             "final": None,
         }
 
-        # Configure LoRA
-        peft_config = None
-        if lora_config:
-            peft_config = LoraConfig(
-                lora_alpha=lora_config.alpha,
-                lora_dropout=0.1,
-                r=lora_config.rank,
-                bias="none",
-                task_type="CAUSAL_LM",
-                target_modules=lora_config.lora_attn_modules,
-            )
-
         # Validate data config
         if not config.data_config:
             raise ValueError("DataConfig is required for training")
 
         # Train in a separate process
-        logger.info("Starting training in separate process")
+        logger.info("Starting DPO training in separate process")
         try:
             # Set multiprocessing start method to 'spawn' for CUDA/MPS compatibility
             if device.type in ["cuda", "mps"]:
@@ -549,7 +507,7 @@ class HFFinetuningSingleDevice:
                 kwargs={
                     "model": model,
                     "provider_config": provider_config.model_dump(),
-                    "peft_config": peft_config,
+                    "dpo_config": dpo_config.model_dump(),
                     "config": config.model_dump(),
                     "output_dir_path": output_dir_path,
                 },
@@ -564,7 +522,7 @@ class HFFinetuningSingleDevice:
 
             # Get the return code
             if process.exitcode != 0:
-                raise RuntimeError(f"Training failed with exit code {process.exitcode}")
+                raise RuntimeError(f"DPO training failed with exit code {process.exitcode}")
 
             memory_stats["after_training"] = get_memory_stats(device)
 
@@ -590,15 +548,15 @@ class HFFinetuningSingleDevice:
                     )
                     checkpoints.append(checkpoint)
 
-                # Add the merged model as a checkpoint
-                merged_model_path = output_dir_path / "merged_model"
-                if merged_model_path.exists():
+                # Add the DPO model as a checkpoint
+                dpo_model_path = output_dir_path / "dpo_model"
+                if dpo_model_path.exists():
                     checkpoint = Checkpoint(
-                        identifier=f"{model}-sft-{config.n_epochs}",
+                        identifier=f"{model}-dpo-{config.n_epochs}",
                         created_at=datetime.now(UTC),
                         epoch=config.n_epochs,
                         post_training_job_id=job_uuid,
-                        path=str(merged_model_path),
+                        path=str(dpo_model_path),
                     )
                     checkpoints.append(checkpoint)
 

@@ -13,6 +13,9 @@ import pytest
 
 from llama_stack.apis.post_training import (
     DataConfig,
+    DatasetFormat,
+    DPOAlignmentConfig,
+    DPOLossType,
     LoraFinetuningConfig,
     TrainingConfig,
 )
@@ -81,7 +84,7 @@ class TestPostTraining:
             dataset_id=dataset.identifier,
             batch_size=1,
             shuffle=False,
-            data_format="instruct",
+            data_format=DatasetFormat.instruct,
         )
 
         # setup training config with minimal settings
@@ -122,6 +125,8 @@ class TestPostTraining:
         artifacts = llama_stack_client.post_training.job.artifacts(job_uuid=job_uuid)
         logger.info(f"Job artifacts: {artifacts}")
 
+        logger.info(f"Registered dataset with ID: {dataset.identifier}")
+
     # TODO: Fix these tests to properly represent the Jobs API in training
     #
     # async def test_get_training_jobs(self, post_training_stack):
@@ -149,3 +154,77 @@ class TestPostTraining:
     #     assert job_artifacts.checkpoints[0].identifier == "instructlab/granite-7b-lab"
     #     assert job_artifacts.checkpoints[0].epoch == 0
     # assert "/.llama/checkpoints/Llama3.2-3B-Instruct-sft-0" in job_artifacts.checkpoints[0].path
+
+    @pytest.mark.integration
+    @pytest.mark.parametrize(
+        "purpose, source",
+        [
+            (
+                "post-training/messages",
+                {
+                    "type": "uri",
+                    "uri": "huggingface://datasets/trl-internal-testing/hh-rlhf-helpful-base-trl-style?split=train[:20]",
+                },
+            ),
+        ],
+    )
+    @pytest.mark.timeout(360)
+    def test_preference_optimize(self, llama_stack_client, purpose, source):
+        logger.info("Starting DPO preference optimization test")
+
+        # register preference dataset to train
+        dataset = llama_stack_client.datasets.register(
+            purpose=purpose,
+            source=source,
+        )
+        logger.info(f"Registered preference dataset with ID: {dataset.identifier}")
+
+        # DPO algorithm configuration
+        algorithm_config = DPOAlignmentConfig(
+            beta=0.1,
+            loss_type=DPOLossType.sigmoid,
+        )
+
+        data_config = DataConfig(
+            dataset_id=dataset.identifier,
+            batch_size=1,
+            shuffle=False,
+            data_format=DatasetFormat.dialog,  # DPO datasets often use dialog format
+        )
+
+        # setup training config with minimal settings for DPO
+        training_config = TrainingConfig(
+            n_epochs=1,
+            data_config=data_config,
+            max_steps_per_epoch=1,  # Just 2 steps for quick testing
+            gradient_accumulation_steps=1,
+        )
+
+        job_uuid = f"test-dpo-job-{uuid.uuid4()}"
+        logger.info(f"Starting DPO training job with UUID: {job_uuid}")
+
+        # train with HuggingFace DPO implementation
+        _ = llama_stack_client.post_training.preference_optimize(
+            job_uuid=job_uuid,
+            finetuned_model="distilgpt2",  # Much smaller model for faster CI testing
+            algorithm_config=algorithm_config,
+            training_config=training_config,
+            hyperparam_search_config={},
+            logger_config={},
+        )
+
+        while True:
+            status = llama_stack_client.post_training.job.status(job_uuid=job_uuid)
+            if not status:
+                logger.error("DPO job not found")
+                break
+
+            logger.info(f"Current DPO status: {status}")
+            if status.status == "completed":
+                break
+
+            logger.info("Waiting for DPO job to complete...")
+            time.sleep(10)  # Increased sleep time to reduce polling frequency
+
+        artifacts = llama_stack_client.post_training.job.artifacts(job_uuid=job_uuid)
+        logger.info(f"DPO job artifacts: {artifacts}")
