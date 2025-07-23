@@ -36,7 +36,6 @@ def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_mo
             "inline::sqlite-vec",
             "inline::milvus",
             "remote::pgvector",
-            "inline::chromadb",
         ]:
             return
 
