@@ -231,7 +231,7 @@ class InferenceRouter(Inference):
             logprobs=logprobs,
             tool_config=tool_config,
         )
-        provider = self.routing_table.get_provider_impl(model_id)
+        provider = await self.routing_table.get_provider_impl(model_id)
         prompt_tokens = await self._count_tokens(messages, tool_config.tool_prompt_format)
 
         if stream:
@@ -292,7 +292,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.batch_chat_completion: {model_id=}, {len(messages_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
         )
-        provider = self.routing_table.get_provider_impl(model_id)
+        provider = await self.routing_table.get_provider_impl(model_id)
         return await provider.batch_chat_completion(
             model_id=model_id,
             messages_batch=messages_batch,
@@ -322,7 +322,7 @@ class InferenceRouter(Inference):
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
-        provider = self.routing_table.get_provider_impl(model_id)
+        provider = await self.routing_table.get_provider_impl(model_id)
         params = dict(
             model_id=model_id,
             content=content,
@@ -378,7 +378,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.batch_completion: {model_id=}, {len(content_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
         )
-        provider = self.routing_table.get_provider_impl(model_id)
+        provider = await self.routing_table.get_provider_impl(model_id)
         return await provider.batch_completion(model_id, content_batch, sampling_params, response_format, logprobs)
 
     async def embeddings(
@@ -395,7 +395,8 @@ class InferenceRouter(Inference):
             raise ValueError(f"Model '{model_id}' not found")
         if model.model_type == ModelType.llm:
             raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
-        return await self.routing_table.get_provider_impl(model_id).embeddings(
+        provider = await self.routing_table.get_provider_impl(model_id)
+        return await provider.embeddings(
             model_id=model_id,
             contents=contents,
             text_truncation=text_truncation,
@@ -458,7 +459,7 @@ class InferenceRouter(Inference):
             suffix=suffix,
         )
 
-        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        provider = await self.routing_table.get_provider_impl(model_obj.identifier)
         return await provider.openai_completion(**params)
 
     async def openai_chat_completion(
@@ -538,7 +539,7 @@ class InferenceRouter(Inference):
             user=user,
         )
 
-        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        provider = await self.routing_table.get_provider_impl(model_obj.identifier)
         if stream:
             response_stream = await provider.openai_chat_completion(**params)
             if self.store:
@@ -575,7 +576,7 @@ class InferenceRouter(Inference):
             user=user,
         )
 
-        provider = self.routing_table.get_provider_impl(model_obj.identifier)
+        provider = await self.routing_table.get_provider_impl(model_obj.identifier)
         return await provider.openai_embeddings(**params)
 
     async def list_chat_completions(

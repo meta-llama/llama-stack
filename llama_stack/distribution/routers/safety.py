@@ -50,7 +50,8 @@ class SafetyRouter(Safety):
         params: dict[str, Any] = None,
     ) -> RunShieldResponse:
         logger.debug(f"SafetyRouter.run_shield: {shield_id}")
-        return await self.routing_table.get_provider_impl(shield_id).run_shield(
+        provider = await self.routing_table.get_provider_impl(shield_id)
+        return await provider.run_shield(
             shield_id=shield_id,
             messages=messages,
             params=params,
