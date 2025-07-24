@@ -786,21 +786,6 @@ models:
   provider_model_id: Llama3.2-3B
   model_type: llm
 - metadata: {}
-  model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/gpt-4o
-  provider_id: ${env.ENABLE_OPENAI:=__disabled__}
-  provider_model_id: openai/gpt-4o
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/gpt-4o-mini
-  provider_id: ${env.ENABLE_OPENAI:=__disabled__}
-  provider_model_id: openai/gpt-4o-mini
-  model_type: llm
-- metadata: {}
-  model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/chatgpt-4o-latest
-  provider_id: ${env.ENABLE_OPENAI:=__disabled__}
-  provider_model_id: openai/chatgpt-4o-latest
-  model_type: llm
-- metadata: {}
   model_id: ${env.ENABLE_OPENAI:=__disabled__}/gpt-3.5-turbo-0125
   provider_id: ${env.ENABLE_OPENAI:=__disabled__}
   provider_model_id: gpt-3.5-turbo-0125
@@ -870,20 +855,6 @@ models:
   provider_id: ${env.ENABLE_OPENAI:=__disabled__}
   provider_model_id: o4-mini
   model_type: llm
-- metadata:
-    embedding_dimension: 1536
-    context_length: 8192
-  model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/text-embedding-3-small
-  provider_id: ${env.ENABLE_OPENAI:=__disabled__}
-  provider_model_id: openai/text-embedding-3-small
-  model_type: embedding
-- metadata:
-    embedding_dimension: 3072
-    context_length: 8192
-  model_id: ${env.ENABLE_OPENAI:=__disabled__}/openai/text-embedding-3-large
-  provider_id: ${env.ENABLE_OPENAI:=__disabled__}
-  provider_model_id: openai/text-embedding-3-large
-  model_type: embedding
 - metadata:
     embedding_dimension: 1536
     context_length: 8192
