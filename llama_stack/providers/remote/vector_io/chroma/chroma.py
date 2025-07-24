@@ -214,12 +214,21 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
-        vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
-        if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found in Llama Stack")
-        collection = await maybe_await(self.client.get_collection(vector_db_id))
-        if not collection:
+        if self.vector_db_store is None:
             raise ValueError(f"Vector DB {vector_db_id} not found in Chroma")
-        index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
-        self.cache[vector_db_id] = index
-        return index
+
+        try:
+            collection = await maybe_await(self.client.get_collection(vector_db_id))
+            if not collection:
+                raise ValueError(f"Vector DB {vector_db_id} not found in Chroma")
+
+            vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
+            if not vector_db:
+                raise ValueError(f"Vector DB {vector_db_id} not found in Llama Stack")
+
+            index = VectorDBWithIndex(vector_db, ChromaIndex(self.client, collection), self.inference_api)
+            self.cache[vector_db_id] = index
+            return index
+
+        except Exception as exc:
+            raise ValueError(f"Vector DB {vector_db_id} not found in Chroma") from exc
