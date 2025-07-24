@@ -214,9 +214,6 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         if vector_db_id in self.cache:
             return self.cache[vector_db_id]
 
-        if self.vector_db_store is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found in Chroma")
-
         try:
             collection = await maybe_await(self.client.get_collection(vector_db_id))
             if not collection:
