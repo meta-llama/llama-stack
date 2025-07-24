@@ -41,7 +41,11 @@ from llama_stack.distribution.datatypes import (
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.external import ExternalApiSpec, load_external_apis
-from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
+from llama_stack.distribution.request_headers import (
+    PROVIDER_DATA_VAR,
+    request_provider_data_context,
+    user_from_scope,
+)
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.server.routes import (
     find_matching_route,
@@ -223,9 +227,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
     @functools.wraps(func)
     async def route_handler(request: Request, **kwargs):
         # Get auth attributes from the request scope
-        user_attributes = request.scope.get("user_attributes", {})
-        principal = request.scope.get("principal", "")
-        user = User(principal=principal, attributes=user_attributes)
+        user = user_from_scope(request.scope)
 
         await log_request_pre_validation(request)
 
@@ -437,10 +439,21 @@ def main(args: argparse.Namespace | None = None):
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
-    # Add authentication middleware if configured
+    try:
+        # Create and set the event loop that will be used for both construction and server runtime
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Construct the stack in the persistent event loop
+        impls = loop.run_until_complete(construct_stack(config))
+
+    except InvalidProviderError as e:
+        logger.error(f"Error: {str(e)}")
+        sys.exit(1)
+
     if config.server.auth:
         logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
-        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
+        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth, impls=impls)
     else:
         if config.server.quota:
             quota = config.server.quota
@@ -470,18 +483,6 @@ def main(args: argparse.Namespace | None = None):
             authenticated_max_requests=authenticated_max_requests,
             window_seconds=window_seconds,
         )
-
-    try:
-        # Create and set the event loop that will be used for both construction and server runtime
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        # Construct the stack in the persistent event loop
-        impls = loop.run_until_complete(construct_stack(config))
-
-    except InvalidProviderError as e:
-        logger.error(f"Error: {str(e)}")
-        sys.exit(1)
 
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])

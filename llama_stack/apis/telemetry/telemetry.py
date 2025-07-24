@@ -22,6 +22,8 @@ from llama_stack.schema_utils import json_schema_type, register_schema, webmetho
 # Add this constant near the top of the file, after the imports
 DEFAULT_TTL_DAYS = 7
 
+REQUIRED_SCOPE = "telemetry.read"
+
 
 @json_schema_type
 class SpanStatus(Enum):
@@ -259,7 +261,7 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/traces", method="POST")
+    @webmethod(route="/telemetry/traces", method="POST", required_scope=REQUIRED_SCOPE)
     async def query_traces(
         self,
         attribute_filters: list[QueryCondition] | None = None,
@@ -277,7 +279,7 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/traces/{trace_id:path}", method="GET")
+    @webmethod(route="/telemetry/traces/{trace_id:path}", method="GET", required_scope=REQUIRED_SCOPE)
     async def get_trace(self, trace_id: str) -> Trace:
         """Get a trace by its ID.
 
@@ -286,7 +288,9 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET")
+    @webmethod(
+        route="/telemetry/traces/{trace_id:path}/spans/{span_id:path}", method="GET", required_scope=REQUIRED_SCOPE
+    )
     async def get_span(self, trace_id: str, span_id: str) -> Span:
         """Get a span by its ID.
 
@@ -296,7 +300,7 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="POST")
+    @webmethod(route="/telemetry/spans/{span_id:path}/tree", method="POST", required_scope=REQUIRED_SCOPE)
     async def get_span_tree(
         self,
         span_id: str,
@@ -312,7 +316,7 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/spans", method="POST")
+    @webmethod(route="/telemetry/spans", method="POST", required_scope=REQUIRED_SCOPE)
     async def query_spans(
         self,
         attribute_filters: list[QueryCondition],
@@ -345,7 +349,7 @@ class Telemetry(Protocol):
         """
         ...
 
-    @webmethod(route="/telemetry/metrics/{metric_name}", method="POST")
+    @webmethod(route="/telemetry/metrics/{metric_name}", method="POST", required_scope=REQUIRED_SCOPE)
     async def query_metrics(
         self,
         metric_name: str,

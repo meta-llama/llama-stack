@@ -7,9 +7,12 @@
 import json
 
 import httpx
+from aiohttp import hdrs
 
-from llama_stack.distribution.datatypes import AuthenticationConfig
+from llama_stack.distribution.datatypes import AuthenticationConfig, User
+from llama_stack.distribution.request_headers import user_from_scope
 from llama_stack.distribution.server.auth_providers import create_auth_provider
+from llama_stack.distribution.server.routes import find_matching_route, initialize_route_impls
 from llama_stack.log import get_logger
 
 logger = get_logger(name=__name__, category="auth")
@@ -78,12 +81,14 @@ class AuthenticationMiddleware:
     access resources that don't have access_attributes defined.
     """
 
-    def __init__(self, app, auth_config: AuthenticationConfig):
+    def __init__(self, app, auth_config: AuthenticationConfig, impls):
         self.app = app
+        self.impls = impls
         self.auth_provider = create_auth_provider(auth_config)
 
     async def __call__(self, scope, receive, send):
         if scope["type"] == "http":
+            # First, handle authentication
             headers = dict(scope.get("headers", []))
             auth_header = headers.get(b"authorization", b"").decode()
 
@@ -121,15 +126,50 @@ class AuthenticationMiddleware:
                 f"Authentication successful: {validation_result.principal} with {len(validation_result.attributes)} attributes"
             )
 
+            # Scope-based API access control
+            path = scope.get("path", "")
+            method = scope.get("method", hdrs.METH_GET)
+
+            if not hasattr(self, "route_impls"):
+                self.route_impls = initialize_route_impls(self.impls)
+
+            try:
+                _, _, _, webmethod = find_matching_route(method, path, self.route_impls)
+            except ValueError:
+                # If no matching endpoint is found, pass through to FastAPI
+                return await self.app(scope, receive, send)
+
+            if webmethod.required_scope:
+                user = user_from_scope(scope)
+                if not _has_required_scope(webmethod.required_scope, user):
+                    return await self._send_auth_error(
+                        send,
+                        f"Access denied: user does not have required scope: {webmethod.required_scope}",
+                        status=403,
+                    )
+
         return await self.app(scope, receive, send)
 
-    async def _send_auth_error(self, send, message):
+    async def _send_auth_error(self, send, message, status=401):
         await send(
             {
                 "type": "http.response.start",
-                "status": 401,
+                "status": status,
                 "headers": [[b"content-type", b"application/json"]],
             }
         )
-        error_msg = json.dumps({"error": {"message": message}}).encode()
+        error_key = "message" if status == 401 else "detail"
+        error_msg = json.dumps({"error": {error_key: message}}).encode()
         await send({"type": "http.response.body", "body": error_msg})
+
+
+def _has_required_scope(required_scope: str, user: User | None) -> bool:
+    # if no user, assume auth is not enabled
+    if not user:
+        return True
+
+    if not user.attributes:
+        return False
+
+    user_scopes = user.attributes.get("scopes", [])
+    return required_scope in user_scopes
