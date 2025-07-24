@@ -15,7 +15,7 @@ set -Eeuo pipefail
 PORT=8321
 OLLAMA_PORT=11434
 MODEL_ALIAS="llama3.2:3b"
-SERVER_IMAGE="docker.io/llamastack/distribution-ollama:latest"
+SERVER_IMAGE="docker.io/llamastack/distribution-starter:latest"
 WAIT_TIMEOUT=30
 TEMP_LOG=""
 
@@ -224,7 +224,7 @@ cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack \
       "${SERVER_IMAGE}" --port "${PORT}" \
       --env OLLAMA_INFERENCE_MODEL="${MODEL_ALIAS}" \
       --env OLLAMA_URL="http://ollama-server:${OLLAMA_PORT}" \
-      --env ENABLE_OLLAMA=ollama --env OPENAI_API_KEY=foo)
+      --env ENABLE_OLLAMA=ollama)
 
 log "🦙 Starting Llama Stack..."
 if ! execute_with_log $ENGINE "${cmd[@]}"; then
