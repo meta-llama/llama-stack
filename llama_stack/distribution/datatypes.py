@@ -187,6 +187,7 @@ class AuthProviderType(StrEnum):
     OAUTH2_TOKEN = "oauth2_token"
     GITHUB_TOKEN = "github_token"
     CUSTOM = "custom"
+    KUBERNETES = "kubernetes"
 
 
 class OAuth2TokenAuthConfig(BaseModel):
@@ -257,8 +258,35 @@ class GitHubTokenAuthConfig(BaseModel):
     )
 
 
+class KubernetesAuthProviderConfig(BaseModel):
+    """Configuration for Kubernetes authentication provider."""
+
+    type: Literal[AuthProviderType.KUBERNETES] = AuthProviderType.KUBERNETES
+    api_server_url: str = Field(
+        default="https://kubernetes.default.svc",
+        description="Kubernetes API server URL (e.g., https://api.cluster.domain:6443)",
+    )
+    verify_tls: bool = Field(default=True, description="Whether to verify TLS certificates")
+    tls_cafile: Path | None = Field(default=None, description="Path to CA certificate file for TLS verification")
+    claims_mapping: dict[str, str] = Field(
+        default_factory=lambda: {
+            "username": "roles",
+            "groups": "roles",
+        },
+        description="Mapping of Kubernetes user claims to access attributes",
+    )
+
+    @field_validator("claims_mapping")
+    @classmethod
+    def validate_claims_mapping(cls, v):
+        for key, value in v.items():
+            if not value:
+                raise ValueError(f"claims_mapping value cannot be empty: {key}")
+        return v
+
+
 AuthProviderConfig = Annotated[
-    OAuth2TokenAuthConfig | GitHubTokenAuthConfig | CustomAuthConfig,
+    OAuth2TokenAuthConfig | GitHubTokenAuthConfig | CustomAuthConfig | KubernetesAuthProviderConfig,
     Field(discriminator="type"),
 ]
 
