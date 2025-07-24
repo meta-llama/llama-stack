@@ -304,7 +304,9 @@ class TracingMiddleware:
             self.route_impls = initialize_route_impls(self.impls)
 
         try:
-            _, _, trace_path = find_matching_route(scope.get("method", hdrs.METH_GET), path, self.route_impls)
+            _, _, route_path, webmethod = find_matching_route(
+                scope.get("method", hdrs.METH_GET), path, self.route_impls
+            )
         except ValueError:
             # If no matching endpoint is found, pass through to FastAPI
             logger.debug(f"No matching route found for path: {path}, falling back to FastAPI")
@@ -321,6 +323,7 @@ class TracingMiddleware:
         if tracestate:
             trace_attributes["tracestate"] = tracestate
 
+        trace_path = webmethod.descriptive_name or route_path
         trace_context = await start_trace(trace_path, trace_attributes)
 
         async def send_with_trace_id(message):
@@ -504,7 +507,7 @@ def main(args: argparse.Namespace | None = None):
         routes = all_routes[api]
         impl = impls[api]
 
-        for route in routes:
+        for route, _ in routes:
             if not hasattr(impl, route.name):
                 # ideally this should be a typing violation already
                 raise ValueError(f"Could not find method {route.name} on {impl}!")

@@ -359,13 +359,15 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        matched_func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body, field_names = self._handle_file_uploads(options, body)
 
         body = self._convert_body(path, options.method, body, exclude_params=set(field_names))
-        await start_trace(route, {"__location__": "library_client"})
+
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
         try:
             result = await matched_func(**body)
         finally:
@@ -415,12 +417,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
 
-        await start_trace(route, {"__location__": "library_client"})
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
 
         async def gen():
             try:
@@ -475,7 +478,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         exclude_params = exclude_params or set()
 
-        func, _, _ = find_matching_route(method, path, self.route_impls)
+        func, _, _, _ = find_matching_route(method, path, self.route_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature

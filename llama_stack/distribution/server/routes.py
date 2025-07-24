@@ -16,13 +16,14 @@ from llama_stack.apis.tools import RAGToolRuntime, SpecialToolGroup
 from llama_stack.apis.version import LLAMA_STACK_API_VERSION
 from llama_stack.distribution.resolver import api_protocol_map
 from llama_stack.providers.datatypes import Api
+from llama_stack.schema_utils import WebMethod
 
 EndpointFunc = Callable[..., Any]
 PathParams = dict[str, str]
-RouteInfo = tuple[EndpointFunc, str]
+RouteInfo = tuple[EndpointFunc, str, WebMethod]
 PathImpl = dict[str, RouteInfo]
 RouteImpls = dict[str, PathImpl]
-RouteMatch = tuple[EndpointFunc, PathParams, str]
+RouteMatch = tuple[EndpointFunc, PathParams, str, WebMethod]
 
 
 def toolgroup_protocol_map():
@@ -31,7 +32,7 @@ def toolgroup_protocol_map():
     }
 
 
-def get_all_api_routes() -> dict[Api, list[Route]]:
+def get_all_api_routes() -> dict[Api, list[tuple[Route, WebMethod]]]:
     apis = {}
 
     protocols = api_protocol_map()
@@ -65,7 +66,7 @@ def get_all_api_routes() -> dict[Api, list[Route]]:
             else:
                 http_method = hdrs.METH_POST
             routes.append(
-                Route(path=path, methods=[http_method], name=name, endpoint=None)
+                (Route(path=path, methods=[http_method], name=name, endpoint=None), webmethod)
             )  # setting endpoint to None since don't use a Router object
 
         apis[api] = routes
@@ -74,7 +75,7 @@ def get_all_api_routes() -> dict[Api, list[Route]]:
 
 
 def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
-    routes = get_all_api_routes()
+    api_to_routes = get_all_api_routes()
     route_impls: RouteImpls = {}
 
     def _convert_path_to_regex(path: str) -> str:
@@ -88,10 +89,10 @@ def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
 
         return f"^{pattern}$"
 
-    for api, api_routes in routes.items():
+    for api, api_routes in api_to_routes.items():
         if api not in impls:
             continue
-        for route in api_routes:
+        for route, webmethod in api_routes:
             impl = impls[api]
             func = getattr(impl, route.name)
             # Get the first (and typically only) method from the set, filtering out HEAD
@@ -104,6 +105,7 @@ def initialize_route_impls(impls: dict[Api, Any]) -> RouteImpls:
             route_impls[method][_convert_path_to_regex(route.path)] = (
                 func,
                 route.path,
+                webmethod,
             )
 
     return route_impls
@@ -118,7 +120,7 @@ def find_matching_route(method: str, path: str, route_impls: RouteImpls) -> Rout
         route_impls: A dictionary of endpoint implementations
 
     Returns:
-        A tuple of (endpoint_function, path_params, descriptive_name)
+        A tuple of (endpoint_function, path_params, route_path, webmethod_metadata)
 
     Raises:
         ValueError: If no matching endpoint is found
@@ -127,11 +129,11 @@ def find_matching_route(method: str, path: str, route_impls: RouteImpls) -> Rout
     if not impls:
         raise ValueError(f"No endpoint found for {path}")
 
-    for regex, (func, descriptive_name) in impls.items():
+    for regex, (func, route_path, webmethod) in impls.items():
         match = re.match(regex, path)
         if match:
             # Extract named groups from the regex match
             path_params = match.groupdict()
-            return func, path_params, descriptive_name
+            return func, path_params, route_path, webmethod
 
     raise ValueError(f"No endpoint found for {path}")
