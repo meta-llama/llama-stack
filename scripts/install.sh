@@ -15,11 +15,40 @@ set -Eeuo pipefail
 PORT=8321
 OLLAMA_PORT=11434
 MODEL_ALIAS="llama3.2:3b"
-SERVER_IMAGE="docker.io/llamastack/distribution-ollama:0.2.2"
-WAIT_TIMEOUT=300
+SERVER_IMAGE="docker.io/llamastack/distribution-ollama:latest"
+WAIT_TIMEOUT=30
+TEMP_LOG=""
+
+# Cleanup function to remove temporary files
+cleanup() {
+  if [ -n "$TEMP_LOG" ] && [ -f "$TEMP_LOG" ]; then
+    rm -f "$TEMP_LOG"
+  fi
+}
+
+# Set up trap to clean up on exit, error, or interrupt
+trap cleanup EXIT ERR INT TERM
 
 log(){ printf "\e[1;32m%s\e[0m\n" "$*"; }
-die(){ printf "\e[1;31m❌ %s\e[0m\n" "$*" >&2; exit 1; }
+die(){
+  printf "\e[1;31m❌ %s\e[0m\n" "$*" >&2
+  printf "\e[1;31m🐛 Report an issue @ https://github.com/meta-llama/llama-stack/issues if you think it's a bug\e[0m\n" >&2
+  exit 1
+}
+
+# Helper function to execute command with logging
+execute_with_log() {
+  local cmd=("$@")
+  TEMP_LOG=$(mktemp)
+  if ! "${cmd[@]}" > "$TEMP_LOG" 2>&1; then
+    log "❌ Command failed; dumping output:"
+    log "Command that failed: ${cmd[*]}"
+    log "Command output:"
+    cat "$TEMP_LOG"
+    return 1
+  fi
+  return 0
+}
 
 wait_for_service() {
   local url="$1"
@@ -27,7 +56,7 @@ wait_for_service() {
   local timeout="$3"
   local name="$4"
   local start ts
-  log "⏳  Waiting for ${name}…"
+  log "⏳ Waiting for ${name}..."
   start=$(date +%s)
   while true; do
     if curl --retry 5 --retry-delay 1 --retry-max-time "$timeout" --retry-all-errors --silent --fail "$url" 2>/dev/null | grep -q "$pattern"; then
@@ -38,24 +67,24 @@ wait_for_service() {
       return 1
     fi
     printf '.'
-    sleep 1
   done
+  printf '\n'
   return 0
 }
 
 usage() {
     cat << EOF
-📚 Llama-Stack Deployment Script
+📚 Llama Stack Deployment Script
 
 Description:
-    This script sets up and deploys Llama-Stack with Ollama integration in containers.
+    This script sets up and deploys Llama Stack with Ollama integration in containers.
     It handles both Docker and Podman runtimes and includes automatic platform detection.
 
 Usage:
     $(basename "$0") [OPTIONS]
 
 Options:
-    -p, --port PORT            Server port for Llama-Stack (default: ${PORT})
+    -p, --port PORT            Server port for Llama Stack (default: ${PORT})
     -o, --ollama-port PORT     Ollama service port (default: ${OLLAMA_PORT})
     -m, --model MODEL          Model alias to use (default: ${MODEL_ALIAS})
     -i, --image IMAGE          Server image (default: ${SERVER_IMAGE})
@@ -129,15 +158,15 @@ fi
 #   CONTAINERS_MACHINE_PROVIDER=libkrun podman machine init
 if [ "$ENGINE" = "podman" ] && [ "$(uname -s)" = "Darwin" ]; then
   if ! podman info &>/dev/null; then
-    log "⌛️ Initializing Podman VM…"
+    log "⌛️ Initializing Podman VM..."
     podman machine init &>/dev/null || true
     podman machine start &>/dev/null || true
 
-    log "⌛️  Waiting for Podman API…"
+    log "⌛️ Waiting for Podman API..."
     until podman info &>/dev/null; do
       sleep 1
     done
-    log "✅  Podman VM is up"
+    log "✅ Podman VM is up."
   fi
 fi
 
@@ -145,8 +174,10 @@ fi
 for name in ollama-server llama-stack; do
   ids=$($ENGINE ps -aq --filter "name=^${name}$")
   if [ -n "$ids" ]; then
-    log "⚠️   Found existing container(s) for '${name}', removing…"
-    $ENGINE rm -f "$ids" > /dev/null 2>&1
+    log "⚠️  Found existing container(s) for '${name}', removing..."
+    if ! execute_with_log $ENGINE rm -f "$ids"; then
+      die "Container cleanup failed"
+    fi
   fi
 done
 
@@ -154,28 +185,32 @@ done
 # 0. Create a shared network
 ###############################################################################
 if ! $ENGINE network inspect llama-net >/dev/null 2>&1; then
-  log "🌐  Creating network…"
-  $ENGINE network create llama-net >/dev/null 2>&1
+  log "🌐 Creating network..."
+  if ! execute_with_log $ENGINE network create llama-net; then
+    die "Network creation failed"
+  fi
 fi
 
 ###############################################################################
 # 1. Ollama
 ###############################################################################
-log "🦙  Starting Ollama…"
-$ENGINE run -d "${PLATFORM_OPTS[@]}" --name ollama-server \
+log "🦙 Starting Ollama..."
+if ! execute_with_log $ENGINE run -d "${PLATFORM_OPTS[@]}" --name ollama-server \
   --network llama-net \
   -p "${OLLAMA_PORT}:${OLLAMA_PORT}" \
-  docker.io/ollama/ollama > /dev/null 2>&1
+  docker.io/ollama/ollama > /dev/null 2>&1; then
+  die "Ollama startup failed"
+fi
 
 if ! wait_for_service "http://localhost:${OLLAMA_PORT}/" "Ollama" "$WAIT_TIMEOUT" "Ollama daemon"; then
-  log "❌  Ollama daemon did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
+  log "❌ Ollama daemon did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
   $ENGINE logs --tail 200 ollama-server
   die "Ollama startup failed"
 fi
 
-log "📦  Ensuring model is pulled: ${MODEL_ALIAS}…"
-if ! $ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}" > /dev/null 2>&1; then
-  log "❌  Failed to pull model ${MODEL_ALIAS}; dumping container logs:"
+log "📦 Ensuring model is pulled: ${MODEL_ALIAS}..."
+if ! execute_with_log $ENGINE exec ollama-server ollama pull "${MODEL_ALIAS}"; then
+  log "❌ Failed to pull model ${MODEL_ALIAS}; dumping container logs:"
   $ENGINE logs --tail 200 ollama-server
   die "Model pull failed"
 fi
@@ -187,25 +222,29 @@ cmd=( run -d "${PLATFORM_OPTS[@]}" --name llama-stack \
       --network llama-net \
       -p "${PORT}:${PORT}" \
       "${SERVER_IMAGE}" --port "${PORT}" \
-      --env INFERENCE_MODEL="${MODEL_ALIAS}" \
-      --env OLLAMA_URL="http://ollama-server:${OLLAMA_PORT}" )
+      --env OLLAMA_INFERENCE_MODEL="${MODEL_ALIAS}" \
+      --env OLLAMA_URL="http://ollama-server:${OLLAMA_PORT}" \
+      --env ENABLE_OLLAMA=ollama --env OPENAI_API_KEY=foo)
 
-log "🦙  Starting Llama‑Stack…"
-$ENGINE "${cmd[@]}" > /dev/null 2>&1
+log "🦙 Starting Llama Stack..."
+if ! execute_with_log $ENGINE "${cmd[@]}"; then
+  die "Llama Stack startup failed"
+fi
 
-if ! wait_for_service "http://127.0.0.1:${PORT}/v1/health" "OK" "$WAIT_TIMEOUT" "Llama-Stack API"; then
-  log "❌  Llama-Stack did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
+if ! wait_for_service "http://127.0.0.1:${PORT}/v1/health" "OK" "$WAIT_TIMEOUT" "Llama Stack API"; then
+  log "❌ Llama Stack did not become ready in ${WAIT_TIMEOUT}s; dumping container logs:"
   $ENGINE logs --tail 200 llama-stack
-  die "Llama-Stack startup failed"
+  die "Llama Stack startup failed"
 fi
 
 ###############################################################################
 # Done
 ###############################################################################
 log ""
-log "🎉  Llama‑Stack is ready!"
+log "🎉 Llama Stack is ready!"
 log "👉  API endpoint: http://localhost:${PORT}"
 log "📖 Documentation: https://llama-stack.readthedocs.io/en/latest/references/index.html"
-log "💻 To access the llama‑stack CLI, exec into the container:"
+log "💻 To access the llama stack CLI, exec into the container:"
 log "   $ENGINE exec -ti llama-stack bash"
+log "🐛 Report an issue @ https://github.com/meta-llama/llama-stack/issues if you think it's a bug"
 log ""
