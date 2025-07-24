@@ -416,7 +416,7 @@ async def test_models_source_tracking_default(cached_disk_dist_registry):
     models = await table.list_models()
     assert len(models.data) == 1
     model = models.data[0]
-    assert model.source == RegistryEntrySource.default
+    assert model.source == RegistryEntrySource.via_register_api
     assert model.identifier == "test_provider/user-model"
 
     # Cleanup
@@ -452,7 +452,7 @@ async def test_models_source_tracking_provider(cached_disk_dist_registry):
 
     # All models should have provider source
     for model in models.data:
-        assert model.source == RegistryEntrySource.provider
+        assert model.source == RegistryEntrySource.listed_from_provider
         assert model.provider_id == "test_provider"
 
     # Cleanup
@@ -473,7 +473,7 @@ async def test_models_source_interaction_preserves_default(cached_disk_dist_regi
     models = await table.list_models()
     assert len(models.data) == 1
     user_model = models.data[0]
-    assert user_model.source == RegistryEntrySource.default
+    assert user_model.source == RegistryEntrySource.via_register_api
     assert user_model.identifier == "my-custom-alias"
     assert user_model.provider_resource_id == "provider-model-1"
 
@@ -505,11 +505,11 @@ async def test_models_source_interaction_preserves_default(cached_disk_dist_regi
     provider_model = next((m for m in models.data if m.identifier == "different-model"), None)
 
     assert user_model is not None
-    assert user_model.source == RegistryEntrySource.default
+    assert user_model.source == RegistryEntrySource.via_register_api
     assert user_model.provider_resource_id == "provider-model-1"
 
     assert provider_model is not None
-    assert provider_model.source == RegistryEntrySource.provider
+    assert provider_model.source == RegistryEntrySource.listed_from_provider
     assert provider_model.provider_resource_id == "different-model"
 
     # Cleanup
@@ -565,8 +565,8 @@ async def test_models_source_interaction_cleanup_provider_models(cached_disk_dis
     user_model = next((m for m in models.data if m.identifier == "test_provider/user-model"), None)
     provider_model = next((m for m in models.data if m.identifier == "provider-model-new"), None)
 
-    assert user_model.source == RegistryEntrySource.default
-    assert provider_model.source == RegistryEntrySource.provider
+    assert user_model.source == RegistryEntrySource.via_register_api
+    assert provider_model.source == RegistryEntrySource.listed_from_provider
 
     # Cleanup
     await table.shutdown()

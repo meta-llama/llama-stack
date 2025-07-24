@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 
+import asyncio
 import base64
 import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
@@ -97,14 +98,16 @@ class OllamaInferenceAdapter(
     def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
         self.config = config
-        self._client = None
+        self._clients: dict[asyncio.AbstractEventLoop, AsyncClient] = {}
         self._openai_client = None
 
     @property
     def client(self) -> AsyncClient:
-        if self._client is None:
-            self._client = AsyncClient(host=self.config.url)
-        return self._client
+        # ollama client attaches itself to the current event loop (sadly?)
+        loop = asyncio.get_running_loop()
+        if loop not in self._clients:
+            self._clients[loop] = AsyncClient(host=self.config.url)
+        return self._clients[loop]
 
     @property
     def openai_client(self) -> AsyncOpenAI:
@@ -191,8 +194,7 @@ class OllamaInferenceAdapter(
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def shutdown(self) -> None:
-        self._client = None
-        self._openai_client = None
+        self._clients.clear()
 
     async def unregister_model(self, model_id: str) -> None:
         pass

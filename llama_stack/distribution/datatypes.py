@@ -37,8 +37,8 @@ RoutingKey = str | list[str]
 
 
 class RegistryEntrySource(StrEnum):
-    default = "default"
-    provider = "provider"
+    via_register_api = "via_register_api"
+    listed_from_provider = "listed_from_provider"
 
 
 class User(BaseModel):
@@ -55,7 +55,7 @@ class ResourceWithOwner(Resource):
     resource. This can be used to constrain access to the resource."""
 
     owner: User | None = None
-    source: RegistryEntrySource = RegistryEntrySource.default
+    source: RegistryEntrySource = RegistryEntrySource.via_register_api
 
 
 # Use the extended Resource for all routable objects

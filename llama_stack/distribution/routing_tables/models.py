@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import asyncio
 import time
 from typing import Any
 
@@ -22,53 +21,24 @@ logger = get_logger(name=__name__, category="core")
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     listed_providers: set[str] = set()
-    model_refresh_interval_seconds: int = 300
-    _refresh_task: asyncio.Task | None = None
 
-    async def initialize(self) -> None:
-        await super().initialize()
-        task = asyncio.create_task(self._refresh_models())
-        self._refresh_task = task
+    async def refresh(self) -> None:
+        for provider_id, provider in self.impls_by_provider_id.items():
+            refresh = await provider.should_refresh_models()
+            if not (refresh or provider_id in self.listed_providers):
+                continue
 
-        def cb(task):
-            import traceback
+            try:
+                models = await provider.list_models()
+            except Exception as e:
+                logger.exception(f"Model refresh failed for provider {provider_id}: {e}")
+                continue
 
-            if task.cancelled():
-                logger.error("Model refresh task cancelled")
-            elif task.exception():
-                logger.error(f"Model refresh task failed: {task.exception()}")
-                traceback.print_exception(task.exception())
-            else:
-                logger.debug("Model refresh task completed")
+            self.listed_providers.add(provider_id)
+            if models is None:
+                continue
 
-        task.add_done_callback(cb)
-
-    async def shutdown(self) -> None:
-        await super().shutdown()
-        if self._refresh_task:
-            self._refresh_task.cancel()
-            self._refresh_task = None
-
-    async def _refresh_models(self) -> None:
-        while True:
-            for provider_id, provider in self.impls_by_provider_id.items():
-                refresh = await provider.should_refresh_models()
-                if not (refresh or provider_id in self.listed_providers):
-                    continue
-
-                try:
-                    models = await provider.list_models()
-                except Exception as e:
-                    logger.exception(f"Model refresh failed for provider {provider_id}: {e}")
-                    continue
-
-                self.listed_providers.add(provider_id)
-                if models is None:
-                    continue
-
-                await self.update_registered_models(provider_id, models)
-
-            await asyncio.sleep(self.model_refresh_interval_seconds)
+            await self.update_registered_models(provider_id, models)
 
     async def list_models(self) -> ListModelsResponse:
         return ListModelsResponse(data=await self.get_all_with_type("model"))
@@ -132,7 +102,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             provider_id=provider_id,
             metadata=metadata,
             model_type=model_type,
-            source=RegistryEntrySource.default,
+            source=RegistryEntrySource.via_register_api,
         )
         registered_model = await self.register_object(model)
         return registered_model
@@ -156,7 +126,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         for model in existing_models:
             if model.provider_id != provider_id:
                 continue
-            if model.source == RegistryEntrySource.default:
+            if model.source == RegistryEntrySource.via_register_api:
                 model_ids[model.provider_resource_id] = model.identifier
                 continue
 
@@ -176,6 +146,6 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                     provider_id=provider_id,
                     metadata=model.metadata,
                     model_type=model.model_type,
-                    source=RegistryEntrySource.provider,
+                    source=RegistryEntrySource.listed_from_provider,
                 )
             )
