@@ -14,7 +14,7 @@ from llama_stack.log import get_logger
 logger = get_logger(name=__name__, category="core")
 
 
-def load_external_apis(config: StackRunConfig | BuildConfig) -> dict[Api, ExternalApiSpec]:
+def load_external_apis(config: StackRunConfig | BuildConfig | None) -> dict[Api, ExternalApiSpec]:
     """Load external API specifications from the configured directory.
 
     Args:
@@ -23,7 +23,7 @@ def load_external_apis(config: StackRunConfig | BuildConfig) -> dict[Api, Extern
     Returns:
         A dictionary mapping API names to their specifications
     """
-    if not config.external_apis_dir:
+    if not config or not config.external_apis_dir:
         return {}
 
     external_apis_dir = config.external_apis_dir.expanduser().resolve()
