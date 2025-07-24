@@ -23,9 +23,6 @@ def load_external_apis(config: StackRunConfig | BuildConfig) -> dict[Api, Extern
     Returns:
         A dictionary mapping API names to their specifications
     """
-    if not hasattr(config, "external_apis_dir"):
-        return {}
-
     if not config.external_apis_dir:
         return {}
 
