@@ -22,7 +22,14 @@ logger = logging.getLogger(__name__)
 def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
-        if p.provider_type in ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "inline::chromadb"]:
+        if p.provider_type in [
+            "inline::faiss",
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "inline::chromadb",
+            "remote::pgvector",
+            "remote::chromadb",
+        ]:
             return
 
     pytest.skip("OpenAI vector stores are not supported by any provider")
@@ -31,12 +38,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
 def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
-        if p.provider_type in [
-            "inline::faiss",
-            "inline::sqlite-vec",
-            "inline::milvus",
-            "remote::pgvector",
-        ]:
+        if p.provider_type in []:
             return
 
     pytest.skip("OpenAI vector stores are not supported by any provider")
