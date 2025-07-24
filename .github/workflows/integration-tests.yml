@@ -101,6 +101,11 @@ jobs:
 
       - name: Run Integration Tests
         env:
+          OLLAMA_INFERENCE_MODEL: "llama3.2:3b-instruct-fp16" # for server tests
+          ENABLE_OLLAMA: "ollama" # for server tests
+          OLLAMA_URL: "http://0.0.0.0:11434"
+          SAFETY_MODEL: "llama-guard3:1b"
+          ENABLE_HUGGINGFACE: "huggingface"
           LLAMA_STACK_CLIENT_TIMEOUT: "300" # Increased timeout for eval operations
         # Use 'shell' to get pipefail behavior
         # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
