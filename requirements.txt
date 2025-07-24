@@ -2,7 +2,7 @@
 #    uv export --frozen --no-hashes --no-emit-project --no-default-groups --output-file=requirements.txt
 aiohappyeyeballs==2.5.0
     # via aiohttp
-aiohttp==3.12.13
+aiohttp==3.12.14
     # via llama-stack
 aiosignal==1.3.2
     # via aiohttp
