@@ -11494,8 +11494,44 @@
                 "description": "A trace representing the complete execution path of a request across multiple operations."
             },
             "Checkpoint": {
-                "description": "Checkpoint created during training runs.",
-                "title": "Checkpoint"
+                "type": "object",
+                "properties": {
+                    "identifier": {
+                        "type": "string",
+                        "description": "Unique identifier for the checkpoint"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp when the checkpoint was created"
+                    },
+                    "epoch": {
+                        "type": "integer",
+                        "description": "Training epoch when the checkpoint was saved"
+                    },
+                    "post_training_job_id": {
+                        "type": "string",
+                        "description": "Identifier of the training job that created this checkpoint"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "File system path where the checkpoint is stored"
+                    },
+                    "training_metrics": {
+                        "$ref": "#/components/schemas/PostTrainingMetric",
+                        "description": "(Optional) Training metrics associated with this checkpoint"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "identifier",
+                    "created_at",
+                    "epoch",
+                    "post_training_job_id",
+                    "path"
+                ],
+                "title": "Checkpoint",
+                "description": "Checkpoint created during training runs."
             },
             "PostTrainingJobArtifactsResponse": {
                 "type": "object",
@@ -11519,6 +11555,36 @@
                 ],
                 "title": "PostTrainingJobArtifactsResponse",
                 "description": "Artifacts of a finetuning job."
+            },
+            "PostTrainingMetric": {
+                "type": "object",
+                "properties": {
+                    "epoch": {
+                        "type": "integer",
+                        "description": "Training epoch number"
+                    },
+                    "train_loss": {
+                        "type": "number",
+                        "description": "Loss value on the training dataset"
+                    },
+                    "validation_loss": {
+                        "type": "number",
+                        "description": "Loss value on the validation dataset"
+                    },
+                    "perplexity": {
+                        "type": "number",
+                        "description": "Perplexity metric indicating model confidence"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "epoch",
+                    "train_loss",
+                    "validation_loss",
+                    "perplexity"
+                ],
+                "title": "PostTrainingMetric",
+                "description": "Training metrics captured during post-training jobs."
             },
             "PostTrainingJobStatusResponse": {
                 "type": "object",
@@ -11657,6 +11723,9 @@
                     "embedding_dimension": {
                         "type": "integer",
                         "description": "Dimension of the embedding vectors"
+                    },
+                    "vector_db_name": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
@@ -14041,16 +14110,9 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The ID of the provider to use for this vector store."
-                    },
-                    "provider_vector_db_id": {
-                        "type": "string",
-                        "description": "The provider-specific vector database ID."
                     }
                 },
                 "additionalProperties": false,
-                "required": [
-                    "name"
-                ],
                 "title": "OpenaiCreateVectorStoreRequest"
             },
             "VectorStoreFileCounts": {
@@ -14992,6 +15054,15 @@
                     "gamma": {
                         "type": "number",
                         "description": "Discount factor for future rewards"
+                    },
+                    "beta": {
+                        "type": "number",
+                        "description": "Temperature parameter for the DPO loss"
+                    },
+                    "loss_type": {
+                        "$ref": "#/components/schemas/DPOLossType",
+                        "default": "sigmoid",
+                        "description": "The type of loss function to use for DPO"
                     }
                 },
                 "additionalProperties": false,
@@ -14999,10 +15070,22 @@
                     "reward_scale",
                     "reward_clip",
                     "epsilon",
-                    "gamma"
+                    "gamma",
+                    "beta",
+                    "loss_type"
                 ],
                 "title": "DPOAlignmentConfig",
                 "description": "Configuration for Direct Preference Optimization (DPO) alignment."
+            },
+            "DPOLossType": {
+                "type": "string",
+                "enum": [
+                    "sigmoid",
+                    "hinge",
+                    "ipo",
+                    "kto_pair"
+                ],
+                "title": "DPOLossType"
             },
             "DataConfig": {
                 "type": "object",
@@ -15343,7 +15426,8 @@
                         "description": "Template for formatting each retrieved chunk in the context. Available placeholders: {index} (1-based chunk ordinal), {chunk.content} (chunk content string), {metadata} (chunk metadata dict). Default: \"Result {index}\\nContent: {chunk.content}\\nMetadata: {metadata}\\n\""
                     },
                     "mode": {
-                        "type": "string",
+                        "$ref": "#/components/schemas/RAGSearchMode",
+                        "default": "vector",
                         "description": "Search mode for retrieval—either \"vector\", \"keyword\", or \"hybrid\". Default \"vector\"."
                     },
                     "ranker": {
@@ -15377,6 +15461,16 @@
                         "llm": "#/components/schemas/LLMRAGQueryGeneratorConfig"
                     }
                 }
+            },
+            "RAGSearchMode": {
+                "type": "string",
+                "enum": [
+                    "vector",
+                    "keyword",
+                    "hybrid"
+                ],
+                "title": "RAGSearchMode",
+                "description": "Search modes for RAG query retrieval: - VECTOR: Uses vector similarity search for semantic matching - KEYWORD: Uses keyword-based search for exact matching - HYBRID: Combines both vector and keyword search for better results"
             },
             "RRFRanker": {
                 "type": "object",
@@ -16202,6 +16296,10 @@
                     "provider_id": {
                         "type": "string",
                         "description": "The identifier of the provider."
+                    },
+                    "vector_db_name": {
+                        "type": "string",
+                        "description": "The name of the vector database."
                     },
                     "provider_vector_db_id": {
                         "type": "string",

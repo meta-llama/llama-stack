@@ -93,7 +93,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template starter --image-type venv
+          uv run llama stack build --template ci-tests --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -114,7 +114,7 @@ jobs:
         run: |
           uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
-            --embedding-model all-MiniLM-L6-v2
+            --embedding-model sentence-transformers/all-MiniLM-L6-v2
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}

@@ -122,12 +122,15 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:=}"),
+            config=ChromaVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}", url="${env.CHROMADB_URL:=}"
+            ),
         ),
         Provider(
             provider_id="${env.ENABLE_PGVECTOR:+pgvector}",
             provider_type="remote::pgvector",
             config=PGVectorVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}",
                 db="${env.PGVECTOR_DB:=}",
                 user="${env.PGVECTOR_USER:=}",
                 password="${env.PGVECTOR_PASSWORD:=}",
@@ -146,7 +149,8 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
 
-    default_models = get_model_registry(available_models) + [
+    models, _ = get_model_registry(available_models)
+    default_models = models + [
         ModelInput(
             model_id="meta-llama/Llama-3.3-70B-Instruct",
             provider_id="groq",

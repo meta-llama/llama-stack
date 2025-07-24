@@ -32,6 +32,14 @@ def test_generate_chunk_id():
     ]
 
 
+def test_generate_chunk_id_with_window():
+    chunk = Chunk(content="test", metadata={"document_id": "doc-1"})
+    chunk_id1 = generate_chunk_id("doc-1", chunk, chunk_window="0-1")
+    chunk_id2 = generate_chunk_id("doc-1", chunk, chunk_window="1-2")
+    assert chunk_id1 == "149018fe-d0eb-0f8d-5f7f-726bdd2aeedb"
+    assert chunk_id2 == "4562c1ee-9971-1f3b-51a6-7d05e5211154"
+
+
 def test_chunk_id():
     # Test with existing chunk ID
     chunk_with_id = Chunk(content="test", metadata={"document_id": "existing-id"})

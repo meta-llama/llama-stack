@@ -475,7 +475,7 @@ class VectorIO(Protocol):
     @webmethod(route="/openai/v1/vector_stores", method="POST")
     async def openai_create_vector_store(
         self,
-        name: str,
+        name: str | None = None,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
@@ -483,7 +483,6 @@ class VectorIO(Protocol):
         embedding_model: str | None = None,
         embedding_dimension: int | None = 384,
         provider_id: str | None = None,
-        provider_vector_db_id: str | None = None,
     ) -> VectorStoreObject:
         """Creates a vector store.
 
@@ -495,7 +494,6 @@ class VectorIO(Protocol):
         :param embedding_model: The embedding model to use for this vector store.
         :param embedding_dimension: The dimension of the embedding vectors (default: 384).
         :param provider_id: The ID of the provider to use for this vector store.
-        :param provider_vector_db_id: The provider-specific vector database ID.
         :returns: A VectorStoreObject representing the created vector store.
         """
         ...

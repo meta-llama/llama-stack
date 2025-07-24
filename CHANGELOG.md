@@ -1,5 +1,34 @@
 # Changelog
 
+# v0.2.15
+Published on: 2025-07-16T03:30:01Z
+
+
+
+---
+
+# v0.2.14
+Published on: 2025-07-04T16:06:48Z
+
+## Highlights
+
+* Support for Llama Guard 4
+* Added Milvus  support to vector-stores API
+* Documentation and zero-to-hero updates for latest APIs
+
+
+---
+
+# v0.2.13
+Published on: 2025-06-28T04:28:11Z
+
+## Highlights
+* search_mode support in OpenAI vector store API
+* Security fixes
+
+
+---
+
 # v0.2.12
 Published on: 2025-06-20T22:52:12Z
 
@@ -485,23 +514,3 @@ A small but important bug-fix release to update the URL datatype for the client-
 
 ---
 
-# v0.0.62
-Published on: 2024-12-18T02:39:43Z
-
-
-
----
-
-# v0.0.61
-Published on: 2024-12-10T20:50:33Z
-
-
-
----
-
-# v0.0.55
-Published on: 2024-11-23T17:14:07Z
-
-
-
----

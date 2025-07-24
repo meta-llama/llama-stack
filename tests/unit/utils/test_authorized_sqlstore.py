@@ -7,8 +7,6 @@
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-import pytest
-
 from llama_stack.distribution.access_control.access_control import default_policy, is_action_allowed
 from llama_stack.distribution.access_control.datatypes import Action
 from llama_stack.distribution.datatypes import User
@@ -18,7 +16,6 @@ from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemyS
 from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_fetch_with_where_sql_access_control(mock_get_authenticated_user):
     """Test that fetch_all works correctly with where_sql for access control"""
@@ -81,7 +78,6 @@ async def test_authorized_fetch_with_where_sql_access_control(mock_get_authentic
         assert row["title"] == "User Document"
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_sql_policy_consistency(mock_get_authenticated_user):
     """Test that SQL WHERE clause logic exactly matches is_action_allowed policy logic"""
@@ -104,19 +100,17 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
 
         # Test scenarios with different access control patterns
         test_scenarios = [
-            # Scenario 1: Public record (no access control)
+            # Scenario 1: Public record (no access control - represents None user insert)
             {"id": "1", "name": "public", "access_attributes": None},
-            # Scenario 2: Empty access control (should be treated as public)
-            {"id": "2", "name": "empty", "access_attributes": {}},
-            # Scenario 3: Record with roles requirement
-            {"id": "3", "name": "admin-only", "access_attributes": {"roles": ["admin"]}},
-            # Scenario 4: Record with multiple attribute categories
-            {"id": "4", "name": "admin-ml-team", "access_attributes": {"roles": ["admin"], "teams": ["ml-team"]}},
-            # Scenario 5: Record with teams only (missing roles category)
-            {"id": "5", "name": "ml-team-only", "access_attributes": {"teams": ["ml-team"]}},
-            # Scenario 6: Record with roles and projects
+            # Scenario 2: Record with roles requirement
+            {"id": "2", "name": "admin-only", "access_attributes": {"roles": ["admin"]}},
+            # Scenario 3: Record with multiple attribute categories
+            {"id": "3", "name": "admin-ml-team", "access_attributes": {"roles": ["admin"], "teams": ["ml-team"]}},
+            # Scenario 4: Record with teams only (missing roles category)
+            {"id": "4", "name": "ml-team-only", "access_attributes": {"teams": ["ml-team"]}},
+            # Scenario 5: Record with roles and projects
             {
-                "id": "6",
+                "id": "5",
                 "name": "admin-project-x",
                 "access_attributes": {"roles": ["admin"], "projects": ["project-x"]},
             },
@@ -155,7 +149,9 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
             policy_ids = set()
             for scenario in test_scenarios:
                 sql_record = SqlRecord(
-                    record_id=scenario["id"], table_name="resources", access_attributes=scenario["access_attributes"]
+                    record_id=scenario["id"],
+                    table_name="resources",
+                    owner=User(principal="test-user", attributes=scenario["access_attributes"]),
                 )
 
                 if is_action_allowed(policy, Action.READ, sql_record, user):
@@ -168,7 +164,6 @@ async def test_sql_policy_consistency(mock_get_authenticated_user):
             )
 
 
-@pytest.mark.asyncio
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_store_user_attribute_capture(mock_get_authenticated_user):
     """Test that user attributes are properly captured during insert"""

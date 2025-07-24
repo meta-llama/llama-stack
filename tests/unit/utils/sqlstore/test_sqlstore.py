@@ -14,7 +14,6 @@ from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemyS
 from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 
 
-@pytest.mark.asyncio
 async def test_sqlite_sqlstore():
     with TemporaryDirectory() as tmp_dir:
         db_name = "test.db"
@@ -66,7 +65,6 @@ async def test_sqlite_sqlstore():
         assert result.has_more is False
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_basic():
     """Test basic pagination functionality at the SQL store level."""
     with TemporaryDirectory() as tmp_dir:
@@ -131,7 +129,6 @@ async def test_sqlstore_pagination_basic():
         assert result3.has_more is False
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_with_filter():
     """Test pagination with WHERE conditions."""
     with TemporaryDirectory() as tmp_dir:
@@ -184,7 +181,6 @@ async def test_sqlstore_pagination_with_filter():
         assert result2.has_more is False
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_ascending_order():
     """Test pagination with ascending order."""
     with TemporaryDirectory() as tmp_dir:
@@ -233,7 +229,6 @@ async def test_sqlstore_pagination_ascending_order():
         assert result2.has_more is True
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_multi_column_ordering_error():
     """Test that multi-column ordering raises an error when using cursor pagination."""
     with TemporaryDirectory() as tmp_dir:
@@ -271,7 +266,6 @@ async def test_sqlstore_pagination_multi_column_ordering_error():
         assert result.data[0]["id"] == "task1"
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_cursor_requires_order_by():
     """Test that cursor pagination requires order_by parameter."""
     with TemporaryDirectory() as tmp_dir:
@@ -289,7 +283,6 @@ async def test_sqlstore_pagination_cursor_requires_order_by():
             )
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_error_handling():
     """Test error handling for invalid columns and cursor IDs."""
     with TemporaryDirectory() as tmp_dir:
@@ -339,7 +332,6 @@ async def test_sqlstore_pagination_error_handling():
             )
 
 
-@pytest.mark.asyncio
 async def test_sqlstore_pagination_custom_key_column():
     """Test pagination with custom primary key column (not 'id')."""
     with TemporaryDirectory() as tmp_dir:

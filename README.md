@@ -6,6 +6,7 @@
 [![Discord](https://img.shields.io/discord/1257833999603335178?color=6A7EC2&logo=discord&logoColor=ffffff)](https://discord.gg/llama-stack)
 [![Unit Tests](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml?query=branch%3Amain)
 [![Integration Tests](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml?query=branch%3Amain)
+![coverage badge](./coverage.svg)
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb) | [**Discord**](https://discord.gg/llama-stack)
 
@@ -35,6 +36,8 @@ pip install llama-stack-client
 ### CLI
 ```bash
 # Run a chat completion
+MODEL="Llama-4-Scout-17B-16E-Instruct"
+
 llama-stack-client --endpoint http://localhost:8321 \
 inference chat-completion \
 --model-id meta-llama/$MODEL \
@@ -75,7 +78,7 @@ As more providers start supporting Llama 4, you can use them in Llama Stack as w
 To try Llama Stack locally, run:
 
 ```bash
-curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/install.sh | bash
+curl -LsSf https://github.com/meta-llama/llama-stack/raw/main/scripts/install.sh | bash
 ```
 
 ### Overview
@@ -106,47 +109,45 @@ By reducing friction and complexity, Llama Stack empowers developers to focus on
 
 ### API Providers
 Here is a list of the various API providers and available distributions that can help developers get started easily with Llama Stack.
+Please checkout for [full list](https://llama-stack.readthedocs.io/en/latest/providers/index.html)
 
-| **API Provider Builder** |    **Environments**    | **Agents** | **Inference** | **Memory** | **Safety** | **Telemetry** | **Post Training** |
-|:------------------------:|:----------------------:|:----------:|:-------------:|:----------:|:----------:|:-------------:|:-----------------:|
-|      Meta Reference      |      Single Node       |     ✅      |       ✅       |     ✅      |     ✅      |       ✅       |               |
-|        SambaNova         |         Hosted         |            |       ✅       |            |     ✅      |               |                  |
-|         Cerebras         |         Hosted         |            |       ✅       |            |            |               |                  |
-|        Fireworks         |         Hosted         |     ✅      |       ✅       |     ✅      |            |               |                |
-|       AWS Bedrock        |         Hosted         |            |       ✅       |            |     ✅      |               |                |
-|         Together         |         Hosted         |     ✅      |       ✅       |            |     ✅      |               |                |
-|           Groq           |         Hosted         |            |       ✅       |            |            |               |                 |
-|          Ollama          |      Single Node       |            |       ✅       |            |            |               |                 |
-|           TGI            | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|        NVIDIA NIM        | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|          Chroma          |      Single Node       |            |               |     ✅      |            |               |                 |
-|        PG Vector         |      Single Node       |            |               |     ✅      |            |               |                 |
-|    PyTorch ExecuTorch    |     On-device iOS      |     ✅      |       ✅       |            |            |               |                |
-|           vLLM           | Hosted and Single Node |            |       ✅       |            |            |               |                 |
-|          OpenAI          |         Hosted         |            |       ✅       |            |            |               |                 |
-|        Anthropic         |         Hosted         |            |       ✅       |            |            |               |                 |
-|          Gemini          |         Hosted         |            |       ✅       |            |            |               |                 |
-|          watsonx         |         Hosted         |            |       ✅       |            |            |               |                 |
-|        HuggingFace       |       Single Node      |            |                |            |            |               |       ✅        |
-|         TorchTune        |       Single Node      |            |                |            |            |               |       ✅        |
-|       NVIDIA NEMO        |         Hosted         |            |                |            |            |               |       ✅        |
+| API Provider Builder | Environments | Agents | Inference | VectorIO | Safety | Telemetry | Post Training | Eval | DatasetIO |
+|:-------------------:|:------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:--------:|
+| Meta Reference | Single Node | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SambaNova | Hosted | | ✅ | | ✅ | | | | |
+| Cerebras | Hosted | | ✅ | | | | | | |
+| Fireworks | Hosted | ✅ | ✅ | ✅ | | | | | |
+| AWS Bedrock | Hosted | | ✅ | | ✅ | | | | |
+| Together | Hosted | ✅ | ✅ | | ✅ | | | | |
+| Groq | Hosted | | ✅ | | | | | | |
+| Ollama | Single Node | | ✅ | | | | | | |
+| TGI | Hosted/Single Node | | ✅ | | | | | | |
+| NVIDIA NIM | Hosted/Single Node | | ✅ | | ✅ | | | | |
+| ChromaDB | Hosted/Single Node | | | ✅ | | | | | |
+| PG Vector | Single Node | | | ✅ | | | | | |
+| PyTorch ExecuTorch | On-device iOS | ✅ | ✅ | | | | | | |
+| vLLM | Single Node | | ✅ | | | | | | |
+| OpenAI | Hosted | | ✅ | | | | | | |
+| Anthropic | Hosted | | ✅ | | | | | | |
+| Gemini | Hosted | | ✅ | | | | | | |
+| WatsonX | Hosted | | ✅ | | | | | | |
+| HuggingFace | Single Node | | | | | | ✅ | | ✅ |
+| TorchTune | Single Node | | | | | | ✅ | | |
+| NVIDIA NEMO | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
+| NVIDIA | Hosted | | | | | | ✅ | ✅ | ✅ |
 
+> **Note**: Additional providers are available through external packages. See [External Providers](https://llama-stack.readthedocs.io/en/latest/providers/external.html) documentation.
 
 ### Distributions
 
-A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider implementations for each API component. Distributions make it easy to get started with a specific deployment scenario - you can begin with a local development setup (eg. ollama) and seamlessly transition to production (eg. Fireworks) without changing your application code. Here are some of the distributions we support:
+A Llama Stack Distribution (or "distro") is a pre-configured bundle of provider implementations for each API component. Distributions make it easy to get started with a specific deployment scenario - you can begin with a local development setup (eg. ollama) and seamlessly transition to production (eg. Fireworks) without changing your application code.
+Here are some of the distributions we support:
 
 |               **Distribution**                |                                                                    **Llama Stack Docker**                                                                     |                                                 Start This Distribution                                                  |
 |:---------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------:|
+|                Starter Distribution                 |           [llamastack/distribution-starter](https://hub.docker.com/repository/docker/llamastack/distribution-starter/general)           |      [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/starter.html)      |
 |                Meta Reference                 |           [llamastack/distribution-meta-reference-gpu](https://hub.docker.com/repository/docker/llamastack/distribution-meta-reference-gpu/general)           |      [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/meta-reference-gpu.html)      |
-|                   SambaNova                   |                     [llamastack/distribution-sambanova](https://hub.docker.com/repository/docker/llamastack/distribution-sambanova/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/sambanova.html)   |
-|                   Cerebras                    |                     [llamastack/distribution-cerebras](https://hub.docker.com/repository/docker/llamastack/distribution-cerebras/general)                     |   [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/cerebras.html)   |
-|                    Ollama                     |                       [llamastack/distribution-ollama](https://hub.docker.com/repository/docker/llamastack/distribution-ollama/general)                       |            [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/ollama.html)            |
-|                      TGI                      |                          [llamastack/distribution-tgi](https://hub.docker.com/repository/docker/llamastack/distribution-tgi/general)                          |             [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/tgi.html)              |
-|                   Together                    |                     [llamastack/distribution-together](https://hub.docker.com/repository/docker/llamastack/distribution-together/general)                     |           [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/together.html)           |
-|                   Fireworks                   |                    [llamastack/distribution-fireworks](https://hub.docker.com/repository/docker/llamastack/distribution-fireworks/general)                    |          [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/fireworks.html)           |
-| vLLM |                  [llamastack/distribution-remote-vllm](https://hub.docker.com/repository/docker/llamastack/distribution-remote-vllm/general)                  |         [Guide](https://llama-stack.readthedocs.io/en/latest/distributions/self_hosted_distro/remote-vllm.html)          |
-
+|                   PostgreSQL                  |                [llamastack/distribution-postgres-demo](https://hub.docker.com/repository/docker/llamastack/distribution-postgres-demo/general)                |                  |
 
 ### Documentation
 

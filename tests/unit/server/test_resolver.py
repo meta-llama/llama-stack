@@ -9,7 +9,6 @@ import sys
 from typing import Any, Protocol
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.inference import Inference
@@ -66,7 +65,6 @@ class SampleImpl:
         pass
 
 
-@pytest.mark.asyncio
 async def test_resolve_impls_basic():
     # Create a real provider spec
     provider_spec = InlineProviderSpec(

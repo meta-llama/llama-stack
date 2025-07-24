@@ -9,6 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
+import logging
 import os
 import ssl
 import sys
@@ -31,7 +32,13 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.distribution.datatypes import AuthenticationRequiredError, LoggingConfig, StackRunConfig
+from llama_stack.cli.utils import add_config_template_args, get_config_from_args
+from llama_stack.distribution.access_control.access_control import AccessDeniedError
+from llama_stack.distribution.datatypes import (
+    AuthenticationRequiredError,
+    LoggingConfig,
+    StackRunConfig,
+)
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
 from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
 from llama_stack.distribution.resolver import InvalidProviderError
@@ -41,11 +48,13 @@ from llama_stack.distribution.server.routes import (
     initialize_route_impls,
 )
 from llama_stack.distribution.stack import (
+    cast_image_name_to_string,
     construct_stack,
     replace_env_vars,
     validate_env_pair,
 )
 from llama_stack.distribution.utils.config import redact_sensitive_fields
+from llama_stack.distribution.utils.config_resolution import Mode, resolve_config_or_template
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
@@ -116,7 +125,7 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
         return HTTPException(status_code=400, detail=str(exc))
-    elif isinstance(exc, PermissionError):
+    elif isinstance(exc, PermissionError | AccessDeniedError):
         return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, asyncio.TimeoutError | TimeoutError):
         return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
@@ -215,7 +224,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
         # Get auth attributes from the request scope
         user_attributes = request.scope.get("user_attributes", {})
         principal = request.scope.get("principal", "")
-        user = User(principal, user_attributes)
+        user = User(principal=principal, attributes=user_attributes)
 
         await log_request_pre_validation(request)
 
@@ -236,7 +245,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                         result.url = route
                     return result
             except Exception as e:
-                logger.exception(f"Error executing endpoint {route=} {method=}")
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.exception(f"Error executing endpoint {route=} {method=}")
+                else:
+                    logger.error(f"Error executing endpoint {route=} {method=}: {str(e)}")
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
@@ -367,20 +379,8 @@ class ClientVersionMiddleware:
 def main(args: argparse.Namespace | None = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
-    parser.add_argument(
-        "--yaml-config",
-        dest="config",
-        help="(Deprecated) Path to YAML configuration file - use --config instead",
-    )
-    parser.add_argument(
-        "--config",
-        dest="config",
-        help="Path to YAML configuration file",
-    )
-    parser.add_argument(
-        "--template",
-        help="One of the template names in llama_stack/templates (e.g., tgi, fireworks, remote-vllm, etc.)",
-    )
+
+    add_config_template_args(parser)
     parser.add_argument(
         "--port",
         type=int,
@@ -399,20 +399,8 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    log_line = ""
-    if args.config:
-        # if the user provided a config file, use it, even if template was specified
-        config_file = Path(args.config)
-        if not config_file.exists():
-            raise ValueError(f"Config file {config_file} does not exist")
-        log_line = f"Using config file: {config_file}"
-    elif args.template:
-        config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.template / "run.yaml"
-        if not config_file.exists():
-            raise ValueError(f"Template {args.template} does not exist")
-        log_line = f"Using template {args.template} config file: {config_file}"
-    else:
-        raise ValueError("Either --config or --template must be provided")
+    config_or_template = get_config_from_args(args)
+    config_file = resolve_config_or_template(config_or_template, Mode.RUN)
 
     logger_config = None
     with open(config_file) as fp:
@@ -430,14 +418,9 @@ def main(args: argparse.Namespace | None = None):
                     logger.error(f"Error: {str(e)}")
                     sys.exit(1)
         config = replace_env_vars(config_contents)
-        config = StackRunConfig(**config)
+        config = StackRunConfig(**cast_image_name_to_string(config))
 
-    # now that the logger is initialized, print the line about which type of config we are using.
-    logger.info(log_line)
-
-    logger.info("Run configuration:")
-    safe_config = redact_sensitive_fields(config.model_dump())
-    logger.info(yaml.dump(safe_config, indent=2))
+    _log_run_config(run_config=config)
 
     app = FastAPI(
         lifespan=lifespan,
@@ -445,12 +428,13 @@ def main(args: argparse.Namespace | None = None):
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
     # Add authentication middleware if configured
     if config.server.auth:
-        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_type.value}")
+        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
     else:
         if config.server.quota:
@@ -483,7 +467,13 @@ def main(args: argparse.Namespace | None = None):
         )
 
     try:
-        impls = asyncio.run(construct_stack(config))
+        # Create and set the event loop that will be used for both construction and server runtime
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Construct the stack in the persistent event loop
+        impls = loop.run_until_complete(construct_stack(config))
+
     except InvalidProviderError as e:
         logger.error(f"Error: {str(e)}")
         sys.exit(1)
@@ -577,11 +567,37 @@ def main(args: argparse.Namespace | None = None):
         "port": port,
         "lifespan": "on",
         "log_level": logger.getEffectiveLevel(),
+        "log_config": logger_config,
     }
     if ssl_config:
         uvicorn_config.update(ssl_config)
 
-    uvicorn.run(**uvicorn_config)
+    # Run uvicorn in the existing event loop to preserve background tasks
+    # We need to catch KeyboardInterrupt because uvicorn's signal handling
+    # re-raises SIGINT signals using signal.raise_signal(), which Python
+    # converts to KeyboardInterrupt. Without this catch, we'd get a confusing
+    # stack trace when using Ctrl+C or kill -2 (SIGINT).
+    # SIGTERM (kill -15) works fine without this because Python doesn't
+    # have a default handler for it.
+    #
+    # Another approach would be to ignore SIGINT entirely - let uvicorn handle it through its own
+    # signal handling but this is quite intrusive and not worth the effort.
+    try:
+        loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
+    except (KeyboardInterrupt, SystemExit):
+        logger.info("Received interrupt signal, shutting down gracefully...")
+    finally:
+        if not loop.is_closed():
+            logger.debug("Closing event loop")
+            loop.close()
+
+
+def _log_run_config(run_config: StackRunConfig):
+    """Logs the run config with redacted fields and disabled providers removed."""
+    logger.info("Run configuration:")
+    safe_config = redact_sensitive_fields(run_config.model_dump(mode="json"))
+    clean_config = remove_disabled_providers(safe_config)
+    logger.info(yaml.dump(clean_config, indent=2))
 
 
 def extract_path_params(route: str) -> list[str]:
@@ -590,6 +606,21 @@ def extract_path_params(route: str) -> list[str]:
     # to handle path params like {param:path}
     params = [param.split(":")[0] for param in params]
     return params
+
+
+def remove_disabled_providers(obj):
+    if isinstance(obj, dict):
+        if (
+            obj.get("provider_id") == "__disabled__"
+            or obj.get("shield_id") == "__disabled__"
+            or obj.get("provider_model_id") == "__disabled__"
+        ):
+            return None
+        return {k: v for k, v in ((k, remove_disabled_providers(v)) for k, v in obj.items()) if v is not None}
+    elif isinstance(obj, list):
+        return [item for item in (remove_disabled_providers(i) for i in obj) if item is not None]
+    else:
+        return obj
 
 
 if __name__ == "__main__":

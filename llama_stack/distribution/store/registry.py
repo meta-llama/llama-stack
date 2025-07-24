@@ -10,11 +10,11 @@ from typing import Protocol
 
 import pydantic
 
-from llama_stack.distribution.datatypes import KVStoreConfig, RoutableObjectWithProvider
+from llama_stack.distribution.datatypes import RoutableObjectWithProvider
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
+from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 
 logger = get_logger(__name__, category="core")
 

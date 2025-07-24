@@ -6,20 +6,18 @@
 
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 
 class OllamaImplConfig(BaseModel):
     url: str = DEFAULT_OLLAMA_URL
-    raise_on_connect_error: bool = True
+    refresh_models: bool = Field(default=False, description="refresh and re-register models periodically")
+    refresh_models_interval: int = Field(default=300, description="interval in seconds to refresh models")
 
     @classmethod
-    def sample_run_config(
-        cls, url: str = "${env.OLLAMA_URL:=http://localhost:11434}", raise_on_connect_error: bool = True, **kwargs
-    ) -> dict[str, Any]:
+    def sample_run_config(cls, url: str = "${env.OLLAMA_URL:=http://localhost:11434}", **kwargs) -> dict[str, Any]:
         return {
             "url": url,
-            "raise_on_connect_error": raise_on_connect_error,
         }

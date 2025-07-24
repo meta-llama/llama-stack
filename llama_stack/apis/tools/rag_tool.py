@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field, field_validator
@@ -101,6 +101,20 @@ class RAGQueryGenerator(Enum):
 
 
 @json_schema_type
+class RAGSearchMode(StrEnum):
+    """
+    Search modes for RAG query retrieval:
+    - VECTOR: Uses vector similarity search for semantic matching
+    - KEYWORD: Uses keyword-based search for exact matching
+    - HYBRID: Combines both vector and keyword search for better results
+    """
+
+    VECTOR = "vector"
+    KEYWORD = "keyword"
+    HYBRID = "hybrid"
+
+
+@json_schema_type
 class DefaultRAGQueryGeneratorConfig(BaseModel):
     """Configuration for the default RAG query generator.
 
@@ -154,7 +168,7 @@ class RAGQueryConfig(BaseModel):
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
-    mode: str | None = None
+    mode: RAGSearchMode | None = RAGSearchMode.VECTOR
     ranker: Ranker | None = Field(default=None)  # Only used for hybrid mode
 
     @field_validator("chunk_template")

@@ -25,7 +25,6 @@ providers:
     config:
       kvstore:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/faiss_store.db
   safety:
   - provider_id: nvidia
@@ -39,7 +38,6 @@ providers:
     config:
       persistence_store:
         type: sqlite
-        namespace: null
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/agents_store.db
       responses_store:
         type: sqlite
@@ -51,6 +49,7 @@ providers:
       service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
       sinks: ${env.TELEMETRY_SINKS:=console,sqlite}
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/nvidia}/trace_store.db
+      otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
   eval:
   - provider_id: nvidia
     provider_type: remote::nvidia

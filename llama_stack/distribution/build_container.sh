@@ -19,6 +19,9 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
 
+# Mount command for cache container .cache, can be overridden by the user if needed
+MOUNT_CACHE=${MOUNT_CACHE:-"--mount=type=cache,id=llama-stack-cache,target=/root/.cache"}
+
 # Path to the run.yaml file in the container
 RUN_CONFIG_PATH=/app/run.yaml
 
@@ -96,7 +99,7 @@ FROM $container_base
 WORKDIR /app
 
 # We install the Python 3.12 dev headers and build tools so that any
-# C‑extension wheels (e.g. polyleven, faiss‑cpu) can compile successfully.
+# C-extension wheels (e.g. polyleven, faiss-cpu) can compile successfully.
 
 RUN dnf -y update && dnf install -y iputils git net-tools wget \
     vim-minimal python3.12 python3.12-pip python3.12-wheel \
@@ -125,19 +128,28 @@ RUN pip install uv
 EOF
 fi
 
+# Set the link mode to copy so that uv doesn't attempt to symlink to the cache directory
+add_to_container << EOF
+ENV UV_LINK_MODE=copy
+EOF
+
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
 if [ -n "$pip_dependencies" ]; then
+  read -ra pip_args <<< "$pip_dependencies"
+  quoted_deps=$(printf " %q" "${pip_args[@]}")
   add_to_container << EOF
-RUN uv pip install --no-cache $pip_dependencies
+RUN $MOUNT_CACHE uv pip install $quoted_deps
 EOF
 fi
 
 if [ -n "$special_pip_deps" ]; then
   IFS='#' read -ra parts <<<"$special_pip_deps"
   for part in "${parts[@]}"; do
+    read -ra pip_args <<< "$part"
+    quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN uv pip install --no-cache $part
+RUN $MOUNT_CACHE uv pip install $quoted_deps
 EOF
   done
 fi
@@ -169,7 +181,7 @@ if [ -n "$run_config" ]; then
     echo "Copying external providers directory: $external_providers_dir"
     cp -r "$external_providers_dir" "$BUILD_CONTEXT_DIR/providers.d"
     add_to_container << EOF
-COPY --chmod=g+w providers.d /.llama/providers.d
+COPY providers.d /.llama/providers.d
 EOF
     fi
 
@@ -207,7 +219,7 @@ COPY $dir $mount_point
 EOF
   fi
   add_to_container << EOF
-RUN uv pip install --no-cache -e $mount_point
+RUN $MOUNT_CACHE uv pip install -e $mount_point
 EOF
 }
 
@@ -222,10 +234,10 @@ else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     add_to_container << EOF
-RUN uv pip install fastapi libcst
+RUN $MOUNT_CACHE uv pip install fastapi libcst
 EOF
     add_to_container << EOF
-RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
+RUN $MOUNT_CACHE uv pip install --extra-index-url https://test.pypi.org/simple/ \
   --index-strategy unsafe-best-match \
   llama-stack==$TEST_PYPI_VERSION
 
@@ -237,7 +249,7 @@ EOF
       SPEC_VERSION="llama-stack"
     fi
     add_to_container << EOF
-RUN uv pip install --no-cache $SPEC_VERSION
+RUN $MOUNT_CACHE uv pip install $SPEC_VERSION
 EOF
   fi
 fi
@@ -328,7 +340,7 @@ $CONTAINER_BINARY build \
   "$BUILD_CONTEXT_DIR"
 
 # clean up tmp/configs
-rm -f "$BUILD_CONTEXT_DIR/run.yaml"
+rm -rf "$BUILD_CONTEXT_DIR/run.yaml" "$TEMP_DIR"
 set +x
 
 echo "Success!"

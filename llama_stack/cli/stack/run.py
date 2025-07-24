@@ -47,8 +47,7 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--image-name",
             type=str,
-            default=os.environ.get("CONDA_DEFAULT_ENV"),
-            help="Name of the image to run. Defaults to the current environment",
+            help="Name of the image to run.",
         )
         self.parser.add_argument(
             "--env",
@@ -87,42 +86,27 @@ class StackRun(Subcommand):
         import yaml
 
         from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
         from llama_stack.distribution.utils.exec import formulate_run_args, run_command
 
         if args.enable_ui:
             self._start_ui_development_server(args.port)
         image_type, image_name = self._get_image_type_and_name(args)
 
+        if args.config:
+            try:
+                from llama_stack.distribution.utils.config_resolution import Mode, resolve_config_or_template
+
+                config_file = resolve_config_or_template(args.config, Mode.RUN)
+            except ValueError as e:
+                self.parser.error(str(e))
+        else:
+            config_file = None
+
         # Check if config is required based on image type
-        if (image_type in [ImageType.CONDA.value, ImageType.VENV.value]) and not args.config:
+        if (image_type in [ImageType.CONDA.value, ImageType.VENV.value]) and not config_file:
             self.parser.error("Config file is required for venv and conda environments")
 
-        if args.config:
-            config_file = Path(args.config)
-            has_yaml_suffix = args.config.endswith(".yaml")
-            template_name = None
-
-            if not config_file.exists() and not has_yaml_suffix:
-                # check if this is a template
-                config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
-                if config_file.exists():
-                    template_name = args.config
-
-            if not config_file.exists() and not has_yaml_suffix:
-                # check if it's a build config saved to ~/.llama dir
-                config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
-
-            if not config_file.exists():
-                self.parser.error(
-                    f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
-                )
-
-            if not config_file.is_file():
-                self.parser.error(
-                    f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
-                )
-
+        if config_file:
             logger.info(f"Using run configuration: {config_file}")
 
             try:
@@ -138,8 +122,6 @@ class StackRun(Subcommand):
                 self.parser.error(f"failed to parse config file '{config_file}':\n {e}")
         else:
             config = None
-            config_file = None
-            template_name = None
 
         # If neither image type nor image name is provided, assume the server should be run directly
         # using the current environment packages.
@@ -155,7 +137,7 @@ class StackRun(Subcommand):
                 # func=<bound method StackRun._run_stack_run_cmd of <llama_stack.cli.stack.run.StackRun object at 0x10484b010>>
                 if callable(getattr(args, arg)):
                     continue
-                if arg == "config" and template_name:
+                if arg == "config":
                     server_args.config = str(config_file)
                 else:
                     setattr(server_args, arg, getattr(args, arg))
@@ -163,7 +145,7 @@ class StackRun(Subcommand):
             # Run the server
             server_main(server_args)
         else:
-            run_args = formulate_run_args(image_type, image_name, config, template_name)
+            run_args = formulate_run_args(image_type, image_name)
 
             run_args.extend([str(args.port)])
 

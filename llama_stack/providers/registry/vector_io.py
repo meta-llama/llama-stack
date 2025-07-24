@@ -395,7 +395,7 @@ That means you'll get fast and efficient vector retrieval.
 To use PGVector in your Llama Stack project, follow these steps:
 
 1. Install the necessary dependencies.
-2. Configure your Llama Stack project to use Faiss.
+2. Configure your Llama Stack project to use pgvector. (e.g. remote::pgvector).
 3. Start storing and querying vectors.
 
 ## Installation
@@ -520,7 +520,7 @@ Please refer to the inline provider documentation.
             Api.vector_io,
             AdapterSpec(
                 adapter_type="milvus",
-                pip_packages=["pymilvus[marshmallow<3.13.0]"],
+                pip_packages=["pymilvus>=2.4.10"],
                 module="llama_stack.providers.remote.vector_io.milvus",
                 config_class="llama_stack.providers.remote.vector_io.milvus.MilvusVectorIOConfig",
                 description="""
@@ -633,7 +633,7 @@ For more details on TLS configuration, refer to the [TLS setup guide](https://mi
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::milvus",
-            pip_packages=["pymilvus"],
+            pip_packages=["pymilvus>=2.4.10"],
             module="llama_stack.providers.inline.vector_io.milvus",
             config_class="llama_stack.providers.inline.vector_io.milvus.MilvusVectorIOConfig",
             api_dependencies=[Api.inference],
