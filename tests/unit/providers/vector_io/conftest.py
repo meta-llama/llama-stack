@@ -12,11 +12,13 @@ from pymilvus import MilvusClient, connections
 
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata
+from llama_stack.providers.inline.vector_io.chroma.config import ChromaVectorIOConfig
 from llama_stack.providers.inline.vector_io.faiss.config import FaissVectorIOConfig
 from llama_stack.providers.inline.vector_io.faiss.faiss import FaissIndex, FaissVectorIOAdapter
 from llama_stack.providers.inline.vector_io.milvus.config import MilvusVectorIOConfig, SqliteKVStoreConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import SQLiteVecIndex, SQLiteVecVectorIOAdapter
+from llama_stack.providers.remote.vector_io.chroma.chroma import ChromaIndex, ChromaVectorIOAdapter
 from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusIndex, MilvusVectorIOAdapter
 
 EMBEDDING_DIMENSION = 384
@@ -237,14 +239,53 @@ async def faiss_vec_adapter(unique_kvstore_config, mock_inference_api, embedding
 
 
 @pytest.fixture
+def chroma_vec_db_path(tmp_path_factory):
+    persist_dir = tmp_path_factory.mktemp(f"chroma_{np.random.randint(1e6)}")
+    return str(persist_dir)
+
+
+@pytest.fixture
+async def chroma_vec_index(chroma_vec_db_path, embedding_dimension):
+    index = ChromaIndex(
+        embedding_dimension=embedding_dimension,
+        persist_directory=chroma_vec_db_path,
+    )
+    await index.initialize()
+    yield index
+    await index.delete()
+
+
+@pytest.fixture
+async def chroma_vec_adapter(chroma_vec_db_path, mock_inference_api, embedding_dimension):
+    config = ChromaVectorIOConfig(persist_directory=chroma_vec_db_path)
+    adapter = ChromaVectorIOAdapter(
+        config=config,
+        inference_api=mock_inference_api,
+        files_api=None,
+    )
+    await adapter.initialize()
+    await adapter.register_vector_db(
+        VectorDB(
+            identifier=f"chroma_test_collection_{random.randint(1, 1_000_000)}",
+            provider_id="test_provider",
+            embedding_model="test_model",
+            embedding_dimension=embedding_dimension,
+        )
+    )
+    yield adapter
+    await adapter.shutdown()
+
+
+@pytest.fixture
 def vector_io_adapter(vector_provider, request):
     """Returns the appropriate vector IO adapter based on the provider parameter."""
-    if vector_provider == "milvus":
-        return request.getfixturevalue("milvus_vec_adapter")
-    elif vector_provider == "faiss":
-        return request.getfixturevalue("faiss_vec_adapter")
-    else:
-        return request.getfixturevalue("sqlite_vec_adapter")
+    vector_provider_dict = {
+        "milvus": "milvus_vec_adapter",
+        "faiss": "faiss_vec_adapter",
+        "sqlite_vec": "sqlite_vec_adapter",
+        "chroma": "chroma_vec_adapter",
+    }
+    return request.getfixturevalue(vector_provider_dict[vector_provider])
 
 
 @pytest.fixture

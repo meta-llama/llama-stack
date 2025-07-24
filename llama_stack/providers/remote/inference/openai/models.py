@@ -12,11 +12,6 @@ from llama_stack.providers.utils.inference.model_registry import (
 )
 
 LLM_MODEL_IDS = [
-    # the models w/ "openai/" prefix are the litellm specific model names.
-    # they should be deprecated in favor of the canonical openai model names.
-    "openai/gpt-4o",
-    "openai/gpt-4o-mini",
-    "openai/chatgpt-4o-latest",
     "gpt-3.5-turbo-0125",
     "gpt-3.5-turbo",
     "gpt-3.5-turbo-instruct",
@@ -43,8 +38,6 @@ class EmbeddingModelInfo:
 
 
 EMBEDDING_MODEL_IDS: dict[str, EmbeddingModelInfo] = {
-    "openai/text-embedding-3-small": EmbeddingModelInfo(1536, 8192),
-    "openai/text-embedding-3-large": EmbeddingModelInfo(3072, 8192),
     "text-embedding-3-small": EmbeddingModelInfo(1536, 8192),
     "text-embedding-3-large": EmbeddingModelInfo(3072, 8192),
 }
