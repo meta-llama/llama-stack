@@ -42,8 +42,8 @@ class DistributionInspectImpl(Inspect):
         run_config: StackRunConfig = self.config.run_config
 
         ret = []
-        all_endpoints = get_all_api_routes()
-        for api, endpoints in all_endpoints.items():
+        api_to_routes = get_all_api_routes()
+        for api, endpoints in api_to_routes.items():
             # Always include provider and inspect APIs, filter others based on run config
             if api.value in ["providers", "inspect"]:
                 ret.extend(
@@ -53,7 +53,7 @@ class DistributionInspectImpl(Inspect):
                             method=next(iter([m for m in e.methods if m != "HEAD"])),
                             provider_types=[],  # These APIs don't have "real" providers - they're internal to the stack
                         )
-                        for e in endpoints
+                        for e, _ in endpoints
                         if e.methods is not None
                     ]
                 )
@@ -67,7 +67,7 @@ class DistributionInspectImpl(Inspect):
                                 method=next(iter([m for m in e.methods if m != "HEAD"])),
                                 provider_types=[p.provider_type for p in providers],
                             )
-                            for e in endpoints
+                            for e, _ in endpoints
                             if e.methods is not None
                         ]
                     )
