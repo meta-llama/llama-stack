@@ -31,17 +31,6 @@ def is_command_available(command: str) -> bool:
     return shutil.which(command) is not None
 
 
-def get_python_cmd() -> str:
-    """Get the appropriate Python command."""
-    if is_command_available("python"):
-        return "python"
-    elif is_command_available("python3"):
-        return "python3"
-    else:
-        print("Error: Neither python nor python3 is installed. Please install Python to continue.", file=sys.stderr)
-        sys.exit(1)
-
-
 class ContainerBuilder:
     def __init__(self):
         # Environment variables with defaults
@@ -68,17 +57,20 @@ class ContainerBuilder:
 
     def cleanup(self):
         """Clean up temporary files."""
+
         if os.path.exists(self.temp_dir):
-            shutil.rmtree(self.temp_dir)
+            try:
+                shutil.rmtree(self.temp_dir)
+            except Exception as e:
+                print(f"Warning: Could not clean up temporary directory: {e}", file=sys.stderr)
 
         # Clean up copied files in build context
         run_yaml_path = os.path.join(self.build_context_dir, "run.yaml")
         if os.path.exists(run_yaml_path):
-            os.remove(run_yaml_path)
-
-        providers_dir = os.path.join(self.build_context_dir, "providers.d")
-        if os.path.exists(providers_dir):
-            shutil.rmtree(providers_dir)
+            try:
+                os.remove(run_yaml_path)
+            except Exception as e:
+                print(f"Warning: Could not clean up run.yaml: {e}", file=sys.stderr)
 
     def add_to_container(self, content: str):
         """Add content to the Containerfile."""
@@ -97,34 +89,28 @@ class ContainerBuilder:
 
     def generate_base_image_setup(self, container_base: str):
         """Generate the base image setup commands."""
-        if "registry.access.redhat.com/ubi9" in container_base:
-            self.add_to_container(f"""FROM {container_base}
-WORKDIR /app
+        self.add_to_container(f"""FROM {container_base}
+WORKDIR /app""")
 
-# We install the Python 3.12 dev headers and build tools so that any
+        if "registry.access.redhat.com/ubi9" in container_base:
+            self.add_to_container("""# We install the Python 3.12 dev headers and build tools so that any
 # C-extension wheels (e.g. polyleven, faiss-cpu) can compile successfully.
 
 RUN dnf -y update && dnf install -y iputils git net-tools wget \\
     vim-minimal python3.12 python3.12-pip python3.12-wheel \\
     python3.12-setuptools python3.12-devel gcc make && \\
-    ln -s /bin/pip3.12 /bin/pip && ln -s /bin/python3.12 /bin/python && dnf clean all
-
-ENV UV_SYSTEM_PYTHON=1
-RUN pip install uv""")
+    ln -s /bin/pip3.12 /bin/pip && ln -s /bin/python3.12 /bin/python && dnf clean all""")
         else:
-            self.add_to_container(f"""FROM {container_base}
-WORKDIR /app
-
-RUN apt-get update && apt-get install -y \\
+            self.add_to_container("""RUN apt-get update && apt-get install -y \\
        iputils-ping net-tools iproute2 dnsutils telnet \\
        curl wget telnet git\\
        procps psmisc lsof \\
        traceroute \\
        bubblewrap \\
        gcc \\
-       && rm -rf /var/lib/apt/lists/*
+       && rm -rf /var/lib/apt/lists/*""")
 
-ENV UV_SYSTEM_PYTHON=1
+        self.add_to_container("""ENV UV_SYSTEM_PYTHON=1
 RUN pip install uv""")
 
     def add_pip_dependencies(self, pip_dependencies: str, special_pip_deps: str):
@@ -243,8 +229,7 @@ RUN pip install uv""")
             )
 
         # Add generic container setup
-        self.add_to_container("""
-RUN mkdir -p /.llama /.cache && chmod -R g+rw /app /.llama /.cache""")
+        self.add_to_container("""RUN mkdir -p /.llama /.cache && chmod -R g+rw /app /.llama /.cache""")
 
     def get_version_tag(self):
         """Get the version tag for the image."""
@@ -338,6 +323,13 @@ RUN mkdir -p /.llama /.cache && chmod -R g+rw /app /.llama /.cache""")
 
 
 def main():
+    if len(sys.argv) < 5:
+        print(
+            "Usage: build_container.py <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>]",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="Build container images for llama-stack", formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -359,7 +351,6 @@ def main():
             args.run_config = ""
 
     builder = ContainerBuilder()
-
     try:
         builder.validate_args(args)
 
