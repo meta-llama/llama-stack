@@ -107,7 +107,7 @@ def build_image(
     normal_deps += SERVER_DEPENDENCIES
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
-        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
+        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.py")
         args = [
             script,
             template_or_config,
