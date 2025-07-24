@@ -47,6 +47,17 @@ class ModelsProtocolPrivate(Protocol):
 
     async def unregister_model(self, model_id: str) -> None: ...
 
+    # the Stack router will query each provider for their list of models
+    # if a `refresh_interval_seconds` is provided, this method will be called
+    # periodically to refresh the list of models
+    #
+    # NOTE: each model returned will be registered with the model registry. this means
+    # a callback to the `register_model()` method will be made. this is duplicative and
+    # may be removed in the future.
+    async def list_models(self) -> list[Model] | None: ...
+
+    async def should_refresh_models(self) -> bool: ...
+
 
 class ShieldsProtocolPrivate(Protocol):
     async def register_shield(self, shield: Shield) -> None: ...

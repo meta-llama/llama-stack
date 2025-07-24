@@ -161,7 +161,13 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             if not self.skip_logger_removal:
                 self._remove_root_logger_handlers()
 
-        return self.loop.run_until_complete(self.async_client.initialize())
+        # use a new event loop to avoid interfering with the main event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.async_client.initialize())
+        finally:
+            asyncio.set_event_loop(None)
 
     def _remove_root_logger_handlers(self):
         """
