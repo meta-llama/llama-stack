@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # remote::brave-search
 
 ## Description

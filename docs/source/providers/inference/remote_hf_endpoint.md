@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # remote::hf::endpoint
 
 ## Description

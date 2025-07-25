@@ -145,6 +145,7 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
     config_info = get_config_class_info(config_class)
 
     md_lines = []
+    md_lines.append("---\norphan: true\n---\n")
     md_lines.append(f"# {provider_type}")
     md_lines.append("")
 

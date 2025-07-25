@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # inline::sqlite_vec
 
 ## Description
