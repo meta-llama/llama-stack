@@ -113,7 +113,7 @@ def build_image(
                 normal_deps.extend(api_spec.pip_packages)
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
-        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
+        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.py")
         args = [
             script,
             template_or_config,
