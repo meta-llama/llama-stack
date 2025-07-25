@@ -318,8 +318,10 @@ async def construct_stack(
 
     await register_resources(run_config, impls)
 
+    await refresh_registry_once(impls)
+
     global REGISTRY_REFRESH_TASK
-    REGISTRY_REFRESH_TASK = asyncio.create_task(refresh_registry(impls))
+    REGISTRY_REFRESH_TASK = asyncio.create_task(refresh_registry_task(impls))
 
     def cb(task):
         import traceback
@@ -355,11 +357,17 @@ async def shutdown_stack(impls: dict[Api, Any]):
         REGISTRY_REFRESH_TASK.cancel()
 
 
-async def refresh_registry(impls: dict[Api, Any]):
+async def refresh_registry_once(impls: dict[Api, Any]):
+    logger.info("refreshing registry")
     routing_tables = [v for v in impls.values() if isinstance(v, CommonRoutingTableImpl)]
+    for routing_table in routing_tables:
+        await routing_table.refresh()
+
+
+async def refresh_registry_task(impls: dict[Api, Any]):
+    logger.info("starting registry refresh task")
     while True:
-        for routing_table in routing_tables:
-            await routing_table.refresh()
+        await refresh_registry_once(impls)
 
         await asyncio.sleep(REGISTRY_REFRESH_INTERVAL_SECONDS)
 

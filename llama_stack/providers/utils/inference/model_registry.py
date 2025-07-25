@@ -188,8 +188,8 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         return model
 
     async def unregister_model(self, model_id: str) -> None:
-        # TODO: should we block unregistering base supported provider model IDs?
-        if model_id not in self.alias_to_provider_id_map:
-            raise ValueError(f"Model id '{model_id}' is not registered.")
-
-        del self.alias_to_provider_id_map[model_id]
+        # model_id is the identifier, not the provider_resource_id
+        # unfortunately, this ID can be of the form provider_id/model_id which
+        # we never registered. TODO: fix this by significantly rewriting
+        # registration and registry helper
+        pass
