@@ -8,6 +8,7 @@ import random
 
 import numpy as np
 import pytest
+from chromadb import PersistentClient
 from pymilvus import MilvusClient, connections
 
 from llama_stack.apis.vector_dbs import VectorDB
@@ -18,12 +19,17 @@ from llama_stack.providers.inline.vector_io.faiss.faiss import FaissIndex, Faiss
 from llama_stack.providers.inline.vector_io.milvus.config import MilvusVectorIOConfig, SqliteKVStoreConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConfig
 from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import SQLiteVecIndex, SQLiteVecVectorIOAdapter
-from llama_stack.providers.remote.vector_io.chroma.chroma import ChromaIndex, ChromaVectorIOAdapter
+from llama_stack.providers.remote.vector_io.chroma.chroma import ChromaIndex, ChromaVectorIOAdapter, maybe_await
 from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusIndex, MilvusVectorIOAdapter
 
 EMBEDDING_DIMENSION = 384
 COLLECTION_PREFIX = "test_collection"
 MILVUS_ALIAS = "test_milvus"
+
+
+@pytest.fixture(params=["milvus", "sqlite_vec", "faiss", "chroma"])
+def vector_provider(request):
+    return request.param
 
 
 @pytest.fixture
@@ -92,11 +98,6 @@ def sample_embeddings(sample_chunks):
 def sample_embeddings_with_metadata(sample_chunks_with_metadata):
     np.random.seed(42)
     return np.array([np.random.rand(EMBEDDING_DIMENSION).astype(np.float32) for _ in sample_chunks_with_metadata])
-
-
-@pytest.fixture(params=["milvus", "sqlite_vec", "faiss"])
-def vector_provider(request):
-    return request.param
 
 
 @pytest.fixture(scope="session")
@@ -246,10 +247,10 @@ def chroma_vec_db_path(tmp_path_factory):
 
 @pytest.fixture
 async def chroma_vec_index(chroma_vec_db_path, embedding_dimension):
-    index = ChromaIndex(
-        embedding_dimension=embedding_dimension,
-        persist_directory=chroma_vec_db_path,
-    )
+    client = PersistentClient(path=chroma_vec_db_path)
+    name = f"{COLLECTION_PREFIX}_{np.random.randint(1e6)}"
+    collection = await maybe_await(client.get_or_create_collection(name))
+    index = ChromaIndex(client=client, collection=collection)
     await index.initialize()
     yield index
     await index.delete()
@@ -257,7 +258,10 @@ async def chroma_vec_index(chroma_vec_db_path, embedding_dimension):
 
 @pytest.fixture
 async def chroma_vec_adapter(chroma_vec_db_path, mock_inference_api, embedding_dimension):
-    config = ChromaVectorIOConfig(persist_directory=chroma_vec_db_path)
+    config = ChromaVectorIOConfig(
+        db_path=chroma_vec_db_path,
+        kvstore=SqliteKVStoreConfig(),
+    )
     adapter = ChromaVectorIOAdapter(
         config=config,
         inference_api=mock_inference_api,
