@@ -103,6 +103,8 @@ class Api(Enum, metaclass=DynamicApiMeta):
     tool_groups = "tool_groups"
     files = "files"
 
+    synthetic_data_generation = "synthetic_data_generation"
+
     # built-in API
     inspect = "inspect"
 
