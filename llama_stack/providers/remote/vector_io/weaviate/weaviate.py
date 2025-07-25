@@ -268,5 +268,5 @@ class WeaviateVectorIOAdapter(
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")

@@ -311,5 +311,5 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     ) -> VectorStoreFileObject:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

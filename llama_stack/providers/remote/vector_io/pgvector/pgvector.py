@@ -271,11 +271,12 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         """Delete a chunk from a PostgreSQL vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise ValueError(f"Vector DB {store_id} not found")
 
-        # Use the index's delete_chunk method
-        await index.index.delete_chunk(chunk_id)
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)

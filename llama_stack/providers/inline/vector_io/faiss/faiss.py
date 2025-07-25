@@ -289,7 +289,8 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
 
         return await index.query_chunks(query, params)
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         """Delete a chunk from a faiss index"""
         faiss_index = self.cache[store_id].index
-        await faiss_index.delete_chunk(chunk_id)
+        for chunk_id in chunk_ids:
+            await faiss_index.delete_chunk(chunk_id)

@@ -212,5 +212,5 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self.cache[vector_db_id] = index
         return index
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")

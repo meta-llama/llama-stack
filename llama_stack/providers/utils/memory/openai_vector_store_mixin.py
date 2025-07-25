@@ -153,7 +153,7 @@ class OpenAIVectorStoreMixin(ABC):
         self.openai_vector_stores = await self._load_openai_vector_stores()
 
     @abstractmethod
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         """Delete a chunk from a vector store."""
         pass
 
@@ -770,9 +770,7 @@ class OpenAIVectorStoreMixin(ABC):
 
         dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
         chunks = [Chunk.model_validate(c) for c in dict_chunks]
-        for c in chunks:
-            if c.chunk_id:
-                await self.delete_chunk(vector_store_id, str(c.chunk_id))
+        await self.delete_chunks(vector_store_id, [str(c.chunk_id) for c in chunks if c.chunk_id])
 
         store_info = self.openai_vector_stores[vector_store_id].copy()
 

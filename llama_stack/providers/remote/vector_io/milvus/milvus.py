@@ -380,11 +380,12 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
         return await index.query_chunks(query, params)
 
-    async def delete_chunk(self, store_id: str, chunk_id: str) -> None:
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         """Delete a chunk from a milvus vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise ValueError(f"Vector DB {store_id} not found")
 
-        # Use the index's delete_chunk method
-        await index.index.delete_chunk(chunk_id)
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)
