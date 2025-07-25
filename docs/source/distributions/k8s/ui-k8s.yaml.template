@@ -19,50 +19,30 @@ spec:
     spec:
       containers:
       - name: llama-stack-ui
-        image: node:18-alpine
-        command: ["/bin/sh"]
+        image: python:3.12-slim
         env:
         - name: LLAMA_STACK_BACKEND_URL
           value: "http://llama-stack-service:8321"
-        - name: LLAMA_STACK_UI_PORT
-          value: "8322"
-        - name: GITHUB_CLIENT_ID
-          value: "${GITHUB_CLIENT_ID}"
-        - name: GITHUB_CLIENT_SECRET
-          value: "${GITHUB_CLIENT_SECRET}"
-        - name: NEXTAUTH_URL
-          value: "${LLAMA_STACK_UI_URL}:8322"
+        - name: LLAMA_STACK_ENDPOINT
+          value: "http://llama-stack-service:8321"
+        workingDir: /app
+        command: ["/bin/sh"]
         args:
           - -c
           - |
-            # Install git (not included in alpine by default)
-            apk add --no-cache git
-
+            # Install pip and git
+            /usr/local/bin/python -m pip install --upgrade pip
+            apt-get update && apt-get install -y git
             # Clone the repository
-            echo "Cloning repository..."
             git clone https://github.com/meta-llama/llama-stack.git /app
 
-            # Navigate to the UI directory
-            echo "Navigating to UI directory..."
-            cd /app/llama_stack/ui
+            # Navigate to the playground directory
+            cd /app/llama_stack/distribution/ui
 
-            # Check if package.json exists
-            if [ ! -f "package.json" ]; then
-              echo "ERROR: package.json not found in $(pwd)"
-              ls -la
-              exit 1
-            fi
+            # Install requirements
+            pip install -r requirements.txt
 
-            # Install dependencies with verbose output
-            echo "Installing dependencies..."
-            npm install --verbose
-
-            # Verify next is installed
-            echo "Checking if next is installed..."
-            npx next --version || echo "Next.js not found, checking node_modules..."
-            ls -la node_modules/.bin/ | grep next || echo "No next binary found"
-
-            npm run dev
+            # Run the Streamlit app
+            streamlit run app.py --server.port=8322 --server.address=0.0.0.0
         ports:
-        - containerPort: 8322
-        workingDir: /app
+        - containerPort: 8501

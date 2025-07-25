@@ -25,14 +25,16 @@ spec:
         app.kubernetes.io/name: vllm
         workload-type: inference
     spec:
-      nodeSelector:
-        eks.amazonaws.com/nodegroup: gpu
+      # Removed nodeSelector for GPU nodes as they don't appear to exist in the cluster
+      # If you have GPU nodes with a different label, you can uncomment and modify this section
+      # nodeSelector:
+      #   <your-gpu-node-label-key>: <your-gpu-node-label-value>
       containers:
       - name: vllm
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args:
-        - "vllm serve ${INFERENCE_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --gpu-memory-utilization 0.6 --enable-auto-tool-choice --tool-call-parser llama4_pythonic"
+        - "vllm serve ${INFERENCE_MODEL} --enforce-eager --max-model-len 8192 --gpu-memory-utilization 0.7 --enable-auto-tool-choice --tool-call-parser llama3_json --max-num-seqs 4"
         env:
         - name: INFERENCE_MODEL
           value: "${INFERENCE_MODEL}"

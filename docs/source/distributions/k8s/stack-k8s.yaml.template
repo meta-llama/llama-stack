@@ -25,6 +25,13 @@ spec:
         app.kubernetes.io/name: llama-stack
         app.kubernetes.io/component: server
     spec:
+      initContainers:
+      - name: wait-for-vllm-server
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z vllm-server.default.svc.cluster.local 8000; do echo waiting for vllm-server on port 8000; sleep 2; done;']
+      - name: wait-for-vllm-server-safety
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z vllm-server-safety.default.svc.cluster.local 8001; do echo waiting for vllm-server-safety on port 8001; sleep 2; done;']
       containers:
       - name: llama-stack
         image: llamastack/distribution-starter:latest

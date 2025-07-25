@@ -9,7 +9,7 @@ parameters:
   type: gp3
   iops: "3000"
   throughput: "125"
-provisioner: ebs.csi.aws.com
+provisioner: ebs.csi.eks.aws.com
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true

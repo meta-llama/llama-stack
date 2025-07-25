@@ -25,14 +25,12 @@ spec:
         app.kubernetes.io/name: vllm-safety
         workload-type: inference
     spec:
-      nodeSelector:
-        eks.amazonaws.com/nodegroup: gpu
       containers:
       - name: vllm-safety
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args: [
-          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --port 8001 --gpu-memory-utilization 0.3"
+          "vllm serve ${SAFETY_MODEL} --dtype float16 --enforce-eager --max-model-len 4096 --port 8001 --gpu-memory-utilization 0.6"
         ]
         env:
         - name: SAFETY_MODEL
