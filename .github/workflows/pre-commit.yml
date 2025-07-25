@@ -1,5 +1,7 @@
 name: Pre-commit
 
+run-name: Run pre-commit checks
+
 on:
   pull_request:
   push:
