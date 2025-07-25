@@ -85,6 +85,11 @@ providers:
     provider_type: remote::gemini
     config:
       api_key: ${env.GEMINI_API_KEY}
+  - provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+    provider_type: remote::vertexai
+    config:
+      project: ${env.VERTEX_AI_PROJECT}
+      location: ${env.VERTEX_AI_LOCATION:=us-central1}
   - provider_id: ${env.ENABLE_GROQ:=__disabled__}
     provider_type: remote::groq
     config:
@@ -936,6 +941,35 @@ models:
   model_id: ${env.ENABLE_GEMINI:=__disabled__}/gemini/text-embedding-004
   provider_id: ${env.ENABLE_GEMINI:=__disabled__}
   provider_model_id: gemini/text-embedding-004
+  model_type: embedding
+- metadata: {}
+  model_id: ${env.ENABLE_VERTEXAI:=__disabled__}/vertex_ai/gemini-2.0-flash
+  provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+  provider_model_id: vertex_ai/gemini-2.0-flash
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_VERTEXAI:=__disabled__}/vertex_ai/gemini-2.5-flash
+  provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+  provider_model_id: vertex_ai/gemini-2.5-flash
+  model_type: llm
+- metadata: {}
+  model_id: ${env.ENABLE_VERTEXAI:=__disabled__}/vertex_ai/gemini-2.5-pro
+  provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+  provider_model_id: vertex_ai/gemini-2.5-pro
+  model_type: llm
+- metadata:
+    embedding_dimension: 768
+    context_length: 2048
+  model_id: ${env.ENABLE_VERTEXAI:=__disabled__}/vertex_ai/text-embedding-004
+  provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+  provider_model_id: vertex_ai/text-embedding-004
+  model_type: embedding
+- metadata:
+    embedding_dimension: 768
+    context_length: 2048
+  model_id: ${env.ENABLE_VERTEXAI:=__disabled__}/vertex_ai/text-embedding-005
+  provider_id: ${env.ENABLE_VERTEXAI:=__disabled__}
+  provider_model_id: vertex_ai/text-embedding-005
   model_type: embedding
 - metadata: {}
   model_id: ${env.ENABLE_GROQ:=__disabled__}/groq/llama3-8b-8192

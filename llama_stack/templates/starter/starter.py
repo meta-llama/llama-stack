@@ -64,6 +64,9 @@ from llama_stack.providers.remote.inference.sambanova.models import (
 from llama_stack.providers.remote.inference.together.models import (
     MODEL_ENTRIES as TOGETHER_MODEL_ENTRIES,
 )
+from llama_stack.providers.remote.inference.vertexai.models import (
+    MODEL_ENTRIES as VERTEXAI_MODEL_ENTRIES,
+)
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
 from llama_stack.providers.remote.vector_io.pgvector.config import (
     PGVectorVectorIOConfig,
@@ -93,6 +96,7 @@ def _get_model_entries_for_provider(provider_type: str) -> list[ProviderModelEnt
         "databricks": DATABRICKS_MODEL_ENTRIES,
         "nvidia": NVIDIA_MODEL_ENTRIES,
         "runpod": RUNPOD_MODEL_ENTRIES,
+        "vertexai": VERTEXAI_MODEL_ENTRIES,
     }
 
     # Special handling for providers with dynamic model entries
@@ -356,6 +360,14 @@ def get_distribution_template() -> DistributionTemplate:
             "GEMINI_API_KEY": (
                 "",
                 "Gemini API Key",
+            ),
+            "VERTEX_AI_PROJECT": (
+                "",
+                "Google Cloud Project ID for Vertex AI",
+            ),
+            "VERTEX_AI_LOCATION": (
+                "us-central1",
+                "Google Cloud Location for Vertex AI",
             ),
             "SAMBANOVA_API_KEY": (
                 "",
