@@ -281,7 +281,7 @@ def get_distribution_template() -> DistributionTemplate:
         config=SentenceTransformersInferenceConfig.sample_run_config(),
     )
     post_training_provider = Provider(
-        provider_id="huggingface",
+        provider_id="${env.ENABLE_HUGGINGFACE:=__disabled__}",
         provider_type="inline::huggingface",
         config=HuggingFacePostTrainingConfig.sample_run_config(f"~/.llama/distributions/{name}"),
     )

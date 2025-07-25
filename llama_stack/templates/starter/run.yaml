@@ -179,7 +179,7 @@ providers:
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/trace_store.db
       otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
   post_training:
-  - provider_id: huggingface
+  - provider_id: ${env.ENABLE_HUGGINGFACE:=__disabled__}
     provider_type: inline::huggingface
     config:
       checkpoint_format: huggingface

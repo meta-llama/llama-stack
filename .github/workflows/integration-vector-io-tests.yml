@@ -93,7 +93,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template ci-tests --image-type venv
+          uv run llama stack build --template starter --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}

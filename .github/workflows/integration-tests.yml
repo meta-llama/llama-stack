@@ -91,7 +91,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template ci-tests --image-type venv
+          uv run llama stack build --template starter --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -101,6 +101,11 @@ jobs:
 
       - name: Run Integration Tests
         env:
+          OLLAMA_INFERENCE_MODEL: "llama3.2:3b-instruct-fp16" # for server tests
+          ENABLE_OLLAMA: "ollama" # for server tests
+          OLLAMA_URL: "http://0.0.0.0:11434"
+          SAFETY_MODEL: "llama-guard3:1b"
+          ENABLE_HUGGINGFACE: "huggingface"
           LLAMA_STACK_CLIENT_TIMEOUT: "300" # Increased timeout for eval operations
         # Use 'shell' to get pipefail behavior
         # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
@@ -108,9 +113,9 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="ci-tests"
+            stack_config="starter"
           else
-            stack_config="server:ci-tests"
+            stack_config="server:starter"
           fi
 
           EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
