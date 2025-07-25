@@ -192,7 +192,9 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         await asyncio.to_thread(_drop_tables)
 
-    async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray, batch_size: int = 500):
+    async def add_chunks(
+        self, chunks: list[Chunk], embeddings: NDArray, metadata: dict[str, Any] | None = None, batch_size: int = 500
+    ):
         """
         Add new chunks along with their embeddings using batch inserts.
         For each chunk, we insert its JSON into the metadata table and then insert its

@@ -26,9 +26,26 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
             "inline::faiss",
             "inline::sqlite-vec",
             "inline::milvus",
-            "inline::chromadb",
+            "inline::qdrant",
             "remote::pgvector",
-            "remote::chromadb",
+            "inline::chromadb",
+            "remote::qdrant",
+        ]:
+            return
+
+    pytest.skip("OpenAI vector stores are not supported by any provider")
+
+
+def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models):
+    vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
+    for p in vector_io_providers:
+        if p.provider_type in [
+            "inline::faiss",
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "inline::qdrant",
+            "remote::pgvector",
+            "remote::qdrant",
         ]:
             return
 

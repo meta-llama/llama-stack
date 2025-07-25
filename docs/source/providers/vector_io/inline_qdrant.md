@@ -51,11 +51,15 @@ See the [Qdrant documentation](https://qdrant.tech/documentation/) for more deta
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `path` | `<class 'str'>` | No | PydanticUndefined |  |
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite |  |
 
 ## Sample Configuration
 
 ```yaml
 path: ${env.QDRANT_PATH:=~/.llama/~/.llama/dummy}/qdrant.db
+kvstore:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/qdrant_registry.db
 
 ```
 
