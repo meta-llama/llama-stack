@@ -93,6 +93,7 @@ RESOURCES = [
 
 
 REGISTRY_REFRESH_INTERVAL_SECONDS = 300
+REGISTRY_REFRESH_TASK = None
 
 
 async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
@@ -330,7 +331,8 @@ async def construct_stack(
 
     await register_resources(run_config, impls)
 
-    task = asyncio.create_task(refresh_registry(impls))
+    global REGISTRY_REFRESH_TASK
+    REGISTRY_REFRESH_TASK = asyncio.create_task(refresh_registry(impls))
 
     def cb(task):
         import traceback
@@ -343,8 +345,27 @@ async def construct_stack(
         else:
             logger.debug("Model refresh task completed")
 
-    task.add_done_callback(cb)
+    REGISTRY_REFRESH_TASK.add_done_callback(cb)
     return impls
+
+
+async def shutdown_stack(impls: dict[Api, Any]):
+    for impl in impls.values():
+        impl_name = impl.__class__.__name__
+        logger.info(f"Shutting down {impl_name}")
+        try:
+            if hasattr(impl, "shutdown"):
+                await asyncio.wait_for(impl.shutdown(), timeout=5)
+            else:
+                logger.warning(f"No shutdown method for {impl_name}")
+        except TimeoutError:
+            logger.exception(f"Shutdown timeout for {impl_name}")
+        except (Exception, asyncio.CancelledError) as e:
+            logger.exception(f"Failed to shutdown {impl_name}: {e}")
+
+    global REGISTRY_REFRESH_TASK
+    if REGISTRY_REFRESH_TASK:
+        REGISTRY_REFRESH_TASK.cancel()
 
 
 async def refresh_registry(impls: dict[Api, Any]):
