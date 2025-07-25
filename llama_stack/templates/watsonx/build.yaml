@@ -43,6 +43,9 @@ distribution_spec:
       provider_type: inline::rag-runtime
     - provider_id: model-context-protocol
       provider_type: remote::model-context-protocol
+vector_store_config:
+  default_embedding_model: ${env.LLAMA_STACK_DEFAULT_EMBEDDING_MODEL:=all-MiniLM-L6-v2}
+  default_embedding_dimension: ${env.LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION:=384}
 image_type: conda
 image_name: watsonx
 additional_pip_packages:

@@ -11,6 +11,7 @@ from typing import Any
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
 )
+from llama_stack.apis.common.vector_store_config import VectorStoreConfig
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.vector_io import (
     Chunk,
@@ -76,6 +77,42 @@ class VectorIORouter(VectorIO):
             logger.error(f"Error getting embedding models: {e}")
             return None
 
+    async def _resolve_embedding_model(self, explicit_model: str | None = None) -> tuple[str, int]:
+        """Apply precedence rules to decide which embedding model to use.
+
+        1. If *explicit_model* is provided, verify dimension (if possible) and use it.
+        2. Else use the global default in ``vector_store_config``.
+        3. Else raise ``MissingEmbeddingModelError``.
+        """
+
+        # 1. explicit override
+        if explicit_model is not None:
+            # We still need a dimension; try to look it up in routing table
+            all_models = await self.routing_table.get_all_with_type("model")
+            for m in all_models:
+                if getattr(m, "identifier", None) == explicit_model:
+                    dim = m.metadata.get("embedding_dimension")
+                    if dim is None:
+                        raise ValueError(
+                            f"Failed to use embedding model {explicit_model}: found but has no embedding_dimension metadata"
+                        )
+                    return explicit_model, dim
+            # If not found, dimension unknown - defer to caller
+            return explicit_model, None  # type: ignore
+
+        # 2. global default
+        cfg = VectorStoreConfig()  # picks up env vars automatically
+        if cfg.default_embedding_model is not None:
+            return cfg.default_embedding_model, cfg.default_embedding_dimension or 384
+
+        # 3. error - no default
+        class MissingEmbeddingModelError(RuntimeError):
+            pass
+
+        raise MissingEmbeddingModelError(
+            "Failed to create vector store: No embedding model provided. Set vector_store_config.default_embedding_model or supply one in the API call."
+        )
+
     async def register_vector_db(
         self,
         vector_db_id: str,
@@ -102,7 +139,7 @@ class VectorIORouter(VectorIO):
         ttl_seconds: int | None = None,
     ) -> None:
         logger.debug(
-            f"VectorIORouter.insert_chunks: {vector_db_id}, {len(chunks)} chunks, ttl_seconds={ttl_seconds}, chunk_ids={[chunk.metadata['document_id'] for chunk in chunks[:3]]}{' and more...' if len(chunks) > 3 else ''}",
+            f"VectorIORouter.insert_chunks: {vector_db_id}, {len(chunks)} chunks, ttl_seconds={ttl_seconds}, chunk_ids={[chunk.chunk_id for chunk in chunks[:3]]}{' and more...' if len(chunks) > 3 else ''}",
         )
         provider = await self.routing_table.get_provider_impl(vector_db_id)
         return await provider.insert_chunks(vector_db_id, chunks, ttl_seconds)
@@ -131,13 +168,12 @@ class VectorIORouter(VectorIO):
     ) -> VectorStoreObject:
         logger.debug(f"VectorIORouter.openai_create_vector_store: name={name}, provider_id={provider_id}")
 
-        # If no embedding model is provided, use the first available one
-        if embedding_model is None:
-            embedding_model_info = await self._get_first_embedding_model()
-            if embedding_model_info is None:
-                raise ValueError("No embedding model provided and no embedding models available in the system")
-            embedding_model, embedding_dimension = embedding_model_info
-            logger.info(f"No embedding model specified, using first available: {embedding_model}")
+        # Determine which embedding model to use based on new precedence
+        embedding_model, embedding_dimension = await self._resolve_embedding_model(embedding_model)
+        if embedding_dimension is None:
+            # try to fetch dimension from model metadata as fallback
+            embedding_model_info = await self._get_first_embedding_model()  # may still help
+            embedding_dimension = embedding_model_info[1] if embedding_model_info else 384
 
         vector_db_id = f"vs_{uuid.uuid4()}"
         registered_vector_db = await self.routing_table.register_vector_db(
