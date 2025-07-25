@@ -12,6 +12,7 @@ from typing_extensions import runtime_checkable
 
 from llama_stack.apis.common.content_types import URL, InterleavedContent
 from llama_stack.apis.resource import Resource, ResourceType
+from llama_stack.models.llama.datatypes import ToolAnnotations
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, webmethod
 
@@ -34,6 +35,7 @@ class Tool(Resource):
     description: str
     parameters: list[ToolParameter]
     metadata: dict[str, Any] | None = None
+    annotations: ToolAnnotations | None = None
 
 
 @json_schema_type
@@ -42,6 +44,7 @@ class ToolDef(BaseModel):
     description: str | None = None
     parameters: list[ToolParameter] | None = None
     metadata: dict[str, Any] | None = None
+    annotations: ToolAnnotations | None = None
 
 
 @json_schema_type

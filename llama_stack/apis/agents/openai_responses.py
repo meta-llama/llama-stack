@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
+from llama_stack.models.llama.datatypes import ToolAnnotations
 from llama_stack.schema_utils import json_schema_type, register_schema
 
 # NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
@@ -161,6 +162,7 @@ class MCPListToolsTool(BaseModel):
     input_schema: dict[str, Any]
     name: str
     description: str | None = None
+    annotations: ToolAnnotations | None = None
 
 
 @json_schema_type

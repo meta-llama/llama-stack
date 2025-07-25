@@ -95,10 +95,19 @@ class ToolParamDefinition(BaseModel):
     default: Any | None = None
 
 
+class ToolAnnotations(BaseModel):
+    title: str | None = None
+    read_only_hint: bool | None = Field(default=None, alias="readOnlyHint")
+    destructive_hint: bool | None = Field(default=None, alias="destructiveHint")
+    idempotent_hint: bool | None = Field(default=None, alias="idempotentHint")
+    open_world_hint: bool | None = Field(default=None, alias="openWorldHint")
+
+
 class ToolDefinition(BaseModel):
     tool_name: BuiltinTool | str
     description: str | None = None
     parameters: dict[str, ToolParamDefinition] | None = None
+    annotations: ToolAnnotations | None = None
 
     @field_validator("tool_name", mode="before")
     @classmethod

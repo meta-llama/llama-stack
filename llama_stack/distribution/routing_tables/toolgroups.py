@@ -74,6 +74,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                     parameters=t.parameters or [],
                     metadata=t.metadata,
                     provider_id=toolgroup.provider_id,
+                    annotations=t.annotations,
                 )
             )
 
