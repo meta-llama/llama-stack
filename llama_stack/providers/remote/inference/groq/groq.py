@@ -34,6 +34,7 @@ class GroqInferenceAdapter(LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
+            litellm_provider_name="groq",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="groq_api_key",
         )
@@ -96,7 +97,7 @@ class GroqInferenceAdapter(LiteLLMOpenAIMixin):
             tool_choice = "required"
 
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id.replace("groq/", ""),
+            model=model_obj.provider_resource_id,
             messages=messages,
             frequency_penalty=frequency_penalty,
             function_call=function_call,

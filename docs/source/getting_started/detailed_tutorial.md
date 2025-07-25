@@ -59,7 +59,7 @@ Now let's build and run the Llama Stack config for Ollama.
 We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 
 ```bash
-ENABLE_OLLAMA=ollama OLLAMA_INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type venv --run
+llama stack build --template starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using `conda`
@@ -70,7 +70,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-ENABLE_OLLAMA=ollama INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type conda --run
+llama stack build --template starter --image-type conda --run
 ```
 :::
 :::{tab-item} Using a Container
@@ -80,8 +80,6 @@ component that works with different inference providers out of the box. For this
 configurations, please check out [this guide](../distributions/building_distro.md).
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
-export INFERENCE_MODEL="llama3.2:3b"
-export ENABLE_OLLAMA=ollama
 export LLAMA_STACK_PORT=8321
 mkdir -p ~/.llama
 ```
@@ -94,7 +92,6 @@ docker run -it \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
 Note to start the container with Podman, you can do the same but replace `docker` at the start of the command with
@@ -116,7 +113,6 @@ docker run -it \
   --network=host \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://localhost:11434
 ```
 :::

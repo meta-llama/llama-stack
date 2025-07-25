@@ -43,6 +43,9 @@ class ModelsProtocolPrivate(Protocol):
        -> Provider uses provider-model-id for inference
     """
 
+    # this should be called `on_model_register` or something like that.
+    # the provider should _not_ be able to change the object in this
+    # callback
     async def register_model(self, model: Model) -> Model: ...
 
     async def unregister_model(self, model_id: str) -> None: ...

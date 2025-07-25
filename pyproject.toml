@@ -25,7 +25,7 @@ dependencies = [
     "fastapi>=0.115.0,<1.0",                  # server
     "fire",                                   # for MCP in LLS client
     "httpx",
-    "huggingface-hub>=0.30.0,<1.0",
+    "huggingface-hub>=0.34.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
     "llama-stack-client>=0.2.15",

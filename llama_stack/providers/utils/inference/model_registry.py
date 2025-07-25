@@ -50,7 +50,8 @@ def build_hf_repo_model_entry(
     additional_aliases: list[str] | None = None,
 ) -> ProviderModelEntry:
     aliases = [
-        get_huggingface_repo(model_descriptor),
+        # NOTE: avoid HF aliases because they _cannot_ be unique across providers
+        # get_huggingface_repo(model_descriptor),
     ]
     if additional_aliases:
         aliases.extend(additional_aliases)
@@ -75,7 +76,9 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
     __provider_id__: str
 
     def __init__(self, model_entries: list[ProviderModelEntry], allowed_models: list[str] | None = None):
+        self.model_entries = model_entries
         self.allowed_models = allowed_models
+
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
         for entry in model_entries:
@@ -98,7 +101,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
                     continue
                 models.append(
                     Model(
-                        model_id=id,
+                        identifier=id,
                         provider_resource_id=entry.provider_model_id,
                         model_type=ModelType.llm,
                         metadata=entry.metadata,
@@ -185,8 +188,8 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         return model
 
     async def unregister_model(self, model_id: str) -> None:
-        # TODO: should we block unregistering base supported provider model IDs?
-        if model_id not in self.alias_to_provider_id_map:
-            raise ValueError(f"Model id '{model_id}' is not registered.")
-
-        del self.alias_to_provider_id_map[model_id]
+        # model_id is the identifier, not the provider_resource_id
+        # unfortunately, this ID can be of the form provider_id/model_id which
+        # we never registered. TODO: fix this by significantly rewriting
+        # registration and registry helper
+        pass

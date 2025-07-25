@@ -40,16 +40,16 @@ The following environment variables can be configured:
 
 The following models are available by default:
 
-- `meta/llama3-8b-instruct (aliases: meta-llama/Llama-3-8B-Instruct)`
-- `meta/llama3-70b-instruct (aliases: meta-llama/Llama-3-70B-Instruct)`
-- `meta/llama-3.1-8b-instruct (aliases: meta-llama/Llama-3.1-8B-Instruct)`
-- `meta/llama-3.1-70b-instruct (aliases: meta-llama/Llama-3.1-70B-Instruct)`
-- `meta/llama-3.1-405b-instruct (aliases: meta-llama/Llama-3.1-405B-Instruct-FP8)`
-- `meta/llama-3.2-1b-instruct (aliases: meta-llama/Llama-3.2-1B-Instruct)`
-- `meta/llama-3.2-3b-instruct (aliases: meta-llama/Llama-3.2-3B-Instruct)`
-- `meta/llama-3.2-11b-vision-instruct (aliases: meta-llama/Llama-3.2-11B-Vision-Instruct)`
-- `meta/llama-3.2-90b-vision-instruct (aliases: meta-llama/Llama-3.2-90B-Vision-Instruct)`
-- `meta/llama-3.3-70b-instruct (aliases: meta-llama/Llama-3.3-70B-Instruct)`
+- `meta/llama3-8b-instruct `
+- `meta/llama3-70b-instruct `
+- `meta/llama-3.1-8b-instruct `
+- `meta/llama-3.1-70b-instruct `
+- `meta/llama-3.1-405b-instruct `
+- `meta/llama-3.2-1b-instruct `
+- `meta/llama-3.2-3b-instruct `
+- `meta/llama-3.2-11b-vision-instruct `
+- `meta/llama-3.2-90b-vision-instruct `
+- `meta/llama-3.3-70b-instruct `
 - `nvidia/llama-3.2-nv-embedqa-1b-v2 `
 - `nvidia/nv-embedqa-e5-v5 `
 - `nvidia/nv-embedqa-mistral-7b-v2 `
