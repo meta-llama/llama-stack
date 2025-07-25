@@ -161,7 +161,7 @@ def get_distribution_template() -> DistributionTemplate:
         # if the
         ShieldInput(
             shield_id="llama-guard",
-            provider_id="${env.SAFETY_MODEL:+inline::llama-guard}",
+            provider_id="${env.SAFETY_MODEL:+llama-guard}",
             provider_shield_id="${env.SAFETY_MODEL:=}",
         ),
     ]
