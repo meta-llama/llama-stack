@@ -249,15 +249,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
-                # Convert Provider objects to their types
-                provider_types: dict[str, str | list[str]] = {}
-                for api, providers in self.config.providers.items():
-                    types = [p.provider_type for p in providers]
-                    # Convert single-item lists to strings
-                    provider_types[api] = types[0] if len(types) == 1 else types
                 build_config = BuildConfig(
                     distribution_spec=DistributionSpec(
-                        providers=provider_types,
+                        providers=self.config.providers,
                     ),
                     external_providers_dir=self.config.external_providers_dir,
                 )

@@ -136,27 +136,38 @@ class RoutingTableProviderSpec(ProviderSpec):
     pip_packages: list[str] = Field(default_factory=list)
 
 
+class Provider(BaseModel):
+    # provider_id of None means that the provider is not enabled - this happens
+    # when the provider is enabled via a conditional environment variable
+    provider_id: str | None
+    provider_type: str
+    config: dict[str, Any] = {}
+    module: str | None = Field(
+        default=None,
+        description="""
+ Fully-qualified name of the external provider module to import. The module is expected to have:
+
+  - `get_adapter_impl(config, deps)`: returns the adapter implementation
+
+  Example: `module: ramalama_stack`
+ """,
+    )
+
+
 class DistributionSpec(BaseModel):
     description: str | None = Field(
         default="",
         description="Description of the distribution",
     )
     container_image: str | None = None
-    providers: dict[str, str | list[str]] = Field(
+    providers: dict[str, list[Provider]] = Field(
         default_factory=dict,
         description="""
-Provider Types for each of the APIs provided by this distribution. If you
-select multiple providers, you should provide an appropriate 'routing_map'
-in the runtime configuration to help route to the correct provider.""",
+        Provider Types for each of the APIs provided by this distribution. If you
+        select multiple providers, you should provide an appropriate 'routing_map'
+        in the runtime configuration to help route to the correct provider.
+        """,
     )
-
-
-class Provider(BaseModel):
-    # provider_id of None means that the provider is not enabled - this happens
-    # when the provider is enabled via a conditional environment variable
-    provider_id: str | None
-    provider_type: str
-    config: dict[str, Any]
 
 
 class LoggingConfig(BaseModel):

@@ -253,21 +253,91 @@ def get_distribution_template() -> DistributionTemplate:
     ]
 
     providers = {
-        "inference": ([p.provider_type for p in remote_inference_providers] + ["inline::sentence-transformers"]),
-        "vector_io": ([p.provider_type for p in vector_io_providers]),
-        "files": ["inline::localfs"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "post_training": ["inline::huggingface"],
-        "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "inference": remote_inference_providers
+        + [
+            Provider(
+                provider_id="sentence-transformers",
+                provider_type="inline::sentence-transformers",
+            )
+        ],
+        "vector_io": vector_io_providers,
+        "files": [
+            Provider(
+                provider_id="localfs",
+                provider_type="inline::localfs",
+            )
+        ],
+        "safety": [
+            Provider(
+                provider_id="llama-guard",
+                provider_type="inline::llama-guard",
+            )
+        ],
+        "agents": [
+            Provider(
+                provider_id="meta-reference",
+                provider_type="inline::meta-reference",
+            )
+        ],
+        "telemetry": [
+            Provider(
+                provider_id="meta-reference",
+                provider_type="inline::meta-reference",
+            )
+        ],
+        "post_training": [
+            Provider(
+                provider_id="huggingface",
+                provider_type="inline::huggingface",
+            )
+        ],
+        "eval": [
+            Provider(
+                provider_id="meta-reference",
+                provider_type="inline::meta-reference",
+            )
+        ],
+        "datasetio": [
+            Provider(
+                provider_id="huggingface",
+                provider_type="remote::huggingface",
+            ),
+            Provider(
+                provider_id="localfs",
+                provider_type="inline::localfs",
+            ),
+        ],
+        "scoring": [
+            Provider(
+                provider_id="basic",
+                provider_type="inline::basic",
+            ),
+            Provider(
+                provider_id="llm-as-judge",
+                provider_type="inline::llm-as-judge",
+            ),
+            Provider(
+                provider_id="braintrust",
+                provider_type="inline::braintrust",
+            ),
+        ],
         "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
+            Provider(
+                provider_id="brave-search",
+                provider_type="remote::brave-search",
+            ),
+            Provider(
+                provider_id="tavily-search",
+                provider_type="remote::tavily-search",
+            ),
+            Provider(
+                provider_id="rag-runtime",
+                provider_type="inline::rag-runtime",
+            ),
+            Provider(
+                provider_id="model-context-protocol",
+                provider_type="remote::model-context-protocol",
+            ),
         ],
     }
     files_provider = Provider(

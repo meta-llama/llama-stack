@@ -96,19 +96,33 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
 def get_distribution_template() -> DistributionTemplate:
     inference_providers, available_models = get_inference_providers()
     providers = {
-        "inference": [p.provider_type for p in inference_providers],
-        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "inference": inference_providers,
+        "vector_io": [
+            Provider(provider_id="sqlite-vec", provider_type="inline::sqlite-vec"),
+            Provider(provider_id="chromadb", provider_type="remote::chromadb"),
+            Provider(provider_id="pgvector", provider_type="remote::pgvector"),
+        ],
+        "safety": [Provider(provider_id="llama-guard", provider_type="inline::llama-guard")],
+        "agents": [Provider(provider_id="meta-reference", provider_type="inline::meta-reference")],
+        "telemetry": [Provider(provider_id="meta-reference", provider_type="inline::meta-reference")],
+        "eval": [Provider(provider_id="meta-reference", provider_type="inline::meta-reference")],
+        "datasetio": [
+            Provider(provider_id="huggingface", provider_type="remote::huggingface"),
+            Provider(provider_id="localfs", provider_type="inline::localfs"),
+        ],
+        "scoring": [
+            Provider(provider_id="basic", provider_type="inline::basic"),
+            Provider(provider_id="llm-as-judge", provider_type="inline::llm-as-judge"),
+            Provider(provider_id="braintrust", provider_type="inline::braintrust"),
+        ],
         "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
+            Provider(provider_id="brave-search", provider_type="remote::brave-search"),
+            Provider(provider_id="tavily-search", provider_type="remote::tavily-search"),
+            Provider(provider_id="rag-runtime", provider_type="inline::rag-runtime"),
+            Provider(
+                provider_id="model-context-protocol",
+                provider_type="remote::model-context-protocol",
+            ),
         ],
     }
     name = "open-benchmark"
