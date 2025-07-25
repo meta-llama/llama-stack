@@ -145,7 +145,7 @@ packaging==24.2
     # via huggingface-hub
 pandas==2.2.3
     # via llama-stack-client
-pillow==11.1.0
+pillow==11.3.0
     # via llama-stack
 prompt-toolkit==3.0.50
     # via
