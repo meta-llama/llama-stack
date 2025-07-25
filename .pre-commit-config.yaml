@@ -61,8 +61,7 @@ repos:
             "--frozen",
             "--no-hashes",
             "--no-emit-project",
-            "--no-default-groups",
-            "--output-file=requirements.txt"
+            "--no-default-groups"
         ]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
