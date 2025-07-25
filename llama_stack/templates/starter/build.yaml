@@ -3,57 +3,98 @@ distribution_spec:
   description: Quick start template for running Llama Stack with several popular providers
   providers:
     inference:
-    - remote::cerebras
-    - remote::ollama
-    - remote::vllm
-    - remote::tgi
-    - remote::hf::serverless
-    - remote::hf::endpoint
-    - remote::fireworks
-    - remote::together
-    - remote::bedrock
-    - remote::databricks
-    - remote::nvidia
-    - remote::runpod
-    - remote::openai
-    - remote::anthropic
-    - remote::gemini
-    - remote::groq
-    - remote::llama-openai-compat
-    - remote::sambanova
-    - remote::passthrough
-    - inline::sentence-transformers
+    - provider_id: ${env.ENABLE_CEREBRAS:=__disabled__}
+      provider_type: remote::cerebras
+    - provider_id: ${env.ENABLE_OLLAMA:=__disabled__}
+      provider_type: remote::ollama
+    - provider_id: ${env.ENABLE_VLLM:=__disabled__}
+      provider_type: remote::vllm
+    - provider_id: ${env.ENABLE_TGI:=__disabled__}
+      provider_type: remote::tgi
+    - provider_id: ${env.ENABLE_HF_SERVERLESS:=__disabled__}
+      provider_type: remote::hf::serverless
+    - provider_id: ${env.ENABLE_HF_ENDPOINT:=__disabled__}
+      provider_type: remote::hf::endpoint
+    - provider_id: ${env.ENABLE_FIREWORKS:=__disabled__}
+      provider_type: remote::fireworks
+    - provider_id: ${env.ENABLE_TOGETHER:=__disabled__}
+      provider_type: remote::together
+    - provider_id: ${env.ENABLE_BEDROCK:=__disabled__}
+      provider_type: remote::bedrock
+    - provider_id: ${env.ENABLE_DATABRICKS:=__disabled__}
+      provider_type: remote::databricks
+    - provider_id: ${env.ENABLE_NVIDIA:=__disabled__}
+      provider_type: remote::nvidia
+    - provider_id: ${env.ENABLE_RUNPOD:=__disabled__}
+      provider_type: remote::runpod
+    - provider_id: ${env.ENABLE_OPENAI:=__disabled__}
+      provider_type: remote::openai
+    - provider_id: ${env.ENABLE_ANTHROPIC:=__disabled__}
+      provider_type: remote::anthropic
+    - provider_id: ${env.ENABLE_GEMINI:=__disabled__}
+      provider_type: remote::gemini
+    - provider_id: ${env.ENABLE_GROQ:=__disabled__}
+      provider_type: remote::groq
+    - provider_id: ${env.ENABLE_LLAMA_OPENAI_COMPAT:=__disabled__}
+      provider_type: remote::llama-openai-compat
+    - provider_id: ${env.ENABLE_SAMBANOVA:=__disabled__}
+      provider_type: remote::sambanova
+    - provider_id: ${env.ENABLE_PASSTHROUGH:=__disabled__}
+      provider_type: remote::passthrough
+    - provider_id: sentence-transformers
+      provider_type: inline::sentence-transformers
     vector_io:
-    - inline::faiss
-    - inline::sqlite-vec
-    - inline::milvus
-    - remote::chromadb
-    - remote::pgvector
+    - provider_id: ${env.ENABLE_FAISS:=faiss}
+      provider_type: inline::faiss
+    - provider_id: ${env.ENABLE_SQLITE_VEC:=__disabled__}
+      provider_type: inline::sqlite-vec
+    - provider_id: ${env.ENABLE_MILVUS:=__disabled__}
+      provider_type: inline::milvus
+    - provider_id: ${env.ENABLE_CHROMADB:=__disabled__}
+      provider_type: remote::chromadb
+    - provider_id: ${env.ENABLE_PGVECTOR:=__disabled__}
+      provider_type: remote::pgvector
     files:
-    - inline::localfs
+    - provider_id: localfs
+      provider_type: inline::localfs
     safety:
-    - inline::llama-guard
+    - provider_id: llama-guard
+      provider_type: inline::llama-guard
     agents:
-    - inline::meta-reference
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
     telemetry:
-    - inline::meta-reference
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
     post_training:
-    - inline::huggingface
+    - provider_id: huggingface
+      provider_type: inline::huggingface
     eval:
-    - inline::meta-reference
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
     datasetio:
-    - remote::huggingface
-    - inline::localfs
+    - provider_id: huggingface
+      provider_type: remote::huggingface
+    - provider_id: localfs
+      provider_type: inline::localfs
     scoring:
-    - inline::basic
-    - inline::llm-as-judge
-    - inline::braintrust
+    - provider_id: basic
+      provider_type: inline::basic
+    - provider_id: llm-as-judge
+      provider_type: inline::llm-as-judge
+    - provider_id: braintrust
+      provider_type: inline::braintrust
     tool_runtime:
-    - remote::brave-search
-    - remote::tavily-search
-    - inline::rag-runtime
-    - remote::model-context-protocol
+    - provider_id: brave-search
+      provider_type: remote::brave-search
+    - provider_id: tavily-search
+      provider_type: remote::tavily-search
+    - provider_id: rag-runtime
+      provider_type: inline::rag-runtime
+    - provider_id: model-context-protocol
+      provider_type: remote::model-context-protocol
 image_type: conda
+image_name: starter
 additional_pip_packages:
 - aiosqlite
 - asyncpg

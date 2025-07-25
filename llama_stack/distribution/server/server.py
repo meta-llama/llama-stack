@@ -56,6 +56,7 @@ from llama_stack.distribution.stack import (
     cast_image_name_to_string,
     construct_stack,
     replace_env_vars,
+    shutdown_stack,
     validate_env_pair,
 )
 from llama_stack.distribution.utils.config import redact_sensitive_fields
@@ -151,18 +152,7 @@ async def shutdown(app):
     Handled by the lifespan context manager. The shutdown process involves
     shutting down all implementations registered in the application.
     """
-    for impl in app.__llama_stack_impls__.values():
-        impl_name = impl.__class__.__name__
-        logger.info("Shutting down %s", impl_name)
-        try:
-            if hasattr(impl, "shutdown"):
-                await asyncio.wait_for(impl.shutdown(), timeout=5)
-            else:
-                logger.warning("No shutdown method for %s", impl_name)
-        except TimeoutError:
-            logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
-        except (Exception, asyncio.CancelledError) as e:
-            logger.exception("Failed to shutdown %s: %s", impl_name, {e})
+    await shutdown_stack(app.__llama_stack_impls__)
 
 
 @asynccontextmanager
