@@ -159,7 +159,7 @@ protobuf==5.29.5
     # via
     #   googleapis-common-protos
     #   opentelemetry-proto
-pyaml==25.1.0
+pyaml==25.7.0
     # via llama-stack-client
 pyasn1==0.4.8
     # via
