@@ -16,10 +16,10 @@ Please refer to the sqlite-vec provider documentation.
 ## Sample Configuration
 
 ```yaml
-db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/sqlite_vec.db
+db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/sqlite_vec.db
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/sqlite_vec_registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/sqlite_vec_registry.db
 
 ```
 

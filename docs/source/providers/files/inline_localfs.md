@@ -15,10 +15,10 @@ Local filesystem-based file storage provider for managing files and documents lo
 ## Sample Configuration
 
 ```yaml
-storage_dir: ${env.FILES_STORAGE_DIR:=~/.llama/dummy/files}
+storage_dir: ${env.FILES_STORAGE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy/files}
 metadata_store:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/files_metadata.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/files_metadata.db
 
 ```
 

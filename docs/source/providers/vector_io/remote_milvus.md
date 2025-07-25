@@ -126,7 +126,7 @@ uri: ${env.MILVUS_ENDPOINT}
 token: ${env.MILVUS_TOKEN}
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/milvus_remote_registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/milvus_remote_registry.db
 
 ```
 

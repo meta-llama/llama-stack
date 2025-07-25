@@ -55,7 +55,7 @@ See the [Qdrant documentation](https://qdrant.tech/documentation/) for more deta
 ## Sample Configuration
 
 ```yaml
-path: ${env.QDRANT_PATH:=~/.llama/~/.llama/dummy}/qdrant.db
+path: ${env.QDRANT_PATH:=~/.llama/${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/qdrant.db
 
 ```
 

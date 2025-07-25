@@ -15,7 +15,7 @@ Meta's reference implementation of a vector database.
 ```yaml
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/faiss_store.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/faiss_store.db
 
 ```
 

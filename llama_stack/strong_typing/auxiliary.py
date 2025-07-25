@@ -12,23 +12,12 @@ Type-safe data interchange for Python data classes.
 
 import dataclasses
 import sys
+from collections.abc import Callable
 from dataclasses import is_dataclass
-from typing import Callable, Dict, Optional, Type, TypeVar, Union, overload
-
-if sys.version_info >= (3, 9):
-    from typing import Annotated as Annotated
-else:
-    from typing_extensions import Annotated as Annotated
-
-if sys.version_info >= (3, 10):
-    from typing import TypeAlias as TypeAlias
-else:
-    from typing_extensions import TypeAlias as TypeAlias
-
-if sys.version_info >= (3, 11):
-    from typing import dataclass_transform as dataclass_transform
-else:
-    from typing_extensions import dataclass_transform as dataclass_transform
+from typing import Annotated as Annotated
+from typing import TypeAlias as TypeAlias
+from typing import TypeVar, overload
+from typing import dataclass_transform as dataclass_transform
 
 T = TypeVar("T")
 
@@ -56,17 +45,17 @@ class CompactDataClass:
 
 
 @overload
-def typeannotation(cls: Type[T], /) -> Type[T]: ...
+def typeannotation(cls: type[T], /) -> type[T]: ...
 
 
 @overload
-def typeannotation(cls: None, *, eq: bool = True, order: bool = False) -> Callable[[Type[T]], Type[T]]: ...
+def typeannotation(cls: None, *, eq: bool = True, order: bool = False) -> Callable[[type[T]], type[T]]: ...
 
 
 @dataclass_transform(eq_default=True, order_default=False)
 def typeannotation(
-    cls: Optional[Type[T]] = None, *, eq: bool = True, order: bool = False
-) -> Union[Type[T], Callable[[Type[T]], Type[T]]]:
+    cls: type[T] | None = None, *, eq: bool = True, order: bool = False
+) -> type[T] | Callable[[type[T]], type[T]]:
     """
     Returns the same class as was passed in, with dunder methods added based on the fields defined in the class.
 
@@ -76,7 +65,7 @@ def typeannotation(
     :returns: A data-class type, or a wrapper for data-class types.
     """
 
-    def wrap(cls: Type[T]) -> Type[T]:
+    def wrap(cls: type[T]) -> type[T]:
         # mypy fails to equate bound-y functions (first argument interpreted as
         # the bound object) with class methods, hence the `ignore` directive.
         cls.__repr__ = _compact_dataclass_repr  # type: ignore[method-assign]
@@ -179,41 +168,41 @@ class SpecialConversion:
     "Indicates that the annotated type is subject to custom conversion rules."
 
 
-int8: TypeAlias = Annotated[int, Signed(True), Storage(1), IntegerRange(-128, 127)]
-int16: TypeAlias = Annotated[int, Signed(True), Storage(2), IntegerRange(-32768, 32767)]
-int32: TypeAlias = Annotated[
+type int8 = Annotated[int, Signed(True), Storage(1), IntegerRange(-128, 127)]
+type int16 = Annotated[int, Signed(True), Storage(2), IntegerRange(-32768, 32767)]
+type int32 = Annotated[
     int,
     Signed(True),
     Storage(4),
     IntegerRange(-2147483648, 2147483647),
 ]
-int64: TypeAlias = Annotated[
+type int64 = Annotated[
     int,
     Signed(True),
     Storage(8),
     IntegerRange(-9223372036854775808, 9223372036854775807),
 ]
 
-uint8: TypeAlias = Annotated[int, Signed(False), Storage(1), IntegerRange(0, 255)]
-uint16: TypeAlias = Annotated[int, Signed(False), Storage(2), IntegerRange(0, 65535)]
-uint32: TypeAlias = Annotated[
+type uint8 = Annotated[int, Signed(False), Storage(1), IntegerRange(0, 255)]
+type uint16 = Annotated[int, Signed(False), Storage(2), IntegerRange(0, 65535)]
+type uint32 = Annotated[
     int,
     Signed(False),
     Storage(4),
     IntegerRange(0, 4294967295),
 ]
-uint64: TypeAlias = Annotated[
+type uint64 = Annotated[
     int,
     Signed(False),
     Storage(8),
     IntegerRange(0, 18446744073709551615),
 ]
 
-float32: TypeAlias = Annotated[float, Storage(4)]
-float64: TypeAlias = Annotated[float, Storage(8)]
+type float32 = Annotated[float, Storage(4)]
+type float64 = Annotated[float, Storage(8)]
 
 # maps globals of type Annotated[T, ...] defined in this module to their string names
-_auxiliary_types: Dict[object, str] = {}
+_auxiliary_types: dict[object, str] = {}
 module = sys.modules[__name__]
 for var in dir(module):
     typ = getattr(module, var)
@@ -222,7 +211,7 @@ for var in dir(module):
         _auxiliary_types[typ] = var
 
 
-def get_auxiliary_format(data_type: object) -> Optional[str]:
+def get_auxiliary_format(data_type: object) -> str | None:
     "Returns the JSON format string corresponding to an auxiliary type."
 
     return _auxiliary_types.get(data_type)

@@ -52,7 +52,7 @@ user: ${env.PGVECTOR_USER}
 password: ${env.PGVECTOR_PASSWORD}
 kvstore:
   type: sqlite
-  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/pgvector_registry.db
+  db_path: ${env.SQLITE_STORE_DIR:=${env.XDG_DATA_HOME:-~/.local/share}/llama-stack/dummy}/pgvector_registry.db
 
 ```
 
