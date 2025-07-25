@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import os
 from collections.abc import Callable
 
@@ -13,11 +12,13 @@ from fairscale.nn.model_parallel.initialize import get_model_parallel_rank
 from torch import Tensor, nn
 from torch.nn import functional as F
 
+from llama_stack.log import get_logger
+
 from ...datatypes import QuantizationMode
 from ..model import Transformer, TransformerBlock
 from ..moe import MoE
 
-log = logging.getLogger(__name__)
+logger = get_logger(__name__, category="core")
 
 
 def swiglu_wrapper_no_reduce(
@@ -186,7 +187,7 @@ def logging_callbacks(
         if use_rich_progress:
             console.print(message)
         elif rank == 0:  # Only log from rank 0 for non-rich logging
-            log.info(message)
+            logger.info(message)
 
     total_blocks = sum(1 for _, block in model.named_modules() if should_quantize_block(block))
     progress = None
@@ -220,6 +221,6 @@ def logging_callbacks(
             if completed is not None:
                 progress.update(task_id, completed=completed)
         elif rank == 0 and completed and completed % 10 == 0:
-            log.info(f"Rank {rank}: {completed}/{total_blocks} blocks completed")
+            logger.info(f"Rank {rank}: {completed}/{total_blocks} blocks completed")
 
     return progress, log_status, update_status

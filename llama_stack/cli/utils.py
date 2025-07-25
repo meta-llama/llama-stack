@@ -8,7 +8,7 @@ import argparse
 
 from llama_stack.log import get_logger
 
-logger = get_logger(name=__name__, category="cli")
+log = get_logger(name=__name__, category="cli")
 
 
 # TODO: this can probably just be inlined now?

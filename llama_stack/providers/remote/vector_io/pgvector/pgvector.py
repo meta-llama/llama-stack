@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from typing import Any
 
 import psycopg2
@@ -22,6 +21,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -33,14 +33,14 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import PGVectorVectorIOConfig
 
-log = logging.getLogger(__name__)
-
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"
 VECTOR_INDEX_PREFIX = f"vector_index:pgvector:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:pgvector:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:pgvector:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:pgvector:{VERSION}::"
+
+logger = get_logger(__name__, category="core")
 
 
 def check_extension_version(cur):
@@ -187,7 +187,7 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         self.metadatadata_collection_name = "openai_vector_stores_metadata"
 
     async def initialize(self) -> None:
-        log.info(f"Initializing PGVector memory adapter with config: {self.config}")
+        logger.info(f"Initializing PGVector memory adapter with config: {self.config}")
         self.kvstore = await kvstore_impl(self.config.kvstore)
         await self.initialize_openai_vector_stores()
 
@@ -203,7 +203,7 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
             with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
                 version = check_extension_version(cur)
                 if version:
-                    log.info(f"Vector extension version: {version}")
+                    logger.info(f"Vector extension version: {version}")
                 else:
                     raise RuntimeError("Vector extension is not installed.")
 
@@ -216,13 +216,13 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
                 """
                 )
         except Exception as e:
-            log.exception("Could not connect to PGVector database server")
+            logger.exception("Could not connect to PGVector database server")
             raise RuntimeError("Could not connect to PGVector database server") from e
 
     async def shutdown(self) -> None:
         if self.conn is not None:
             self.conn.close()
-            log.info("Connection to PGVector database server closed")
+            logger.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         # Persist vector DB metadata in the KV store

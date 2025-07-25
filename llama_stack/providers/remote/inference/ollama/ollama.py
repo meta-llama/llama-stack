@@ -85,7 +85,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .models import MODEL_ENTRIES
 
-logger = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference")
 
 
 class OllamaInferenceAdapter(
@@ -117,10 +117,10 @@ class OllamaInferenceAdapter(
         return self._openai_client
 
     async def initialize(self) -> None:
-        logger.info(f"checking connectivity to Ollama at `{self.config.url}`...")
+        log.info(f"checking connectivity to Ollama at `{self.config.url}`...")
         health_response = await self.health()
         if health_response["status"] == HealthStatus.ERROR:
-            logger.warning(
+            log.warning(
                 "Ollama Server is not running, make sure to start it using `ollama serve` in a separate terminal"
             )
 
@@ -339,7 +339,7 @@ class OllamaInferenceAdapter(
             "options": sampling_options,
             "stream": request.stream,
         }
-        logger.debug(f"params to ollama: {params}")
+        log.debug(f"params to ollama: {params}")
 
         return params
 
@@ -437,7 +437,7 @@ class OllamaInferenceAdapter(
         if provider_resource_id not in available_models:
             available_models_latest = [m.model.split(":latest")[0] for m in response.models]
             if provider_resource_id in available_models_latest:
-                logger.warning(
+                log.warning(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
                 return model

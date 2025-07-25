@@ -15,7 +15,7 @@ from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 from llama_stack.providers.utils.kvstore.kvstore import kvstore_impl
 
-logger = get_logger(name=__name__, category="quota")
+log = get_logger(name=__name__, category="quota")
 
 
 class QuotaMiddleware:
@@ -46,7 +46,7 @@ class QuotaMiddleware:
         self.window_seconds = window_seconds
 
         if isinstance(self.kv_config, SqliteKVStoreConfig):
-            logger.warning(
+            log.warning(
                 "QuotaMiddleware: Using SQLite backend. Expiry/TTL is not enforced; cleanup is manual. "
                 f"window_seconds={self.window_seconds}"
             )
@@ -84,11 +84,11 @@ class QuotaMiddleware:
                 else:
                     await kv.set(key, str(count))
             except Exception:
-                logger.exception("Failed to access KV store for quota")
+                log.exception("Failed to access KV store for quota")
                 return await self._send_error(send, 500, "Quota service error")
 
             if count > limit:
-                logger.warning(
+                log.warning(
                     "Quota exceeded for client %s: %d/%d",
                     key_id,
                     count,

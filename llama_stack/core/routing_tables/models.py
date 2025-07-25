@@ -17,7 +17,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl, lookup_model
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):
@@ -33,7 +33,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             try:
                 models = await provider.list_models()
             except Exception as e:
-                logger.exception(f"Model refresh failed for provider {provider_id}: {e}")
+                log.exception(f"Model refresh failed for provider {provider_id}: {e}")
                 continue
 
             self.listed_providers.add(provider_id)
@@ -132,7 +132,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
                 model_ids[model.provider_resource_id] = model.identifier
                 continue
 
-            logger.debug(f"unregistering model {model.identifier}")
+            log.debug(f"unregistering model {model.identifier}")
             await self.unregister_object(model)
 
         for model in models:
@@ -143,7 +143,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             if model.identifier == model.provider_resource_id:
                 model.identifier = f"{provider_id}/{model.provider_resource_id}"
 
-            logger.debug(f"registering model {model.identifier} ({model.provider_resource_id})")
+            log.debug(f"registering model {model.identifier} ({model.provider_resource_id})")
             await self.register_object(
                 ModelWithOwner(
                     identifier=model.identifier,

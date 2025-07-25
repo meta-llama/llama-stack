@@ -6,7 +6,6 @@
 
 import asyncio
 import json
-import logging
 import mimetypes
 import time
 import uuid
@@ -37,10 +36,11 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponse,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 # Constants for OpenAI vector stores
 CHUNK_MULTIPLIER = 5
@@ -378,7 +378,7 @@ class OpenAIVectorStoreMixin(ABC):
         try:
             await self.unregister_vector_db(vector_store_id)
         except Exception as e:
-            logger.warning(f"Failed to delete underlying vector DB {vector_store_id}: {e}")
+            log.warning(f"Failed to delete underlying vector DB {vector_store_id}: {e}")
 
         return VectorStoreDeleteResponse(
             id=vector_store_id,
@@ -460,7 +460,7 @@ class OpenAIVectorStoreMixin(ABC):
             )
 
         except Exception as e:
-            logger.error(f"Error searching vector store {vector_store_id}: {e}")
+            log.error(f"Error searching vector store {vector_store_id}: {e}")
             # Return empty results on error
             return VectorStoreSearchResponsePage(
                 search_query=search_query,
@@ -614,7 +614,7 @@ class OpenAIVectorStoreMixin(ABC):
                 )
                 vector_store_file_object.status = "completed"
         except Exception as e:
-            logger.error(f"Error attaching file to vector store: {e}")
+            log.error(f"Error attaching file to vector store: {e}")
             vector_store_file_object.status = "failed"
             vector_store_file_object.last_error = VectorStoreFileLastError(
                 code="server_error",

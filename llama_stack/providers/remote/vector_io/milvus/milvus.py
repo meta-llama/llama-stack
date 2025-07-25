@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import os
 from typing import Any
 
@@ -21,6 +20,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -34,7 +34,7 @@ from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collecti
 
 from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:milvus:{VERSION}::"
@@ -68,7 +68,7 @@ class MilvusIndex(EmbeddingIndex):
         )
 
         if not await asyncio.to_thread(self.client.has_collection, self.collection_name):
-            logger.info(f"Creating new collection {self.collection_name} with nullable sparse field")
+            log.info(f"Creating new collection {self.collection_name} with nullable sparse field")
             # Create schema for vector search
             schema = self.client.create_schema()
             schema.add_field(
@@ -147,7 +147,7 @@ class MilvusIndex(EmbeddingIndex):
                 data=data,
             )
         except Exception as e:
-            logger.error(f"Error inserting chunks into Milvus collection {self.collection_name}: {e}")
+            log.error(f"Error inserting chunks into Milvus collection {self.collection_name}: {e}")
             raise e
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
@@ -203,7 +203,7 @@ class MilvusIndex(EmbeddingIndex):
             return QueryChunksResponse(chunks=filtered_chunks, scores=filtered_scores)
 
         except Exception as e:
-            logger.error(f"Error performing BM25 search: {e}")
+            log.error(f"Error performing BM25 search: {e}")
             # Fallback to simple text search
             return await self._fallback_keyword_search(query_string, k, score_threshold)
 
@@ -247,7 +247,7 @@ class MilvusIndex(EmbeddingIndex):
                 self.client.delete, collection_name=self.collection_name, filter=f'chunk_id == "{chunk_id}"'
             )
         except Exception as e:
-            logger.error(f"Error deleting chunk {chunk_id} from Milvus collection {self.collection_name}: {e}")
+            log.error(f"Error deleting chunk {chunk_id} from Milvus collection {self.collection_name}: {e}")
             raise
 
 
@@ -288,10 +288,10 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             )
             self.cache[vector_db.identifier] = index
         if isinstance(self.config, RemoteMilvusVectorIOConfig):
-            logger.info(f"Connecting to Milvus server at {self.config.uri}")
+            log.info(f"Connecting to Milvus server at {self.config.uri}")
             self.client = MilvusClient(**self.config.model_dump(exclude_none=True))
         else:
-            logger.info(f"Connecting to Milvus Lite at: {self.config.db_path}")
+            log.info(f"Connecting to Milvus Lite at: {self.config.db_path}")
             uri = os.path.expanduser(self.config.db_path)
             self.client = MilvusClient(uri=uri)
 

@@ -29,7 +29,7 @@ from llama_stack.log import get_logger
 from .api import ColumnDefinition, ColumnType, SqlStore
 from .sqlstore import SqlAlchemySqlStoreConfig
 
-logger = get_logger(name=__name__, category="sqlstore")
+log = get_logger(name=__name__, category="sqlstore")
 
 TYPE_MAPPING: dict[ColumnType, Any] = {
     ColumnType.INTEGER: Integer,
@@ -280,5 +280,5 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         except Exception as e:
             # If any error occurs during migration, log it but don't fail
             # The table creation will handle adding the column
-            logger.error(f"Error adding column {column_name} to table {table}: {e}")
+            log.error(f"Error adding column {column_name} to table {table}: {e}")
             pass

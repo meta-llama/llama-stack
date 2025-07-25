@@ -73,10 +73,11 @@ from .config import MetaReferenceInferenceConfig
 from .generators import LlamaGenerator
 from .model_parallel import LlamaModelParallelGenerator
 
-log = get_logger(__name__, category="inference")
 # there's a single model parallel process running serving the model. for now,
 # we don't support multiple concurrent requests to this process.
 SEMAPHORE = asyncio.Semaphore(1)
+
+logger = get_logger(__name__, category="inference")
 
 
 def llama_builder_fn(config: MetaReferenceInferenceConfig, model_id: str, llama_model: Model) -> LlamaGenerator:
@@ -144,7 +145,7 @@ class MetaReferenceInferenceImpl(
         return model
 
     async def load_model(self, model_id, llama_model) -> None:
-        log.info(f"Loading model `{model_id}`")
+        logger.info(f"Loading model `{model_id}`")
 
         builder_params = [self.config, model_id, llama_model]
 
@@ -166,7 +167,7 @@ class MetaReferenceInferenceImpl(
         self.model_id = model_id
         self.llama_model = llama_model
 
-        log.info("Warming up...")
+        logger.info("Warming up...")
         await self.completion(
             model_id=model_id,
             content="Hello, world!",
@@ -177,7 +178,7 @@ class MetaReferenceInferenceImpl(
             messages=[UserMessage(content="Hi how are you?")],
             sampling_params=SamplingParams(max_tokens=20),
         )
-        log.info("Warmed up!")
+        logger.info("Warmed up!")
 
     def check_model(self, request) -> None:
         if self.model_id is None or self.llama_model is None:

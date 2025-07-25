@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import uuid
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -42,6 +41,7 @@ from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.core.datatypes import AccessRule
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
@@ -51,7 +51,7 @@ from .config import MetaReferenceAgentsImplConfig
 from .openai_responses import OpenAIResponsesImpl
 from .persistence import AgentInfo
 
-logger = logging.getLogger()
+log = get_logger(name=__name__, category="agents")
 
 
 class MetaReferenceAgentsImpl(Agents):
@@ -268,7 +268,7 @@ class MetaReferenceAgentsImpl(Agents):
             # Get the agent info using the key
             agent_info_json = await self.persistence_store.get(agent_key)
             if not agent_info_json:
-                logger.error(f"Could not find agent info for key {agent_key}")
+                log.error(f"Could not find agent info for key {agent_key}")
                 continue
 
             try:
@@ -281,7 +281,7 @@ class MetaReferenceAgentsImpl(Agents):
                     )
                 )
             except Exception as e:
-                logger.error(f"Error parsing agent info for {agent_id}: {e}")
+                log.error(f"Error parsing agent info for {agent_id}: {e}")
                 continue
 
         # Convert Agent objects to dictionaries

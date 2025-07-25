@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-import logging
 from typing import Any
 
 from llama_stack.apis.inference import Message
@@ -16,12 +15,13 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from .config import BedrockSafetyConfig
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="safety")
 
 
 class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
@@ -76,13 +76,13 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
         """
 
         shield_params = shield.params
-        logger.debug(f"run_shield::{shield_params}::messages={messages}")
+        log.debug(f"run_shield::{shield_params}::messages={messages}")
 
         # - convert the messages into format Bedrock expects
         content_messages = []
         for message in messages:
             content_messages.append({"text": {"text": message.content}})
-        logger.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
+        log.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
 
         response = self.bedrock_runtime_client.apply_guardrail(
             guardrailIdentifier=shield.provider_resource_id,

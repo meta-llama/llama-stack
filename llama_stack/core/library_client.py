@@ -7,7 +7,6 @@
 import asyncio
 import inspect
 import json
-import logging
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -48,6 +47,7 @@ from llama_stack.core.stack import (
 from llama_stack.core.utils.config import redact_sensitive_fields
 from llama_stack.core.utils.context import preserve_contexts_async_generator
 from llama_stack.core.utils.exec import in_notebook
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.telemetry.tracing import (
     CURRENT_TRACE_CONTEXT,
     end_trace,
@@ -55,7 +55,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 T = TypeVar("T")
 
@@ -84,7 +84,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         try:
             return [convert_to_pydantic(item_type, item) for item in value]
         except Exception:
-            logger.error(f"Error converting list {value} into {item_type}")
+            log.error(f"Error converting list {value} into {item_type}")
             return value
 
     elif origin is dict:
@@ -92,7 +92,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         try:
             return {k: convert_to_pydantic(val_type, v) for k, v in value.items()}
         except Exception:
-            logger.error(f"Error converting dict {value} into {val_type}")
+            log.error(f"Error converting dict {value} into {val_type}")
             return value
 
     try:
@@ -108,7 +108,7 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
                     return convert_to_pydantic(union_type, value)
                 except Exception:
                     continue
-            logger.warning(
+            log.warning(
                 f"Warning: direct client failed to convert parameter {value} into {annotation}: {e}",
             )
         raise ValueError(f"Failed to convert parameter {value} into {annotation}: {e}") from e
@@ -171,13 +171,15 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
     def _remove_root_logger_handlers(self):
         """
-        Remove all handlers from the root logger. Needed to avoid polluting the console with logs.
+        Remove all handlers from the root log. Needed to avoid polluting the console with logs.
         """
+        import logging  # allow-direct-logging
+
         root_logger = logging.getLogger()
 
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
-            logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
+            log.info(f"Removed handler {handler.__class__.__name__} from root log")
 
     def request(self, *args, **kwargs):
         loop = self.loop

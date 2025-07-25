@@ -61,7 +61,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import TogetherImplConfig
 from .models import MODEL_ENTRIES
 
-logger = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference")
 
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
@@ -232,7 +232,7 @@ class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProvi
             "stream": request.stream,
             **self._build_options(request.sampling_params, request.logprobs, request.response_format),
         }
-        logger.debug(f"params to together: {params}")
+        log.debug(f"params to together: {params}")
         return params
 
     async def embeddings(

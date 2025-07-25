@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import uuid
 from typing import Any
 
@@ -24,6 +23,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreChunkingStrategy,
     VectorStoreFileObject,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
@@ -35,12 +35,13 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
-log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
 
 # KV store prefixes for vector databases
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:qdrant:{VERSION}::"
+
+logger = get_logger(__name__, category="core")
 
 
 def convert_id(_id: str) -> str:
@@ -96,7 +97,7 @@ class QdrantIndex(EmbeddingIndex):
                 points_selector=models.PointIdsList(points=[convert_id(chunk_id)]),
             )
         except Exception as e:
-            log.error(f"Error deleting chunk {chunk_id} from Qdrant collection {self.collection_name}: {e}")
+            logger.error(f"Error deleting chunk {chunk_id} from Qdrant collection {self.collection_name}: {e}")
             raise
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
@@ -118,7 +119,7 @@ class QdrantIndex(EmbeddingIndex):
             try:
                 chunk = Chunk(**point.payload["chunk_content"])
             except Exception:
-                log.exception("Failed to parse chunk")
+                logger.exception("Failed to parse chunk")
                 continue
 
             chunks.append(chunk)

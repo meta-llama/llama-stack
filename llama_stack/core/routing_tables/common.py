@@ -23,7 +23,7 @@ from llama_stack.core.store import DistributionRegistry
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, RoutingTable
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 def get_impl_api(p: Any) -> Api:
@@ -177,7 +177,7 @@ class CommonRoutingTableImpl(RoutingTable):
 
         # Check if user has permission to access this object
         if not is_action_allowed(self.policy, "read", obj, get_authenticated_user()):
-            logger.debug(f"Access denied to {type} '{identifier}'")
+            log.debug(f"Access denied to {type} '{identifier}'")
             return None
 
         return obj
@@ -205,7 +205,7 @@ class CommonRoutingTableImpl(RoutingTable):
             raise AccessDeniedError("create", obj, creator)
         if creator:
             obj.owner = creator
-            logger.info(f"Setting owner for {obj.type} '{obj.identifier}' to {obj.owner.principal}")
+            log.info(f"Setting owner for {obj.type} '{obj.identifier}' to {obj.owner.principal}")
 
         registered_obj = await register_object_with_provider(obj, p)
         # TODO: This needs to be fixed for all APIs once they return the registered object
@@ -250,7 +250,7 @@ async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> 
     if model is not None:
         return model
 
-    logger.warning(
+    log.warning(
         f"WARNING: model identifier '{model_id}' not found in routing table. Falling back to "
         "searching in all providers. This is only for backwards compatibility and will stop working "
         "soon. Migrate your calls to use fully scoped `provider_id/model_id` names."

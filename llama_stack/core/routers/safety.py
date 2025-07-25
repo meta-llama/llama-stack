@@ -14,7 +14,7 @@ from llama_stack.apis.shields import Shield
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class SafetyRouter(Safety):
@@ -22,15 +22,15 @@ class SafetyRouter(Safety):
         self,
         routing_table: RoutingTable,
     ) -> None:
-        logger.debug("Initializing SafetyRouter")
+        log.debug("Initializing SafetyRouter")
         self.routing_table = routing_table
 
     async def initialize(self) -> None:
-        logger.debug("SafetyRouter.initialize")
+        log.debug("SafetyRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logger.debug("SafetyRouter.shutdown")
+        log.debug("SafetyRouter.shutdown")
         pass
 
     async def register_shield(
@@ -40,7 +40,7 @@ class SafetyRouter(Safety):
         provider_id: str | None = None,
         params: dict[str, Any] | None = None,
     ) -> Shield:
-        logger.debug(f"SafetyRouter.register_shield: {shield_id}")
+        log.debug(f"SafetyRouter.register_shield: {shield_id}")
         return await self.routing_table.register_shield(shield_id, provider_shield_id, provider_id, params)
 
     async def unregister_shield(self, identifier: str) -> None:
@@ -53,7 +53,7 @@ class SafetyRouter(Safety):
         messages: list[Message],
         params: dict[str, Any] = None,
     ) -> RunShieldResponse:
-        logger.debug(f"SafetyRouter.run_shield: {shield_id}")
+        log.debug(f"SafetyRouter.run_shield: {shield_id}")
         provider = await self.routing_table.get_provider_impl(shield_id)
         return await provider.run_shield(
             shield_id=shield_id,

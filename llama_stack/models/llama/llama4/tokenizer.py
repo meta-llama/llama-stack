@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from collections.abc import Collection, Iterator, Sequence, Set
-from logging import getLogger
+from logging import getLogger  # allow-direct-logging
 from pathlib import Path
 from typing import (
     Literal,

@@ -23,7 +23,7 @@ from llama_stack.providers.datatypes import (
     remote_provider_spec,
 )
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 def stack_apis() -> list[Api]:
@@ -141,18 +141,18 @@ def get_provider_registry(config=None) -> dict[Api, dict[str, ProviderSpec]]:
     registry: dict[Api, dict[str, ProviderSpec]] = {}
     for api in providable_apis():
         name = api.name.lower()
-        logger.debug(f"Importing module {name}")
+        log.debug(f"Importing module {name}")
         try:
             module = importlib.import_module(f"llama_stack.providers.registry.{name}")
             registry[api] = {a.provider_type: a for a in module.available_providers()}
         except ImportError as e:
-            logger.warning(f"Failed to import module {name}: {e}")
+            log.warning(f"Failed to import module {name}: {e}")
 
     # Refresh providable APIs with external APIs if any
     external_apis = load_external_apis(config)
     for api, api_spec in external_apis.items():
         name = api_spec.name.lower()
-        logger.info(f"Importing external API {name} module {api_spec.module}")
+        log.info(f"Importing external API {name} module {api_spec.module}")
         try:
             module = importlib.import_module(api_spec.module)
             registry[api] = {a.provider_type: a for a in module.available_providers()}
@@ -161,7 +161,7 @@ def get_provider_registry(config=None) -> dict[Api, dict[str, ProviderSpec]]:
             # This assume that the in-tree provider(s) are not available for this API which means
             # that users will need to use external providers for this API.
             registry[api] = {}
-            logger.error(
+            log.error(
                 f"Failed to import external API {name}: {e}. Could not populate the in-tree provider(s) registry for {api.name}. \n"
                 "Install the API package to load any in-tree providers for this API."
             )
@@ -183,13 +183,13 @@ def get_provider_registry(config=None) -> dict[Api, dict[str, ProviderSpec]]:
 def get_external_providers_from_dir(
     registry: dict[Api, dict[str, ProviderSpec]], config
 ) -> dict[Api, dict[str, ProviderSpec]]:
-    logger.warning(
+    log.warning(
         "Specifying external providers via `external_providers_dir` is being deprecated. Please specify `module:` in the provider instead."
     )
     external_providers_dir = os.path.abspath(os.path.expanduser(config.external_providers_dir))
     if not os.path.exists(external_providers_dir):
         raise FileNotFoundError(f"External providers directory not found: {external_providers_dir}")
-    logger.info(f"Loading external providers from {external_providers_dir}")
+    log.info(f"Loading external providers from {external_providers_dir}")
 
     for api in providable_apis():
         api_name = api.name.lower()
@@ -198,13 +198,13 @@ def get_external_providers_from_dir(
         for provider_type in ["remote", "inline"]:
             api_dir = os.path.join(external_providers_dir, provider_type, api_name)
             if not os.path.exists(api_dir):
-                logger.debug(f"No {provider_type} provider directory found for {api_name}")
+                log.debug(f"No {provider_type} provider directory found for {api_name}")
                 continue
 
             # Look for provider spec files in the API directory
             for spec_path in glob.glob(os.path.join(api_dir, "*.yaml")):
                 provider_name = os.path.splitext(os.path.basename(spec_path))[0]
-                logger.info(f"Loading {provider_type} provider spec from {spec_path}")
+                log.info(f"Loading {provider_type} provider spec from {spec_path}")
 
                 try:
                     with open(spec_path) as f:
@@ -217,16 +217,16 @@ def get_external_providers_from_dir(
                         spec = _load_inline_provider_spec(spec_data, api, provider_name)
                         provider_type_key = f"inline::{provider_name}"
 
-                    logger.info(f"Loaded {provider_type} provider spec for {provider_type_key} from {spec_path}")
+                    log.info(f"Loaded {provider_type} provider spec for {provider_type_key} from {spec_path}")
                     if provider_type_key in registry[api]:
-                        logger.warning(f"Overriding already registered provider {provider_type_key} for {api.name}")
+                        log.warning(f"Overriding already registered provider {provider_type_key} for {api.name}")
                     registry[api][provider_type_key] = spec
-                    logger.info(f"Successfully loaded external provider {provider_type_key}")
+                    log.info(f"Successfully loaded external provider {provider_type_key}")
                 except yaml.YAMLError as yaml_err:
-                    logger.error(f"Failed to parse YAML file {spec_path}: {yaml_err}")
+                    log.error(f"Failed to parse YAML file {spec_path}: {yaml_err}")
                     raise yaml_err
                 except Exception as e:
-                    logger.error(f"Failed to load provider spec from {spec_path}: {e}")
+                    log.error(f"Failed to load provider spec from {spec_path}: {e}")
                     raise e
 
     return registry
@@ -241,7 +241,7 @@ def get_external_providers_from_module(
     else:
         provider_list = config.providers.items()
     if provider_list is None:
-        logger.warning("Could not get list of providers from config")
+        log.warning("Could not get list of providers from config")
         return registry
     for provider_api, providers in provider_list:
         for provider in providers:
@@ -272,6 +272,6 @@ def get_external_providers_from_module(
                     "get_provider_spec not found. If specifying an external provider via `module` in the Provider spec, the Provider must have the `provider.get_provider_spec` module available"
                 ) from exc
             except Exception as e:
-                logger.error(f"Failed to load provider spec from module {provider.module}: {e}")
+                log.error(f"Failed to load provider spec from module {provider.module}: {e}")
                 raise e
     return registry

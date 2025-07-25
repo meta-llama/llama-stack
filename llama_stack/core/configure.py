@@ -3,7 +3,6 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
-import logging
 import textwrap
 from typing import Any
 
@@ -21,9 +20,10 @@ from llama_stack.core.stack import cast_image_name_to_string, replace_env_vars
 from llama_stack.core.utils.config_dirs import EXTERNAL_PROVIDERS_DIR
 from llama_stack.core.utils.dynamic import instantiate_class_type
 from llama_stack.core.utils.prompt_for_config import prompt_for_config
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, ProviderSpec
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 
 def configure_single_provider(registry: dict[str, ProviderSpec], provider: Provider) -> Provider:
@@ -49,7 +49,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
     is_nux = len(config.providers) == 0
 
     if is_nux:
-        logger.info(
+        log.info(
             textwrap.dedent(
                 """
         Llama Stack is composed of several APIs working together. For each API served by the Stack,
@@ -75,12 +75,12 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
 
         existing_providers = config.providers.get(api_str, [])
         if existing_providers:
-            logger.info(f"Re-configuring existing providers for API `{api_str}`...")
+            log.info(f"Re-configuring existing providers for API `{api_str}`...")
             updated_providers = []
             for p in existing_providers:
-                logger.info(f"> Configuring provider `({p.provider_type})`")
+                log.info(f"> Configuring provider `({p.provider_type})`")
                 updated_providers.append(configure_single_provider(provider_registry[api], p))
-                logger.info("")
+                log.info("")
         else:
             # we are newly configuring this API
             plist = build_spec.providers.get(api_str, [])
@@ -89,17 +89,17 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
             if not plist:
                 raise ValueError(f"No provider configured for API {api_str}?")
 
-            logger.info(f"Configuring API `{api_str}`...")
+            log.info(f"Configuring API `{api_str}`...")
             updated_providers = []
             for i, provider in enumerate(plist):
                 if i >= 1:
                     others = ", ".join(p.provider_type for p in plist[i:])
-                    logger.info(
+                    log.info(
                         f"Not configuring other providers ({others}) interactively. Please edit the resulting YAML directly.\n"
                     )
                     break
 
-                logger.info(f"> Configuring provider `({provider.provider_type})`")
+                log.info(f"> Configuring provider `({provider.provider_type})`")
                 pid = provider.provider_type.split("::")[-1]
                 updated_providers.append(
                     configure_single_provider(
@@ -111,7 +111,7 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
                         ),
                     )
                 )
-                logger.info("")
+                log.info("")
 
         config.providers[api_str] = updated_providers
 
@@ -169,7 +169,7 @@ def parse_and_maybe_upgrade_config(config_dict: dict[str, Any]) -> StackRunConfi
         return StackRunConfig(**cast_image_name_to_string(processed_config_dict))
 
     if "routing_table" in config_dict:
-        logger.info("Upgrading config...")
+        log.info("Upgrading config...")
         config_dict = upgrade_from_routing_table(config_dict)
 
     config_dict["version"] = LLAMA_STACK_RUN_CONFIG_VERSION

@@ -30,7 +30,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl, lookup_model
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
@@ -57,7 +57,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
             if len(self.impls_by_provider_id) > 0:
                 provider_id = list(self.impls_by_provider_id.keys())[0]
                 if len(self.impls_by_provider_id) > 1:
-                    logger.warning(
+                    log.warning(
                         f"No provider specified and multiple providers available. Arbitrarily selected the first provider {provider_id}."
                     )
             else:

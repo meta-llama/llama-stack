@@ -17,7 +17,7 @@ from llama_stack.log import get_logger
 from .api import ColumnDefinition, ColumnType, PaginatedResponse, SqlStore
 from .sqlstore import SqlStoreType
 
-logger = get_logger(name=__name__, category="authorized_sqlstore")
+log = get_logger(name=__name__, category="authorized_sqlstore")
 
 # Hardcoded copy of the default policy that our SQL filtering implements
 # WARNING: If default_policy() changes, this constant must be updated accordingly
@@ -81,7 +81,7 @@ class AuthorizedSqlStore:
         actual_default = default_policy()
 
         if SQL_OPTIMIZED_POLICY != actual_default:
-            logger.warning(
+            log.warning(
                 f"SQL_OPTIMIZED_POLICY does not match default_policy(). "
                 f"SQL filtering will use conservative mode. "
                 f"Expected: {SQL_OPTIMIZED_POLICY}, Got: {actual_default}",

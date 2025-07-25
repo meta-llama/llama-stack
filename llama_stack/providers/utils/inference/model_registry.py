@@ -17,7 +17,7 @@ from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class RemoteInferenceProviderConfig(BaseModel):
@@ -135,7 +135,7 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         :param model: The model identifier to check.
         :return: True if the model is available dynamically, False otherwise.
         """
-        logger.info(
+        log.info(
             f"check_model_availability is not implemented for {self.__class__.__name__}. Returning False by default."
         )
         return False

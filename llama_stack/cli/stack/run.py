@@ -15,7 +15,7 @@ from llama_stack.log import get_logger
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = get_logger(name=__name__, category="server")
+log = get_logger(name=__name__, category="server")
 
 
 class StackRun(Subcommand):
@@ -126,7 +126,7 @@ class StackRun(Subcommand):
             self.parser.error("Config file is required for venv environment")
 
         if config_file:
-            logger.info(f"Using run configuration: {config_file}")
+            log.info(f"Using run configuration: {config_file}")
 
             try:
                 config_dict = yaml.safe_load(config_file.read_text())
@@ -145,7 +145,7 @@ class StackRun(Subcommand):
         # If neither image type nor image name is provided, assume the server should be run directly
         # using the current environment packages.
         if not image_type and not image_name:
-            logger.info("No image type or image name provided. Assuming environment packages.")
+            log.info("No image type or image name provided. Assuming environment packages.")
             from llama_stack.core.server.server import main as server_main
 
             # Build the server args from the current args passed to the CLI
@@ -185,11 +185,11 @@ class StackRun(Subcommand):
             run_command(run_args)
 
     def _start_ui_development_server(self, stack_server_port: int):
-        logger.info("Attempting to start UI development server...")
+        log.info("Attempting to start UI development server...")
         # Check if npm is available
         npm_check = subprocess.run(["npm", "--version"], capture_output=True, text=True, check=False)
         if npm_check.returncode != 0:
-            logger.warning(
+            log.warning(
                 f"'npm' command not found or not executable. UI development server will not be started. Error: {npm_check.stderr}"
             )
             return
@@ -214,13 +214,13 @@ class StackRun(Subcommand):
                 stderr=stderr_log_file,
                 env={**os.environ, "NEXT_PUBLIC_LLAMA_STACK_BASE_URL": f"http://localhost:{stack_server_port}"},
             )
-            logger.info(f"UI development server process started in {ui_dir} with PID {process.pid}.")
-            logger.info(f"Logs: stdout -> {ui_stdout_log_path}, stderr -> {ui_stderr_log_path}")
-            logger.info(f"UI will be available at http://localhost:{os.getenv('LLAMA_STACK_UI_PORT', 8322)}")
+            log.info(f"UI development server process started in {ui_dir} with PID {process.pid}.")
+            log.info(f"Logs: stdout -> {ui_stdout_log_path}, stderr -> {ui_stderr_log_path}")
+            log.info(f"UI will be available at http://localhost:{os.getenv('LLAMA_STACK_UI_PORT', 8322)}")
 
         except FileNotFoundError:
-            logger.error(
+            log.error(
                 "Failed to start UI development server: 'npm' command not found. Make sure npm is installed and in your PATH."
             )
         except Exception as e:
-            logger.error(f"Failed to start UI development server in {ui_dir}: {e}")
+            log.error(f"Failed to start UI development server in {ui_dir}: {e}")

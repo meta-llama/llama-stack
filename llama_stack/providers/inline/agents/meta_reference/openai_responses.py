@@ -75,7 +75,7 @@ from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefiniti
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
-logger = get_logger(name=__name__, category="openai_responses")
+log = get_logger(name=__name__, category="openai_responses")
 
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
 
@@ -544,12 +544,12 @@ class OpenAIResponsesImpl:
                 break
 
             if function_tool_calls:
-                logger.info("Exiting inference loop since there is a function (client-side) tool call")
+                log.info("Exiting inference loop since there is a function (client-side) tool call")
                 break
 
             n_iter += 1
             if n_iter >= max_infer_iters:
-                logger.info(f"Exiting inference loop since iteration count({n_iter}) exceeds {max_infer_iters=}")
+                log.info(f"Exiting inference loop since iteration count({n_iter}) exceeds {max_infer_iters=}")
                 break
 
             messages = next_turn_messages
@@ -698,7 +698,7 @@ class OpenAIResponsesImpl:
                 )
                 return search_response.data
             except Exception as e:
-                logger.warning(f"Failed to search vector store {vector_store_id}: {e}")
+                log.warning(f"Failed to search vector store {vector_store_id}: {e}")
                 return []
 
         # Run all searches in parallel using gather

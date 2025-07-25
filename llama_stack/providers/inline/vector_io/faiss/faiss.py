@@ -8,7 +8,6 @@ import asyncio
 import base64
 import io
 import json
-import logging
 from typing import Any
 
 import faiss
@@ -24,6 +23,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import (
     HealthResponse,
     HealthStatus,
@@ -39,7 +39,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import FaissVectorIOConfig
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:{VERSION}::"
@@ -83,7 +83,7 @@ class FaissIndex(EmbeddingIndex):
                 self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
                 self.chunk_ids = [chunk.chunk_id for chunk in self.chunk_by_index.values()]
             except Exception as e:
-                logger.debug(e, exc_info=True)
+                log.debug(e, exc_info=True)
                 raise ValueError(
                     "Error deserializing Faiss index from storage. If you recently upgraded your Llama Stack, Faiss, "
                     "or NumPy versions, you may need to delete the index and re-create it again or downgrade versions.\n"
@@ -262,7 +262,7 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         assert self.kvstore is not None
 
         if vector_db_id not in self.cache:
-            logger.warning(f"Vector DB {vector_db_id} not found")
+            log.warning(f"Vector DB {vector_db_id} not found")
             return
 
         await self.cache[vector_db_id].index.delete()

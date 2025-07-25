@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-import logging
 from typing import Any
 
 import litellm
@@ -20,12 +19,13 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.core.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import convert_message_to_openai_dict_new
 
 from .config import SambaNovaSafetyConfig
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="safety")
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 
@@ -66,7 +66,7 @@ class SambaNovaSafetyAdapter(Safety, ShieldsProtocolPrivate, NeedsRequestProvide
             "guard" not in shield.provider_resource_id.lower()
             or shield.provider_resource_id.split("sambanova/")[-1] not in self.environment_available_models
         ):
-            logger.warning(f"Shield {shield.provider_resource_id} not available in {list_models_url}")
+            log.warning(f"Shield {shield.provider_resource_id} not available in {list_models_url}")
 
     async def unregister_shield(self, identifier: str) -> None:
         pass
@@ -79,9 +79,9 @@ class SambaNovaSafetyAdapter(Safety, ShieldsProtocolPrivate, NeedsRequestProvide
             raise ValueError(f"Shield {shield_id} not found")
 
         shield_params = shield.params
-        logger.debug(f"run_shield::{shield_params}::messages={messages}")
+        log.debug(f"run_shield::{shield_params}::messages={messages}")
         content_messages = [await convert_message_to_openai_dict_new(m) for m in messages]
-        logger.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
+        log.debug(f"run_shield::final:messages::{json.dumps(content_messages, indent=2)}:")
 
         response = litellm.completion(
             model=shield.provider_resource_id, messages=content_messages, api_key=self._get_api_key()

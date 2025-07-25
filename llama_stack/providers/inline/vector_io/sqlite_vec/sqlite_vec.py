@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import re
 import sqlite3
 import struct
@@ -24,6 +23,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -35,7 +35,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="core")
 
 # Specifying search mode is dependent on the VectorIO provider.
 VECTOR_SEARCH = "vector"
@@ -257,7 +257,7 @@ class SQLiteVecIndex(EmbeddingIndex):
 
             except sqlite3.Error as e:
                 connection.rollback()
-                logger.error(f"Error inserting into {self.vector_table}: {e}")
+                log.error(f"Error inserting into {self.vector_table}: {e}")
                 raise
 
             finally:
@@ -306,7 +306,7 @@ class SQLiteVecIndex(EmbeddingIndex):
             try:
                 chunk = Chunk.model_validate_json(chunk_json)
             except Exception as e:
-                logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
+                log.error(f"Error parsing chunk JSON for id {_id}: {e}")
                 continue
             chunks.append(chunk)
             scores.append(score)
@@ -352,7 +352,7 @@ class SQLiteVecIndex(EmbeddingIndex):
             try:
                 chunk = Chunk.model_validate_json(chunk_json)
             except Exception as e:
-                logger.error(f"Error parsing chunk JSON for id {_id}: {e}")
+                log.error(f"Error parsing chunk JSON for id {_id}: {e}")
                 continue
             chunks.append(chunk)
             scores.append(score)
@@ -447,7 +447,7 @@ class SQLiteVecIndex(EmbeddingIndex):
                 connection.commit()
             except Exception as e:
                 connection.rollback()
-                logger.error(f"Error deleting chunk {chunk_id}: {e}")
+                log.error(f"Error deleting chunk {chunk_id}: {e}")
                 raise
             finally:
                 cur.close()
@@ -530,7 +530,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         if vector_db_id not in self.cache:
-            logger.warning(f"Vector DB {vector_db_id} not found")
+            log.warning(f"Vector DB {vector_db_id} not found")
             return
         await self.cache[vector_db_id].index.delete()
         del self.cache[vector_db_id]

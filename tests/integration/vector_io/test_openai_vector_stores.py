@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import time
 from io import BytesIO
 
@@ -13,8 +12,10 @@ from llama_stack_client import BadRequestError, LlamaStackClient
 from openai import BadRequestError as OpenAIBadRequestError
 
 from llama_stack.apis.vector_io import Chunk
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
+from llama_stack.log import get_logger
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="vector-io")
 
 
 def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
@@ -99,7 +100,7 @@ def compat_client_with_empty_stores(compat_client):
                 compat_client.vector_stores.delete(vector_store_id=store.id)
         except Exception:
             # If the API is not available or fails, just continue
-            logger.warning("Failed to clear vector stores")
+            log.warning("Failed to clear vector stores")
             pass
 
     def clear_files():
@@ -109,7 +110,7 @@ def compat_client_with_empty_stores(compat_client):
                 compat_client.files.delete(file_id=file.id)
         except Exception:
             # If the API is not available or fails, just continue
-            logger.warning("Failed to clear files")
+            log.warning("Failed to clear files")
             pass
 
     clear_vector_stores()

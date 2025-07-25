@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-import logging
 from typing import Any
 
 import weaviate
@@ -19,6 +18,7 @@ from llama_stack.apis.files.files import Files
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.core.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -33,14 +33,14 @@ from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collecti
 
 from .config import WeaviateVectorIOConfig
 
-log = logging.getLogger(__name__)
-
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:weaviate:{VERSION}::"
 VECTOR_INDEX_PREFIX = f"vector_index:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:weaviate:{VERSION}::"
+
+logger = get_logger(__name__, category="core")
 
 
 class WeaviateIndex(EmbeddingIndex):
@@ -102,7 +102,7 @@ class WeaviateIndex(EmbeddingIndex):
                 chunk_dict = json.loads(chunk_json)
                 chunk = Chunk(**chunk_dict)
             except Exception:
-                log.exception(f"Failed to parse document: {chunk_json}")
+                logger.exception(f"Failed to parse document: {chunk_json}")
                 continue
 
             score = 1.0 / doc.metadata.distance if doc.metadata.distance != 0 else float("inf")
@@ -171,7 +171,7 @@ class WeaviateVectorIOAdapter(
 
     def _get_client(self) -> weaviate.Client:
         if "localhost" in self.config.weaviate_cluster_url:
-            log.info("using Weaviate locally in container")
+            logger.info("using Weaviate locally in container")
             host, port = self.config.weaviate_cluster_url.split(":")
             key = "local_test"
             client = weaviate.connect_to_local(
@@ -179,7 +179,7 @@ class WeaviateVectorIOAdapter(
                 port=port,
             )
         else:
-            log.info("Using Weaviate remote cluster with URL")
+            logger.info("Using Weaviate remote cluster with URL")
             key = f"{self.config.weaviate_cluster_url}::{self.config.weaviate_api_key}"
             if key in self.client_cache:
                 return self.client_cache[key]
@@ -197,7 +197,7 @@ class WeaviateVectorIOAdapter(
             self.kvstore = await kvstore_impl(self.config.kvstore)
         else:
             self.kvstore = None
-            log.info("No kvstore configured, registry will not persist across restarts")
+            logger.info("No kvstore configured, registry will not persist across restarts")
 
         # Load existing vector DB definitions
         if self.kvstore is not None:
@@ -254,7 +254,7 @@ class WeaviateVectorIOAdapter(
         client = self._get_client()
         sanitized_collection_name = sanitize_collection_name(vector_db_id, weaviate_format=True)
         if sanitized_collection_name not in self.cache or client.collections.exists(sanitized_collection_name) is False:
-            log.warning(f"Vector DB {sanitized_collection_name} not found")
+            logger.warning(f"Vector DB {sanitized_collection_name} not found")
             return
         client.collections.delete(sanitized_collection_name)
         await self.cache[sanitized_collection_name].index.delete()

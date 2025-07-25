@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import base64
 import json
-import logging
 import struct
 import time
 import uuid
@@ -116,6 +115,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.inference import (
     OpenAIChoice as OpenAIChatCompletionChoice,
 )
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,
@@ -128,7 +128,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     decode_assistant_message,
 )
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):
@@ -316,7 +316,7 @@ def process_chat_completion_response(
                 if t.tool_name in request_tools:
                     new_tool_calls.append(t)
                 else:
-                    logger.warning(f"Tool {t.tool_name} not found in request tools")
+                    log.warning(f"Tool {t.tool_name} not found in request tools")
 
             if len(new_tool_calls) < len(raw_message.tool_calls):
                 raw_message.tool_calls = new_tool_calls
@@ -477,7 +477,7 @@ async def process_chat_completion_stream_response(
                 )
             )
         else:
-            logger.warning(f"Tool {tool_call.tool_name} not found in request tools")
+            log.warning(f"Tool {tool_call.tool_name} not found in request tools")
             yield ChatCompletionResponseStreamChunk(
                 event=ChatCompletionResponseEvent(
                     event_type=ChatCompletionResponseEventType.progress,
@@ -1198,7 +1198,7 @@ async def convert_openai_chat_completion_stream(
             )
 
     for idx, buffer in tool_call_idx_to_buffer.items():
-        logger.debug(f"toolcall_buffer[{idx}]: {buffer}")
+        log.debug(f"toolcall_buffer[{idx}]: {buffer}")
         if buffer["name"]:
             delta = ")"
             buffer["content"] += delta

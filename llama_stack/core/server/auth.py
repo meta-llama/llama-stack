@@ -15,7 +15,7 @@ from llama_stack.core.server.auth_providers import create_auth_provider
 from llama_stack.core.server.routes import find_matching_route, initialize_route_impls
 from llama_stack.log import get_logger
 
-logger = get_logger(name=__name__, category="auth")
+log = get_logger(name=__name__, category="auth")
 
 
 class AuthenticationMiddleware:
@@ -105,13 +105,13 @@ class AuthenticationMiddleware:
             try:
                 validation_result = await self.auth_provider.validate_token(token, scope)
             except httpx.TimeoutException:
-                logger.exception("Authentication request timed out")
+                log.exception("Authentication request timed out")
                 return await self._send_auth_error(send, "Authentication service timeout")
             except ValueError as e:
-                logger.exception("Error during authentication")
+                log.exception("Error during authentication")
                 return await self._send_auth_error(send, str(e))
             except Exception:
-                logger.exception("Error during authentication")
+                log.exception("Error during authentication")
                 return await self._send_auth_error(send, "Authentication service error")
 
             # Store the client ID in the request scope so that downstream middleware (like QuotaMiddleware)
@@ -122,7 +122,7 @@ class AuthenticationMiddleware:
             scope["principal"] = validation_result.principal
             if validation_result.attributes:
                 scope["user_attributes"] = validation_result.attributes
-            logger.debug(
+            log.debug(
                 f"Authentication successful: {validation_result.principal} with {len(validation_result.attributes)} attributes"
             )
 

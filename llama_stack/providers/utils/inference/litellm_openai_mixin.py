@@ -54,7 +54,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
-logger = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference")
 
 
 class LiteLLMOpenAIMixin(
@@ -157,7 +157,7 @@ class LiteLLMOpenAIMixin(
         params = await self._get_params(request)
         params["model"] = self.get_litellm_model_name(params["model"])
 
-        logger.debug(f"params to litellm (openai compat): {params}")
+        log.debug(f"params to litellm (openai compat): {params}")
         # see https://docs.litellm.ai/docs/completion/stream#async-completion
         response = await litellm.acompletion(**params)
         if stream:
@@ -460,7 +460,7 @@ class LiteLLMOpenAIMixin(
         :return: True if the model is available dynamically, False otherwise.
         """
         if self.litellm_provider_name not in litellm.models_by_provider:
-            logger.error(f"Provider {self.litellm_provider_name} is not registered in litellm.")
+            log.error(f"Provider {self.litellm_provider_name} is not registered in litellm.")
             return False
 
         return model in litellm.models_by_provider[self.litellm_provider_name]

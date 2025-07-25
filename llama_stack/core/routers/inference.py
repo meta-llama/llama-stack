@@ -58,7 +58,7 @@ from llama_stack.providers.utils.inference.inference_store import InferenceStore
 from llama_stack.providers.utils.inference.stream_utils import stream_and_store_openai_completion
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class InferenceRouter(Inference):
@@ -70,7 +70,7 @@ class InferenceRouter(Inference):
         telemetry: Telemetry | None = None,
         store: InferenceStore | None = None,
     ) -> None:
-        logger.debug("Initializing InferenceRouter")
+        log.debug("Initializing InferenceRouter")
         self.routing_table = routing_table
         self.telemetry = telemetry
         self.store = store
@@ -79,10 +79,10 @@ class InferenceRouter(Inference):
             self.formatter = ChatFormat(self.tokenizer)
 
     async def initialize(self) -> None:
-        logger.debug("InferenceRouter.initialize")
+        log.debug("InferenceRouter.initialize")
 
     async def shutdown(self) -> None:
-        logger.debug("InferenceRouter.shutdown")
+        log.debug("InferenceRouter.shutdown")
 
     async def register_model(
         self,
@@ -92,7 +92,7 @@ class InferenceRouter(Inference):
         metadata: dict[str, Any] | None = None,
         model_type: ModelType | None = None,
     ) -> None:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.register_model: {model_id=} {provider_model_id=} {provider_id=} {metadata=} {model_type=}",
         )
         await self.routing_table.register_model(model_id, provider_model_id, provider_id, metadata, model_type)
@@ -117,7 +117,7 @@ class InferenceRouter(Inference):
         """
         span = get_current_span()
         if span is None:
-            logger.warning("No span found for token usage metrics")
+            log.warning("No span found for token usage metrics")
             return []
         metrics = [
             ("prompt_tokens", prompt_tokens),
@@ -182,7 +182,7 @@ class InferenceRouter(Inference):
         logprobs: LogProbConfig | None = None,
         tool_config: ToolConfig | None = None,
     ) -> ChatCompletionResponse | AsyncIterator[ChatCompletionResponseStreamChunk]:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.chat_completion: {model_id=}, {stream=}, {messages=}, {tools=}, {tool_config=}, {response_format=}",
         )
         if sampling_params is None:
@@ -288,7 +288,7 @@ class InferenceRouter(Inference):
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
     ) -> BatchChatCompletionResponse:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.batch_chat_completion: {model_id=}, {len(messages_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
         )
         provider = await self.routing_table.get_provider_impl(model_id)
@@ -313,7 +313,7 @@ class InferenceRouter(Inference):
     ) -> AsyncGenerator:
         if sampling_params is None:
             sampling_params = SamplingParams()
-        logger.debug(
+        log.debug(
             f"InferenceRouter.completion: {model_id=}, {stream=}, {content=}, {sampling_params=}, {response_format=}",
         )
         model = await self.routing_table.get_model(model_id)
@@ -374,7 +374,7 @@ class InferenceRouter(Inference):
         response_format: ResponseFormat | None = None,
         logprobs: LogProbConfig | None = None,
     ) -> BatchCompletionResponse:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.batch_completion: {model_id=}, {len(content_batch)=}, {sampling_params=}, {response_format=}, {logprobs=}",
         )
         provider = await self.routing_table.get_provider_impl(model_id)
@@ -388,7 +388,7 @@ class InferenceRouter(Inference):
         output_dimension: int | None = None,
         task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
-        logger.debug(f"InferenceRouter.embeddings: {model_id}")
+        log.debug(f"InferenceRouter.embeddings: {model_id}")
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ModelNotFoundError(model_id)
@@ -426,7 +426,7 @@ class InferenceRouter(Inference):
         prompt_logprobs: int | None = None,
         suffix: str | None = None,
     ) -> OpenAICompletion:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.openai_completion: {model=}, {stream=}, {prompt=}",
         )
         model_obj = await self.routing_table.get_model(model)
@@ -487,7 +487,7 @@ class InferenceRouter(Inference):
         top_p: float | None = None,
         user: str | None = None,
     ) -> OpenAIChatCompletion | AsyncIterator[OpenAIChatCompletionChunk]:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.openai_chat_completion: {model=}, {stream=}, {messages=}",
         )
         model_obj = await self.routing_table.get_model(model)
@@ -558,7 +558,7 @@ class InferenceRouter(Inference):
         dimensions: int | None = None,
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
-        logger.debug(
+        log.debug(
             f"InferenceRouter.openai_embeddings: {model=}, input_type={type(input)}, {encoding_format=}, {dimensions=}",
         )
         model_obj = await self.routing_table.get_model(model)

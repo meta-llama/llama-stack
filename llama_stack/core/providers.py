@@ -16,7 +16,7 @@ from llama_stack.providers.datatypes import HealthResponse, HealthStatus
 from .datatypes import StackRunConfig
 from .utils.config import redact_sensitive_fields
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class ProviderImplConfig(BaseModel):
@@ -38,7 +38,7 @@ class ProviderImpl(Providers):
         pass
 
     async def shutdown(self) -> None:
-        logger.debug("ProviderImpl.shutdown")
+        log.debug("ProviderImpl.shutdown")
         pass
 
     async def list_providers(self) -> ListProvidersResponse:

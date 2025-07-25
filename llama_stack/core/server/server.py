@@ -9,7 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
-import logging
+import logging  # allow-direct-logging
 import os
 import ssl
 import sys
@@ -80,7 +80,7 @@ from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = get_logger(name=__name__, category="server")
+log = get_logger(name=__name__, category="server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -157,9 +157,9 @@ async def shutdown(app):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting up")
+    log.info("Starting up")
     yield
-    logger.info("Shutting down")
+    log.info("Shutting down")
     await shutdown(app)
 
 
@@ -182,11 +182,11 @@ async def sse_generator(event_gen_coroutine):
             yield create_sse_event(item)
             await asyncio.sleep(0.01)
     except asyncio.CancelledError:
-        logger.info("Generator cancelled")
+        log.info("Generator cancelled")
         if event_gen:
             await event_gen.aclose()
     except Exception as e:
-        logger.exception("Error in sse_generator")
+        log.exception("Error in sse_generator")
         yield create_sse_event(
             {
                 "error": {
@@ -206,11 +206,11 @@ async def log_request_pre_validation(request: Request):
                     log_output = rich.pretty.pretty_repr(parsed_body)
                 except (json.JSONDecodeError, UnicodeDecodeError):
                     log_output = repr(body_bytes)
-                logger.debug(f"Incoming raw request body for {request.method} {request.url.path}:\n{log_output}")
+                log.debug(f"Incoming raw request body for {request.method} {request.url.path}:\n{log_output}")
             else:
-                logger.debug(f"Incoming {request.method} {request.url.path} request with empty body.")
+                log.debug(f"Incoming {request.method} {request.url.path} request with empty body.")
         except Exception as e:
-            logger.warning(f"Could not read or log request body for {request.method} {request.url.path}: {e}")
+            log.warning(f"Could not read or log request body for {request.method} {request.url.path}: {e}")
 
 
 def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
@@ -238,10 +238,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                         result.url = route
                     return result
             except Exception as e:
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.exception(f"Error executing endpoint {route=} {method=}")
+                if log.isEnabledFor(logging.DEBUG):
+                    log.exception(f"Error executing endpoint {route=} {method=}")
                 else:
-                    logger.error(f"Error executing endpoint {route=} {method=}: {str(e)}")
+                    log.error(f"Error executing endpoint {route=} {method=}: {str(e)}")
                 raise translate_exception(e) from e
 
     sig = inspect.signature(func)
@@ -291,7 +291,7 @@ class TracingMiddleware:
         # Check if the path is a FastAPI built-in path
         if path.startswith(self.fastapi_paths):
             # Pass through to FastAPI's built-in handlers
-            logger.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
+            log.debug(f"Bypassing custom routing for FastAPI built-in path: {path}")
             return await self.app(scope, receive, send)
 
         if not hasattr(self, "route_impls"):
@@ -303,7 +303,7 @@ class TracingMiddleware:
             )
         except ValueError:
             # If no matching endpoint is found, pass through to FastAPI
-            logger.debug(f"No matching route found for path: {path}, falling back to FastAPI")
+            log.debug(f"No matching route found for path: {path}, falling back to FastAPI")
             return await self.app(scope, receive, send)
 
         trace_attributes = {"__location__": "server", "raw_path": path}
@@ -404,15 +404,15 @@ def main(args: argparse.Namespace | None = None):
         config_contents = yaml.safe_load(fp)
         if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
             logger_config = LoggingConfig(**cfg)
-        logger = get_logger(name=__name__, category="server", config=logger_config)
+        log = get_logger(name=__name__, category="server", config=logger_config)
         if args.env:
             for env_pair in args.env:
                 try:
                     key, value = validate_env_pair(env_pair)
-                    logger.info(f"Setting CLI environment variable {key} => {value}")
+                    log.info(f"Setting CLI environment variable {key} => {value}")
                     os.environ[key] = value
                 except ValueError as e:
-                    logger.error(f"Error: {str(e)}")
+                    log.error(f"Error: {str(e)}")
                     sys.exit(1)
         config = replace_env_vars(config_contents)
         config = StackRunConfig(**cast_image_name_to_string(config))
@@ -438,16 +438,16 @@ def main(args: argparse.Namespace | None = None):
         impls = loop.run_until_complete(construct_stack(config))
 
     except InvalidProviderError as e:
-        logger.error(f"Error: {str(e)}")
+        log.error(f"Error: {str(e)}")
         sys.exit(1)
 
     if config.server.auth:
-        logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
+        log.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
         app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth, impls=impls)
     else:
         if config.server.quota:
             quota = config.server.quota
-            logger.warning(
+            log.warning(
                 "Configured authenticated_max_requests (%d) but no auth is enabled; "
                 "falling back to anonymous_max_requests (%d) for all the requests",
                 quota.authenticated_max_requests,
@@ -455,7 +455,7 @@ def main(args: argparse.Namespace | None = None):
             )
 
     if config.server.quota:
-        logger.info("Enabling quota middleware for authenticated and anonymous clients")
+        log.info("Enabling quota middleware for authenticated and anonymous clients")
 
         quota = config.server.quota
         anonymous_max_requests = quota.anonymous_max_requests
@@ -516,7 +516,7 @@ def main(args: argparse.Namespace | None = None):
             if not available_methods:
                 raise ValueError(f"No methods found for {route.name} on {impl}")
             method = available_methods[0]
-            logger.debug(f"{method} {route.path}")
+            log.debug(f"{method} {route.path}")
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic._internal._fields")
@@ -528,7 +528,7 @@ def main(args: argparse.Namespace | None = None):
                     )
                 )
 
-    logger.debug(f"serving APIs: {apis_to_serve}")
+    log.debug(f"serving APIs: {apis_to_serve}")
 
     app.exception_handler(RequestValidationError)(global_exception_handler)
     app.exception_handler(Exception)(global_exception_handler)
@@ -553,21 +553,21 @@ def main(args: argparse.Namespace | None = None):
         if config.server.tls_cafile:
             ssl_config["ssl_ca_certs"] = config.server.tls_cafile
             ssl_config["ssl_cert_reqs"] = ssl.CERT_REQUIRED
-            logger.info(
+            log.info(
                 f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}\n  CA: {config.server.tls_cafile}"
             )
         else:
-            logger.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
+            log.info(f"HTTPS enabled with certificates:\n  Key: {keyfile}\n  Cert: {certfile}")
 
     listen_host = config.server.host or ["::", "0.0.0.0"]
-    logger.info(f"Listening on {listen_host}:{port}")
+    log.info(f"Listening on {listen_host}:{port}")
 
     uvicorn_config = {
         "app": app,
         "host": listen_host,
         "port": port,
         "lifespan": "on",
-        "log_level": logger.getEffectiveLevel(),
+        "log_level": log.getEffectiveLevel(),
         "log_config": logger_config,
     }
     if ssl_config:
@@ -586,19 +586,19 @@ def main(args: argparse.Namespace | None = None):
     try:
         loop.run_until_complete(uvicorn.Server(uvicorn.Config(**uvicorn_config)).serve())
     except (KeyboardInterrupt, SystemExit):
-        logger.info("Received interrupt signal, shutting down gracefully...")
+        log.info("Received interrupt signal, shutting down gracefully...")
     finally:
         if not loop.is_closed():
-            logger.debug("Closing event loop")
+            log.debug("Closing event loop")
             loop.close()
 
 
 def _log_run_config(run_config: StackRunConfig):
     """Logs the run config with redacted fields and disabled providers removed."""
-    logger.info("Run configuration:")
+    log.info("Run configuration:")
     safe_config = redact_sensitive_fields(run_config.model_dump(mode="json"))
     clean_config = remove_disabled_providers(safe_config)
-    logger.info(yaml.dump(clean_config, indent=2))
+    log.info(yaml.dump(clean_config, indent=2))
 
 
 def extract_path_params(route: str) -> list[str]:

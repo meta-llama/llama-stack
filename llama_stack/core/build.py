@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import importlib.resources
-import logging
 import sys
 
 from pydantic import BaseModel
@@ -17,9 +16,8 @@ from llama_stack.core.external import load_external_apis
 from llama_stack.core.utils.exec import run_command
 from llama_stack.core.utils.image_types import LlamaStackImageType
 from llama_stack.distributions.template import DistributionTemplate
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
-
-log = logging.getLogger(__name__)
 
 # These are the dependencies needed by the distribution server.
 # `llama-stack` is automatically installed by the installation script.
@@ -32,6 +30,8 @@ SERVER_DEPENDENCIES = [
     "opentelemetry-sdk",
     "opentelemetry-exporter-otlp-proto-http",
 ]
+
+log = get_logger(name=__name__, category="core")
 
 
 class ApiInput(BaseModel):

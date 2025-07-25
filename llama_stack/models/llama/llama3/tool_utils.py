@@ -11,7 +11,7 @@ from llama_stack.log import get_logger
 
 from ..datatypes import BuiltinTool, RecursiveType, ToolCall, ToolPromptFormat
 
-logger = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference")
 
 BUILTIN_TOOL_PATTERN = r'\b(?P<tool_name>\w+)\.call\(query="(?P<query>[^"]*)"\)'
 CUSTOM_TOOL_CALL_PATTERN = re.compile(r"<function=(?P<function_name>[^}]+)>(?P<args>{.*?})")
@@ -215,7 +215,7 @@ class ToolUtils:
             # FIXME: Enable multiple tool calls
             return function_calls[0]
         else:
-            logger.debug(f"Did not parse tool call from message body: {message_body}")
+            log.debug(f"Did not parse tool call from message body: {message_body}")
             return None
 
     @staticmethod

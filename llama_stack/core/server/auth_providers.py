@@ -23,7 +23,7 @@ from llama_stack.core.datatypes import (
 )
 from llama_stack.log import get_logger
 
-logger = get_logger(name=__name__, category="auth")
+log = get_logger(name=__name__, category="auth")
 
 
 class AuthResponse(BaseModel):
@@ -163,7 +163,7 @@ class OAuth2TokenAuthProvider(AuthProvider):
                     timeout=10.0,  # Add a reasonable timeout
                 )
                 if response.status_code != 200:
-                    logger.warning(f"Token introspection failed with status code: {response.status_code}")
+                    log.warning(f"Token introspection failed with status code: {response.status_code}")
                     raise ValueError(f"Token introspection failed: {response.status_code}")
 
                 fields = response.json()
@@ -176,13 +176,13 @@ class OAuth2TokenAuthProvider(AuthProvider):
                     attributes=access_attributes,
                 )
         except httpx.TimeoutException:
-            logger.exception("Token introspection request timed out")
+            log.exception("Token introspection request timed out")
             raise
         except ValueError:
             # Re-raise ValueError exceptions to preserve their message
             raise
         except Exception as e:
-            logger.exception("Error during token introspection")
+            log.exception("Error during token introspection")
             raise ValueError("Token introspection error") from e
 
     async def close(self):
@@ -273,7 +273,7 @@ class CustomAuthProvider(AuthProvider):
                     timeout=10.0,  # Add a reasonable timeout
                 )
                 if response.status_code != 200:
-                    logger.warning(f"Authentication failed with status code: {response.status_code}")
+                    log.warning(f"Authentication failed with status code: {response.status_code}")
                     raise ValueError(f"Authentication failed: {response.status_code}")
 
                 # Parse and validate the auth response
@@ -282,17 +282,17 @@ class CustomAuthProvider(AuthProvider):
                     auth_response = AuthResponse(**response_data)
                     return User(principal=auth_response.principal, attributes=auth_response.attributes)
                 except Exception as e:
-                    logger.exception("Error parsing authentication response")
+                    log.exception("Error parsing authentication response")
                     raise ValueError("Invalid authentication response format") from e
 
         except httpx.TimeoutException:
-            logger.exception("Authentication request timed out")
+            log.exception("Authentication request timed out")
             raise
         except ValueError:
             # Re-raise ValueError exceptions to preserve their message
             raise
         except Exception as e:
-            logger.exception("Error during authentication")
+            log.exception("Error during authentication")
             raise ValueError("Authentication service error") from e
 
     async def close(self):
@@ -329,7 +329,7 @@ class GitHubTokenAuthProvider(AuthProvider):
         try:
             user_info = await _get_github_user_info(token, self.config.github_api_base_url)
         except httpx.HTTPStatusError as e:
-            logger.warning(f"GitHub token validation failed: {e}")
+            log.warning(f"GitHub token validation failed: {e}")
             raise ValueError("GitHub token validation failed. Please check your token and try again.") from e
 
         principal = user_info["user"]["login"]

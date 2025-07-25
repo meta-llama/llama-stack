@@ -4,13 +4,14 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 
 import httpx
 
+from llama_stack.log import get_logger
+
 from . import NVIDIAConfig
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 def _is_nvidia_hosted(config: NVIDIAConfig) -> bool:
@@ -44,7 +45,7 @@ async def check_health(config: NVIDIAConfig) -> None:
         RuntimeError: If the server is not running or ready
     """
     if not _is_nvidia_hosted(config):
-        logger.info("Checking NVIDIA NIM health...")
+        log.info("Checking NVIDIA NIM health...")
         try:
             is_live, is_ready = await _get_health(config.url)
             if not is_live:

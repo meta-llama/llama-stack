@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import warnings
 from collections.abc import AsyncIterator
 
@@ -33,6 +32,7 @@ from llama_stack.apis.inference import (
     ToolChoice,
     ToolConfig,
 )
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolPromptFormat
 from llama_stack.providers.utils.inference.model_registry import (
     ModelRegistryHelper,
@@ -54,7 +54,7 @@ from .openai_utils import (
 )
 from .utils import _is_nvidia_hosted
 
-logger = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper):
@@ -75,7 +75,7 @@ class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper):
         # TODO(mf): filter by available models
         ModelRegistryHelper.__init__(self, model_entries=MODEL_ENTRIES)
 
-        logger.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
+        log.info(f"Initializing NVIDIAInferenceAdapter({config.url})...")
 
         if _is_nvidia_hosted(config):
             if not config.api_key:

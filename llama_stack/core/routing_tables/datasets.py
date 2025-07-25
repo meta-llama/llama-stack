@@ -26,7 +26,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):

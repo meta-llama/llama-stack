@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import base64
-import logging
 import struct
 from typing import TYPE_CHECKING
 
@@ -27,7 +26,9 @@ from llama_stack.providers.utils.inference.prompt_adapter import interleaved_con
 EMBEDDING_MODELS = {}
 
 
-log = logging.getLogger(__name__)
+from llama_stack.log import get_logger
+
+log = get_logger(name=__name__, category="inference")
 
 
 class SentenceTransformerEmbeddingMixin:

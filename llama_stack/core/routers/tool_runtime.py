@@ -22,7 +22,7 @@ from llama_stack.log import get_logger
 
 from ..routing_tables.toolgroups import ToolGroupsRoutingTable
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class ToolRuntimeRouter(ToolRuntime):
@@ -31,7 +31,7 @@ class ToolRuntimeRouter(ToolRuntime):
             self,
             routing_table: ToolGroupsRoutingTable,
         ) -> None:
-            logger.debug("Initializing ToolRuntimeRouter.RagToolImpl")
+            log.debug("Initializing ToolRuntimeRouter.RagToolImpl")
             self.routing_table = routing_table
 
         async def query(
@@ -40,7 +40,7 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_ids: list[str],
             query_config: RAGQueryConfig | None = None,
         ) -> RAGQueryResult:
-            logger.debug(f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
+            log.debug(f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
             provider = await self.routing_table.get_provider_impl("knowledge_search")
             return await provider.query(content, vector_db_ids, query_config)
 
@@ -50,7 +50,7 @@ class ToolRuntimeRouter(ToolRuntime):
             vector_db_id: str,
             chunk_size_in_tokens: int = 512,
         ) -> None:
-            logger.debug(
+            log.debug(
                 f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}"
             )
             provider = await self.routing_table.get_provider_impl("insert_into_memory")
@@ -60,7 +60,7 @@ class ToolRuntimeRouter(ToolRuntime):
         self,
         routing_table: ToolGroupsRoutingTable,
     ) -> None:
-        logger.debug("Initializing ToolRuntimeRouter")
+        log.debug("Initializing ToolRuntimeRouter")
         self.routing_table = routing_table
 
         # HACK ALERT this should be in sync with "get_all_api_endpoints()"
@@ -69,15 +69,15 @@ class ToolRuntimeRouter(ToolRuntime):
             setattr(self, f"rag_tool.{method}", getattr(self.rag_tool, method))
 
     async def initialize(self) -> None:
-        logger.debug("ToolRuntimeRouter.initialize")
+        log.debug("ToolRuntimeRouter.initialize")
         pass
 
     async def shutdown(self) -> None:
-        logger.debug("ToolRuntimeRouter.shutdown")
+        log.debug("ToolRuntimeRouter.shutdown")
         pass
 
     async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> Any:
-        logger.debug(f"ToolRuntimeRouter.invoke_tool: {tool_name}")
+        log.debug(f"ToolRuntimeRouter.invoke_tool: {tool_name}")
         provider = await self.routing_table.get_provider_impl(tool_name)
         return await provider.invoke_tool(
             tool_name=tool_name,
@@ -87,5 +87,5 @@ class ToolRuntimeRouter(ToolRuntime):
     async def list_runtime_tools(
         self, tool_group_id: str | None = None, mcp_endpoint: URL | None = None
     ) -> ListToolsResponse:
-        logger.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
+        log.debug(f"ToolRuntimeRouter.list_runtime_tools: {tool_group_id}")
         return await self.routing_table.list_tools(tool_group_id)

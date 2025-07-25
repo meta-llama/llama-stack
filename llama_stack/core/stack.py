@@ -45,7 +45,7 @@ from llama_stack.core.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class LlamaStack(
@@ -105,11 +105,11 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
 
         method = getattr(impls[api], register_method)
         for obj in objects:
-            logger.debug(f"registering {rsrc.capitalize()} {obj} for provider {obj.provider_id}")
+            log.debug(f"registering {rsrc.capitalize()} {obj} for provider {obj.provider_id}")
 
             # Do not register models on disabled providers
             if hasattr(obj, "provider_id") and (not obj.provider_id or obj.provider_id == "__disabled__"):
-                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
+                log.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
                 continue
 
             # we want to maintain the type information in arguments to method.
@@ -123,7 +123,7 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
         objects_to_process = response.data if hasattr(response, "data") else response
 
         for obj in objects_to_process:
-            logger.debug(
+            log.debug(
                 f"{rsrc.capitalize()}: {obj.identifier} served by {obj.provider_id}",
             )
 
@@ -160,7 +160,7 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
                     try:
                         resolved_provider_id = replace_env_vars(v["provider_id"], f"{path}[{i}].provider_id")
                         if resolved_provider_id == "__disabled__":
-                            logger.debug(
+                            log.debug(
                                 f"Skipping config env variable expansion for disabled provider: {v.get('provider_id', '')}"
                             )
                             # Create a copy with resolved provider_id but original config
@@ -315,7 +315,7 @@ async def construct_stack(
         TEST_RECORDING_CONTEXT = setup_inference_recording()
         if TEST_RECORDING_CONTEXT:
             TEST_RECORDING_CONTEXT.__enter__()
-            logger.info(f"Inference recording enabled: mode={os.environ.get('LLAMA_STACK_TEST_INFERENCE_MODE')}")
+            log.info(f"Inference recording enabled: mode={os.environ.get('LLAMA_STACK_TEST_INFERENCE_MODE')}")
 
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
     policy = run_config.server.auth.access_policy if run_config.server.auth else []
@@ -337,12 +337,12 @@ async def construct_stack(
         import traceback
 
         if task.cancelled():
-            logger.error("Model refresh task cancelled")
+            log.error("Model refresh task cancelled")
         elif task.exception():
-            logger.error(f"Model refresh task failed: {task.exception()}")
+            log.error(f"Model refresh task failed: {task.exception()}")
             traceback.print_exception(task.exception())
         else:
-            logger.debug("Model refresh task completed")
+            log.debug("Model refresh task completed")
 
     REGISTRY_REFRESH_TASK.add_done_callback(cb)
     return impls
@@ -351,23 +351,23 @@ async def construct_stack(
 async def shutdown_stack(impls: dict[Api, Any]):
     for impl in impls.values():
         impl_name = impl.__class__.__name__
-        logger.info(f"Shutting down {impl_name}")
+        log.info(f"Shutting down {impl_name}")
         try:
             if hasattr(impl, "shutdown"):
                 await asyncio.wait_for(impl.shutdown(), timeout=5)
             else:
-                logger.warning(f"No shutdown method for {impl_name}")
+                log.warning(f"No shutdown method for {impl_name}")
         except TimeoutError:
-            logger.exception(f"Shutdown timeout for {impl_name}")
+            log.exception(f"Shutdown timeout for {impl_name}")
         except (Exception, asyncio.CancelledError) as e:
-            logger.exception(f"Failed to shutdown {impl_name}: {e}")
+            log.exception(f"Failed to shutdown {impl_name}: {e}")
 
     global TEST_RECORDING_CONTEXT
     if TEST_RECORDING_CONTEXT:
         try:
             TEST_RECORDING_CONTEXT.__exit__(None, None, None)
         except Exception as e:
-            logger.error(f"Error during inference recording cleanup: {e}")
+            log.error(f"Error during inference recording cleanup: {e}")
 
     global REGISTRY_REFRESH_TASK
     if REGISTRY_REFRESH_TASK:
@@ -375,14 +375,14 @@ async def shutdown_stack(impls: dict[Api, Any]):
 
 
 async def refresh_registry_once(impls: dict[Api, Any]):
-    logger.debug("refreshing registry")
+    log.debug("refreshing registry")
     routing_tables = [v for v in impls.values() if isinstance(v, CommonRoutingTableImpl)]
     for routing_table in routing_tables:
         await routing_table.refresh()
 
 
 async def refresh_registry_task(impls: dict[Api, Any]):
-    logger.info("starting registry refresh task")
+    log.info("starting registry refresh task")
     while True:
         await refresh_registry_once(impls)
 

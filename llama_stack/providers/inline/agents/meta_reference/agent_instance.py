@@ -84,7 +84,7 @@ MEMORY_QUERY_TOOL = "knowledge_search"
 WEB_SEARCH_TOOL = "web_search"
 RAG_TOOL_GROUP = "builtin::rag"
 
-logger = get_logger(name=__name__, category="agents")
+log = get_logger(name=__name__, category="agents")
 
 
 class ChatAgent(ShieldRunnerMixin):
@@ -612,7 +612,7 @@ class ChatAgent(ShieldRunnerMixin):
             )
 
             if n_iter >= self.agent_config.max_infer_iters:
-                logger.info(f"done with MAX iterations ({n_iter}), exiting.")
+                log.info(f"done with MAX iterations ({n_iter}), exiting.")
                 # NOTE: mark end_of_turn to indicate to client that we are done with the turn
                 # Do not continue the tool call loop after this point
                 message.stop_reason = StopReason.end_of_turn
@@ -620,7 +620,7 @@ class ChatAgent(ShieldRunnerMixin):
                 break
 
             if stop_reason == StopReason.out_of_tokens:
-                logger.info("out of token budget, exiting.")
+                log.info("out of token budget, exiting.")
                 yield message
                 break
 
@@ -634,7 +634,7 @@ class ChatAgent(ShieldRunnerMixin):
                             message.content = [message.content] + output_attachments
                     yield message
                 else:
-                    logger.debug(f"completion message with EOM (iter: {n_iter}): {str(message)}")
+                    log.debug(f"completion message with EOM (iter: {n_iter}): {str(message)}")
                     input_messages = input_messages + [message]
             else:
                 input_messages = input_messages + [message]
@@ -889,7 +889,7 @@ class ChatAgent(ShieldRunnerMixin):
         else:
             tool_name_str = tool_name
 
-        logger.info(f"executing tool call: {tool_name_str} with args: {tool_call.arguments}")
+        log.info(f"executing tool call: {tool_name_str} with args: {tool_call.arguments}")
         result = await self.tool_runtime_api.invoke_tool(
             tool_name=tool_name_str,
             kwargs={
@@ -899,7 +899,7 @@ class ChatAgent(ShieldRunnerMixin):
                 **self.tool_name_to_args.get(tool_name_str, {}),
             },
         )
-        logger.debug(f"tool call {tool_name_str} completed with result: {result}")
+        log.debug(f"tool call {tool_name_str} completed with result: {result}")
         return result
 
 

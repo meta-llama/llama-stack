@@ -7,7 +7,6 @@
 import collections
 import functools
 import json
-import logging
 import random
 import re
 import string
@@ -20,7 +19,9 @@ import nltk
 from pythainlp.tokenize import sent_tokenize as sent_tokenize_thai
 from pythainlp.tokenize import word_tokenize as word_tokenize_thai
 
-logger = logging.getLogger()
+from llama_stack.log import get_logger
+
+log = get_logger(name=__name__, category="core")
 
 WORD_LIST = [
     "western",
@@ -1726,7 +1727,7 @@ def get_langid(text: str, lid_path: str | None = None) -> str:
         try:
             line_langs.append(langdetect.detect(line))
         except langdetect.LangDetectException as e:
-            logger.info("Unable to detect language for text %s due to %s", line, e)  # refex: disable=pytotw.037
+            log.info("Unable to detect language for text %s due to %s", line, e)  # refex: disable=pytotw.037
 
     if len(line_langs) == 0:
         return "en"
@@ -1885,7 +1886,7 @@ class ResponseLanguageChecker(Instruction):
             return langdetect.detect(value) == self._language
         except langdetect.LangDetectException as e:
             # Count as instruction is followed.
-            logger.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
+            log.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
             return True
 
 
@@ -3110,7 +3111,7 @@ class CapitalLettersEnglishChecker(Instruction):
             return value.isupper() and langdetect.detect(value) == "en"
         except langdetect.LangDetectException as e:
             # Count as instruction is followed.
-            logger.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
+            log.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
             return True
 
 
@@ -3139,7 +3140,7 @@ class LowercaseLettersEnglishChecker(Instruction):
             return value.islower() and langdetect.detect(value) == "en"
         except langdetect.LangDetectException as e:
             # Count as instruction is followed.
-            logger.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
+            log.info("Unable to detect language for text %s due to %s", value, e)  # refex: disable=pytotw.037
             return True
 
 

@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import math
 from collections.abc import Callable
 from functools import partial
@@ -22,6 +21,8 @@ from PIL import Image as PIL_Image
 from torch import Tensor, nn
 from torch.distributed import _functional_collectives as funcol
 
+from llama_stack.log import get_logger
+
 from ..model import ModelArgs, RMSNorm, apply_rotary_emb, precompute_freqs_cis
 from .encoder_utils import (
     build_encoder_attention_mask,
@@ -34,8 +35,9 @@ from .encoder_utils import (
 from .image_transform import VariableSizeImageTransform
 from .utils import get_negative_inf_value, to_2tuple
 
-logger = logging.getLogger(__name__)
 MP_SCALE = 8
+
+log = get_logger(name=__name__, category="core")
 
 
 def reduce_from_tensor_model_parallel_region(input_):
@@ -415,7 +417,7 @@ class VisionEncoder(nn.Module):
                 )
                 state_dict[prefix + "gated_positional_embedding"] = global_pos_embed
                 state_dict[prefix + "gated_positional_embedding_gate"] = torch.zeros(1, dtype=global_pos_embed.dtype)
-                logger.info(f"Initialized global positional embedding with size {global_pos_embed.size()}")
+                log.info(f"Initialized global positional embedding with size {global_pos_embed.size()}")
             else:
                 global_pos_embed = resize_global_position_embedding(
                     state_dict[prefix + "gated_positional_embedding"],
@@ -423,7 +425,7 @@ class VisionEncoder(nn.Module):
                     self.max_num_tiles,
                     self.max_num_tiles,
                 )
-                logger.info(
+                log.info(
                     f"Resized global positional embedding from {state_dict[prefix + 'gated_positional_embedding'].size()} to {global_pos_embed.size()}"
                 )
                 state_dict[prefix + "gated_positional_embedding"] = global_pos_embed
@@ -771,7 +773,7 @@ class TilePositionEmbedding(nn.Module):
         if embed is not None:
             # reshape the weights to the correct shape
             nt_old, nt_old, _, w = embed.shape
-            logging.info(f"Resizing tile embedding from {nt_old}x{nt_old} to {self.num_tiles}x{self.num_tiles}")
+            log.info(f"Resizing tile embedding from {nt_old}x{nt_old} to {self.num_tiles}x{self.num_tiles}")
             embed_new = TilePositionEmbedding._dynamic_resize(embed, self.num_tiles)
             # assign the weights to the module
             state_dict[prefix + "embedding"] = embed_new

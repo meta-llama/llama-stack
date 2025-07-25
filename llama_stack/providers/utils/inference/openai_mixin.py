@@ -25,7 +25,7 @@ from llama_stack.apis.inference import (
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.openai_compat import prepare_openai_completion_params
 
-logger = get_logger(name=__name__, category="core")
+log = get_logger(name=__name__, category="core")
 
 
 class OpenAIMixin(ABC):
@@ -125,9 +125,9 @@ class OpenAIMixin(ABC):
         Direct OpenAI completion API call.
         """
         if guided_choice is not None:
-            logger.warning("guided_choice is not supported by the OpenAI API. Ignoring.")
+            log.warning("guided_choice is not supported by the OpenAI API. Ignoring.")
         if prompt_logprobs is not None:
-            logger.warning("prompt_logprobs is not supported by the OpenAI API. Ignoring.")
+            log.warning("prompt_logprobs is not supported by the OpenAI API. Ignoring.")
 
         # TODO: fix openai_completion to return type compatible with OpenAI's API response
         return await self.client.completions.create(  # type: ignore[no-any-return]
@@ -267,6 +267,6 @@ class OpenAIMixin(ABC):
             pass
         except Exception as e:
             # All other errors (auth, rate limit, network, etc.)
-            logger.warning(f"Failed to check model availability for {model}: {e}")
+            log.warning(f"Failed to check model availability for {model}: {e}")
 
         return False
