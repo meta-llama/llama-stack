@@ -98,4 +98,5 @@ image_name: starter
 additional_pip_packages:
 - aiosqlite
 - asyncpg
+- psycopg2-binary
 - sqlalchemy[asyncio]

@@ -27,6 +27,9 @@ RUN_CONFIG_PATH=/app/run.yaml
 
 BUILD_CONTEXT_DIR=$(pwd)
 
+# Placeholder for template files
+TEMPLATE_FILES=()
+
 set -euo pipefail
 
 # Define color codes
@@ -272,6 +275,19 @@ EOF
   add_to_container << EOF
 COPY run.yaml $RUN_CONFIG_PATH
 EOF
+# This is a template, we don't need to copy the run config but we still want to include potential
+# other run files like -with-postgres-store.yaml or -with-safety.yaml
+else
+  template_files=$(find "$BUILD_CONTEXT_DIR"/llama_stack/templates/"$template_or_config" -name "*.yaml" -not -name "run.yaml" -not -name "build.yaml")
+  echo "Copying template files: $template_files"
+  for file in $template_files; do
+    template_file_name=$(basename "$file")
+    TEMPLATE_FILES+=("$template_file_name")
+    cp "$file" "$BUILD_CONTEXT_DIR/$template_file_name"
+    add_to_container << EOF
+COPY $template_file_name /app/$template_file_name
+EOF
+  done
 fi
 
 stack_mount="/app/llama-stack-source"
@@ -333,6 +349,11 @@ fi
 RUN pip uninstall -y uv
 EOF
 
+# We can have a custom entrypoint.sh that figures out which server command to run based on something
+# simple, like an env var. So if someone wants to use Postgres, the script will kick off the server
+# with the right run YAML. Or, if they prefer, they can just override the entrypoint themselves and
+# point it to whatever run YAML they want.
+#
 # If a run config is provided, we use the --config flag
 if [[ -n "$run_config" ]]; then
   add_to_container << EOF
@@ -414,7 +435,8 @@ $CONTAINER_BINARY build \
   "$BUILD_CONTEXT_DIR"
 
 # clean up tmp/configs
-rm -rf "$BUILD_CONTEXT_DIR/run.yaml" "$TEMP_DIR"
+rm -rf "$BUILD_CONTEXT_DIR/run.yaml" "$TEMP_DIR" "${TEMPLATE_FILES[@]}"
+
 set +x
 
 echo "Success!"

@@ -112,39 +112,39 @@ providers:
     config:
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/faiss_store.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/faiss_store.db
   - provider_id: ${env.ENABLE_SQLITE_VEC:=__disabled__}
     provider_type: inline::sqlite-vec
     config:
-      db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/sqlite_vec.db
+      db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/sqlite_vec.db
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/sqlite_vec_registry.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/sqlite_vec_registry.db
   - provider_id: ${env.ENABLE_MILVUS:=__disabled__}
     provider_type: inline::milvus
     config:
-      db_path: ${env.MILVUS_DB_PATH:=~/.llama/distributions/starter}/milvus.db
+      db_path: ${env.MILVUS_DB_PATH:=~/.llama/distributions/ci-tests}/milvus.db
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/milvus_registry.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/milvus_registry.db
   - provider_id: ${env.ENABLE_CHROMADB:=__disabled__}
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMADB_URL:=}
+      url: ${env.CHROMADB_URL}
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter/}/chroma_remote_registry.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/chroma_remote_registry.db
   - provider_id: ${env.ENABLE_PGVECTOR:=__disabled__}
     provider_type: remote::pgvector
     config:
       host: ${env.PGVECTOR_HOST:=localhost}
       port: ${env.PGVECTOR_PORT:=5432}
-      db: ${env.PGVECTOR_DB:=}
-      user: ${env.PGVECTOR_USER:=}
-      password: ${env.PGVECTOR_PASSWORD:=}
+      db: ${env.PGVECTOR_DB}
+      user: ${env.PGVECTOR_USER}
+      password: ${env.PGVECTOR_PASSWORD}
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/pgvector_registry.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/pgvector_registry.db
   files:
   - provider_id: meta-reference-files
     provider_type: inline::localfs
