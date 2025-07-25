@@ -52,6 +52,7 @@ jobs:
         if: ${{ matrix.image-type }} == 'venv'
         env:
           INFERENCE_MODEL: "meta-llama/Llama-3.2-3B-Instruct"
+          LLAMA_STACK_LOG_FILE: "server.log"
         run: |
           # Use the virtual environment created by the build step (name comes from build config)
           source ci-test/bin/activate
@@ -75,3 +76,12 @@ jobs:
       - name: Test external API
         run: |
           curl -sSf http://localhost:8321/v1/weather/locations
+
+      - name: Upload all logs to artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-external-test
+          path: |
+            *.log
+          retention-days: 1
