@@ -8,6 +8,7 @@ from pathlib import Path
 
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
+    BuildProvider,
     ModelInput,
     Provider,
     ShieldInput,
@@ -25,91 +26,30 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
+        "inference": [BuildProvider(provider_type="inline::meta-reference")],
         "vector_io": [
-            Provider(
-                provider_id="faiss",
-                provider_type="inline::faiss",
-            ),
-            Provider(
-                provider_id="chromadb",
-                provider_type="remote::chromadb",
-            ),
-            Provider(
-                provider_id="pgvector",
-                provider_type="remote::pgvector",
-            ),
+            BuildProvider(provider_type="inline::faiss"),
+            BuildProvider(provider_type="remote::chromadb"),
+            BuildProvider(provider_type="remote::pgvector"),
         ],
-        "safety": [
-            Provider(
-                provider_id="llama-guard",
-                provider_type="inline::llama-guard",
-            )
-        ],
-        "agents": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "telemetry": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "eval": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
+        "safety": [BuildProvider(provider_type="inline::llama-guard")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
+        "eval": [BuildProvider(provider_type="inline::meta-reference")],
         "datasetio": [
-            Provider(
-                provider_id="huggingface",
-                provider_type="remote::huggingface",
-            ),
-            Provider(
-                provider_id="localfs",
-                provider_type="inline::localfs",
-            ),
+            BuildProvider(provider_type="remote::huggingface"),
+            BuildProvider(provider_type="inline::localfs"),
         ],
         "scoring": [
-            Provider(
-                provider_id="basic",
-                provider_type="inline::basic",
-            ),
-            Provider(
-                provider_id="llm-as-judge",
-                provider_type="inline::llm-as-judge",
-            ),
-            Provider(
-                provider_id="braintrust",
-                provider_type="inline::braintrust",
-            ),
+            BuildProvider(provider_type="inline::basic"),
+            BuildProvider(provider_type="inline::llm-as-judge"),
+            BuildProvider(provider_type="inline::braintrust"),
         ],
         "tool_runtime": [
-            Provider(
-                provider_id="brave-search",
-                provider_type="remote::brave-search",
-            ),
-            Provider(
-                provider_id="tavily-search",
-                provider_type="remote::tavily-search",
-            ),
-            Provider(
-                provider_id="rag-runtime",
-                provider_type="inline::rag-runtime",
-            ),
-            Provider(
-                provider_id="model-context-protocol",
-                provider_type="remote::model-context-protocol",
-            ),
+            BuildProvider(provider_type="remote::brave-search"),
+            BuildProvider(provider_type="remote::tavily-search"),
+            BuildProvider(provider_type="inline::rag-runtime"),
+            BuildProvider(provider_type="remote::model-context-protocol"),
         ],
     }
     name = "meta-reference-gpu"

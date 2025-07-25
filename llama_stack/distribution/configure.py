@@ -100,11 +100,12 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
                     break
 
                 logger.info(f"> Configuring provider `({provider.provider_type})`")
+                pid = provider.provider_type.split("::")[-1]
                 updated_providers.append(
                     configure_single_provider(
                         provider_registry[api],
                         Provider(
-                            provider_id=(f"{provider.provider_id}-{i:02d}" if len(plist) > 1 else provider.provider_id),
+                            provider_id=(f"{pid}-{i:02d}" if len(plist) > 1 else pid),
                             provider_type=provider.provider_type,
                             config={},
                         ),

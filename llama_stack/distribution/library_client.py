@@ -33,7 +33,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-from llama_stack.distribution.datatypes import Api, BuildConfig, DistributionSpec
+from llama_stack.distribution.datatypes import Api, BuildConfig, BuildProvider, DistributionSpec
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
     request_provider_data_context,
@@ -249,9 +249,16 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
+                providers: dict[str, list[BuildProvider]] = {}
+                for api, run_providers in self.config.providers.items():
+                    for provider in run_providers:
+                        providers.setdefault(api, []).append(
+                            BuildProvider(provider_type=provider.provider_type, module=provider.module)
+                        )
+                providers = dict(providers)
                 build_config = BuildConfig(
                     distribution_spec=DistributionSpec(
-                        providers=self.config.providers,
+                        providers=providers,
                     ),
                     external_providers_dir=self.config.external_providers_dir,
                 )
