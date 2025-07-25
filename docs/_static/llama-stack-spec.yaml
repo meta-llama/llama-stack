@@ -8217,6 +8217,8 @@ components:
               - type: string
               - type: array
               - type: object
+        metrics:
+          type: string
       additionalProperties: false
       required:
         - api
