@@ -161,7 +161,13 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             if not self.skip_logger_removal:
                 self._remove_root_logger_handlers()
 
-        return self.loop.run_until_complete(self.async_client.initialize())
+        # use a new event loop to avoid interfering with the main event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.async_client.initialize())
+        finally:
+            asyncio.set_event_loop(None)
 
     def _remove_root_logger_handlers(self):
         """
@@ -243,15 +249,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
-                # Convert Provider objects to their types
-                provider_types: dict[str, str | list[str]] = {}
-                for api, providers in self.config.providers.items():
-                    types = [p.provider_type for p in providers]
-                    # Convert single-item lists to strings
-                    provider_types[api] = types[0] if len(types) == 1 else types
                 build_config = BuildConfig(
                     distribution_spec=DistributionSpec(
-                        providers=provider_types,
+                        providers=self.config.providers,
                     ),
                     external_providers_dir=self.config.external_providers_dir,
                 )
@@ -353,13 +353,15 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        matched_func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body, field_names = self._handle_file_uploads(options, body)
 
         body = self._convert_body(path, options.method, body, exclude_params=set(field_names))
-        await start_trace(route, {"__location__": "library_client"})
+
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
         try:
             result = await matched_func(**body)
         finally:
@@ -409,12 +411,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
 
-        await start_trace(route, {"__location__": "library_client"})
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
 
         async def gen():
             try:
@@ -445,8 +448,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         # we use asynchronous impl always internally and channel all requests to AsyncLlamaStackClient
         # however, the top-level caller may be a SyncAPIClient -- so its stream_cls might be a Stream (SyncStream)
         # so we need to convert it to AsyncStream
+        # mypy can't track runtime variables inside the [...] of a generic, so ignore that check
         args = get_args(stream_cls)
-        stream_cls = AsyncStream[args[0]]
+        stream_cls = AsyncStream[args[0]]  # type: ignore[valid-type]
         response = AsyncAPIResponse(
             raw=mock_response,
             client=self,
@@ -468,7 +472,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         exclude_params = exclude_params or set()
 
-        func, _, _ = find_matching_route(method, path, self.route_impls)
+        func, _, _, _ = find_matching_route(method, path, self.route_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature

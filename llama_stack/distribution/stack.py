@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import importlib.resources
 import os
 import re
@@ -38,6 +39,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.inspect import DistributionInspectConfig, DistributionInspectImpl
 from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
+from llama_stack.distribution.routing_tables.common import CommonRoutingTableImpl
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
@@ -88,6 +90,10 @@ RESOURCES = [
     ("benchmarks", Api.benchmarks, "register_benchmark", "list_benchmarks"),
     ("tool_groups", Api.tool_groups, "register_tool_group", "list_tool_groups"),
 ]
+
+
+REGISTRY_REFRESH_INTERVAL_SECONDS = 300
+REGISTRY_REFRESH_TASK = None
 
 
 async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
@@ -324,7 +330,51 @@ async def construct_stack(
     add_internal_implementations(impls, run_config)
 
     await register_resources(run_config, impls)
+
+    global REGISTRY_REFRESH_TASK
+    REGISTRY_REFRESH_TASK = asyncio.create_task(refresh_registry(impls))
+
+    def cb(task):
+        import traceback
+
+        if task.cancelled():
+            logger.error("Model refresh task cancelled")
+        elif task.exception():
+            logger.error(f"Model refresh task failed: {task.exception()}")
+            traceback.print_exception(task.exception())
+        else:
+            logger.debug("Model refresh task completed")
+
+    REGISTRY_REFRESH_TASK.add_done_callback(cb)
     return impls
+
+
+async def shutdown_stack(impls: dict[Api, Any]):
+    for impl in impls.values():
+        impl_name = impl.__class__.__name__
+        logger.info(f"Shutting down {impl_name}")
+        try:
+            if hasattr(impl, "shutdown"):
+                await asyncio.wait_for(impl.shutdown(), timeout=5)
+            else:
+                logger.warning(f"No shutdown method for {impl_name}")
+        except TimeoutError:
+            logger.exception(f"Shutdown timeout for {impl_name}")
+        except (Exception, asyncio.CancelledError) as e:
+            logger.exception(f"Failed to shutdown {impl_name}: {e}")
+
+    global REGISTRY_REFRESH_TASK
+    if REGISTRY_REFRESH_TASK:
+        REGISTRY_REFRESH_TASK.cancel()
+
+
+async def refresh_registry(impls: dict[Api, Any]):
+    routing_tables = [v for v in impls.values() if isinstance(v, CommonRoutingTableImpl)]
+    while True:
+        for routing_table in routing_tables:
+            await routing_table.refresh()
+
+        await asyncio.sleep(REGISTRY_REFRESH_INTERVAL_SECONDS)
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:

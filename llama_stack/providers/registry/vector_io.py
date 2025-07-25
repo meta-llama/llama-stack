@@ -410,6 +410,7 @@ See [PGVector's documentation](https://github.com/pgvector/pgvector) for more de
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         remote_provider_spec(
             Api.vector_io,

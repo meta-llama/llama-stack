@@ -99,7 +99,7 @@ class PGVectorIndex(EmbeddingIndex):
         for i, chunk in enumerate(chunks):
             values.append(
                 (
-                    f"{chunk.metadata['document_id']}:chunk-{i}",
+                    f"{chunk.chunk_id}",
                     Json(chunk.model_dump()),
                     embeddings[i].tolist(),
                 )
@@ -158,6 +158,11 @@ class PGVectorIndex(EmbeddingIndex):
     async def delete(self):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
+
+    async def delete_chunk(self, chunk_id: str) -> None:
+        """Remove a chunk from the PostgreSQL table."""
+        with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute(f"DELETE FROM {self.table_name} WHERE id = %s", (chunk_id,))
 
 
 class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
@@ -265,3 +270,13 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         index = PGVectorIndex(vector_db, vector_db.embedding_dimension, self.conn)
         self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]
+
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a PostgreSQL vector store."""
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
+
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)

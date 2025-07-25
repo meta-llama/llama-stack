@@ -40,7 +40,12 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
-from llama_stack.distribution.request_headers import PROVIDER_DATA_VAR, User, request_provider_data_context
+from llama_stack.distribution.external import ExternalApiSpec, load_external_apis
+from llama_stack.distribution.request_headers import (
+    PROVIDER_DATA_VAR,
+    request_provider_data_context,
+    user_from_scope,
+)
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.server.routes import (
     find_matching_route,
@@ -51,6 +56,7 @@ from llama_stack.distribution.stack import (
     cast_image_name_to_string,
     construct_stack,
     replace_env_vars,
+    shutdown_stack,
     validate_env_pair,
 )
 from llama_stack.distribution.utils.config import redact_sensitive_fields
@@ -146,18 +152,7 @@ async def shutdown(app):
     Handled by the lifespan context manager. The shutdown process involves
     shutting down all implementations registered in the application.
     """
-    for impl in app.__llama_stack_impls__.values():
-        impl_name = impl.__class__.__name__
-        logger.info("Shutting down %s", impl_name)
-        try:
-            if hasattr(impl, "shutdown"):
-                await asyncio.wait_for(impl.shutdown(), timeout=5)
-            else:
-                logger.warning("No shutdown method for %s", impl_name)
-        except TimeoutError:
-            logger.exception("Shutdown timeout for %s ", impl_name, exc_info=True)
-        except (Exception, asyncio.CancelledError) as e:
-            logger.exception("Failed to shutdown %s: %s", impl_name, {e})
+    await shutdown_stack(app.__llama_stack_impls__)
 
 
 @asynccontextmanager
@@ -222,9 +217,7 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
     @functools.wraps(func)
     async def route_handler(request: Request, **kwargs):
         # Get auth attributes from the request scope
-        user_attributes = request.scope.get("user_attributes", {})
-        principal = request.scope.get("principal", "")
-        user = User(principal=principal, attributes=user_attributes)
+        user = user_from_scope(request.scope)
 
         await log_request_pre_validation(request)
 
@@ -282,9 +275,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
 
 
 class TracingMiddleware:
-    def __init__(self, app, impls):
+    def __init__(self, app, impls, external_apis: dict[str, ExternalApiSpec]):
         self.app = app
         self.impls = impls
+        self.external_apis = external_apis
         # FastAPI built-in paths that should bypass custom routing
         self.fastapi_paths = ("/docs", "/redoc", "/openapi.json", "/favicon.ico", "/static")
 
@@ -301,10 +295,12 @@ class TracingMiddleware:
             return await self.app(scope, receive, send)
 
         if not hasattr(self, "route_impls"):
-            self.route_impls = initialize_route_impls(self.impls)
+            self.route_impls = initialize_route_impls(self.impls, self.external_apis)
 
         try:
-            _, _, trace_path = find_matching_route(scope.get("method", hdrs.METH_GET), path, self.route_impls)
+            _, _, route_path, webmethod = find_matching_route(
+                scope.get("method", hdrs.METH_GET), path, self.route_impls
+            )
         except ValueError:
             # If no matching endpoint is found, pass through to FastAPI
             logger.debug(f"No matching route found for path: {path}, falling back to FastAPI")
@@ -321,6 +317,7 @@ class TracingMiddleware:
         if tracestate:
             trace_attributes["tracestate"] = tracestate
 
+        trace_path = webmethod.descriptive_name or route_path
         trace_context = await start_trace(trace_path, trace_attributes)
 
         async def send_with_trace_id(message):
@@ -432,10 +429,21 @@ def main(args: argparse.Namespace | None = None):
     if not os.environ.get("LLAMA_STACK_DISABLE_VERSION_CHECK"):
         app.add_middleware(ClientVersionMiddleware)
 
-    # Add authentication middleware if configured
+    try:
+        # Create and set the event loop that will be used for both construction and server runtime
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        # Construct the stack in the persistent event loop
+        impls = loop.run_until_complete(construct_stack(config))
+
+    except InvalidProviderError as e:
+        logger.error(f"Error: {str(e)}")
+        sys.exit(1)
+
     if config.server.auth:
         logger.info(f"Enabling authentication with provider: {config.server.auth.provider_config.type.value}")
-        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth)
+        app.add_middleware(AuthenticationMiddleware, auth_config=config.server.auth, impls=impls)
     else:
         if config.server.quota:
             quota = config.server.quota
@@ -466,24 +474,14 @@ def main(args: argparse.Namespace | None = None):
             window_seconds=window_seconds,
         )
 
-    try:
-        # Create and set the event loop that will be used for both construction and server runtime
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        # Construct the stack in the persistent event loop
-        impls = loop.run_until_complete(construct_stack(config))
-
-    except InvalidProviderError as e:
-        logger.error(f"Error: {str(e)}")
-        sys.exit(1)
-
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
     else:
         setup_logger(TelemetryAdapter(TelemetryConfig(), {}))
 
-    all_routes = get_all_api_routes()
+    # Load external APIs if configured
+    external_apis = load_external_apis(config)
+    all_routes = get_all_api_routes(external_apis)
 
     if config.apis:
         apis_to_serve = set(config.apis)
@@ -502,9 +500,12 @@ def main(args: argparse.Namespace | None = None):
         api = Api(api_str)
 
         routes = all_routes[api]
-        impl = impls[api]
+        try:
+            impl = impls[api]
+        except KeyError as e:
+            raise ValueError(f"Could not find provider implementation for {api} API") from e
 
-        for route in routes:
+        for route, _ in routes:
             if not hasattr(impl, route.name):
                 # ideally this should be a typing violation already
                 raise ValueError(f"Could not find method {route.name} on {impl}!")
@@ -533,7 +534,7 @@ def main(args: argparse.Namespace | None = None):
     app.exception_handler(Exception)(global_exception_handler)
 
     app.__llama_stack_impls__ = impls
-    app.add_middleware(TracingMiddleware, impls=impls)
+    app.add_middleware(TracingMiddleware, impls=impls, external_apis=external_apis)
 
     import uvicorn
 

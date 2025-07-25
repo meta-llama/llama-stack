@@ -98,14 +98,16 @@ class OllamaInferenceAdapter(
     def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
         self.config = config
-        self._client = None
+        self._clients: dict[asyncio.AbstractEventLoop, AsyncClient] = {}
         self._openai_client = None
 
     @property
     def client(self) -> AsyncClient:
-        if self._client is None:
-            self._client = AsyncClient(host=self.config.url)
-        return self._client
+        # ollama client attaches itself to the current event loop (sadly?)
+        loop = asyncio.get_running_loop()
+        if loop not in self._clients:
+            self._clients[loop] = AsyncClient(host=self.config.url)
+        return self._clients[loop]
 
     @property
     def openai_client(self) -> AsyncOpenAI:
@@ -121,59 +123,61 @@ class OllamaInferenceAdapter(
                 "Ollama Server is not running, make sure to start it using `ollama serve` in a separate terminal"
             )
 
-        if self.config.refresh_models:
-            logger.debug("ollama starting background model refresh task")
-            self._refresh_task = asyncio.create_task(self._refresh_models())
+    async def should_refresh_models(self) -> bool:
+        return self.config.refresh_models
 
-            def cb(task):
-                if task.cancelled():
-                    import traceback
-
-                    logger.error(f"ollama background refresh task canceled:\n{''.join(traceback.format_stack())}")
-                elif task.exception():
-                    logger.error(f"ollama background refresh task died: {task.exception()}")
-                else:
-                    logger.error("ollama background refresh task completed unexpectedly")
-
-            self._refresh_task.add_done_callback(cb)
-
-    async def _refresh_models(self) -> None:
-        # Wait for model store to be available (with timeout)
-        waited_time = 0
-        while not self.model_store and waited_time < 60:
-            await asyncio.sleep(1)
-            waited_time += 1
-
-        if not self.model_store:
-            raise ValueError("Model store not set after waiting 60 seconds")
-
+    async def list_models(self) -> list[Model] | None:
         provider_id = self.__provider_id__
-        while True:
-            try:
-                response = await self.client.list()
-            except Exception as e:
-                logger.warning(f"Failed to list models: {str(e)}")
-                await asyncio.sleep(self.config.refresh_models_interval)
+        response = await self.client.list()
+
+        # always add the two embedding models which can be pulled on demand
+        models = [
+            Model(
+                identifier="all-minilm:l6-v2",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            # add all-minilm alias
+            Model(
+                identifier="all-minilm",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            Model(
+                identifier="nomic-embed-text",
+                provider_resource_id="nomic-embed-text",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 768,
+                    "context_length": 8192,
+                },
+                model_type=ModelType.embedding,
+            ),
+        ]
+        for m in response.models:
+            # kill embedding models since we don't know dimensions for them
+            if m.details.family in ["bert"]:
                 continue
-
-            models = []
-            for m in response.models:
-                model_type = ModelType.embedding if m.details.family in ["bert"] else ModelType.llm
-                if model_type == ModelType.embedding:
-                    continue
-                models.append(
-                    Model(
-                        identifier=m.model,
-                        provider_resource_id=m.model,
-                        provider_id=provider_id,
-                        metadata={},
-                        model_type=model_type,
-                    )
+            models.append(
+                Model(
+                    identifier=m.model,
+                    provider_resource_id=m.model,
+                    provider_id=provider_id,
+                    metadata={},
+                    model_type=ModelType.llm,
                 )
-            await self.model_store.update_registered_llm_models(provider_id, models)
-            logger.debug(f"ollama refreshed model list ({len(models)} models)")
-
-            await asyncio.sleep(self.config.refresh_models_interval)
+            )
+        return models
 
     async def health(self) -> HealthResponse:
         """
@@ -190,12 +194,7 @@ class OllamaInferenceAdapter(
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def shutdown(self) -> None:
-        if hasattr(self, "_refresh_task") and not self._refresh_task.done():
-            logger.debug("ollama cancelling background refresh task")
-            self._refresh_task.cancel()
-
-        self._client = None
-        self._openai_client = None
+        self._clients.clear()
 
     async def unregister_model(self, model_id: str) -> None:
         pass

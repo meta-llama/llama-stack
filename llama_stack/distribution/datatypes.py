@@ -36,6 +36,11 @@ LLAMA_STACK_RUN_CONFIG_VERSION = 2
 RoutingKey = str | list[str]
 
 
+class RegistryEntrySource(StrEnum):
+    via_register_api = "via_register_api"
+    listed_from_provider = "listed_from_provider"
+
+
 class User(BaseModel):
     principal: str
     # further attributes that may be used for access control decisions
@@ -50,6 +55,7 @@ class ResourceWithOwner(Resource):
     resource. This can be used to constrain access to the resource."""
 
     owner: User | None = None
+    source: RegistryEntrySource = RegistryEntrySource.via_register_api
 
 
 # Use the extended Resource for all routable objects
@@ -130,27 +136,38 @@ class RoutingTableProviderSpec(ProviderSpec):
     pip_packages: list[str] = Field(default_factory=list)
 
 
+class Provider(BaseModel):
+    # provider_id of None means that the provider is not enabled - this happens
+    # when the provider is enabled via a conditional environment variable
+    provider_id: str | None
+    provider_type: str
+    config: dict[str, Any] = {}
+    module: str | None = Field(
+        default=None,
+        description="""
+ Fully-qualified name of the external provider module to import. The module is expected to have:
+
+  - `get_adapter_impl(config, deps)`: returns the adapter implementation
+
+  Example: `module: ramalama_stack`
+ """,
+    )
+
+
 class DistributionSpec(BaseModel):
     description: str | None = Field(
         default="",
         description="Description of the distribution",
     )
     container_image: str | None = None
-    providers: dict[str, str | list[str]] = Field(
+    providers: dict[str, list[Provider]] = Field(
         default_factory=dict,
         description="""
-Provider Types for each of the APIs provided by this distribution. If you
-select multiple providers, you should provide an appropriate 'routing_map'
-in the runtime configuration to help route to the correct provider.""",
+        Provider Types for each of the APIs provided by this distribution. If you
+        select multiple providers, you should provide an appropriate 'routing_map'
+        in the runtime configuration to help route to the correct provider.
+        """,
     )
-
-
-class Provider(BaseModel):
-    # provider_id of None means that the provider is not enabled - this happens
-    # when the provider is enabled via a conditional environment variable
-    provider_id: str | None
-    provider_type: str
-    config: dict[str, Any]
 
 
 class LoggingConfig(BaseModel):
@@ -381,6 +398,11 @@ a default SQLite store will be used.""",
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
 
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
+    )
+
     @field_validator("external_providers_dir")
     @classmethod
     def validate_external_providers_dir(cls, v):
@@ -411,6 +433,10 @@ class BuildConfig(BaseModel):
     additional_pip_packages: list[str] = Field(
         default_factory=list,
         description="Additional pip packages to install in the distribution. These packages will be installed in the distribution environment.",
+    )
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
     )
 
     @field_validator("external_providers_dir")

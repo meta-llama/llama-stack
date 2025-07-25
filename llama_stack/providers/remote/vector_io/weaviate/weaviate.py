@@ -66,6 +66,9 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        raise NotImplementedError("delete_chunk is not supported in Chroma")
+
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         collection = self.client.collections.get(self.collection_name)
 
@@ -263,4 +266,7 @@ class WeaviateVectorIOAdapter(
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
 
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")

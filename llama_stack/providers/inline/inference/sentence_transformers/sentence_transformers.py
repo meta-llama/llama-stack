@@ -20,6 +20,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.models import ModelType
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
@@ -41,6 +42,8 @@ class SentenceTransformersInferenceImpl(
     InferenceProvider,
     ModelsProtocolPrivate,
 ):
+    __provider_id__: str
+
     def __init__(self, config: SentenceTransformersInferenceConfig) -> None:
         self.config = config
 
@@ -49,6 +52,22 @@ class SentenceTransformersInferenceImpl(
 
     async def shutdown(self) -> None:
         pass
+
+    async def should_refresh_models(self) -> bool:
+        return False
+
+    async def list_models(self) -> list[Model] | None:
+        return [
+            Model(
+                identifier="all-MiniLM-L6-v2",
+                provider_resource_id="all-MiniLM-L6-v2",
+                provider_id=self.__provider_id__,
+                metadata={
+                    "embedding_dimension": 384,
+                },
+                model_type=ModelType.embedding,
+            ),
+        ]
 
     async def register_model(self, model: Model) -> Model:
         return model
