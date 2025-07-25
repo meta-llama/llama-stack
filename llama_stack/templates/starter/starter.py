@@ -9,6 +9,7 @@ from typing import Any
 
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
+    BuildProvider,
     ModelInput,
     Provider,
     ProviderSpec,
@@ -213,131 +214,38 @@ def get_safety_models_for_providers(providers: list[Provider]) -> dict[str, list
 
 def get_distribution_template() -> DistributionTemplate:
     remote_inference_providers, available_models = get_remote_inference_providers()
-
     name = "starter"
-
-    vector_io_providers = [
-        Provider(
-            provider_id="${env.ENABLE_FAISS:=faiss}",
-            provider_type="inline::faiss",
-            config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
-        ),
-        Provider(
-            provider_id="${env.ENABLE_SQLITE_VEC:=__disabled__}",
-            provider_type="inline::sqlite-vec",
-            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
-        ),
-        Provider(
-            provider_id="${env.ENABLE_MILVUS:=__disabled__}",
-            provider_type="inline::milvus",
-            config=MilvusVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
-        ),
-        Provider(
-            provider_id="${env.ENABLE_CHROMADB:=__disabled__}",
-            provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(
-                f"~/.llama/distributions/{name}/",
-                url="${env.CHROMADB_URL:=}",
-            ),
-        ),
-        Provider(
-            provider_id="${env.ENABLE_PGVECTOR:=__disabled__}",
-            provider_type="remote::pgvector",
-            config=PGVectorVectorIOConfig.sample_run_config(
-                f"~/.llama/distributions/{name}",
-                db="${env.PGVECTOR_DB:=}",
-                user="${env.PGVECTOR_USER:=}",
-                password="${env.PGVECTOR_PASSWORD:=}",
-            ),
-        ),
-    ]
-
+    # For build config, use BuildProvider with only provider_type and module
     providers = {
-        "inference": remote_inference_providers
-        + [
-            Provider(
-                provider_id="sentence-transformers",
-                provider_type="inline::sentence-transformers",
-            )
+        "inference": [BuildProvider(provider_type=p.provider_type, module=p.module) for p in remote_inference_providers]
+        + [BuildProvider(provider_type="inline::sentence-transformers")],
+        "vector_io": [
+            BuildProvider(provider_type="inline::faiss"),
+            BuildProvider(provider_type="inline::sqlite-vec"),
+            BuildProvider(provider_type="inline::milvus"),
+            BuildProvider(provider_type="remote::chromadb"),
+            BuildProvider(provider_type="remote::pgvector"),
         ],
-        "vector_io": vector_io_providers,
-        "files": [
-            Provider(
-                provider_id="localfs",
-                provider_type="inline::localfs",
-            )
-        ],
-        "safety": [
-            Provider(
-                provider_id="llama-guard",
-                provider_type="inline::llama-guard",
-            )
-        ],
-        "agents": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "telemetry": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "post_training": [
-            Provider(
-                provider_id="huggingface",
-                provider_type="inline::huggingface",
-            )
-        ],
-        "eval": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
+        "files": [BuildProvider(provider_type="inline::localfs")],
+        "safety": [BuildProvider(provider_type="inline::llama-guard")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
+        "post_training": [BuildProvider(provider_type="inline::huggingface")],
+        "eval": [BuildProvider(provider_type="inline::meta-reference")],
         "datasetio": [
-            Provider(
-                provider_id="huggingface",
-                provider_type="remote::huggingface",
-            ),
-            Provider(
-                provider_id="localfs",
-                provider_type="inline::localfs",
-            ),
+            BuildProvider(provider_type="remote::huggingface"),
+            BuildProvider(provider_type="inline::localfs"),
         ],
         "scoring": [
-            Provider(
-                provider_id="basic",
-                provider_type="inline::basic",
-            ),
-            Provider(
-                provider_id="llm-as-judge",
-                provider_type="inline::llm-as-judge",
-            ),
-            Provider(
-                provider_id="braintrust",
-                provider_type="inline::braintrust",
-            ),
+            BuildProvider(provider_type="inline::basic"),
+            BuildProvider(provider_type="inline::llm-as-judge"),
+            BuildProvider(provider_type="inline::braintrust"),
         ],
         "tool_runtime": [
-            Provider(
-                provider_id="brave-search",
-                provider_type="remote::brave-search",
-            ),
-            Provider(
-                provider_id="tavily-search",
-                provider_type="remote::tavily-search",
-            ),
-            Provider(
-                provider_id="rag-runtime",
-                provider_type="inline::rag-runtime",
-            ),
-            Provider(
-                provider_id="model-context-protocol",
-                provider_type="remote::model-context-protocol",
-            ),
+            BuildProvider(provider_type="remote::brave-search"),
+            BuildProvider(provider_type="remote::tavily-search"),
+            BuildProvider(provider_type="inline::rag-runtime"),
+            BuildProvider(provider_type="remote::model-context-protocol"),
         ],
     }
     files_provider = Provider(
@@ -392,7 +300,41 @@ def get_distribution_template() -> DistributionTemplate:
             "run.yaml": RunConfigSettings(
                 provider_overrides={
                     "inference": remote_inference_providers + [embedding_provider],
-                    "vector_io": vector_io_providers,
+                    "vector_io": [
+                        Provider(
+                            provider_id="${env.ENABLE_FAISS:=faiss}",
+                            provider_type="inline::faiss",
+                            config=FaissVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+                        ),
+                        Provider(
+                            provider_id="${env.ENABLE_SQLITE_VEC:=__disabled__}",
+                            provider_type="inline::sqlite-vec",
+                            config=SQLiteVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+                        ),
+                        Provider(
+                            provider_id="${env.ENABLE_MILVUS:=__disabled__}",
+                            provider_type="inline::milvus",
+                            config=MilvusVectorIOConfig.sample_run_config(f"~/.llama/distributions/{name}"),
+                        ),
+                        Provider(
+                            provider_id="${env.ENABLE_CHROMADB:=__disabled__}",
+                            provider_type="remote::chromadb",
+                            config=ChromaVectorIOConfig.sample_run_config(
+                                f"~/.llama/distributions/{name}/",
+                                url="${env.CHROMADB_URL:=}",
+                            ),
+                        ),
+                        Provider(
+                            provider_id="${env.ENABLE_PGVECTOR:=__disabled__}",
+                            provider_type="remote::pgvector",
+                            config=PGVectorVectorIOConfig.sample_run_config(
+                                f"~/.llama/distributions/{name}",
+                                db="${env.PGVECTOR_DB:=}",
+                                user="${env.PGVECTOR_USER:=}",
+                                password="${env.PGVECTOR_PASSWORD:=}",
+                            ),
+                        ),
+                    ],
                     "files": [files_provider],
                     "post_training": [post_training_provider],
                 },

@@ -6,7 +6,7 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.distribution.datatypes import BuildProvider, ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.datasetio.nvidia import NvidiaDatasetIOConfig
 from llama_stack.providers.remote.eval.nvidia import NVIDIAEvalConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
@@ -17,65 +17,19 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": [
-            Provider(
-                provider_id="nvidia",
-                provider_type="remote::nvidia",
-            )
-        ],
-        "vector_io": [
-            Provider(
-                provider_id="faiss",
-                provider_type="inline::faiss",
-            )
-        ],
-        "safety": [
-            Provider(
-                provider_id="nvidia",
-                provider_type="remote::nvidia",
-            )
-        ],
-        "agents": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "telemetry": [
-            Provider(
-                provider_id="meta-reference",
-                provider_type="inline::meta-reference",
-            )
-        ],
-        "eval": [
-            Provider(
-                provider_id="nvidia",
-                provider_type="remote::nvidia",
-            )
-        ],
-        "post_training": [Provider(provider_id="nvidia", provider_type="remote::nvidia", config={})],
+        "inference": [BuildProvider(provider_type="remote::nvidia")],
+        "vector_io": [BuildProvider(provider_type="inline::faiss")],
+        "safety": [BuildProvider(provider_type="remote::nvidia")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
+        "eval": [BuildProvider(provider_type="remote::nvidia")],
+        "post_training": [BuildProvider(provider_type="remote::nvidia")],
         "datasetio": [
-            Provider(
-                provider_id="localfs",
-                provider_type="inline::localfs",
-            ),
-            Provider(
-                provider_id="nvidia",
-                provider_type="remote::nvidia",
-            ),
+            BuildProvider(provider_type="inline::localfs"),
+            BuildProvider(provider_type="remote::nvidia"),
         ],
-        "scoring": [
-            Provider(
-                provider_id="basic",
-                provider_type="inline::basic",
-            )
-        ],
-        "tool_runtime": [
-            Provider(
-                provider_id="rag-runtime",
-                provider_type="inline::rag-runtime",
-            )
-        ],
+        "scoring": [BuildProvider(provider_type="inline::basic")],
+        "tool_runtime": [BuildProvider(provider_type="inline::rag-runtime")],
     }
 
     inference_provider = Provider(

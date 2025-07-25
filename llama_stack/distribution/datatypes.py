@@ -154,13 +154,27 @@ class Provider(BaseModel):
     )
 
 
+class BuildProvider(BaseModel):
+    provider_type: str
+    module: str | None = Field(
+        default=None,
+        description="""
+ Fully-qualified name of the external provider module to import. The module is expected to have:
+
+  - `get_adapter_impl(config, deps)`: returns the adapter implementation
+
+  Example: `module: ramalama_stack`
+ """,
+    )
+
+
 class DistributionSpec(BaseModel):
     description: str | None = Field(
         default="",
         description="Description of the distribution",
     )
     container_image: str | None = None
-    providers: dict[str, list[Provider]] = Field(
+    providers: dict[str, list[BuildProvider]] = Field(
         default_factory=dict,
         description="""
         Provider Types for each of the APIs provided by this distribution. If you
