@@ -119,8 +119,8 @@ jobs:
           if [ "${{ matrix.provider }}" == "ollama" ]; then
             export OLLAMA_URL="http://0.0.0.0:11434"
             export TEXT_MODEL=ollama/llama3.2:3b-instruct-fp16
-            export SAFETY_MODEL="llama-guard3:1b"
-            EXTRA_PARAMS="--safety-shield=$SAFETY_MODEL"
+            export SAFETY_MODEL="ollama/llama-guard3:1b"
+            EXTRA_PARAMS="--safety-shield=llama-guard"
           else
             export VLLM_URL="http://localhost:8000/v1"
             export TEXT_MODEL=vllm/meta-llama/Llama-3.2-1B-Instruct
