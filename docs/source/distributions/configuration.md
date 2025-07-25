@@ -687,3 +687,38 @@ shields:
   provider_shield_id: null
 ...
 ```
+
+### Global Vector-Store Defaults
+
+Starting with Llama-Stack v2, you can provide a *stack-level* default embedding model that will be used whenever a new vector-store is created and the caller does **not** specify an `embedding_model` parameter.
+
+Add a top-level block next to `models:` and `vector_io:` in your build/run YAML:
+
+```yaml
+vector_store_config:
+  default_embedding_model: ${env.LLAMA_STACK_DEFAULT_EMBEDDING_MODEL:=all-MiniLM-L6-v2}
+  # optional but recommended
+  default_embedding_dimension: ${env.LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION:=384}
+```
+
+Precedence rules at runtime:
+
+1. If `embedding_model` is explicitly passed in an API call, that value is used.
+2. Otherwise the value in `vector_store_config.default_embedding_model` is used.
+3. If neither is available the server will raise **MissingEmbeddingModelError** at store-creation time so mis-configuration is caught early.
+
+#### Environment variables
+
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `LLAMA_STACK_DEFAULT_EMBEDDING_MODEL` | Global default embedding model id | `all-MiniLM-L6-v2` |
+| `LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION` | Dimension for embeddings (optional) | `384` |
+
+If you include the `${env.…}` placeholder in `vector_store_config`, deployments can override the default without editing YAML:
+
+```bash
+export LLAMA_STACK_DEFAULT_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+llama stack run --config run.yaml
+```
+
+> Tip: If you omit `vector_store_config` entirely you **must** either pass `embedding_model=` on every `create_vector_store` call or set `LLAMA_STACK_DEFAULT_EMBEDDING_MODEL` in the environment, otherwise the server will refuse to create a vector store.
