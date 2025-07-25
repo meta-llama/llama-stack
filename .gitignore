@@ -28,3 +28,6 @@ pytest-report.xml
 .python-version
 CLAUDE.md
 .claude/
+
+# Auto-generated build info
+llama_stack/cli/build_info.py
