@@ -425,6 +425,35 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        """Remove a chunk from the SQLite vector store."""
+
+        def _delete_chunk():
+            connection = _create_sqlite_connection(self.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute("BEGIN TRANSACTION")
+
+                # Delete from metadata table
+                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id = ?", (chunk_id,))
+
+                # Delete from vector table
+                cur.execute(f"DELETE FROM {self.vector_table} WHERE id = ?", (chunk_id,))
+
+                # Delete from FTS table
+                cur.execute(f"DELETE FROM {self.fts_table} WHERE id = ?", (chunk_id,))
+
+                connection.commit()
+            except Exception as e:
+                connection.rollback()
+                logger.error(f"Error deleting chunk {chunk_id}: {e}")
+                raise
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_delete_chunk)
+
 
 class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     """
@@ -520,3 +549,13 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await index.query_chunks(query, params)
+
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a sqlite_vec index."""
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
+
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)
