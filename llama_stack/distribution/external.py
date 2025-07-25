@@ -11,7 +11,7 @@ from llama_stack.apis.datatypes import Api, ExternalApiSpec
 from llama_stack.distribution.datatypes import BuildConfig, StackRunConfig
 from llama_stack.log import get_logger
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 def load_external_apis(config: StackRunConfig | BuildConfig | None) -> dict[Api, ExternalApiSpec]:

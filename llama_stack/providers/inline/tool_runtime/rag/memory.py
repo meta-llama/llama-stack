@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import secrets
 import string
 from typing import Any
@@ -32,6 +31,9 @@ from llama_stack.apis.tools import (
     ToolRuntime,
 )
 from llama_stack.apis.vector_io import QueryChunksResponse, VectorIO
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="tools")
 from llama_stack.providers.datatypes import ToolGroupsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import interleaved_content_as_str
 from llama_stack.providers.utils.memory.vector_store import (
@@ -41,8 +43,6 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import RagToolRuntimeConfig
 from .context_retriever import generate_rag_query
-
-log = logging.getLogger(__name__)
 
 
 def make_random_string(length: int = 8):
@@ -153,7 +153,7 @@ class MemoryToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime, RAGToolRunti
             tokens += metadata.get("metadata_token_count", 0)
 
             if tokens > query_config.max_tokens_in_context:
-                log.error(
+                logger.error(
                     f"Using {len(picked)} chunks; reached max tokens in context: {tokens}",
                 )
                 break

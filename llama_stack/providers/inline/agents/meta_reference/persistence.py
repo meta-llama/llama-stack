@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import json
-import logging
 import uuid
 from datetime import UTC, datetime
 
@@ -14,9 +13,10 @@ from llama_stack.distribution.access_control.access_control import AccessDeniedE
 from llama_stack.distribution.access_control.datatypes import AccessRule
 from llama_stack.distribution.datatypes import User
 from llama_stack.distribution.request_headers import get_authenticated_user
-from llama_stack.providers.utils.kvstore import KVStore
+from llama_stack.log import get_logger
 
-log = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="agents")
+from llama_stack.providers.utils.kvstore import KVStore
 
 
 class AgentSessionInfo(Session):
@@ -126,7 +126,7 @@ class AgentPersistence:
                 turn = Turn(**json.loads(value))
                 turns.append(turn)
             except Exception as e:
-                log.error(f"Error parsing turn: {e}")
+                logger.error(f"Error parsing turn: {e}")
                 continue
 
         # The kvstore does not guarantee order, so we sort by started_at
@@ -193,7 +193,7 @@ class AgentPersistence:
                 session_info = Session(**json.loads(value))
                 sessions.append(session_info)
             except Exception as e:
-                log.error(f"Error parsing session info: {e}")
+                logger.error(f"Error parsing session info: {e}")
                 continue
         return sessions
 

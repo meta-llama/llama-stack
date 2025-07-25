@@ -13,7 +13,7 @@
 
 # Copyright (c) Meta Platforms, Inc. and its affiliates.
 import math
-from logging import getLogger
+from logging import getLogger  # allow-direct-logging
 
 import torch
 import torch.nn.functional as F

@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import base64
 import io
-import logging
 import re
 import time
 from abc import ABC, abstractmethod
@@ -25,14 +24,15 @@ from llama_stack.apis.common.content_types import (
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata, QueryChunksResponse
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="memory")
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
-
-log = logging.getLogger(__name__)
 
 # Constants for reranker types
 RERANKER_TYPE_RRF = "rrf"
@@ -102,16 +102,16 @@ def content_from_data_and_mime_type(data: bytes | str, mime_type: str | None, en
             except UnicodeDecodeError as e:
                 if first_exception is None:
                     first_exception = e
-                log.warning(f"Decoding failed with {encoding}: {e}")
+                logger.warning(f"Decoding failed with {encoding}: {e}")
         # raise the origional exception, if we got here there was at least 1 exception
-        log.error(f"Could not decode data as any of {encodings_to_try}")
+        logger.error(f"Could not decode data as any of {encodings_to_try}")
         raise first_exception
 
     elif mime_type == "application/pdf":
         return parse_pdf(data)
 
     else:
-        log.error("Could not extract content from data_url properly.")
+        logger.error("Could not extract content from data_url properly.")
         return ""
 
 
