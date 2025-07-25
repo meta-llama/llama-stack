@@ -174,7 +174,7 @@ pydantic==2.10.6
     #   llama-stack
     #   llama-stack-client
     #   openai
-pydantic-core==2.27.2
+pydantic-core==2.36.0
     # via pydantic
 pygments==2.19.1
     # via rich
