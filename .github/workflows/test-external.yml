@@ -1,5 +1,7 @@
 name: Test External API and Providers
 
+run-name: Test the External API and Provider mechanisms
+
 on:
   push:
     branches: [ main ]

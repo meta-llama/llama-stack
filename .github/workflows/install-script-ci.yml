@@ -1,5 +1,7 @@
 name: Installer CI
 
+run-name: Test the installation script
+
 on:
   pull_request:
     paths:

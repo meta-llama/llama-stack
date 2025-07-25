@@ -1,5 +1,7 @@
 name: Test Llama Stack Build
 
+run-name: Test llama stack build
+
 on:
   push:
     branches:

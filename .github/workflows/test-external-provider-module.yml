@@ -1,5 +1,7 @@
 name: Test External Providers Installed via Module
 
+run-name: Test External Provider installation via Python module
+
 on:
   push:
     branches: [ main ]

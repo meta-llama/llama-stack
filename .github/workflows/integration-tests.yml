@@ -1,5 +1,7 @@
 name: Integration Tests
 
+run-name: Run the integration test suite with Ollama
+
 on:
   push:
     branches: [ main ]

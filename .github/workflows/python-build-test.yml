@@ -1,5 +1,7 @@
 name: Python Package Build Test
 
+run-name: Test building the llama-stack PyPI project
+
 on:
   push:
     branches:
