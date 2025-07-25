@@ -36,6 +36,7 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import replace_env_vars
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
@@ -403,6 +404,29 @@ def _run_stack_build_command_from_build_config(
     with open(build_file_path, "w") as f:
         to_write = json.loads(build_config.model_dump_json())
         f.write(yaml.dump(to_write, sort_keys=False))
+
+    # We first install the external APIs so that the build process can use them and discover the
+    # providers dependencies
+    if build_config.external_apis_dir:
+        cprint("Installing external APIs", color="yellow", file=sys.stderr)
+        external_apis = load_external_apis(build_config)
+        if external_apis:
+            # install the external APIs
+            packages = []
+            for _, api_spec in external_apis.items():
+                if api_spec.pip_packages:
+                    packages.extend(api_spec.pip_packages)
+                    cprint(
+                        f"Installing {api_spec.name} with pip packages {api_spec.pip_packages}",
+                        color="yellow",
+                        file=sys.stderr,
+                    )
+            return_code = run_command(["uv", "pip", "install", *packages])
+            if return_code != 0:
+                packages_str = ", ".join(packages)
+                raise RuntimeError(
+                    f"Failed to install external APIs packages: {packages_str} (return code: {return_code})"
+                )
 
     return_code = build_image(
         build_config,

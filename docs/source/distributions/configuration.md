@@ -504,6 +504,47 @@ created by users sharing a team with them:
       description: any user has read access to any resource created by a user with the same team
 ```
 
+#### API Endpoint Authorization with Scopes
+
+In addition to resource-based access control, Llama Stack supports endpoint-level authorization using OAuth 2.0 style scopes. When authentication is enabled, specific API endpoints require users to have particular scopes in their authentication token.
+
+**Scope-Gated APIs:**
+The following APIs are currently gated by scopes:
+
+- **Telemetry API** (scope: `telemetry.read`):
+  - `POST /telemetry/traces` - Query traces
+  - `GET /telemetry/traces/{trace_id}` - Get trace by ID
+  - `GET /telemetry/traces/{trace_id}/spans/{span_id}` - Get span by ID
+  - `POST /telemetry/spans/{span_id}/tree` - Get span tree
+  - `POST /telemetry/spans` - Query spans
+  - `POST /telemetry/metrics/{metric_name}` - Query metrics
+
+**Authentication Configuration:**
+
+For **JWT/OAuth2 providers**, scopes should be included in the JWT's claims:
+```json
+{
+  "sub": "user123",
+  "scope": "telemetry.read",
+  "aud": "llama-stack"
+}
+```
+
+For **custom authentication providers**, the endpoint must return user attributes including the `scopes` array:
+```json
+{
+  "principal": "user123",
+  "attributes": {
+    "scopes": ["telemetry.read"]
+  }
+}
+```
+
+**Behavior:**
+- Users without the required scope receive a 403 Forbidden response
+- When authentication is disabled, scope checks are bypassed
+- Endpoints without `required_scope` work normally for all authenticated users
+
 ### Quota Configuration
 
 The `quota` section allows you to enable server-side request throttling for both

@@ -33,10 +33,6 @@ class VLLMInferenceAdapterConfig(BaseModel):
         default=False,
         description="Whether to refresh models periodically",
     )
-    refresh_models_interval: int = Field(
-        default=300,
-        description="Interval in seconds to refresh models",
-    )
 
     @field_validator("tls_verify")
     @classmethod

@@ -36,6 +36,11 @@ LLAMA_STACK_RUN_CONFIG_VERSION = 2
 RoutingKey = str | list[str]
 
 
+class RegistryEntrySource(StrEnum):
+    via_register_api = "via_register_api"
+    listed_from_provider = "listed_from_provider"
+
+
 class User(BaseModel):
     principal: str
     # further attributes that may be used for access control decisions
@@ -50,6 +55,7 @@ class ResourceWithOwner(Resource):
     resource. This can be used to constrain access to the resource."""
 
     owner: User | None = None
+    source: RegistryEntrySource = RegistryEntrySource.via_register_api
 
 
 # Use the extended Resource for all routable objects
@@ -381,6 +387,11 @@ a default SQLite store will be used.""",
         description="Path to directory containing external provider implementations. The providers code and dependencies must be installed on the system.",
     )
 
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
+    )
+
     @field_validator("external_providers_dir")
     @classmethod
     def validate_external_providers_dir(cls, v):
@@ -411,6 +422,10 @@ class BuildConfig(BaseModel):
     additional_pip_packages: list[str] = Field(
         default_factory=list,
         description="Additional pip packages to install in the distribution. These packages will be installed in the distribution environment.",
+    )
+    external_apis_dir: Path | None = Field(
+        default=None,
+        description="Path to directory containing external API implementations. The APIs code and dependencies must be installed on the system.",
     )
 
     @field_validator("external_providers_dir")

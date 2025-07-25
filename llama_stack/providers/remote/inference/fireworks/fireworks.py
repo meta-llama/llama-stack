@@ -70,7 +70,7 @@ logger = get_logger(name=__name__, category="inference")
 
 class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: FireworksImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES, config.allowed_models)
         self.config = config
 
     async def initialize(self) -> None:
