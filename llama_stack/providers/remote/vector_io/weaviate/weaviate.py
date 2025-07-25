@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-import logging
 from typing import Any
 
 import weaviate
@@ -19,6 +18,7 @@ from llama_stack.apis.files.files import Files
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
 from llama_stack.core.request_headers import NeedsRequestProviderData
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -29,14 +29,14 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig
 
-log = logging.getLogger(__name__)
-
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:weaviate:{VERSION}::"
 VECTOR_INDEX_PREFIX = f"vector_index:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:weaviate:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:weaviate:{VERSION}::"
+
+logger = get_logger(__name__, category="core")
 
 
 class WeaviateIndex(EmbeddingIndex):
@@ -87,7 +87,7 @@ class WeaviateIndex(EmbeddingIndex):
                 chunk_dict = json.loads(chunk_json)
                 chunk = Chunk(**chunk_dict)
             except Exception:
-                log.exception(f"Failed to parse document: {chunk_json}")
+                logger.exception(f"Failed to parse document: {chunk_json}")
                 continue
 
             chunks.append(chunk)

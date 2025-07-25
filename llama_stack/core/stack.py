@@ -45,7 +45,7 @@ from llama_stack.core.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 class LlamaStack(

@@ -13,7 +13,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 def parse_toolgroup_from_toolgroup_name_pair(toolgroup_name_with_maybe_tool_name: str) -> str | None:

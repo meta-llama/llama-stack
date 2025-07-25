@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import sys
 import time
 import uuid
@@ -19,10 +18,9 @@ from llama_stack.apis.post_training import (
     LoraFinetuningConfig,
     TrainingConfig,
 )
+from llama_stack.log import get_logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", force=True)
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 skip_because_resource_intensive = pytest.mark.skip(
@@ -193,6 +191,10 @@ class TestPostTraining:
 
         # DPO algorithm configuration
         algorithm_config = DPOAlignmentConfig(
+            reward_scale=1.0,
+            reward_clip=10.0,
+            epsilon=1e-8,
+            gamma=0.99,
             beta=0.1,
             loss_type=DPOLossType.sigmoid,
         )

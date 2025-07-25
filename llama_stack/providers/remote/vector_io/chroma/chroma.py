@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import asyncio
 import json
-import logging
 from typing import Any
 from urllib.parse import urlparse
 
@@ -20,6 +19,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.chroma import ChromaVectorIOConfig as InlineChromaVectorIOConfig
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -32,8 +32,6 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
-log = logging.getLogger(__name__)
-
 ChromaClientType = chromadb.api.AsyncClientAPI | chromadb.api.ClientAPI
 
 VERSION = "v3"
@@ -42,6 +40,8 @@ VECTOR_INDEX_PREFIX = f"vector_index:chroma:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:chroma:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:chroma:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:chroma:{VERSION}::"
+
+logger = get_logger(__name__, category="core")
 
 
 # this is a helper to allow us to use async and non-async chroma clients interchangeably
@@ -92,7 +92,7 @@ class ChromaIndex(EmbeddingIndex):
                 doc = json.loads(doc)
                 chunk = Chunk(**doc)
             except Exception:
-                log.exception(f"Failed to parse document: {doc}")
+                logger.exception(f"Failed to parse document: {doc}")
                 continue
 
             score = 1.0 / float(dist) if dist != 0 else float("inf")
@@ -137,7 +137,7 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         inference_api: Api.inference,
         files_api: Files | None,
     ) -> None:
-        log.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
+        logger.info(f"Initializing ChromaVectorIOAdapter with url: {config}")
         self.config = config
         self.inference_api = inference_api
         self.client = None
@@ -150,7 +150,7 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self.vector_db_store = self.kvstore
 
         if isinstance(self.config, RemoteChromaVectorIOConfig):
-            log.info(f"Connecting to Chroma server at: {self.config.url}")
+            logger.info(f"Connecting to Chroma server at: {self.config.url}")
             url = self.config.url.rstrip("/")
             parsed = urlparse(url)
 
@@ -159,7 +159,7 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
             self.client = await chromadb.AsyncHttpClient(host=parsed.hostname, port=parsed.port)
         else:
-            log.info(f"Connecting to Chroma local db at: {self.config.db_path}")
+            logger.info(f"Connecting to Chroma local db at: {self.config.db_path}")
             self.client = chromadb.PersistentClient(path=self.config.db_path)
         self.openai_vector_stores = await self._load_openai_vector_stores()
 
@@ -182,7 +182,7 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         if vector_db_id not in self.cache:
-            log.warning(f"Vector DB {vector_db_id} not found")
+            logger.warning(f"Vector DB {vector_db_id} not found")
             return
 
         await self.cache[vector_db_id].index.delete()

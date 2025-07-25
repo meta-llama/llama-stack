@@ -16,7 +16,7 @@ from llama_stack.providers.datatypes import HealthResponse, HealthStatus
 from .datatypes import StackRunConfig
 from .utils.config import redact_sensitive_fields
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 class ProviderImplConfig(BaseModel):

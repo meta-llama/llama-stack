@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import uuid
 from typing import Any
 
@@ -30,6 +29,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.memory.vector_store import (
@@ -39,8 +39,9 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
-log = logging.getLogger(__name__)
 CHUNK_ID_KEY = "_chunk_id"
+
+logger = get_logger(__name__, category="core")
 
 
 def convert_id(_id: str) -> str:
@@ -105,7 +106,7 @@ class QdrantIndex(EmbeddingIndex):
             try:
                 chunk = Chunk(**point.payload["chunk_content"])
             except Exception:
-                log.exception("Failed to parse chunk")
+                logger.exception("Failed to parse chunk")
                 continue
 
             chunks.append(chunk)

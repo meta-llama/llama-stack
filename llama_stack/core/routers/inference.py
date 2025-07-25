@@ -58,7 +58,7 @@ from llama_stack.providers.utils.inference.inference_store import InferenceStore
 from llama_stack.providers.utils.inference.stream_utils import stream_and_store_openai_completion
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 class InferenceRouter(Inference):
