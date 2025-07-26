@@ -147,7 +147,7 @@ pandas==2.2.3
     # via llama-stack-client
 pillow==11.1.0
     # via llama-stack
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.51
     # via
     #   llama-stack
     #   llama-stack-client
