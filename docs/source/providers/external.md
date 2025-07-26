@@ -12,8 +12,7 @@ To enable external providers, you need to add `module` into your build yaml, all
 an example entry in your build.yaml should look like:
 
 ```
-- provider_id: ramalama
-  provider_type: remote::ramalama
+- provider_type: remote::ramalama
   module: ramalama_stack
 ```
 
@@ -255,8 +254,7 @@ distribution_spec:
   container_image: null
   providers:
     inference:
-    - provider_id: ramalama
-      provider_type: remote::ramalama
+    - provider_type: remote::ramalama
       module: ramalama_stack==0.3.0a0
 image_type: venv
 image_name: null
