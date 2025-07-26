@@ -23,12 +23,27 @@ class CommonModelFields(BaseModel):
 
 @json_schema_type
 class ModelType(StrEnum):
+    """Enumeration of supported model types in Llama Stack.
+    :cvar llm: Large language model for text generation and completion
+    :cvar embedding: Embedding model for converting text to vector representations
+    """
+
     llm = "llm"
     embedding = "embedding"
 
 
 @json_schema_type
 class Model(CommonModelFields, Resource):
+    """A model resource representing an AI model registered in Llama Stack.
+
+    :param type: The resource type, always 'model' for model resources
+    :param model_type: The type of model (LLM or embedding model)
+    :param metadata: Any additional metadata for this model
+    :param identifier: Unique identifier for this resource in llama stack
+    :param provider_resource_id: Unique identifier for this resource in the provider
+    :param provider_id: ID of the provider that owns this resource
+    """
+
     type: Literal[ResourceType.model] = ResourceType.model
 
     @property

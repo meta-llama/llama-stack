@@ -19,7 +19,11 @@ class CommonShieldFields(BaseModel):
 
 @json_schema_type
 class Shield(CommonShieldFields, Resource):
-    """A safety shield resource that can be used to check content"""
+    """A safety shield resource that can be used to check content.
+
+    :param params: (Optional) Configuration parameters for the shield
+    :param type: The resource type, always shield
+    """
 
     type: Literal[ResourceType.shield] = ResourceType.shield
 

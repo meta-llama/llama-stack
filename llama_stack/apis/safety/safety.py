@@ -17,6 +17,13 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 @json_schema_type
 class ViolationLevel(Enum):
+    """Severity level of a safety violation.
+
+    :cvar INFO: Informational level violation that does not require action
+    :cvar WARN: Warning level violation that suggests caution but allows continuation
+    :cvar ERROR: Error level violation that requires blocking or intervention
+    """
+
     INFO = "info"
     WARN = "warn"
     ERROR = "error"
@@ -24,6 +31,13 @@ class ViolationLevel(Enum):
 
 @json_schema_type
 class SafetyViolation(BaseModel):
+    """Details of a safety violation detected by content moderation.
+
+    :param violation_level: Severity level of the violation
+    :param user_message: (Optional) Message to convey to the user about the violation
+    :param metadata: Additional metadata including specific violation codes for debugging and telemetry
+    """
+
     violation_level: ViolationLevel
 
     # what message should you convey to the user
@@ -36,6 +50,11 @@ class SafetyViolation(BaseModel):
 
 @json_schema_type
 class RunShieldResponse(BaseModel):
+    """Response from running a safety shield.
+
+    :param violation: (Optional) Safety violation detected by the shield, if any
+    """
+
     violation: SafetyViolation | None = None
 
 

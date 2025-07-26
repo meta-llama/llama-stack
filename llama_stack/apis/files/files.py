@@ -54,6 +54,9 @@ class ListOpenAIFileResponse(BaseModel):
     Response for listing files in OpenAI Files API.
 
     :param data: List of file objects
+    :param has_more: Whether there are more files available beyond this page
+    :param first_id: ID of the first file in the list for pagination
+    :param last_id: ID of the last file in the list for pagination
     :param object: The object type, which is always "list"
     """
 

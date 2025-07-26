@@ -94,6 +94,10 @@ register_schema(DataSource, name="DataSource")
 class CommonDatasetFields(BaseModel):
     """
     Common fields for a dataset.
+
+    :param purpose: Purpose of the dataset indicating its intended use
+    :param source: Data source configuration for the dataset
+    :param metadata: Additional metadata for the dataset
     """
 
     purpose: DatasetPurpose
@@ -106,6 +110,11 @@ class CommonDatasetFields(BaseModel):
 
 @json_schema_type
 class Dataset(CommonDatasetFields, Resource):
+    """Dataset resource for storing and accessing training or evaluation data.
+
+    :param type: Type of resource, always 'dataset' for datasets
+    """
+
     type: Literal[ResourceType.dataset] = ResourceType.dataset
 
     @property
@@ -118,10 +127,20 @@ class Dataset(CommonDatasetFields, Resource):
 
 
 class DatasetInput(CommonDatasetFields, BaseModel):
+    """Input parameters for dataset operations.
+
+    :param dataset_id: Unique identifier for the dataset
+    """
+
     dataset_id: str
 
 
 class ListDatasetsResponse(BaseModel):
+    """Response from listing datasets.
+
+    :param data: List of datasets
+    """
+
     data: list[Dataset]
 
 

@@ -13,6 +13,11 @@ from llama_stack.schema_utils import json_schema_type
 
 
 class Order(Enum):
+    """Sort order for paginated responses.
+    :cvar asc: Ascending order
+    :cvar desc: Descending order
+    """
+
     asc = "asc"
     desc = "desc"
 
