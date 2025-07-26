@@ -278,7 +278,7 @@ After this step is successful, you should be able to find the built container im
 ```
 docker run -d \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v ~/.llama:/.llama \
   localhost/distribution-ollama:dev \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
@@ -291,7 +291,7 @@ Here are the docker flags and their uses:
 
 * `-p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT`: Maps the container port to the host port for accessing the server
 
-* `-v ~/.llama:/root/.llama`: Mounts the local .llama directory to persist configurations and data
+* `-v ~/.llama:/.llama`: Mounts the local .llama directory to persist configurations and data
 
 * `localhost/distribution-ollama:dev`: The name and tag of the container image to run
 

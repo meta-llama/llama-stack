@@ -145,9 +145,9 @@ docker run \
   -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ./run.yaml:/root/my-run.yaml \
+  -v ./run.yaml:/.llama/my-run.yaml \
   llamastack/distribution-nvidia \
-  --config /root/my-run.yaml \
+  --config /.llama/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY
 ```
