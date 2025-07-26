@@ -21,12 +21,13 @@ from llama_stack.distribution.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
 
-from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig
+from .config import WeaviateVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -116,6 +117,7 @@ class WeaviateIndex(EmbeddingIndex):
 
 
 class WeaviateVectorIOAdapter(
+    OpenAIVectorStoreMixin,
     VectorIO,
     NeedsRequestProviderData,
     VectorDBsProtocolPrivate,
@@ -137,17 +139,13 @@ class WeaviateVectorIOAdapter(
         self.metadata_collection_name = "openai_vector_stores_metadata"
 
     def _get_client(self) -> weaviate.Client:
-        provider_data = self.get_request_provider_data()
-        assert provider_data is not None, "Request provider data must be set"
-        assert isinstance(provider_data, WeaviateRequestProviderData)
-
-        key = f"{provider_data.weaviate_cluster_url}::{provider_data.weaviate_api_key}"
+        key = f"{self.config.weaviate_cluster_url}::{self.config.weaviate_api_key}"
         if key in self.client_cache:
             return self.client_cache[key]
 
         client = weaviate.connect_to_weaviate_cloud(
-            cluster_url=provider_data.weaviate_cluster_url,
-            auth_credentials=Auth.api_key(provider_data.weaviate_api_key),
+            cluster_url=self.config.weaviate_cluster_url,
+            auth_credentials=Auth.api_key(self.config.weaviate_api_key),
         )
         self.client_cache[key] = client
         return client
@@ -155,24 +153,29 @@ class WeaviateVectorIOAdapter(
     async def initialize(self) -> None:
         """Set up KV store and load existing vector DBs and OpenAI vector stores."""
         # Initialize KV store for metadata
-        self.kvstore = await kvstore_impl(self.config.kvstore)
+        if self.kvstore is not None:
+            self.kvstore = await kvstore_impl(self.config.kvstore)
+        else:
+            self.kvstore = None
+            log.info("No kvstore configured, registry will not persist across restarts")
 
         # Load existing vector DB definitions
-        start_key = VECTOR_DBS_PREFIX
-        end_key = f"{VECTOR_DBS_PREFIX}\xff"
-        stored = await self.kvstore.values_in_range(start_key, end_key)
-        for raw in stored:
-            vector_db = VectorDB.model_validate_json(raw)
-            client = self._get_client()
-            idx = WeaviateIndex(client=client, collection_name=vector_db.identifier, kvstore=self.kvstore)
-            self.cache[vector_db.identifier] = VectorDBWithIndex(
-                vector_db=vector_db,
-                index=idx,
-                inference_api=self.inference_api,
-            )
+        if self.kvstore is not None:
+            start_key = VECTOR_DBS_PREFIX
+            end_key = f"{VECTOR_DBS_PREFIX}\xff"
+            stored = await self.kvstore.values_in_range(start_key, end_key)
+            for raw in stored:
+                vector_db = VectorDB.model_validate_json(raw)
+                client = self._get_client()
+                idx = WeaviateIndex(client=client, collection_name=vector_db.identifier, kvstore=self.kvstore)
+                self.cache[vector_db.identifier] = VectorDBWithIndex(
+                    vector_db=vector_db,
+                    index=idx,
+                    inference_api=self.inference_api,
+                )
 
-        # Load OpenAI vector stores metadata into cache
-        await self.initialize_openai_vector_stores()
+            # Load OpenAI vector stores metadata into cache
+            await self.initialize_openai_vector_stores()
 
     async def shutdown(self) -> None:
         for client in self.client_cache.values():
@@ -202,6 +205,13 @@ class WeaviateVectorIOAdapter(
             WeaviateIndex(client=client, collection_name=vector_db.identifier),
             self.inference_api,
         )
+
+    async def unregister_vector_db(self, vector_db_id: str) -> None:
+        if vector_db_id not in self.cache:
+            log.warning(f"Vector DB {vector_db_id} not found")
+            return
+        await self.cache[vector_db_id].index.delete()
+        del self.cache[vector_db_id]
 
     async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
         if vector_db_id in self.cache:
@@ -246,21 +256,3 @@ class WeaviateVectorIOAdapter(
             raise ValueError(f"Vector DB {vector_db_id} not found")
 
         return await index.query_chunks(query, params)
-
-    # OpenAI Vector Stores File operations are not supported in Weaviate
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")

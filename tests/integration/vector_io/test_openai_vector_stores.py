@@ -29,6 +29,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
             "inline::chromadb",
             "remote::pgvector",
             "remote::chromadb",
+            "remote::weaviate",
         ]:
             return
 
