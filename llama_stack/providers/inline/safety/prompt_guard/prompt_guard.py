@@ -46,6 +46,9 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         if shield.provider_resource_id != PROMPT_GUARD_MODEL:
             raise ValueError(f"Only {PROMPT_GUARD_MODEL} is supported for Prompt Guard. ")
 
+    async def unregister_shield(self, identifier: str) -> None:
+        pass
+
     async def run_shield(
         self,
         shield_id: str,
