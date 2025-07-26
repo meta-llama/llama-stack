@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import os
 import re
 from typing import Any
@@ -21,6 +20,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.milvus import MilvusVectorIOConfig as InlineMilvusVectorIOConfig
 from llama_stack.providers.utils.kvstore import kvstore_impl
@@ -33,7 +33,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:milvus:{VERSION}::"

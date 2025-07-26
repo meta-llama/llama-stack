@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import warnings
 from typing import Any
 
@@ -14,8 +13,6 @@ from llama_stack.apis.post_training import TrainingConfig
 from llama_stack.providers.remote.post_training.nvidia.config import SFTLoRADefaultConfig
 
 from .config import NvidiaPostTrainingConfig
-
-logger = logging.getLogger(__name__)
 
 
 def warn_unsupported_params(config_dict: Any, supported_keys: set[str], config_name: str) -> None:

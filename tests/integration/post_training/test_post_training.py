@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import sys
 import time
 import uuid
@@ -16,10 +15,9 @@ from llama_stack.apis.post_training import (
     LoraFinetuningConfig,
     TrainingConfig,
 )
+from llama_stack.log import get_logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", force=True)
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 @pytest.fixture(autouse=True)

@@ -13,7 +13,7 @@
 
 import math
 from collections import defaultdict
-from logging import getLogger
+from logging import getLogger  # allow-direct-logging
 from typing import Any
 
 import torch

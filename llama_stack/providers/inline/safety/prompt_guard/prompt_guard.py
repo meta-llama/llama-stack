@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from typing import Any
 
 import torch
@@ -19,14 +18,15 @@ from llama_stack.apis.safety import (
 )
 from llama_stack.apis.shields import Shield
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="safety")
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
 from .config import PromptGuardConfig, PromptGuardType
-
-log = logging.getLogger(__name__)
 
 PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
@@ -96,7 +96,7 @@ class PromptGuardShield:
         probabilities = torch.softmax(logits / self.temperature, dim=-1)
         score_embedded = probabilities[0, 1].item()
         score_malicious = probabilities[0, 2].item()
-        log.info(
+        logger.info(
             f"Ran PromptGuardShield and got Scores: Embedded: {score_embedded}, Malicious: {score_malicious}",
         )
 

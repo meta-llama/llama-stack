@@ -7,7 +7,6 @@
 import asyncio
 import inspect
 import json
-import logging
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -32,6 +31,9 @@ from rich.console import Console
 from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="distribution")
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import Api, BuildConfig, BuildProvider, DistributionSpec
 from llama_stack.distribution.request_headers import (
@@ -48,6 +50,7 @@ from llama_stack.distribution.stack import (
 from llama_stack.distribution.utils.config import redact_sensitive_fields
 from llama_stack.distribution.utils.context import preserve_contexts_async_generator
 from llama_stack.distribution.utils.exec import in_notebook
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.telemetry.tracing import (
     CURRENT_TRACE_CONTEXT,
     end_trace,
@@ -55,7 +58,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="distribution")
 
 T = TypeVar("T")
 
@@ -173,6 +176,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         """
         Remove all handlers from the root logger. Needed to avoid polluting the console with logs.
         """
+        import logging  # allow-direct-logging
+
         root_logger = logging.getLogger()
 
         for handler in root_logger.handlers[:]:

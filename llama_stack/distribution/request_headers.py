@@ -6,15 +6,15 @@
 
 import contextvars
 import json
-import logging
 from contextlib import AbstractContextManager
 from typing import Any
 
 from llama_stack.distribution.datatypes import User
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="distribution")
 
 from .utils.dynamic import instantiate_class_type
-
-log = logging.getLogger(__name__)
 
 # Context variable for request provider data and auth attributes
 PROVIDER_DATA_VAR = contextvars.ContextVar("provider_data", default=None)
@@ -61,7 +61,7 @@ class NeedsRequestProviderData:
             provider_data = validator(**val)
             return provider_data
         except Exception as e:
-            log.error(f"Error parsing provider data: {e}")
+            logger.error(f"Error parsing provider data: {e}")
             return None
 
 
@@ -83,7 +83,7 @@ def parse_request_provider_data(headers: dict[str, str]) -> dict[str, Any] | Non
     try:
         return json.loads(val)
     except json.JSONDecodeError:
-        log.error("Provider data not encoded as a JSON object!")
+        logger.error("Provider data not encoded as a JSON object!")
         return None
 
 

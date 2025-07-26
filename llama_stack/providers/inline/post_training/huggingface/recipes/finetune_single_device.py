@@ -6,7 +6,6 @@
 
 import gc
 import json
-import logging
 import multiprocessing
 import os
 import signal
@@ -45,10 +44,11 @@ from llama_stack.apis.post_training import (
     LoraFinetuningConfig,
     TrainingConfig,
 )
+from llama_stack.log import get_logger
 
 from ..config import HuggingFacePostTrainingConfig
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 def get_gb(to_convert: int) -> str:

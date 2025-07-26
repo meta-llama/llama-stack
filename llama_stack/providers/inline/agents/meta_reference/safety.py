@@ -5,13 +5,13 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 
 from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import Safety, SafetyViolation, ViolationLevel
-from llama_stack.providers.utils.telemetry import tracing
+from llama_stack.log import get_logger
 
-log = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="agents")
+from llama_stack.providers.utils.telemetry import tracing
 
 
 class SafetyException(Exception):  # noqa: N818
@@ -49,4 +49,4 @@ class ShieldRunnerMixin:
             if violation.violation_level == ViolationLevel.ERROR:
                 raise SafetyException(violation)
             elif violation.violation_level == ViolationLevel.WARN:
-                log.warning(f"[Warn]{identifier} raised a warning")
+                logger.warning(f"[Warn]{identifier} raised a warning")

@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import importlib.resources
-import logging
 import sys
 from pathlib import Path
 
@@ -17,10 +16,11 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.utils.exec import run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="core")
 from llama_stack.providers.datatypes import Api
 from llama_stack.templates.template import DistributionTemplate
-
-log = logging.getLogger(__name__)
 
 # These are the dependencies needed by the distribution server.
 # `llama-stack` is automatically installed by the installation script.
@@ -170,7 +170,7 @@ def build_image(
     return_code = run_command(args)
 
     if return_code != 0:
-        log.error(
+        logger.error(
             f"Failed to build target {image_name} with return code {return_code}",
         )
 

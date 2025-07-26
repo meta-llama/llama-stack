@@ -4,21 +4,20 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
+import importlib
+import json
 import os
 import signal
 import subprocess
 import sys
+from pathlib import Path
 
 from termcolor import cprint
 
-log = logging.getLogger(__name__)
-
-import importlib
-import json
-from pathlib import Path
-
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="distribution")
 
 
 def formulate_run_args(image_type: str, image_name: str) -> list[str]:
@@ -119,7 +118,7 @@ def run_command(command: list[str]) -> int:
     def sigint_handler(signum, frame):
         nonlocal ctrl_c_pressed
         ctrl_c_pressed = True
-        log.info("\nCtrl-C detected. Aborting...")
+        logger.info("\nCtrl-C detected. Aborting...")
 
     try:
         # Set up the signal handler
@@ -133,10 +132,10 @@ def run_command(command: list[str]) -> int:
         )
         return result.returncode
     except subprocess.SubprocessError as e:
-        log.error(f"Subprocess error: {e}")
+        logger.error(f"Subprocess error: {e}")
         return 1
     except Exception as e:
-        log.exception(f"Unexpected error: {e}")
+        logger.exception(f"Unexpected error: {e}")
         return 1
     finally:
         # Restore the original signal handler

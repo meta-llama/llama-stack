@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from typing import Any
 
 import psycopg2
@@ -21,6 +20,9 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
+
+log = get_logger(__name__, category="core")
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -31,8 +33,6 @@ from llama_stack.providers.utils.memory.vector_store import (
 )
 
 from .config import PGVectorVectorIOConfig
-
-log = logging.getLogger(__name__)
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"

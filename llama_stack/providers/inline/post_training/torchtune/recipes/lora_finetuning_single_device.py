@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import os
 import time
 from datetime import UTC, datetime
@@ -19,6 +18,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from torchtune import modules, training
 from torchtune import utils as torchtune_utils
 from torchtune.data import padded_collate_sft
+from torchtune.models.llama3._tokenizer import Llama3Tokenizer
 from torchtune.modules.loss import CEWithChunkedOutputLoss
 from torchtune.modules.peft import (
     get_adapter_params,
@@ -45,6 +45,9 @@ from llama_stack.apis.post_training import (
 )
 from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
 from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="core")
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.inline.post_training.common.utils import evacuate_model_from_device
 from llama_stack.providers.inline.post_training.torchtune.common import utils
@@ -55,10 +58,6 @@ from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
 from llama_stack.providers.inline.post_training.torchtune.datasets.sft import SFTDataset
-
-log = logging.getLogger(__name__)
-
-from torchtune.models.llama3._tokenizer import Llama3Tokenizer
 
 
 class LoraFinetuningSingleDevice:
@@ -183,18 +182,18 @@ class LoraFinetuningSingleDevice:
             base_model_state_dict=checkpoint_dict[training.MODEL_KEY],
             lora_weights_state_dict=None,
         )
-        log.info(f"Model is initialized with precision {self._dtype}.")
+        logger.info(f"Model is initialized with precision {self._dtype}.")
 
         self._tokenizer = await self._setup_tokenizer()
-        log.info("Tokenizer is initialized.")
+        logger.info("Tokenizer is initialized.")
 
         assert isinstance(self.training_config.optimizer_config, OptimizerConfig), "OptimizerConfig must be initialized"
         self._optimizer = await self._setup_optimizer(optimizer_config=self.training_config.optimizer_config)
-        log.info("Optimizer is initialized.")
+        logger.info("Optimizer is initialized.")
 
         self._loss_fn = CEWithChunkedOutputLoss()
         self._model.set_num_output_chunks(self._loss_fn.num_output_chunks)
-        log.info("Loss is initialized.")
+        logger.info("Loss is initialized.")
 
         assert isinstance(self.training_config.data_config, DataConfig), "DataConfig must be initialized"
 
@@ -213,7 +212,7 @@ class LoraFinetuningSingleDevice:
                 batch_size=self._batch_size,
             )
 
-        log.info("Dataset and Sampler are initialized.")
+        logger.info("Dataset and Sampler are initialized.")
 
         # Number of training steps in each epoch depends on the number of batches produced
         # by the dataloader and the max_steps_per_epoch param set by the user and is used
@@ -231,7 +230,7 @@ class LoraFinetuningSingleDevice:
             num_training_steps=self.total_epochs * self._steps_per_epoch,
             last_epoch=self.global_step - 1,
         )
-        log.info("Learning rate scheduler is initialized.")
+        logger.info("Learning rate scheduler is initialized.")
 
         # Used to ignore labels for loss computation
         self.ignore_labels_cache = torch.full((self._batch_size, 1), self._loss_fn.ignore_index, device=self._device)
@@ -533,7 +532,7 @@ class LoraFinetuningSingleDevice:
                     t0 = time.perf_counter()
 
             self.epochs_run += 1
-            log.info("Starting checkpoint save...")
+            logger.info("Starting checkpoint save...")
             checkpoint_path = await self.save_checkpoint(epoch=curr_epoch)
             checkpoint = Checkpoint(
                 identifier=f"{self.model_id}-sft-{curr_epoch}",
@@ -561,7 +560,7 @@ class LoraFinetuningSingleDevice:
     async def validation(self) -> tuple[float, float]:
         total_loss = 0.0
         total_tokens = 0
-        log.info("Starting validation...")
+        logger.info("Starting validation...")
         pbar = tqdm(total=len(self._validation_dataloader))
         for idx, batch in enumerate(self._validation_dataloader):
             if idx == self.max_validation_steps:

@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from typing import Any
 
 import requests
@@ -16,8 +15,6 @@ from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import convert_message_to_openai_dict_new
 
 from .config import NVIDIASafetyConfig
-
-logger = logging.getLogger(__name__)
 
 
 class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):
