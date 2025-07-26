@@ -139,7 +139,7 @@ opentelemetry-sdk==1.30.0
     # via
     #   llama-stack
     #   opentelemetry-exporter-otlp-proto-http
-opentelemetry-semantic-conventions==0.51b0
+opentelemetry-semantic-conventions==0.56b0
     # via opentelemetry-sdk
 packaging==24.2
     # via huggingface-hub
