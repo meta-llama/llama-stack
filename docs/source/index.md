@@ -129,5 +129,6 @@ advanced_apis/index
 building_applications/index
 deploying/index
 contributing/index
+community/index
 references/index
 ```
