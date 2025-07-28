@@ -143,7 +143,7 @@ opentelemetry-semantic-conventions==0.51b0
     # via opentelemetry-sdk
 packaging==24.2
     # via huggingface-hub
-pandas==2.2.3
+pandas==2.3.1
     # via llama-stack-client
 pillow==11.1.0
     # via llama-stack
