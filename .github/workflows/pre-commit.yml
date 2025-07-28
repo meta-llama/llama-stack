@@ -47,7 +47,7 @@ jobs:
             git config --local user.name "github-actions[bot]"
             git add -A
             git commit -m "Apply pre-commit fixes"
-            git push
+            git push origin HEAD:main
             echo "Pre-commit fixes committed and pushed"
           else
             echo "No changes to commit"
