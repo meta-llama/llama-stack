@@ -14,6 +14,9 @@ concurrency:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -54,7 +57,7 @@ jobs:
             git commit -m "Apply pre-commit fixes"
 
             # push to the PR branch
-            git push origin HEAD:${{ github.ref }}
+            git push origin HEAD:${{ github.head_ref }}
             echo "Pre-commit fixes committed and pushed"
           else
             echo "No changes to commit"
