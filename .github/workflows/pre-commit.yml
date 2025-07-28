@@ -42,8 +42,8 @@ jobs:
         if: github.actor == 'dependabot[bot]'
         run: |
           if ! git diff --exit-code || [ -n "$(git ls-files --others --exclude-standard)" ]; then
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
             git add -A
             git commit -m "Apply pre-commit fixes"
             git push
