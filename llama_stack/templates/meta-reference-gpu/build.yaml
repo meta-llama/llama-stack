@@ -3,32 +3,33 @@ distribution_spec:
   description: Use Meta Reference for running LLM inference
   providers:
     inference:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     vector_io:
-    - inline::faiss
-    - remote::chromadb
-    - remote::pgvector
+    - provider_type: inline::faiss
+    - provider_type: remote::chromadb
+    - provider_type: remote::pgvector
     safety:
-    - inline::llama-guard
+    - provider_type: inline::llama-guard
     agents:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     telemetry:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     eval:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     datasetio:
-    - remote::huggingface
-    - inline::localfs
+    - provider_type: remote::huggingface
+    - provider_type: inline::localfs
     scoring:
-    - inline::basic
-    - inline::llm-as-judge
-    - inline::braintrust
+    - provider_type: inline::basic
+    - provider_type: inline::llm-as-judge
+    - provider_type: inline::braintrust
     tool_runtime:
-    - remote::brave-search
-    - remote::tavily-search
-    - inline::rag-runtime
-    - remote::model-context-protocol
+    - provider_type: remote::brave-search
+    - provider_type: remote::tavily-search
+    - provider_type: inline::rag-runtime
+    - provider_type: remote::model-context-protocol
 image_type: conda
+image_name: meta-reference-gpu
 additional_pip_packages:
 - aiosqlite
 - sqlalchemy[asyncio]

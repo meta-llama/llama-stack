@@ -15,6 +15,7 @@ class GeminiInferenceAdapter(LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             MODEL_ENTRIES,
+            litellm_provider_name="gemini",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="gemini_api_key",
         )

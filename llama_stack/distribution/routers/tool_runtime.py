@@ -41,9 +41,8 @@ class ToolRuntimeRouter(ToolRuntime):
             query_config: RAGQueryConfig | None = None,
         ) -> RAGQueryResult:
             logger.debug(f"ToolRuntimeRouter.RagToolImpl.query: {vector_db_ids}")
-            return await self.routing_table.get_provider_impl("knowledge_search").query(
-                content, vector_db_ids, query_config
-            )
+            provider = await self.routing_table.get_provider_impl("knowledge_search")
+            return await provider.query(content, vector_db_ids, query_config)
 
         async def insert(
             self,
@@ -54,9 +53,8 @@ class ToolRuntimeRouter(ToolRuntime):
             logger.debug(
                 f"ToolRuntimeRouter.RagToolImpl.insert: {vector_db_id}, {len(documents)} documents, chunk_size={chunk_size_in_tokens}"
             )
-            return await self.routing_table.get_provider_impl("insert_into_memory").insert(
-                documents, vector_db_id, chunk_size_in_tokens
-            )
+            provider = await self.routing_table.get_provider_impl("insert_into_memory")
+            return await provider.insert(documents, vector_db_id, chunk_size_in_tokens)
 
     def __init__(
         self,
@@ -80,7 +78,8 @@ class ToolRuntimeRouter(ToolRuntime):
 
     async def invoke_tool(self, tool_name: str, kwargs: dict[str, Any]) -> Any:
         logger.debug(f"ToolRuntimeRouter.invoke_tool: {tool_name}")
-        return await self.routing_table.get_provider_impl(tool_name).invoke_tool(
+        provider = await self.routing_table.get_provider_impl(tool_name)
+        return await provider.invoke_tool(
             tool_name=tool_name,
             kwargs=kwargs,
         )

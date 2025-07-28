@@ -99,7 +99,7 @@ class PGVectorIndex(EmbeddingIndex):
         for i, chunk in enumerate(chunks):
             values.append(
                 (
-                    f"{chunk.metadata['document_id']}:chunk-{i}",
+                    f"{chunk.chunk_id}",
                     Json(chunk.model_dump()),
                     embeddings[i].tolist(),
                 )
@@ -158,6 +158,11 @@ class PGVectorIndex(EmbeddingIndex):
     async def delete(self):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
+
+    async def delete_chunk(self, chunk_id: str) -> None:
+        """Remove a chunk from the PostgreSQL table."""
+        with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute(f"DELETE FROM {self.table_name} WHERE id = %s", (chunk_id,))
 
 
 class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
@@ -266,124 +271,12 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]
 
-    # OpenAI Vector Stores File operations are not supported in PGVector
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        """Save vector store file metadata to Postgres database."""
-        if self.conn is None:
-            raise RuntimeError("PostgreSQL connection is not initialized")
-        try:
-            with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS openai_vector_store_files (
-                        store_id TEXT,
-                        file_id TEXT,
-                        metadata JSONB,
-                        PRIMARY KEY (store_id, file_id)
-                    )
-                    """
-                )
-                cur.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS openai_vector_store_files_contents (
-                        store_id TEXT,
-                        file_id TEXT,
-                        contents JSONB,
-                        PRIMARY KEY (store_id, file_id)
-                    )
-                    """
-                )
-                # Insert file metadata
-                files_query = sql.SQL(
-                    """
-                    INSERT INTO openai_vector_store_files (store_id, file_id, metadata)
-                    VALUES %s
-                    ON CONFLICT (store_id, file_id) DO UPDATE SET metadata = EXCLUDED.metadata
-                    """
-                )
-                files_values = [(store_id, file_id, Json(file_info))]
-                execute_values(cur, files_query, files_values, template="(%s, %s, %s)")
-                # Insert file contents
-                contents_query = sql.SQL(
-                    """
-                    INSERT INTO openai_vector_store_files_contents (store_id, file_id, contents)
-                    VALUES %s
-                    ON CONFLICT (store_id, file_id) DO UPDATE SET contents = EXCLUDED.contents
-                    """
-                )
-                contents_values = [(store_id, file_id, Json(file_contents))]
-                execute_values(cur, contents_query, contents_values, template="(%s, %s, %s)")
-        except Exception as e:
-            log.error(f"Error saving openai vector store file {file_id} for store {store_id}: {e}")
-            raise
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a PostgreSQL vector store."""
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
 
-    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        """Load vector store file metadata from Postgres database."""
-        if self.conn is None:
-            raise RuntimeError("PostgreSQL connection is not initialized")
-        try:
-            with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute(
-                    "SELECT metadata FROM openai_vector_store_files WHERE store_id = %s AND file_id = %s",
-                    (store_id, file_id),
-                )
-                row = cur.fetchone()
-                return row[0] if row and row[0] is not None else {}
-        except Exception as e:
-            log.error(f"Error loading openai vector store file {file_id} for store {store_id}: {e}")
-            return {}
-
-    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        """Load vector store file contents from Postgres database."""
-        if self.conn is None:
-            raise RuntimeError("PostgreSQL connection is not initialized")
-        try:
-            with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute(
-                    "SELECT contents FROM openai_vector_store_files_contents WHERE store_id = %s AND file_id = %s",
-                    (store_id, file_id),
-                )
-                row = cur.fetchone()
-                return row[0] if row and row[0] is not None else []
-        except Exception as e:
-            log.error(f"Error loading openai vector store file contents for {file_id} in store {store_id}: {e}")
-            return []
-
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        """Update vector store file metadata in Postgres database."""
-        if self.conn is None:
-            raise RuntimeError("PostgreSQL connection is not initialized")
-        try:
-            with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                query = sql.SQL(
-                    """
-                    INSERT INTO openai_vector_store_files (store_id, file_id, metadata)
-                    VALUES %s
-                    ON CONFLICT (store_id, file_id) DO UPDATE SET metadata = EXCLUDED.metadata
-                    """
-                )
-                values = [(store_id, file_id, Json(file_info))]
-                execute_values(cur, query, values, template="(%s, %s, %s)")
-        except Exception as e:
-            log.error(f"Error updating openai vector store file {file_id} for store {store_id}: {e}")
-            raise
-
-    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        """Delete vector store file metadata from Postgres database."""
-        if self.conn is None:
-            raise RuntimeError("PostgreSQL connection is not initialized")
-        try:
-            with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-                cur.execute(
-                    "DELETE FROM openai_vector_store_files WHERE store_id = %s AND file_id = %s",
-                    (store_id, file_id),
-                )
-                cur.execute(
-                    "DELETE FROM openai_vector_store_files_contents WHERE store_id = %s AND file_id = %s",
-                    (store_id, file_id),
-                )
-        except Exception as e:
-            log.error(f"Error deleting openai vector store file {file_id} for store {store_id}: {e}")
-            raise
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)

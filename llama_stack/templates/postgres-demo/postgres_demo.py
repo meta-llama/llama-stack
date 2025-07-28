@@ -7,6 +7,7 @@
 
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
+    BuildProvider,
     ModelInput,
     Provider,
     ShieldInput,
@@ -34,16 +35,19 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
     providers = {
-        "inference": ([p.provider_type for p in inference_providers] + ["inline::sentence-transformers"]),
-        "vector_io": ["remote::chromadb"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
+        "inference": [
+            BuildProvider(provider_type="remote::vllm"),
+            BuildProvider(provider_type="inline::sentence-transformers"),
+        ],
+        "vector_io": [BuildProvider(provider_type="remote::chromadb")],
+        "safety": [BuildProvider(provider_type="inline::llama-guard")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
         "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
+            BuildProvider(provider_type="remote::brave-search"),
+            BuildProvider(provider_type="remote::tavily-search"),
+            BuildProvider(provider_type="inline::rag-runtime"),
+            BuildProvider(provider_type="remote::model-context-protocol"),
         ],
     }
     name = "postgres-demo"
@@ -52,7 +56,10 @@ def get_distribution_template() -> DistributionTemplate:
         Provider(
             provider_id="${env.ENABLE_CHROMADB:+chromadb}",
             provider_type="remote::chromadb",
-            config=ChromaVectorIOConfig.sample_run_config(url="${env.CHROMADB_URL:=}"),
+            config=ChromaVectorIOConfig.sample_run_config(
+                f"~/.llama/distributions/{name}",
+                url="${env.CHROMADB_URL:=}",
+            ),
         ),
     ]
     default_tool_groups = [

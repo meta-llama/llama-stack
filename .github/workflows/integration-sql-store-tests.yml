@@ -1,5 +1,7 @@
 name: SqlStore Integration Tests
 
+run-name: Run the integration test suite with SqlStore
+
 on:
   push:
     branches: [ main ]

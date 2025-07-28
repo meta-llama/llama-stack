@@ -13,7 +13,7 @@ Text Generation Inference (TGI) provider for HuggingFace model serving.
 ## Sample Configuration
 
 ```yaml
-url: ${env.TGI_URL}
+url: ${env.TGI_URL:=}
 
 ```
 

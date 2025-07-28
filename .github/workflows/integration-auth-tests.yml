@@ -1,5 +1,7 @@
 name: Integration Auth Tests
 
+run-name: Run the integration test suite with Kubernetes authentication
+
 on:
   push:
     branches: [ main ]

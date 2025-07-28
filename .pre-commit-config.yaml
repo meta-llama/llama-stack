@@ -145,6 +145,15 @@ repos:
               echo;
               exit 1;
             } || true
+      - id: generate-ci-docs
+        name: Generate CI documentation
+        additional_dependencies:
+          - uv==0.7.8
+        entry: uv run ./scripts/gen-ci-docs.py
+        language: python
+        pass_filenames: false
+        require_serial: true
+        files: ^.github/workflows/.*$
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

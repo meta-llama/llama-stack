@@ -464,6 +464,8 @@ register_schema(OpenAIChatCompletionContentPartParam, name="OpenAIChatCompletion
 
 OpenAIChatCompletionMessageContent = str | list[OpenAIChatCompletionContentPartParam]
 
+OpenAIChatCompletionTextOnlyMessageContent = str | list[OpenAIChatCompletionContentPartTextParam]
+
 
 @json_schema_type
 class OpenAIUserMessageParam(BaseModel):
@@ -489,7 +491,7 @@ class OpenAISystemMessageParam(BaseModel):
     """
 
     role: Literal["system"] = "system"
-    content: OpenAIChatCompletionMessageContent
+    content: OpenAIChatCompletionTextOnlyMessageContent
     name: str | None = None
 
 
@@ -518,7 +520,7 @@ class OpenAIAssistantMessageParam(BaseModel):
     """
 
     role: Literal["assistant"] = "assistant"
-    content: OpenAIChatCompletionMessageContent | None = None
+    content: OpenAIChatCompletionTextOnlyMessageContent | None = None
     name: str | None = None
     tool_calls: list[OpenAIChatCompletionToolCall] | None = None
 
@@ -534,7 +536,7 @@ class OpenAIToolMessageParam(BaseModel):
 
     role: Literal["tool"] = "tool"
     tool_call_id: str
-    content: OpenAIChatCompletionMessageContent
+    content: OpenAIChatCompletionTextOnlyMessageContent
 
 
 @json_schema_type
@@ -547,7 +549,7 @@ class OpenAIDeveloperMessageParam(BaseModel):
     """
 
     role: Literal["developer"] = "developer"
-    content: OpenAIChatCompletionMessageContent
+    content: OpenAIChatCompletionTextOnlyMessageContent
     name: str | None = None
 
 
@@ -818,12 +820,6 @@ class OpenAIEmbeddingsResponse(BaseModel):
 
 class ModelStore(Protocol):
     async def get_model(self, identifier: str) -> Model: ...
-
-    async def update_registered_llm_models(
-        self,
-        provider_id: str,
-        models: list[Model],
-    ) -> None: ...
 
 
 class TextTruncation(Enum):

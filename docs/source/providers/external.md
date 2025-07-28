@@ -7,7 +7,16 @@ Llama Stack supports external providers that live outside of the main codebase. 
 
 ## Configuration
 
-To enable external providers, you need to configure the `external_providers_dir` in your Llama Stack configuration. This directory should contain your external provider specifications:
+To enable external providers, you need to add `module` into your build yaml, allowing Llama Stack to install the required package corresponding to the external provider.
+
+an example entry in your build.yaml should look like:
+
+```
+- provider_type: remote::ramalama
+  module: ramalama_stack
+```
+
+Additionally you can configure the `external_providers_dir` in your Llama Stack configuration. This method is in the process of being deprecated in favor of the `module` method. If using this method, the external provider directory should contain your external provider specifications:
 
 ```yaml
 external_providers_dir: ~/.llama/providers.d/
@@ -112,6 +121,31 @@ container_image: custom-vector-store:latest  # optional
 
 ## Required Implementation
 
+## All Providers
+
+All providers must contain a `get_provider_spec` function in their `provider` module. This is a standardized structure that Llama Stack expects and is necessary for getting things such as the config class. The `get_provider_spec` method returns a structure identical to the `adapter`. An example function may look like:
+
+```python
+from llama_stack.providers.datatypes import (
+    ProviderSpec,
+    Api,
+    AdapterSpec,
+    remote_provider_spec,
+)
+
+
+def get_provider_spec() -> ProviderSpec:
+    return remote_provider_spec(
+        api=Api.inference,
+        adapter=AdapterSpec(
+            adapter_type="ramalama",
+            pip_packages=["ramalama>=0.8.5", "pymilvus"],
+            config_class="ramalama_stack.config.RamalamaImplConfig",
+            module="ramalama_stack",
+        ),
+    )
+```
+
 ### Remote Providers
 
 Remote providers must expose a `get_adapter_impl()` function in their module that takes two arguments:
@@ -155,7 +189,7 @@ Version: 0.1.0
 Location: /path/to/venv/lib/python3.10/site-packages
 ```
 
-## Example: Custom Ollama Provider
+## Example using `external_providers_dir`: Custom Ollama Provider
 
 Here's a complete example of creating and using a custom Ollama provider:
 
@@ -206,6 +240,34 @@ external_providers_dir: ~/.llama/providers.d/
 
 The provider will now be available in Llama Stack with the type `remote::custom_ollama`.
 
+
+## Example using `module`: ramalama-stack
+
+[ramalama-stack](https://github.com/containers/ramalama-stack) is a recognized external provider that supports installation via module.
+
+To install Llama Stack with this external provider a user can provider the following build.yaml:
+
+```yaml
+version: 2
+distribution_spec:
+  description: Use (an external) Ramalama server for running LLM inference
+  container_image: null
+  providers:
+    inference:
+    - provider_type: remote::ramalama
+      module: ramalama_stack==0.3.0a0
+image_type: venv
+image_name: null
+external_providers_dir: null
+additional_pip_packages:
+- aiosqlite
+- sqlalchemy[asyncio]
+```
+
+No other steps are required other than `llama stack build` and `llama stack run`. The build process will use `module` to install all of the provider dependencies, retrieve the spec, etc.
+
+The provider will now be available in Llama Stack with the type `remote::ramalama`.
+
 ## Best Practices
 
 1. **Package Naming**: Use the prefix `llama-stack-provider-` for your provider packages to make them easily identifiable.
@@ -229,9 +291,10 @@ information. Execute the test for the Provider type you are developing.
 
 If your external provider isn't being loaded:
 
+1. Check that `module` points to a published pip package with a top level `provider` module including `get_provider_spec`.
 1. Check that the `external_providers_dir` path is correct and accessible.
 2. Verify that the YAML files are properly formatted.
 3. Ensure all required Python packages are installed.
 4. Check the Llama Stack server logs for any error messages - turn on debug logging to get more
    information using `LLAMA_STACK_LOGGING=all=debug`.
-5. Verify that the provider package is installed in your Python environment.
+5. Verify that the provider package is installed in your Python environment if using `external_providers_dir`.

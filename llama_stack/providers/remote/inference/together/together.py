@@ -66,7 +66,7 @@ logger = get_logger(name=__name__, category="inference")
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):
     def __init__(self, config: TogetherImplConfig) -> None:
-        ModelRegistryHelper.__init__(self, MODEL_ENTRIES)
+        ModelRegistryHelper.__init__(self, MODEL_ENTRIES, config.allowed_models)
         self.config = config
 
     async def initialize(self) -> None:

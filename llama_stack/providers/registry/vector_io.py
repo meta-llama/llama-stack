@@ -395,7 +395,7 @@ That means you'll get fast and efficient vector retrieval.
 To use PGVector in your Llama Stack project, follow these steps:
 
 1. Install the necessary dependencies.
-2. Configure your Llama Stack project to use Faiss.
+2. Configure your Llama Stack project to use pgvector. (e.g. remote::pgvector).
 3. Start storing and querying vectors.
 
 ## Installation
@@ -410,6 +410,7 @@ See [PGVector's documentation](https://github.com/pgvector/pgvector) for more de
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         remote_provider_spec(
             Api.vector_io,

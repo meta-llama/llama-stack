@@ -11,6 +11,7 @@ from llama_stack.apis.agents import Agents
 from llama_stack.apis.benchmarks import Benchmarks
 from llama_stack.apis.datasetio import DatasetIO
 from llama_stack.apis.datasets import Datasets
+from llama_stack.apis.datatypes import ExternalApiSpec
 from llama_stack.apis.eval import Eval
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference, InferenceProvider
@@ -35,6 +36,7 @@ from llama_stack.distribution.datatypes import (
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import builtin_automatically_routed_apis
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.store import DistributionRegistry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
@@ -59,8 +61,16 @@ class InvalidProviderError(Exception):
     pass
 
 
-def api_protocol_map() -> dict[Api, Any]:
-    return {
+def api_protocol_map(external_apis: dict[Api, ExternalApiSpec] | None = None) -> dict[Api, Any]:
+    """Get a mapping of API types to their protocol classes.
+
+    Args:
+        external_apis: Optional dictionary of external API specifications
+
+    Returns:
+        Dictionary mapping API types to their protocol classes
+    """
+    protocols = {
         Api.providers: ProvidersAPI,
         Api.agents: Agents,
         Api.inference: Inference,
@@ -83,10 +93,23 @@ def api_protocol_map() -> dict[Api, Any]:
         Api.files: Files,
     }
 
+    if external_apis:
+        for api, api_spec in external_apis.items():
+            try:
+                module = importlib.import_module(api_spec.module)
+                api_class = getattr(module, api_spec.protocol)
 
-def api_protocol_map_for_compliance_check() -> dict[Api, Any]:
+                protocols[api] = api_class
+            except (ImportError, AttributeError):
+                logger.exception(f"Failed to load external API {api_spec.name}")
+
+    return protocols
+
+
+def api_protocol_map_for_compliance_check(config: Any) -> dict[Api, Any]:
+    external_apis = load_external_apis(config)
     return {
-        **api_protocol_map(),
+        **api_protocol_map(external_apis),
         Api.inference: InferenceProvider,
     }
 
@@ -250,7 +273,7 @@ async def instantiate_providers(
     dist_registry: DistributionRegistry,
     run_config: StackRunConfig,
     policy: list[AccessRule],
-) -> dict:
+) -> dict[Api, Any]:
     """Instantiates providers asynchronously while managing dependencies."""
     impls: dict[Api, Any] = {}
     inner_impls_by_provider_id: dict[str, dict[str, Any]] = {f"inner-{x.value}": {} for x in router_apis}
@@ -322,7 +345,7 @@ async def instantiate_provider(
     policy: list[AccessRule],
 ):
     provider_spec = provider.spec
-    if not hasattr(provider_spec, "module"):
+    if not hasattr(provider_spec, "module") or provider_spec.module is None:
         raise AttributeError(f"ProviderSpec of type {type(provider_spec)} does not have a 'module' attribute")
 
     logger.debug(f"Instantiating provider {provider.provider_id} from {provider_spec.module}")
@@ -360,7 +383,7 @@ async def instantiate_provider(
     impl.__provider_spec__ = provider_spec
     impl.__provider_config__ = config
 
-    protocols = api_protocol_map_for_compliance_check()
+    protocols = api_protocol_map_for_compliance_check(run_config)
     additional_protocols = additional_protocols_map()
     # TODO: check compliance for special tool groups
     # the impl should be for Api.tool_runtime, the name should be the special tool group, the protocol should be the special tool group protocol

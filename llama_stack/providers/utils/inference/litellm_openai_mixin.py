@@ -68,11 +68,23 @@ class LiteLLMOpenAIMixin(
     def __init__(
         self,
         model_entries,
+        litellm_provider_name: str,
         api_key_from_config: str | None,
         provider_data_api_key_field: str,
         openai_compat_api_base: str | None = None,
     ):
+        """
+        Initialize the LiteLLMOpenAIMixin.
+
+        :param model_entries: The model entries to register.
+        :param api_key_from_config: The API key to use from the config.
+        :param provider_data_api_key_field: The field in the provider data that contains the API key.
+        :param litellm_provider_name: The name of the provider, used for model lookups.
+        :param openai_compat_api_base: The base URL for OpenAI compatibility, or None if not using OpenAI compatibility.
+        """
         ModelRegistryHelper.__init__(self, model_entries)
+
+        self.litellm_provider_name = litellm_provider_name
         self.api_key_from_config = api_key_from_config
         self.provider_data_api_key_field = provider_data_api_key_field
         self.api_base = openai_compat_api_base
@@ -91,7 +103,11 @@ class LiteLLMOpenAIMixin(
     def get_litellm_model_name(self, model_id: str) -> str:
         # users may be using openai/ prefix in their model names. the openai/models.py did this by default.
         # model_id.startswith("openai/") is for backwards compatibility.
-        return "openai/" + model_id if self.is_openai_compat and not model_id.startswith("openai/") else model_id
+        return (
+            f"{self.litellm_provider_name}/{model_id}"
+            if self.is_openai_compat and not model_id.startswith(self.litellm_provider_name)
+            else model_id
+        )
 
     async def completion(
         self,
@@ -421,3 +437,17 @@ class LiteLLMOpenAIMixin(
         logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for OpenAI Compat")
+
+    async def check_model_availability(self, model: str) -> bool:
+        """
+        Check if a specific model is available via LiteLLM for the current
+        provider (self.litellm_provider_name).
+
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
+        """
+        if self.litellm_provider_name not in litellm.models_by_provider:
+            logger.error(f"Provider {self.litellm_provider_name} is not registered in litellm.")
+            return False
+
+        return model in litellm.models_by_provider[self.litellm_provider_name]
