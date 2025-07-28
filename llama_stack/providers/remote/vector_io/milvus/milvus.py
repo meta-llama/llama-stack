@@ -5,13 +5,20 @@
 # the root directory of this source tree.
 
 import asyncio
+import json
 import logging
 import os
 import re
 from typing import Any
 
 from numpy.typing import NDArray
-from pymilvus import DataType, Function, FunctionType, MilvusClient
+from pymilvus import DataType, MilvusClient
+# Function and FunctionType are not available in all pymilvus versions
+try:
+    from pymilvus import Function, FunctionType
+except ImportError:
+    Function = None
+    FunctionType = None
 
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
