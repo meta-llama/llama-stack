@@ -5,6 +5,14 @@
 #
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
+set -e
+
+# Always run this at the end, even if something fails
+cleanup() {
+    echo "Generating coverage report..."
+    uv run --python "$PYTHON_VERSION" coverage html -d htmlcov-$PYTHON_VERSION
+}
+trap cleanup EXIT
 
 PYTHON_VERSION=${PYTHON_VERSION:-3.12}
 
@@ -19,6 +27,3 @@ fi
 # Run unit tests with coverage
 uv run --python "$PYTHON_VERSION" --with-editable . --group unit \
     coverage run --source=llama_stack -m pytest -s -v tests/unit/ "$@"
-
-# Generate HTML coverage report
-uv run --python "$PYTHON_VERSION" coverage html -d htmlcov-$PYTHON_VERSION
