@@ -179,6 +179,7 @@ async def test_register_model_existing_different(
 async def test_register_model_during_init(helper: ModelRegistryHelper, known_model: Model) -> None:
     assert helper.get_provider_model_id(known_model.provider_resource_id) == known_model.provider_model_id
 
+
 # TODO: unregister_model functionality was removed/disabled by https://github.com/meta-llama/llama-stack/pull/2916
 # async def test_unregister_model_during_init(helper: ModelRegistryHelper, known_model: Model) -> None:
 #     assert helper.get_provider_model_id(known_model.provider_resource_id) == known_model.provider_model_id
