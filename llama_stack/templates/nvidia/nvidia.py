@@ -6,7 +6,7 @@
 
 from pathlib import Path
 
-from llama_stack.distribution.datatypes import ModelInput, Provider, ShieldInput, ToolGroupInput
+from llama_stack.distribution.datatypes import BuildProvider, ModelInput, Provider, ShieldInput, ToolGroupInput
 from llama_stack.providers.remote.datasetio.nvidia import NvidiaDatasetIOConfig
 from llama_stack.providers.remote.eval.nvidia import NVIDIAEvalConfig
 from llama_stack.providers.remote.inference.nvidia import NVIDIAConfig
@@ -17,16 +17,19 @@ from llama_stack.templates.template import DistributionTemplate, RunConfigSettin
 
 def get_distribution_template() -> DistributionTemplate:
     providers = {
-        "inference": ["remote::nvidia"],
-        "vector_io": ["inline::faiss"],
-        "safety": ["remote::nvidia"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "eval": ["remote::nvidia"],
-        "post_training": ["remote::nvidia"],
-        "datasetio": ["inline::localfs", "remote::nvidia"],
-        "scoring": ["inline::basic"],
-        "tool_runtime": ["inline::rag-runtime"],
+        "inference": [BuildProvider(provider_type="remote::nvidia")],
+        "vector_io": [BuildProvider(provider_type="inline::faiss")],
+        "safety": [BuildProvider(provider_type="remote::nvidia")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
+        "eval": [BuildProvider(provider_type="remote::nvidia")],
+        "post_training": [BuildProvider(provider_type="remote::nvidia")],
+        "datasetio": [
+            BuildProvider(provider_type="inline::localfs"),
+            BuildProvider(provider_type="remote::nvidia"),
+        ],
+        "scoring": [BuildProvider(provider_type="inline::basic")],
+        "tool_runtime": [BuildProvider(provider_type="inline::rag-runtime")],
     }
 
     inference_provider = Provider(

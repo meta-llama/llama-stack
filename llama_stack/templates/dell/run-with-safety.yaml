@@ -22,7 +22,6 @@ providers:
       url: ${env.DEH_SAFETY_URL}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
-    config: {}
   vector_io:
   - provider_id: chromadb
     provider_type: remote::chromadb
@@ -74,10 +73,8 @@ providers:
   scoring:
   - provider_id: basic
     provider_type: inline::basic
-    config: {}
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
-    config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
@@ -95,7 +92,6 @@ providers:
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/dell}/registry.db

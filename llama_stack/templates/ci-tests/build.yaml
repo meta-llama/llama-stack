@@ -3,57 +3,52 @@ distribution_spec:
   description: CI tests for Llama Stack
   providers:
     inference:
-    - remote::cerebras
-    - remote::ollama
-    - remote::vllm
-    - remote::tgi
-    - remote::hf::serverless
-    - remote::hf::endpoint
-    - remote::fireworks
-    - remote::together
-    - remote::bedrock
-    - remote::databricks
-    - remote::nvidia
-    - remote::runpod
-    - remote::openai
-    - remote::anthropic
-    - remote::gemini
-    - remote::groq
-    - remote::llama-openai-compat
-    - remote::sambanova
-    - remote::passthrough
-    - inline::sentence-transformers
+    - provider_type: remote::cerebras
+    - provider_type: remote::ollama
+    - provider_type: remote::vllm
+    - provider_type: remote::tgi
+    - provider_type: remote::fireworks
+    - provider_type: remote::together
+    - provider_type: remote::bedrock
+    - provider_type: remote::nvidia
+    - provider_type: remote::openai
+    - provider_type: remote::anthropic
+    - provider_type: remote::gemini
+    - provider_type: remote::groq
+    - provider_type: remote::sambanova
+    - provider_type: inline::sentence-transformers
     vector_io:
-    - inline::faiss
-    - inline::sqlite-vec
-    - inline::milvus
-    - remote::chromadb
-    - remote::pgvector
+    - provider_type: inline::faiss
+    - provider_type: inline::sqlite-vec
+    - provider_type: inline::milvus
+    - provider_type: remote::chromadb
+    - provider_type: remote::pgvector
     files:
-    - inline::localfs
+    - provider_type: inline::localfs
     safety:
-    - inline::llama-guard
+    - provider_type: inline::llama-guard
     agents:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     telemetry:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     post_training:
-    - inline::huggingface
+    - provider_type: inline::huggingface
     eval:
-    - inline::meta-reference
+    - provider_type: inline::meta-reference
     datasetio:
-    - remote::huggingface
-    - inline::localfs
+    - provider_type: remote::huggingface
+    - provider_type: inline::localfs
     scoring:
-    - inline::basic
-    - inline::llm-as-judge
-    - inline::braintrust
+    - provider_type: inline::basic
+    - provider_type: inline::llm-as-judge
+    - provider_type: inline::braintrust
     tool_runtime:
-    - remote::brave-search
-    - remote::tavily-search
-    - inline::rag-runtime
-    - remote::model-context-protocol
+    - provider_type: remote::brave-search
+    - provider_type: remote::tavily-search
+    - provider_type: inline::rag-runtime
+    - provider_type: remote::model-context-protocol
 image_type: conda
+image_name: ci-tests
 additional_pip_packages:
 - aiosqlite
 - asyncpg

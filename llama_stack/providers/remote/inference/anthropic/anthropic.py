@@ -15,6 +15,7 @@ class AnthropicInferenceAdapter(LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             MODEL_ENTRIES,
+            litellm_provider_name="anthropic",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="anthropic_api_key",
         )

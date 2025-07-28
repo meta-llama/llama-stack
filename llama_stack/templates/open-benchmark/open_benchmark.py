@@ -9,6 +9,7 @@ from llama_stack.apis.datasets import DatasetPurpose, URIDataSource
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
     BenchmarkInput,
+    BuildProvider,
     DatasetInput,
     ModelInput,
     Provider,
@@ -96,19 +97,30 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
 def get_distribution_template() -> DistributionTemplate:
     inference_providers, available_models = get_inference_providers()
     providers = {
-        "inference": [p.provider_type for p in inference_providers],
-        "vector_io": ["inline::sqlite-vec", "remote::chromadb", "remote::pgvector"],
-        "safety": ["inline::llama-guard"],
-        "agents": ["inline::meta-reference"],
-        "telemetry": ["inline::meta-reference"],
-        "eval": ["inline::meta-reference"],
-        "datasetio": ["remote::huggingface", "inline::localfs"],
-        "scoring": ["inline::basic", "inline::llm-as-judge", "inline::braintrust"],
+        "inference": [BuildProvider(provider_type=p.provider_type, module=p.module) for p in inference_providers],
+        "vector_io": [
+            BuildProvider(provider_type="inline::sqlite-vec"),
+            BuildProvider(provider_type="remote::chromadb"),
+            BuildProvider(provider_type="remote::pgvector"),
+        ],
+        "safety": [BuildProvider(provider_type="inline::llama-guard")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
+        "eval": [BuildProvider(provider_type="inline::meta-reference")],
+        "datasetio": [
+            BuildProvider(provider_type="remote::huggingface"),
+            BuildProvider(provider_type="inline::localfs"),
+        ],
+        "scoring": [
+            BuildProvider(provider_type="inline::basic"),
+            BuildProvider(provider_type="inline::llm-as-judge"),
+            BuildProvider(provider_type="inline::braintrust"),
+        ],
         "tool_runtime": [
-            "remote::brave-search",
-            "remote::tavily-search",
-            "inline::rag-runtime",
-            "remote::model-context-protocol",
+            BuildProvider(provider_type="remote::brave-search"),
+            BuildProvider(provider_type="remote::tavily-search"),
+            BuildProvider(provider_type="inline::rag-runtime"),
+            BuildProvider(provider_type="remote::model-context-protocol"),
         ],
     }
     name = "open-benchmark"

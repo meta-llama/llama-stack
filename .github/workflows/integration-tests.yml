@@ -1,5 +1,7 @@
 name: Integration Tests
 
+run-name: Run the integration test suite with Ollama
+
 on:
   push:
     branches: [ main ]
@@ -14,13 +16,19 @@ on:
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-ollama/action.yml'
   schedule:
-    - cron: '0 0 * * *'  # Daily at 12 AM UTC
+    # If changing the cron schedule, update the provider in the test-matrix job
+    - cron: '0 0 * * *'  # (test latest client) Daily at 12 AM UTC
+    - cron: '1 0 * * 0'  # (test vllm) Weekly on Sunday at 1 AM UTC
   workflow_dispatch:
     inputs:
       test-all-client-versions:
         description: 'Test against both the latest and published versions'
         type: boolean
         default: false
+      test-provider:
+        description: 'Test against a specific provider'
+        type: string
+        default: 'ollama'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -53,8 +61,17 @@ jobs:
       matrix:
         test-type: ${{ fromJson(needs.discover-tests.outputs.test-type) }}
         client-type: [library, server]
+        # Use vllm on weekly schedule, otherwise use test-provider input (defaults to ollama)
+        provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
         python-version: ["3.12", "3.13"]
-        client-version: ${{ (github.event_name == 'schedule' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        exclude: # TODO: look into why these tests are failing and fix them
+          - provider: vllm
+            test-type: safety
+          - provider: vllm
+            test-type: post_training
+          - provider: vllm
+            test-type: tool_runtime
 
     steps:
       - name: Checkout repository
@@ -67,7 +84,12 @@ jobs:
           client-version: ${{ matrix.client-version }}
 
       - name: Setup ollama
+        if: ${{ matrix.provider == 'ollama' }}
         uses: ./.github/actions/setup-ollama
+
+      - name: Setup vllm
+        if: ${{ matrix.provider == 'vllm' }}
+        uses: ./.github/actions/setup-vllm
 
       - name: Build Llama Stack
         run: |
@@ -81,10 +103,6 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          OLLAMA_INFERENCE_MODEL: "llama3.2:3b-instruct-fp16" # for server tests
-          ENABLE_OLLAMA: "ollama" # for server tests
-          OLLAMA_URL: "http://0.0.0.0:11434"
-          SAFETY_MODEL: "llama-guard3:1b"
           LLAMA_STACK_CLIENT_TIMEOUT: "300" # Increased timeout for eval operations
         # Use 'shell' to get pipefail behavior
         # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
@@ -96,12 +114,27 @@ jobs:
           else
             stack_config="server:ci-tests"
           fi
+
+          EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
+          if [ "${{ matrix.provider }}" == "ollama" ]; then
+            export OLLAMA_URL="http://0.0.0.0:11434"
+            export TEXT_MODEL=ollama/llama3.2:3b-instruct-fp16
+            export SAFETY_MODEL="ollama/llama-guard3:1b"
+            EXTRA_PARAMS="--safety-shield=llama-guard"
+          else
+            export VLLM_URL="http://localhost:8000/v1"
+            export TEXT_MODEL=vllm/meta-llama/Llama-3.2-1B-Instruct
+            # TODO: remove the not(test_inference_store_tool_calls) once we can get the tool called consistently
+            EXTRA_PARAMS=
+            EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
+          fi
+
+
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
-            -k "not(builtin_tool or safety_with_image or code_interpreter or test_rag)" \
-            --text-model="ollama/llama3.2:3b-instruct-fp16" \
+            -k "not( ${EXCLUDE_TESTS} )" \
+            --text-model=$TEXT_MODEL \
             --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
-            --safety-shield=$SAFETY_MODEL \
-            --color=yes \
+            --color=yes ${EXTRA_PARAMS} \
             --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
 
       - name: Check Storage and Memory Available After Tests
@@ -110,16 +143,17 @@ jobs:
           free -h
           df -h
 
-      - name: Write ollama logs to file
+      - name: Write inference logs to file
         if: ${{ always() }}
         run: |
-          sudo docker logs ollama > ollama.log
+          sudo docker logs ollama > ollama.log || true
+          sudo docker logs vllm > vllm.log || true
 
       - name: Upload all logs to artifacts
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
+          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
           path: |
             *.log
           retention-days: 1

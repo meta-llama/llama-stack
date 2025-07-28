@@ -1,5 +1,7 @@
 name: Vector IO Integration Tests
 
+run-name: Run the integration test suite with various VectorIO providers
+
 on:
   push:
     branches: [ main ]

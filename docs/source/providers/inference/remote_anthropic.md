@@ -13,7 +13,7 @@ Anthropic inference provider for accessing Claude models and Anthropic's AI serv
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.ANTHROPIC_API_KEY}
+api_key: ${env.ANTHROPIC_API_KEY:=}
 
 ```
 

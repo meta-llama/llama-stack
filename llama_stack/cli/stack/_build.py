@@ -31,11 +31,13 @@ from llama_stack.distribution.build import (
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import (
     BuildConfig,
+    BuildProvider,
     DistributionSpec,
     Provider,
     StackRunConfig,
 )
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.resolver import InvalidProviderError
 from llama_stack.distribution.stack import replace_env_vars
 from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
@@ -93,7 +95,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             )
             sys.exit(1)
     elif args.providers:
-        providers_list: dict[str, str | list[str]] = dict()
+        provider_list: dict[str, list[BuildProvider]] = dict()
         for api_provider in args.providers.split(","):
             if "=" not in api_provider:
                 cprint(
@@ -102,7 +104,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 sys.exit(1)
-            api, provider = api_provider.split("=")
+            api, provider_type = api_provider.split("=")
             providers_for_api = get_provider_registry().get(Api(api), None)
             if providers_for_api is None:
                 cprint(
@@ -111,16 +113,12 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                     file=sys.stderr,
                 )
                 sys.exit(1)
-            if provider in providers_for_api:
-                if api not in providers_list:
-                    providers_list[api] = []
-                # Use type guarding to ensure we have a list
-                provider_value = providers_list[api]
-                if isinstance(provider_value, list):
-                    provider_value.append(provider)
-                else:
-                    # Convert string to list and append
-                    providers_list[api] = [provider_value, provider]
+            if provider_type in providers_for_api:
+                provider = BuildProvider(
+                    provider_type=provider_type,
+                    module=None,
+                )
+                provider_list.setdefault(api, []).append(provider)
             else:
                 cprint(
                     f"{provider} is not a valid provider for the {api} API.",
@@ -129,7 +127,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
         distribution_spec = DistributionSpec(
-            providers=providers_list,
+            providers=provider_list,
             description=",".join(args.providers),
         )
         if not args.image_type:
@@ -190,7 +188,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         cprint("Tip: use <TAB> to see options for the providers.\n", color="green", file=sys.stderr)
 
-        providers: dict[str, str | list[str]] = dict()
+        providers: dict[str, list[BuildProvider]] = dict()
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
             if not available_providers:
@@ -205,7 +203,10 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 ),
             )
 
-            providers[api.value] = api_provider
+            string_providers = api_provider.split(" ")
+
+            for provider in string_providers:
+                providers.setdefault(api.value, []).append(BuildProvider(provider_type=provider))
 
         description = prompt(
             "\n > (Optional) Enter a short description for your Llama Stack: ",
@@ -236,11 +237,13 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
     if args.print_deps_only:
         print(f"# Dependencies for {args.template or args.config or image_name}")
-        normal_deps, special_deps = get_provider_dependencies(build_config)
+        normal_deps, special_deps, external_provider_dependencies = get_provider_dependencies(build_config)
         normal_deps += SERVER_DEPENDENCIES
         print(f"uv pip install {' '.join(normal_deps)}")
         for special_dep in special_deps:
             print(f"uv pip install {special_dep}")
+        for external_dep in external_provider_dependencies:
+            print(f"uv pip install {external_dep}")
         return
 
     try:
@@ -303,27 +306,25 @@ def _generate_run_config(
     provider_registry = get_provider_registry(build_config)
     for api in apis:
         run_config.providers[api] = []
-        provider_types = build_config.distribution_spec.providers[api]
-        if isinstance(provider_types, str):
-            provider_types = [provider_types]
+        providers = build_config.distribution_spec.providers[api]
 
-        for i, provider_type in enumerate(provider_types):
-            pid = provider_type.split("::")[-1]
+        for provider in providers:
+            pid = provider.provider_type.split("::")[-1]
 
-            p = provider_registry[Api(api)][provider_type]
+            p = provider_registry[Api(api)][provider.provider_type]
             if p.deprecation_error:
                 raise InvalidProviderError(p.deprecation_error)
 
             try:
-                config_type = instantiate_class_type(provider_registry[Api(api)][provider_type].config_class)
-            except ModuleNotFoundError:
+                config_type = instantiate_class_type(provider_registry[Api(api)][provider.provider_type].config_class)
+            except (ModuleNotFoundError, ValueError) as exc:
                 # HACK ALERT:
                 # This code executes after building is done, the import cannot work since the
                 # package is either available in the venv or container - not available on the host.
                 # TODO: use a "is_external" flag in ProviderSpec to check if the provider is
                 # external
                 cprint(
-                    f"Failed to import provider {provider_type} for API {api} - assuming it's external, skipping",
+                    f"Failed to import provider {provider.provider_type} for API {api} - assuming it's external, skipping: {exc}",
                     color="yellow",
                     file=sys.stderr,
                 )
@@ -336,9 +337,10 @@ def _generate_run_config(
                 config = {}
 
             p_spec = Provider(
-                provider_id=f"{pid}-{i}" if len(provider_types) > 1 else pid,
-                provider_type=provider_type,
+                provider_id=pid,
+                provider_type=provider.provider_type,
                 config=config,
+                module=provider.module,
             )
             run_config.providers[api].append(p_spec)
 
@@ -401,8 +403,31 @@ def _run_stack_build_command_from_build_config(
         run_config_file = _generate_run_config(build_config, build_dir, image_name)
 
     with open(build_file_path, "w") as f:
-        to_write = json.loads(build_config.model_dump_json())
+        to_write = json.loads(build_config.model_dump_json(exclude_none=True))
         f.write(yaml.dump(to_write, sort_keys=False))
+
+    # We first install the external APIs so that the build process can use them and discover the
+    # providers dependencies
+    if build_config.external_apis_dir:
+        cprint("Installing external APIs", color="yellow", file=sys.stderr)
+        external_apis = load_external_apis(build_config)
+        if external_apis:
+            # install the external APIs
+            packages = []
+            for _, api_spec in external_apis.items():
+                if api_spec.pip_packages:
+                    packages.extend(api_spec.pip_packages)
+                    cprint(
+                        f"Installing {api_spec.name} with pip packages {api_spec.pip_packages}",
+                        color="yellow",
+                        file=sys.stderr,
+                    )
+            return_code = run_command(["uv", "pip", "install", *packages])
+            if return_code != 0:
+                packages_str = ", ".join(packages)
+                raise RuntimeError(
+                    f"Failed to install external APIs packages: {packages_str} (return code: {return_code})"
+                )
 
     return_code = build_image(
         build_config,

@@ -82,6 +82,9 @@ class QdrantIndex(EmbeddingIndex):
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        raise NotImplementedError("delete_chunk is not supported in qdrant")
+
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         results = (
             await self.client.query_points(
@@ -306,4 +309,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
         vector_store_id: str,
         file_id: str,
     ) -> VectorStoreFileObject:
+        raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")
+
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         raise NotImplementedError("OpenAI Vector Stores API is not supported in Qdrant")

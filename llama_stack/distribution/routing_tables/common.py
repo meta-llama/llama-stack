@@ -117,6 +117,9 @@ class CommonRoutingTableImpl(RoutingTable):
         for p in self.impls_by_provider_id.values():
             await p.shutdown()
 
+    async def refresh(self) -> None:
+        pass
+
     async def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
         from .benchmarks import BenchmarksRoutingTable
         from .datasets import DatasetsRoutingTable
@@ -206,7 +209,6 @@ class CommonRoutingTableImpl(RoutingTable):
         if obj.type == ResourceType.model.value:
             await self.dist_registry.register(registered_obj)
             return registered_obj
-
         else:
             await self.dist_registry.register(obj)
             return obj

@@ -153,6 +153,11 @@ class OpenAIVectorStoreMixin(ABC):
         self.openai_vector_stores = await self._load_openai_vector_stores()
 
     @abstractmethod
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a vector store."""
+        pass
+
+    @abstractmethod
     async def register_vector_db(self, vector_db: VectorDB) -> None:
         """Register a vector database (provider-specific implementation)."""
         pass
@@ -763,16 +768,14 @@ class OpenAIVectorStoreMixin(ABC):
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
 
+        dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
+        chunks = [Chunk.model_validate(c) for c in dict_chunks]
+        await self.delete_chunks(vector_store_id, [str(c.chunk_id) for c in chunks if c.chunk_id])
+
         store_info = self.openai_vector_stores[vector_store_id].copy()
 
         file = await self.openai_retrieve_vector_store_file(vector_store_id, file_id)
         await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
-
-        # TODO: We need to actually delete the embeddings from the underlying vector store...
-        # Also uncomment the corresponding integration test marked as xfail
-        #
-        # test_openai_vector_store_delete_file_removes_from_vector_store in
-        # tests/integration/vector_io/test_openai_vector_stores.py
 
         # Update in-memory cache
         store_info["file_ids"].remove(file_id)

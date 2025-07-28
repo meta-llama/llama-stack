@@ -13,7 +13,6 @@ Remote vLLM inference provider for connecting to vLLM servers.
 | `api_token` | `str \| None` | No | fake | The API token |
 | `tls_verify` | `bool \| str` | No | True | Whether to verify TLS certificates. Can be a boolean or a path to a CA certificate file. |
 | `refresh_models` | `<class 'bool'>` | No | False | Whether to refresh models periodically |
-| `refresh_models_interval` | `<class 'int'>` | No | 300 | Interval in seconds to refresh models |
 
 ## Sample Configuration
 

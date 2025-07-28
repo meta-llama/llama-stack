@@ -1,5 +1,7 @@
 name: Coverage Badge
 
+run-name: Creates PR for updating the code coverage badge
+
 on:
   push:
     branches: [ main ]

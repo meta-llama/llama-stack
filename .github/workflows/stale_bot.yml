@@ -1,5 +1,7 @@
 name: Close stale issues and PRs
 
+run-name: Run the Stale Bot action
+
 on:
   schedule:
     - cron: '0 0 * * *' # every day at midnight
