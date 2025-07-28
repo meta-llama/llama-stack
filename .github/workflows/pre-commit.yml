@@ -39,6 +39,11 @@ jobs:
           SKIP: no-commit-to-branch
           RUFF_OUTPUT_FORMAT: github
 
+      - name: Debug
+        run: |
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.actor: ${{ github.actor }}"
+
       - name: Commit changes for dependabot PRs
         if: github.actor == 'dependabot[bot]'
         run: |
@@ -47,7 +52,9 @@ jobs:
             git config --local user.name "github-actions[bot]"
             git add -A
             git commit -m "Apply pre-commit fixes"
-            git push origin HEAD:main
+
+            # push to the PR branch
+            git push origin HEAD:${{ github.ref }}
             echo "Pre-commit fixes committed and pushed"
           else
             echo "No changes to commit"
