@@ -6895,7 +6895,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The content of the model's response
         name:
           type: string
@@ -7037,7 +7037,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The content of the developer message
         name:
           type: string
@@ -7090,7 +7090,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: >-
             The content of the "system prompt". If multiple system messages are provided,
             they are concatenated. The underlying Llama Stack code may also add other
@@ -7148,7 +7148,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The response content from the tool
       additionalProperties: false
       required:

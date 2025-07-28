@@ -4,13 +4,19 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import pytest
+from pydantic import ValidationError
 
 from llama_stack.apis.common.content_types import TextContentItem
 from llama_stack.apis.inference import (
     CompletionMessage,
     OpenAIAssistantMessageParam,
+    OpenAIChatCompletionContentPartImageParam,
     OpenAIChatCompletionContentPartTextParam,
+    OpenAIDeveloperMessageParam,
+    OpenAIImageURL,
     OpenAISystemMessageParam,
+    OpenAIToolMessageParam,
     OpenAIUserMessageParam,
     SystemMessage,
     UserMessage,
@@ -108,3 +114,71 @@ async def test_openai_messages_to_messages_with_content_list():
     assert llama_messages[0].content[0].text == "system message"
     assert llama_messages[1].content[0].text == "user message"
     assert llama_messages[2].content[0].text == "assistant message"
+
+
+@pytest.mark.parametrize(
+    "message_class,kwargs",
+    [
+        (OpenAISystemMessageParam, {}),
+        (OpenAIAssistantMessageParam, {}),
+        (OpenAIDeveloperMessageParam, {}),
+        (OpenAIUserMessageParam, {}),
+        (OpenAIToolMessageParam, {"tool_call_id": "call_123"}),
+    ],
+)
+def test_message_accepts_text_string(message_class, kwargs):
+    """Test that messages accept string text content."""
+    msg = message_class(content="Test message", **kwargs)
+    assert msg.content == "Test message"
+
+
+@pytest.mark.parametrize(
+    "message_class,kwargs",
+    [
+        (OpenAISystemMessageParam, {}),
+        (OpenAIAssistantMessageParam, {}),
+        (OpenAIDeveloperMessageParam, {}),
+        (OpenAIUserMessageParam, {}),
+        (OpenAIToolMessageParam, {"tool_call_id": "call_123"}),
+    ],
+)
+def test_message_accepts_text_list(message_class, kwargs):
+    """Test that messages accept list of text content parts."""
+    content_list = [OpenAIChatCompletionContentPartTextParam(text="Test message")]
+    msg = message_class(content=content_list, **kwargs)
+    assert len(msg.content) == 1
+    assert msg.content[0].text == "Test message"
+
+
+@pytest.mark.parametrize(
+    "message_class,kwargs",
+    [
+        (OpenAISystemMessageParam, {}),
+        (OpenAIAssistantMessageParam, {}),
+        (OpenAIDeveloperMessageParam, {}),
+        (OpenAIToolMessageParam, {"tool_call_id": "call_123"}),
+    ],
+)
+def test_message_rejects_images(message_class, kwargs):
+    """Test that system, assistant, developer, and tool messages reject image content."""
+    with pytest.raises(ValidationError):
+        message_class(
+            content=[
+                OpenAIChatCompletionContentPartImageParam(image_url=OpenAIImageURL(url="http://example.com/image.jpg"))
+            ],
+            **kwargs,
+        )
+
+
+def test_user_message_accepts_images():
+    """Test that user messages accept image content (unlike other message types)."""
+    # List with images should work
+    msg = OpenAIUserMessageParam(
+        content=[
+            OpenAIChatCompletionContentPartTextParam(text="Describe this image:"),
+            OpenAIChatCompletionContentPartImageParam(image_url=OpenAIImageURL(url="http://example.com/image.jpg")),
+        ]
+    )
+    assert len(msg.content) == 2
+    assert msg.content[0].text == "Describe this image:"
+    assert msg.content[1].image_url.url == "http://example.com/image.jpg"
