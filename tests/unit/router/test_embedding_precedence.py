@@ -40,7 +40,6 @@ class _DummyRoutingTable:
         raise NotImplementedError
 
 
-@pytest.mark.asyncio
 async def test_global_default_used(monkeypatch):
     """Router should pick up global default when no explicit model is supplied."""
 
@@ -58,7 +57,6 @@ async def test_global_default_used(monkeypatch):
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", raising=False)
 
 
-@pytest.mark.asyncio
 async def test_explicit_override(monkeypatch):
     """Explicit model parameter should override global default."""
 
@@ -73,8 +71,7 @@ async def test_explicit_override(monkeypatch):
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
 
 
-@pytest.mark.asyncio
-async def test_error_when_no_default(monkeypatch):
+async def test_error_when_no_default():
     """Router should raise when neither explicit nor global default is available."""
 
     router = VectorIORouter(routing_table=_DummyRoutingTable())
