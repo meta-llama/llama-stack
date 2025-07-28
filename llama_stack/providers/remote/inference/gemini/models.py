@@ -10,11 +10,11 @@ from llama_stack.providers.utils.inference.model_registry import (
 )
 
 LLM_MODEL_IDS = [
-    "gemini/gemini-1.5-flash",
-    "gemini/gemini-1.5-pro",
-    "gemini/gemini-2.0-flash",
-    "gemini/gemini-2.5-flash",
-    "gemini/gemini-2.5-pro",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro",
+    "gemini-2.0-flash",
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
 ]
 
 SAFETY_MODELS_ENTRIES = []
@@ -23,7 +23,7 @@ MODEL_ENTRIES = (
     [ProviderModelEntry(provider_model_id=m) for m in LLM_MODEL_IDS]
     + [
         ProviderModelEntry(
-            provider_model_id="gemini/text-embedding-004",
+            provider_model_id="text-embedding-004",
             model_type=ModelType.embedding,
             metadata={"embedding_dimension": 768, "context_length": 2048},
         ),

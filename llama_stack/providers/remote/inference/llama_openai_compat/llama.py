@@ -32,6 +32,7 @@ class LlamaCompatInferenceAdapter(OpenAIMixin, LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
+            litellm_provider_name="meta_llama",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="llama_api_key",
             openai_compat_api_base=config.openai_compat_api_base,

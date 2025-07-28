@@ -305,6 +305,8 @@ class _HfAdapter(
 
 class TGIAdapter(_HfAdapter):
     async def initialize(self, config: TGIImplConfig) -> None:
+        if not config.url:
+            raise ValueError("You must provide a URL in run.yaml (or via the TGI_URL environment variable) to use TGI.")
         log.info(f"Initializing TGI client with url={config.url}")
         self.client = AsyncInferenceClient(
             model=config.url,

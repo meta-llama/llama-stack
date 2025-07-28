@@ -16,6 +16,7 @@ providers:
     provider_type: remote::openai
     config:
       api_key: ${env.OPENAI_API_KEY:=}
+      base_url: ${env.OPENAI_BASE_URL:=https://api.openai.com/v1}
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
@@ -33,7 +34,7 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
+      api_key: ${env.TOGETHER_API_KEY:=}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec

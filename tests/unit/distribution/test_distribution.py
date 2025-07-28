@@ -346,7 +346,7 @@ pip_packages:
 
     def test_external_provider_from_module_building(self, mock_providers):
         """Test loading an external provider from a module during build (building=True, partial spec)."""
-        from llama_stack.distribution.datatypes import BuildConfig, DistributionSpec, Provider
+        from llama_stack.distribution.datatypes import BuildConfig, BuildProvider, DistributionSpec
         from llama_stack.providers.datatypes import Api
 
         # No importlib patch needed, should not import module when type of `config` is BuildConfig or DistributionSpec
@@ -358,10 +358,8 @@ pip_packages:
                 description="test",
                 providers={
                     "inference": [
-                        Provider(
-                            provider_id="external_test",
+                        BuildProvider(
                             provider_type="external_test",
-                            config={},
                             module="external_test",
                         )
                     ]

@@ -166,7 +166,7 @@ class OllamaInferenceAdapter(
         ]
         for m in response.models:
             # kill embedding models since we don't know dimensions for them
-            if m.details.family in ["bert"]:
+            if "bert" in m.details.family:
                 continue
             models.append(
                 Model(
@@ -420,9 +420,6 @@ class OllamaInferenceAdapter(
         except ValueError:
             pass  # Ignore statically unknown model, will check live listing
 
-        if model.provider_resource_id is None:
-            raise ValueError("Model provider_resource_id cannot be None")
-
         if model.model_type == ModelType.embedding:
             response = await self.client.list()
             if model.provider_resource_id not in [m.model for m in response.models]:
@@ -433,9 +430,9 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m.model for m in response.models]
-        provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
-        if provider_resource_id is None:
-            provider_resource_id = model.provider_resource_id
+
+        provider_resource_id = model.provider_resource_id
+        assert provider_resource_id is not None  # mypy
         if provider_resource_id not in available_models:
             available_models_latest = [m.model.split(":latest")[0] for m in response.models]
             if provider_resource_id in available_models_latest:
@@ -443,7 +440,9 @@ class OllamaInferenceAdapter(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
                 return model
-            raise UnsupportedModelError(model.provider_resource_id, available_models)
+            raise UnsupportedModelError(provider_resource_id, available_models)
+
+        # mutating this should be considered an anti-pattern
         model.provider_resource_id = provider_resource_id
 
         return model

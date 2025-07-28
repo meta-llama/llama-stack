@@ -16,7 +16,7 @@ Together AI inference provider for open-source models and collaborative AI devel
 
 ```yaml
 url: https://api.together.xyz/v1
-api_key: ${env.TOGETHER_API_KEY}
+api_key: ${env.TOGETHER_API_KEY:=}
 
 ```
 

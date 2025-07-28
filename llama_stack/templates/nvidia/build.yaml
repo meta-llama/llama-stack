@@ -3,37 +3,26 @@ distribution_spec:
   description: Use NVIDIA NIM for running LLM inference, evaluation and safety
   providers:
     inference:
-    - provider_id: nvidia
-      provider_type: remote::nvidia
+    - provider_type: remote::nvidia
     vector_io:
-    - provider_id: faiss
-      provider_type: inline::faiss
+    - provider_type: inline::faiss
     safety:
-    - provider_id: nvidia
-      provider_type: remote::nvidia
+    - provider_type: remote::nvidia
     agents:
-    - provider_id: meta-reference
-      provider_type: inline::meta-reference
+    - provider_type: inline::meta-reference
     telemetry:
-    - provider_id: meta-reference
-      provider_type: inline::meta-reference
+    - provider_type: inline::meta-reference
     eval:
-    - provider_id: nvidia
-      provider_type: remote::nvidia
+    - provider_type: remote::nvidia
     post_training:
-    - provider_id: nvidia
-      provider_type: remote::nvidia
+    - provider_type: remote::nvidia
     datasetio:
-    - provider_id: localfs
-      provider_type: inline::localfs
-    - provider_id: nvidia
-      provider_type: remote::nvidia
+    - provider_type: inline::localfs
+    - provider_type: remote::nvidia
     scoring:
-    - provider_id: basic
-      provider_type: inline::basic
+    - provider_type: inline::basic
     tool_runtime:
-    - provider_id: rag-runtime
-      provider_type: inline::rag-runtime
+    - provider_type: inline::rag-runtime
 image_type: conda
 image_name: nvidia
 additional_pip_packages:
