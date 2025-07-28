@@ -19,7 +19,6 @@ repos:
     -   id: check-yaml
         args: ["--unsafe"]
     -   id: detect-private-key
-    -   id: requirements-txt-fixer
     -   id: mixed-line-ending
         args: [--fix=lf] # Forces to replace line ending by LF (line feed)
     -   id: check-executables-have-shebangs
@@ -56,14 +55,6 @@ repos:
     rev: 0.7.20
     hooks:
     -   id: uv-lock
-    -   id: uv-export
-        args: [
-            "--frozen",
-            "--no-hashes",
-            "--no-emit-project",
-            "--no-default-groups",
-            "--output-file=requirements.txt"
-        ]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.16.1
