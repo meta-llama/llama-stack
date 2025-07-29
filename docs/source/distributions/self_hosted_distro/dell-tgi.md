@@ -65,7 +65,7 @@ registry.dell.huggingface.co/enterprise-dell-inference-meta-llama-meta-llama-3.1
 #### Start Llama Stack server pointing to TGI server
 
 ```
-docker run --pull always --network host -it -p 8321:8321 -v ./run.yaml:/root/my-run.yaml --gpus=all llamastack/distribution-tgi --yaml_config /root/my-run.yaml
+docker run --pull always --network host -it -p 8321:8321 -v ./run.yaml:/.llama/my-run.yaml --gpus=all llamastack/distribution-tgi --yaml_config /.llama/my-run.yaml
 ```
 
 Make sure in you `run.yaml` file, you inference provider is pointing to the correct TGI server endpoint. E.g.

@@ -89,7 +89,7 @@ following command:
 docker run -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v ~/.llama:/.llama \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
   --env OLLAMA_URL=http://host.docker.internal:11434
@@ -109,7 +109,7 @@ Linux users having issues running the above command should instead try the follo
 docker run -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v ~/.llama:/.llama \
   --network=host \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \

@@ -83,7 +83,7 @@ docker run \
   --pull always \
   --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v ~/.llama:/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
@@ -97,7 +97,7 @@ docker run \
   --pull always \
   --gpu all \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v ~/.llama:/root/.llama \
+  -v ~/.llama:/.llama \
   llamastack/distribution-meta-reference-gpu \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct \

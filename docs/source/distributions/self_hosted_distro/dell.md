@@ -125,7 +125,7 @@ docker run -it \
   --pull always \
   --network host \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v $HOME/.llama:/root/.llama \
+  -v $HOME/.llama:/.llama \
   # NOTE: mount the llama-stack / llama-model directories if testing local changes else not needed
   -v /home/hjshah/git/llama-stack:/app/llama-stack-source -v /home/hjshah/git/llama-models:/app/llama-models-source \
   # localhost/distribution-dell:dev if building / testing locally
@@ -152,10 +152,10 @@ docker run \
   -it \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
-  -v $HOME/.llama:/root/.llama \
-  -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
+  -v $HOME/.llama:/.llama \
+  -v ./llama_stack/templates/tgi/run-with-safety.yaml:/.llama/my-run.yaml \
   llamastack/distribution-dell \
-  --config /root/my-run.yaml \
+  --config /.llama/my-run.yaml \
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env DEH_URL=$DEH_URL \
