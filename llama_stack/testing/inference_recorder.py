@@ -119,6 +119,7 @@ class ResponseStorage:
         # Save response to JSON file
         with open(response_path, "w") as f:
             json.dump({"request": request, "response": serialized_response}, f, indent=2)
+            f.write("\n")
 
         # Update SQLite index
         with sqlite3.connect(self.db_path) as conn:
