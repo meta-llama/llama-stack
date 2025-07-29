@@ -19,7 +19,6 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::meta-reference",
-            pip_packages=["faiss-cpu"],
             module="llama_stack.providers.inline.vector_io.faiss",
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             deprecation_warning="Please use the `inline::faiss` provider instead.",
@@ -30,7 +29,6 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::faiss",
-            pip_packages=["faiss-cpu"],
             module="llama_stack.providers.inline.vector_io.faiss",
             config_class="llama_stack.providers.inline.vector_io.faiss.FaissVectorIOConfig",
             api_dependencies=[Api.inference],
@@ -83,7 +81,6 @@ more details about Faiss in general.
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::sqlite-vec",
-            pip_packages=["sqlite-vec"],
             module="llama_stack.providers.inline.vector_io.sqlite_vec",
             config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             api_dependencies=[Api.inference],
@@ -290,7 +287,6 @@ See [sqlite-vec's GitHub repo](https://github.com/asg017/sqlite-vec/tree/main) f
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::sqlite_vec",
-            pip_packages=["sqlite-vec"],
             module="llama_stack.providers.inline.vector_io.sqlite_vec",
             config_class="llama_stack.providers.inline.vector_io.sqlite_vec.SQLiteVectorIOConfig",
             deprecation_warning="Please use the `inline::sqlite-vec` provider (notice the hyphen instead of underscore) instead.",
@@ -304,7 +300,6 @@ Please refer to the sqlite-vec provider documentation.
             Api.vector_io,
             AdapterSpec(
                 adapter_type="chromadb",
-                pip_packages=["chromadb-client"],
                 module="llama_stack.providers.remote.vector_io.chroma",
                 config_class="llama_stack.providers.remote.vector_io.chroma.ChromaVectorIOConfig",
                 description="""
@@ -347,7 +342,6 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::chromadb",
-            pip_packages=["chromadb"],
             module="llama_stack.providers.inline.vector_io.chroma",
             config_class="llama_stack.providers.inline.vector_io.chroma.ChromaVectorIOConfig",
             api_dependencies=[Api.inference],
@@ -391,7 +385,6 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
             Api.vector_io,
             AdapterSpec(
                 adapter_type="pgvector",
-                pip_packages=["psycopg2-binary"],
                 module="llama_stack.providers.remote.vector_io.pgvector",
                 config_class="llama_stack.providers.remote.vector_io.pgvector.PGVectorVectorIOConfig",
                 description="""
@@ -430,7 +423,6 @@ See [PGVector's documentation](https://github.com/pgvector/pgvector) for more de
             Api.vector_io,
             AdapterSpec(
                 adapter_type="weaviate",
-                pip_packages=["weaviate-client"],
                 module="llama_stack.providers.remote.vector_io.weaviate",
                 config_class="llama_stack.providers.remote.vector_io.weaviate.WeaviateVectorIOConfig",
                 provider_data_validator="llama_stack.providers.remote.vector_io.weaviate.WeaviateRequestProviderData",
@@ -471,7 +463,6 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::qdrant",
-            pip_packages=["qdrant-client"],
             module="llama_stack.providers.inline.vector_io.qdrant",
             config_class="llama_stack.providers.inline.vector_io.qdrant.QdrantVectorIOConfig",
             api_dependencies=[Api.inference],
@@ -524,7 +515,6 @@ See the [Qdrant documentation](https://qdrant.tech/documentation/) for more deta
             Api.vector_io,
             AdapterSpec(
                 adapter_type="qdrant",
-                pip_packages=["qdrant-client"],
                 module="llama_stack.providers.remote.vector_io.qdrant",
                 config_class="llama_stack.providers.remote.vector_io.qdrant.QdrantVectorIOConfig",
                 description="""
@@ -538,7 +528,6 @@ Please refer to the inline provider documentation.
             Api.vector_io,
             AdapterSpec(
                 adapter_type="milvus",
-                pip_packages=["pymilvus>=2.4.10"],
                 module="llama_stack.providers.remote.vector_io.milvus",
                 config_class="llama_stack.providers.remote.vector_io.milvus.MilvusVectorIOConfig",
                 description="""
@@ -739,7 +728,6 @@ For more details on TLS configuration, refer to the [TLS setup guide](https://mi
         InlineProviderSpec(
             api=Api.vector_io,
             provider_type="inline::milvus",
-            pip_packages=["pymilvus>=2.4.10"],
             module="llama_stack.providers.inline.vector_io.milvus",
             config_class="llama_stack.providers.inline.vector_io.milvus.MilvusVectorIOConfig",
             api_dependencies=[Api.inference],
