@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9/python-312:latest
+WORKDIR /opt/app-root
+
+RUN pip install sqlalchemy # somehow sqlalchemy[asyncio] is not sufficient
+{dependencies}
+RUN pip install --no-cache llama-stack==0.2.16
+RUN mkdir -p ${{HOME}}/.llama/providers.d ${{HOME}}/.cache
+COPY trustyai-distribution/run.yaml ${{APP_ROOT}}/run.yaml
+COPY trustyai-distribution/providers.d/ ${{HOME}}/.llama/providers.d/
+
+ENTRYPOINT ["python", "-m", "llama_stack.distribution.server.server", "--config", "/opt/app-root/run.yaml"]

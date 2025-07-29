@@ -1,0 +1,7 @@
+adapter:
+  adapter_type: trustyai_lmeval
+  pip_packages: ["kubernetes", "llama_stack_provider_lmeval==0.1.7"]
+  config_class: llama_stack_provider_lmeval.config.LMEvalEvalProviderConfig
+  module: llama_stack_provider_lmeval
+api_dependencies: ["inference"]
+optional_api_dependencies: []
