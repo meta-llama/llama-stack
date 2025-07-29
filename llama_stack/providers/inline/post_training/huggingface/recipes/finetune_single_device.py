@@ -469,7 +469,7 @@ class HFFinetuningSingleDevice:
             use_cpu=True if device.type == "cpu" and not torch.backends.mps.is_available() else False,
             save_strategy=save_strategy,
             report_to="none",
-            max_seq_length=provider_config.max_seq_length,
+            max_length=provider_config.max_seq_length,
             gradient_accumulation_steps=config.gradient_accumulation_steps,
             gradient_checkpointing=provider_config.gradient_checkpointing,
             learning_rate=lr,

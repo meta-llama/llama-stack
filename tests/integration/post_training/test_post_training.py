@@ -22,6 +22,15 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
+skip_because_resource_intensive = pytest.mark.skip(
+    reason="""
+       Post training tests are extremely resource intensive. They download large models and partly as a result,
+       are very slow to run. We cannot run them on every single PR update. CI should be considered
+       a scarce resource and properly utilitized.
+    """
+)
+
+
 @pytest.fixture(autouse=True)
 def capture_output(capsys):
     """Fixture to capture and display output during test execution."""
@@ -38,9 +47,8 @@ sys.stdout.reconfigure(line_buffering=True)
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/post_training/test_post_training.py
-#   -m "torchtune_post_training_huggingface_datasetio"
-#   -v -s --tb=short --disable-warnings
+# LLAMA_STACK_CONFIG=ci-tests uv run --dev pytest tests/integration/post_training/test_post_training.py
+#
 
 
 class TestPostTraining:
@@ -58,6 +66,7 @@ class TestPostTraining:
         ],
     )
     @pytest.mark.timeout(360)  # 6 minutes timeout
+    @skip_because_resource_intensive
     def test_supervised_fine_tune(self, llama_stack_client, purpose, source):
         logger.info("Starting supervised fine-tuning test")
 
@@ -113,6 +122,7 @@ class TestPostTraining:
                 break
 
             logger.info(f"Current status: {status}")
+            assert status.status in ["scheduled", "in_progress", "completed"]
             if status.status == "completed":
                 break
 

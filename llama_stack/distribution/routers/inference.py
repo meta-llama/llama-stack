@@ -79,11 +79,9 @@ class InferenceRouter(Inference):
 
     async def initialize(self) -> None:
         logger.debug("InferenceRouter.initialize")
-        pass
 
     async def shutdown(self) -> None:
         logger.debug("InferenceRouter.shutdown")
-        pass
 
     async def register_model(
         self,
