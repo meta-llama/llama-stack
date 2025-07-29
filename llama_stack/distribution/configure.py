@@ -91,21 +91,22 @@ def configure_api_providers(config: StackRunConfig, build_spec: DistributionSpec
 
             logger.info(f"Configuring API `{api_str}`...")
             updated_providers = []
-            for i, provider_type in enumerate(plist):
+            for i, provider in enumerate(plist):
                 if i >= 1:
-                    others = ", ".join(plist[i:])
+                    others = ", ".join(p.provider_type for p in plist[i:])
                     logger.info(
                         f"Not configuring other providers ({others}) interactively. Please edit the resulting YAML directly.\n"
                     )
                     break
 
-                logger.info(f"> Configuring provider `({provider_type})`")
+                logger.info(f"> Configuring provider `({provider.provider_type})`")
+                pid = provider.provider_type.split("::")[-1]
                 updated_providers.append(
                     configure_single_provider(
                         provider_registry[api],
                         Provider(
-                            provider_id=(f"{provider_type}-{i:02d}" if len(plist) > 1 else provider_type),
-                            provider_type=provider_type,
+                            provider_id=(f"{pid}-{i:02d}" if len(plist) > 1 else pid),
+                            provider_type=provider.provider_type,
                             config={},
                         ),
                     )

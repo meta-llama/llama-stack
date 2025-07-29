@@ -14,6 +14,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.datatypes import BuildConfig
 from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.utils.exec import run_command
 from llama_stack.distribution.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
@@ -41,7 +42,7 @@ class ApiInput(BaseModel):
 
 def get_provider_dependencies(
     config: BuildConfig | DistributionTemplate,
-) -> tuple[list[str], list[str]]:
+) -> tuple[list[str], list[str], list[str]]:
     """Get normal and special dependencies from provider configuration."""
     if isinstance(config, DistributionTemplate):
         config = config.build_config()
@@ -50,6 +51,7 @@ def get_provider_dependencies(
     additional_pip_packages = config.additional_pip_packages
 
     deps = []
+    external_provider_deps = []
     registry = get_provider_registry(config)
     for api_str, provider_or_providers in providers.items():
         providers_for_api = registry[Api(api_str)]
@@ -64,8 +66,16 @@ def get_provider_dependencies(
                 raise ValueError(f"Provider `{provider}` is not available for API `{api_str}`")
 
             provider_spec = providers_for_api[provider_type]
-            deps.extend(provider_spec.pip_packages)
-            if provider_spec.container_image:
+            if hasattr(provider_spec, "is_external") and provider_spec.is_external:
+                # this ensures we install the top level module for our external providers
+                if provider_spec.module:
+                    if isinstance(provider_spec.module, str):
+                        external_provider_deps.append(provider_spec.module)
+                    else:
+                        external_provider_deps.extend(provider_spec.module)
+            if hasattr(provider_spec, "pip_packages"):
+                deps.extend(provider_spec.pip_packages)
+            if hasattr(provider_spec, "container_image") and provider_spec.container_image:
                 raise ValueError("A stack's dependencies cannot have a container image")
 
     normal_deps = []
@@ -78,7 +88,7 @@ def get_provider_dependencies(
 
     normal_deps.extend(additional_pip_packages or [])
 
-    return list(set(normal_deps)), list(set(special_deps))
+    return list(set(normal_deps)), list(set(special_deps)), list(set(external_provider_deps))
 
 
 def print_pip_install_help(config: BuildConfig):
@@ -103,41 +113,59 @@ def build_image(
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.12-slim"
 
-    normal_deps, special_deps = get_provider_dependencies(build_config)
+    normal_deps, special_deps, external_provider_deps = get_provider_dependencies(build_config)
     normal_deps += SERVER_DEPENDENCIES
+    if build_config.external_apis_dir:
+        external_apis = load_external_apis(build_config)
+        if external_apis:
+            for _, api_spec in external_apis.items():
+                normal_deps.extend(api_spec.pip_packages)
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
         args = [
             script,
+            "--template-or-config",
             template_or_config,
+            "--image-name",
             image_name,
+            "--container-base",
             container_base,
+            "--normal-deps",
             " ".join(normal_deps),
         ]
-
         # When building from a config file (not a template), include the run config path in the
         # build arguments
         if run_config is not None:
-            args.append(run_config)
+            args.extend(["--run-config", run_config])
     elif build_config.image_type == LlamaStackImageType.CONDA.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
         args = [
             script,
+            "--env-name",
             str(image_name),
+            "--build-file-path",
             str(build_file_path),
+            "--normal-deps",
             " ".join(normal_deps),
         ]
     elif build_config.image_type == LlamaStackImageType.VENV.value:
         script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
         args = [
             script,
+            "--env-name",
             str(image_name),
+            "--normal-deps",
             " ".join(normal_deps),
         ]
 
+    # Always pass both arguments, even if empty, to maintain consistent positional arguments
     if special_deps:
-        args.append("#".join(special_deps))
+        args.extend(["--optional-deps", "#".join(special_deps)])
+    if external_provider_deps:
+        args.extend(
+            ["--external-provider-deps", "#".join(external_provider_deps)]
+        )  # the script will install external provider module, get its deps, and install those too.
 
     return_code = run_command(args)
 

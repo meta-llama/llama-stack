@@ -16,6 +16,7 @@ providers:
     provider_type: remote::openai
     config:
       api_key: ${env.OPENAI_API_KEY:=}
+      base_url: ${env.OPENAI_BASE_URL:=https://api.openai.com/v1}
   - provider_id: anthropic
     provider_type: remote::anthropic
     config:
@@ -33,7 +34,7 @@ providers:
     provider_type: remote::together
     config:
       url: https://api.together.xyz/v1
-      api_key: ${env.TOGETHER_API_KEY}
+      api_key: ${env.TOGETHER_API_KEY:=}
   vector_io:
   - provider_id: sqlite-vec
     provider_type: inline::sqlite-vec
@@ -46,6 +47,9 @@ providers:
     provider_type: remote::chromadb
     config:
       url: ${env.CHROMADB_URL:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/open-benchmark}/chroma_remote_registry.db
   - provider_id: ${env.ENABLE_PGVECTOR:+pgvector}
     provider_type: remote::pgvector
     config:
@@ -103,10 +107,8 @@ providers:
   scoring:
   - provider_id: basic
     provider_type: inline::basic
-    config: {}
   - provider_id: llm-as-judge
     provider_type: inline::llm-as-judge
-    config: {}
   - provider_id: braintrust
     provider_type: inline::braintrust
     config:
@@ -124,10 +126,8 @@ providers:
       max_results: 3
   - provider_id: rag-runtime
     provider_type: inline::rag-runtime
-    config: {}
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
-    config: {}
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/open-benchmark}/registry.db

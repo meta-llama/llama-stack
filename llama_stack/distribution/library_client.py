@@ -12,11 +12,13 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from typing import Any, TypeVar, Union, get_args, get_origin
 
 import httpx
 import yaml
+from fastapi import Response as FastAPIResponse
 from llama_stack_client import (
     NOT_GIVEN,
     APIResponse,
@@ -31,7 +33,7 @@ from termcolor import cprint
 
 from llama_stack.distribution.build import print_pip_install_help
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-from llama_stack.distribution.datatypes import Api, BuildConfig, DistributionSpec
+from llama_stack.distribution.datatypes import Api, BuildConfig, BuildProvider, DistributionSpec
 from llama_stack.distribution.request_headers import (
     PROVIDER_DATA_VAR,
     request_provider_data_context,
@@ -112,6 +114,27 @@ def convert_to_pydantic(annotation: Any, value: Any) -> Any:
         raise ValueError(f"Failed to convert parameter {value} into {annotation}: {e}") from e
 
 
+class LibraryClientUploadFile:
+    """LibraryClient UploadFile object that mimics FastAPI's UploadFile interface."""
+
+    def __init__(self, filename: str, content: bytes):
+        self.filename = filename
+        self.content = content
+        self.content_type = "application/octet-stream"
+
+    async def read(self) -> bytes:
+        return self.content
+
+
+class LibraryClientHttpxResponse:
+    """LibraryClient httpx Response object for FastAPI Response conversion."""
+
+    def __init__(self, response):
+        self.content = response.body if isinstance(response.body, bytes) else response.body.encode()
+        self.status_code = response.status_code
+        self.headers = response.headers
+
+
 class LlamaStackAsLibraryClient(LlamaStackClient):
     def __init__(
         self,
@@ -128,6 +151,8 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
         self.skip_logger_removal = skip_logger_removal
         self.provider_data = provider_data
 
+        self.loop = asyncio.new_event_loop()
+
     def initialize(self):
         if in_notebook():
             import nest_asyncio
@@ -136,7 +161,13 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             if not self.skip_logger_removal:
                 self._remove_root_logger_handlers()
 
-        return asyncio.run(self.async_client.initialize())
+        # use a new event loop to avoid interfering with the main event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(self.async_client.initialize())
+        finally:
+            asyncio.set_event_loop(None)
 
     def _remove_root_logger_handlers(self):
         """
@@ -149,10 +180,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
 
     def request(self, *args, **kwargs):
-        # NOTE: We are using AsyncLlamaStackClient under the hood
-        # A new event loop is needed to convert the AsyncStream
-        # from async client into SyncStream return type for streaming
-        loop = asyncio.new_event_loop()
+        loop = self.loop
         asyncio.set_event_loop(loop)
 
         if kwargs.get("stream"):
@@ -169,7 +197,6 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
                     pending = asyncio.all_tasks(loop)
                     if pending:
                         loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                    loop.close()
 
             return sync_generator()
         else:
@@ -179,7 +206,6 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
                 pending = asyncio.all_tasks(loop)
                 if pending:
                     loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
-                loop.close()
             return result
 
 
@@ -223,15 +249,16 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 file=sys.stderr,
             )
             if self.config_path_or_template_name.endswith(".yaml"):
-                # Convert Provider objects to their types
-                provider_types: dict[str, str | list[str]] = {}
-                for api, providers in self.config.providers.items():
-                    types = [p.provider_type for p in providers]
-                    # Convert single-item lists to strings
-                    provider_types[api] = types[0] if len(types) == 1 else types
+                providers: dict[str, list[BuildProvider]] = {}
+                for api, run_providers in self.config.providers.items():
+                    for provider in run_providers:
+                        providers.setdefault(api, []).append(
+                            BuildProvider(provider_type=provider.provider_type, module=provider.module)
+                        )
+                providers = dict(providers)
                 build_config = BuildConfig(
                     distribution_spec=DistributionSpec(
-                        providers=provider_types,
+                        providers=providers,
                     ),
                     external_providers_dir=self.config.external_providers_dir,
                 )
@@ -295,6 +322,31 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 )
             return response
 
+    def _handle_file_uploads(self, options: Any, body: dict) -> tuple[dict, list[str]]:
+        """Handle file uploads from OpenAI client and add them to the request body."""
+        if not (hasattr(options, "files") and options.files):
+            return body, []
+
+        if not isinstance(options.files, list):
+            return body, []
+
+        field_names = []
+        for file_tuple in options.files:
+            if not (isinstance(file_tuple, tuple) and len(file_tuple) >= 2):
+                continue
+
+            field_name = file_tuple[0]
+            file_object = file_tuple[1]
+
+            if isinstance(file_object, BytesIO):
+                file_object.seek(0)
+                file_content = file_object.read()
+                filename = getattr(file_object, "name", "uploaded_file")
+                field_names.append(field_name)
+                body[field_name] = LibraryClientUploadFile(filename, file_content)
+
+        return body, field_names
+
     async def _call_non_streaming(
         self,
         *,
@@ -308,17 +360,27 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         body = options.params or {}
         body |= options.json_data or {}
 
-        matched_func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        matched_func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
-        body = self._convert_body(path, options.method, body)
-        await start_trace(route, {"__location__": "library_client"})
+
+        body, field_names = self._handle_file_uploads(options, body)
+
+        body = self._convert_body(path, options.method, body, exclude_params=set(field_names))
+
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
         try:
             result = await matched_func(**body)
         finally:
             await end_trace()
 
+        # Handle FastAPI Response objects (e.g., from file content retrieval)
+        if isinstance(result, FastAPIResponse):
+            return LibraryClientHttpxResponse(result)
+
         json_content = json.dumps(convert_pydantic_to_json_value(result))
 
+        filtered_body = {k: v for k, v in body.items() if not isinstance(v, LibraryClientUploadFile)}
         mock_response = httpx.Response(
             status_code=httpx.codes.OK,
             content=json_content.encode("utf-8"),
@@ -330,7 +392,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
                 url=options.url,
                 params=options.params,
                 headers=options.headers or {},
-                json=convert_pydantic_to_json_value(body),
+                json=convert_pydantic_to_json_value(filtered_body),
             ),
         )
         response = APIResponse(
@@ -356,12 +418,13 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
-        func, path_params, route = find_matching_route(options.method, path, self.route_impls)
+        func, path_params, route_path, webmethod = find_matching_route(options.method, path, self.route_impls)
         body |= path_params
 
         body = self._convert_body(path, options.method, body)
 
-        await start_trace(route, {"__location__": "library_client"})
+        trace_path = webmethod.descriptive_name or route_path
+        await start_trace(trace_path, {"__location__": "library_client"})
 
         async def gen():
             try:
@@ -392,8 +455,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         # we use asynchronous impl always internally and channel all requests to AsyncLlamaStackClient
         # however, the top-level caller may be a SyncAPIClient -- so its stream_cls might be a Stream (SyncStream)
         # so we need to convert it to AsyncStream
+        # mypy can't track runtime variables inside the [...] of a generic, so ignore that check
         args = get_args(stream_cls)
-        stream_cls = AsyncStream[args[0]]
+        stream_cls = AsyncStream[args[0]]  # type: ignore[valid-type]
         response = AsyncAPIResponse(
             raw=mock_response,
             client=self,
@@ -404,14 +468,18 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         )
         return await response.parse()
 
-    def _convert_body(self, path: str, method: str, body: dict | None = None) -> dict:
+    def _convert_body(
+        self, path: str, method: str, body: dict | None = None, exclude_params: set[str] | None = None
+    ) -> dict:
         if not body:
             return {}
 
         if self.route_impls is None:
             raise ValueError("Client not initialized")
 
-        func, _, _ = find_matching_route(method, path, self.route_impls)
+        exclude_params = exclude_params or set()
+
+        func, _, _, _ = find_matching_route(method, path, self.route_impls)
         sig = inspect.signature(func)
 
         # Strip NOT_GIVENs to use the defaults in signature
@@ -422,6 +490,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         for param_name, param in sig.parameters.items():
             if param_name in body:
                 value = body.get(param_name)
-                converted_body[param_name] = convert_to_pydantic(param.annotation, value)
+                if param_name in exclude_params:
+                    converted_body[param_name] = value
+                else:
+                    converted_body[param_name] = convert_to_pydantic(param.annotation, value)
 
         return converted_body

@@ -66,7 +66,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
         """Save vector store metadata to persistent storage."""
-        assert self.kvstore is not None
+        assert self.kvstore
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
         # update in-memory cache
@@ -74,7 +74,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
         """Load all vector store metadata from persistent storage."""
-        assert self.kvstore is not None
+        assert self.kvstore
         start_key = OPENAI_VECTOR_STORES_PREFIX
         end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
         stored_data = await self.kvstore.values_in_range(start_key, end_key)
@@ -87,7 +87,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
         """Update vector store metadata in persistent storage."""
-        assert self.kvstore is not None
+        assert self.kvstore
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.set(key=key, value=json.dumps(store_info))
         # update in-memory cache
@@ -95,37 +95,66 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
         """Delete vector store metadata from persistent storage."""
-        assert self.kvstore is not None
+        assert self.kvstore
         key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
         await self.kvstore.delete(key)
         # remove from in-memory cache
         self.openai_vector_stores.pop(store_id, None)
 
-    @abstractmethod
     async def _save_openai_vector_store_file(
         self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
     ) -> None:
         """Save vector store file metadata to persistent storage."""
-        pass
+        assert self.kvstore
+        meta_key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=meta_key, value=json.dumps(file_info))
+        contents_prefix = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}:"
+        for idx, chunk in enumerate(file_contents):
+            await self.kvstore.set(key=f"{contents_prefix}{idx}", value=json.dumps(chunk))
 
-    @abstractmethod
     async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
         """Load vector store file metadata from persistent storage."""
-        pass
+        assert self.kvstore
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        stored_data = await self.kvstore.get(key)
+        return json.loads(stored_data) if stored_data else {}
 
-    @abstractmethod
     async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
         """Load vector store file contents from persistent storage."""
-        pass
+        assert self.kvstore
+        prefix = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}:"
+        end_key = f"{prefix}\xff"
+        raw_items = await self.kvstore.values_in_range(prefix, end_key)
+        return [json.loads(item) for item in raw_items]
 
-    @abstractmethod
     async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
         """Update vector store file metadata in persistent storage."""
-        pass
+        assert self.kvstore
+        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.set(key=key, value=json.dumps(file_info))
 
-    @abstractmethod
     async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
         """Delete vector store file metadata from persistent storage."""
+        assert self.kvstore
+
+        meta_key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
+        await self.kvstore.delete(meta_key)
+
+        contents_prefix = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}:"
+        end_key = f"{contents_prefix}\xff"
+        # load all stored chunk values (values_in_range is implemented by all backends)
+        raw_items = await self.kvstore.values_in_range(contents_prefix, end_key)
+        # delete each chunk by its index suffix
+        for idx in range(len(raw_items)):
+            await self.kvstore.delete(f"{contents_prefix}{idx}")
+
+    async def initialize_openai_vector_stores(self) -> None:
+        """Load existing OpenAI vector stores into the in-memory cache."""
+        self.openai_vector_stores = await self._load_openai_vector_stores()
+
+    @abstractmethod
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a vector store."""
         pass
 
     @abstractmethod
@@ -137,10 +166,6 @@ class OpenAIVectorStoreMixin(ABC):
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         """Unregister a vector database (provider-specific implementation)."""
         pass
-
-    async def initialize_openai_vector_stores(self) -> None:
-        """Load existing OpenAI vector stores into the in-memory cache."""
-        self.openai_vector_stores = await self._load_openai_vector_stores()
 
     @abstractmethod
     async def insert_chunks(
@@ -161,7 +186,7 @@ class OpenAIVectorStoreMixin(ABC):
 
     async def openai_create_vector_store(
         self,
-        name: str,
+        name: str | None = None,
         file_ids: list[str] | None = None,
         expires_after: dict[str, Any] | None = None,
         chunking_strategy: dict[str, Any] | None = None,
@@ -743,16 +768,14 @@ class OpenAIVectorStoreMixin(ABC):
         if vector_store_id not in self.openai_vector_stores:
             raise ValueError(f"Vector store {vector_store_id} not found")
 
+        dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
+        chunks = [Chunk.model_validate(c) for c in dict_chunks]
+        await self.delete_chunks(vector_store_id, [str(c.chunk_id) for c in chunks if c.chunk_id])
+
         store_info = self.openai_vector_stores[vector_store_id].copy()
 
         file = await self.openai_retrieve_vector_store_file(vector_store_id, file_id)
         await self._delete_openai_vector_store_file_from_storage(vector_store_id, file_id)
-
-        # TODO: We need to actually delete the embeddings from the underlying vector store...
-        # Also uncomment the corresponding integration test marked as xfail
-        #
-        # test_openai_vector_store_delete_file_removes_from_vector_store in
-        # tests/integration/vector_io/test_openai_vector_stores.py
 
         # Update in-memory cache
         store_info["file_ids"].remove(file_id)

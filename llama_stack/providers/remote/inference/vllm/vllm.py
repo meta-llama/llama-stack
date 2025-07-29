@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import json
-import logging
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Any
 
@@ -38,6 +37,7 @@ from llama_stack.apis.inference import (
     JsonSchemaResponseFormat,
     LogProbConfig,
     Message,
+    ModelStore,
     OpenAIChatCompletion,
     OpenAICompletion,
     OpenAIEmbeddingData,
@@ -54,6 +54,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model, ModelType
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import (
@@ -84,7 +85,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import VLLMInferenceAdapterConfig
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 def build_hf_repo_model_entries():
@@ -288,13 +289,40 @@ async def _process_vllm_chat_completion_stream_response(
 
 
 class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
+    # automatically set by the resolver when instantiating the provider
+    __provider_id__: str
+    model_store: ModelStore | None = None
+
     def __init__(self, config: VLLMInferenceAdapterConfig) -> None:
         self.register_helper = ModelRegistryHelper(build_hf_repo_model_entries())
         self.config = config
         self.client = None
 
     async def initialize(self) -> None:
-        pass
+        if not self.config.url:
+            raise ValueError(
+                "You must provide a URL in run.yaml (or via the VLLM_URL environment variable) to use vLLM."
+            )
+
+    async def should_refresh_models(self) -> bool:
+        return self.config.refresh_models
+
+    async def list_models(self) -> list[Model] | None:
+        self._lazy_initialize_client()
+        assert self.client is not None  # mypy
+        models = []
+        async for m in self.client.models.list():
+            model_type = ModelType.llm  # unclear how to determine embedding vs. llm models
+            models.append(
+                Model(
+                    identifier=m.id,
+                    provider_resource_id=m.id,
+                    provider_id=self.__provider_id__,
+                    metadata={},
+                    model_type=model_type,
+                )
+            )
+        return models
 
     async def shutdown(self) -> None:
         pass

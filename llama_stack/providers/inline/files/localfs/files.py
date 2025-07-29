@@ -19,16 +19,19 @@ from llama_stack.apis.files import (
     OpenAIFileObject,
     OpenAIFilePurpose,
 )
+from llama_stack.distribution.datatypes import AccessRule
 from llama_stack.providers.utils.sqlstore.api import ColumnDefinition, ColumnType
-from llama_stack.providers.utils.sqlstore.sqlstore import SqlStore, sqlstore_impl
+from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
+from llama_stack.providers.utils.sqlstore.sqlstore import sqlstore_impl
 
 from .config import LocalfsFilesImplConfig
 
 
 class LocalfsFilesImpl(Files):
-    def __init__(self, config: LocalfsFilesImplConfig) -> None:
+    def __init__(self, config: LocalfsFilesImplConfig, policy: list[AccessRule]) -> None:
         self.config = config
-        self.sql_store: SqlStore | None = None
+        self.policy = policy
+        self.sql_store: AuthorizedSqlStore | None = None
 
     async def initialize(self) -> None:
         """Initialize the files provider by setting up storage directory and metadata database."""
@@ -37,7 +40,7 @@ class LocalfsFilesImpl(Files):
         storage_path.mkdir(parents=True, exist_ok=True)
 
         # Initialize SQL store for metadata
-        self.sql_store = sqlstore_impl(self.config.metadata_store)
+        self.sql_store = AuthorizedSqlStore(sqlstore_impl(self.config.metadata_store))
         await self.sql_store.create_table(
             "openai_files",
             {
@@ -126,6 +129,7 @@ class LocalfsFilesImpl(Files):
 
         paginated_result = await self.sql_store.fetch_all(
             table="openai_files",
+            policy=self.policy,
             where=where_conditions if where_conditions else None,
             order_by=[("created_at", order.value)],
             cursor=("id", after) if after else None,
@@ -156,7 +160,7 @@ class LocalfsFilesImpl(Files):
         if not self.sql_store:
             raise RuntimeError("Files provider not initialized")
 
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ValueError(f"File with id {file_id} not found")
 
@@ -174,7 +178,7 @@ class LocalfsFilesImpl(Files):
         if not self.sql_store:
             raise RuntimeError("Files provider not initialized")
 
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ValueError(f"File with id {file_id} not found")
 
@@ -197,7 +201,7 @@ class LocalfsFilesImpl(Files):
             raise RuntimeError("Files provider not initialized")
 
         # Get file metadata
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ValueError(f"File with id {file_id} not found")
 

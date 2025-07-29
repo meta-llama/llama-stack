@@ -16,6 +16,7 @@ from llama_stack.apis.inspect import (
     VersionInfo,
 )
 from llama_stack.distribution.datatypes import StackRunConfig
+from llama_stack.distribution.external import load_external_apis
 from llama_stack.distribution.server.routes import get_all_api_routes
 from llama_stack.providers.datatypes import HealthStatus
 
@@ -42,7 +43,8 @@ class DistributionInspectImpl(Inspect):
         run_config: StackRunConfig = self.config.run_config
 
         ret = []
-        all_endpoints = get_all_api_routes()
+        external_apis = load_external_apis(run_config)
+        all_endpoints = get_all_api_routes(external_apis)
         for api, endpoints in all_endpoints.items():
             # Always include provider and inspect APIs, filter others based on run config
             if api.value in ["providers", "inspect"]:
@@ -53,7 +55,8 @@ class DistributionInspectImpl(Inspect):
                             method=next(iter([m for m in e.methods if m != "HEAD"])),
                             provider_types=[],  # These APIs don't have "real" providers - they're internal to the stack
                         )
-                        for e in endpoints
+                        for e, _ in endpoints
+                        if e.methods is not None
                     ]
                 )
             else:
@@ -66,7 +69,8 @@ class DistributionInspectImpl(Inspect):
                                 method=next(iter([m for m in e.methods if m != "HEAD"])),
                                 provider_types=[p.provider_type for p in providers],
                             )
-                            for e in endpoints
+                            for e, _ in endpoints
+                            if e.methods is not None
                         ]
                     )
 

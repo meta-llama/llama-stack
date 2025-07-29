@@ -1,5 +1,7 @@
 name: Check semantic PR titles
 
+run-name: Ensure that PR titles follow the conventional commit spec
+
 on:
   pull_request_target:
     types:

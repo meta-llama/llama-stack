@@ -10,11 +10,21 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.models import ModelType
+from llama_stack.log import get_logger
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
+
+logger = get_logger(name=__name__, category="core")
+
+
+class RemoteInferenceProviderConfig(BaseModel):
+    allowed_models: list[str] | None = Field(
+        default=None,
+        description="List of models that should be registered with the model registry. If None, all models are allowed.",
+    )
 
 
 # TODO: this class is more confusing than useful right now. We need to make it
@@ -40,7 +50,8 @@ def build_hf_repo_model_entry(
     additional_aliases: list[str] | None = None,
 ) -> ProviderModelEntry:
     aliases = [
-        get_huggingface_repo(model_descriptor),
+        # NOTE: avoid HF aliases because they _cannot_ be unique across providers
+        # get_huggingface_repo(model_descriptor),
     ]
     if additional_aliases:
         aliases.extend(additional_aliases)
@@ -62,7 +73,12 @@ def build_model_entry(provider_model_id: str, model_descriptor: str) -> Provider
 
 
 class ModelRegistryHelper(ModelsProtocolPrivate):
-    def __init__(self, model_entries: list[ProviderModelEntry]):
+    __provider_id__: str
+
+    def __init__(self, model_entries: list[ProviderModelEntry], allowed_models: list[str] | None = None):
+        self.model_entries = model_entries
+        self.allowed_models = allowed_models
+
         self.alias_to_provider_id_map = {}
         self.provider_id_to_llama_model_map = {}
         for entry in model_entries:
@@ -75,6 +91,27 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
             if entry.llama_model:
                 self.alias_to_provider_id_map[entry.llama_model] = entry.provider_model_id
                 self.provider_id_to_llama_model_map[entry.provider_model_id] = entry.llama_model
+
+    async def list_models(self) -> list[Model] | None:
+        models = []
+        for entry in self.model_entries:
+            ids = [entry.provider_model_id] + entry.aliases
+            for id in ids:
+                if self.allowed_models and id not in self.allowed_models:
+                    continue
+                models.append(
+                    Model(
+                        identifier=id,
+                        provider_resource_id=entry.provider_model_id,
+                        model_type=ModelType.llm,
+                        metadata=entry.metadata,
+                        provider_id=self.__provider_id__,
+                    )
+                )
+        return models
+
+    async def should_refresh_models(self) -> bool:
+        return False
 
     def get_provider_model_id(self, identifier: str) -> str | None:
         return self.alias_to_provider_id_map.get(identifier, None)
@@ -98,6 +135,9 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         :param model: The model identifier to check.
         :return: True if the model is available dynamically, False otherwise.
         """
+        logger.info(
+            f"check_model_availability is not implemented for {self.__class__.__name__}. Returning False by default."
+        )
         return False
 
     async def register_model(self, model: Model) -> Model:
@@ -148,8 +188,8 @@ class ModelRegistryHelper(ModelsProtocolPrivate):
         return model
 
     async def unregister_model(self, model_id: str) -> None:
-        # TODO: should we block unregistering base supported provider model IDs?
-        if model_id not in self.alias_to_provider_id_map:
-            raise ValueError(f"Model id '{model_id}' is not registered.")
-
-        del self.alias_to_provider_id_map[model_id]
+        # model_id is the identifier, not the provider_resource_id
+        # unfortunately, this ID can be of the form provider_id/model_id which
+        # we never registered. TODO: fix this by significantly rewriting
+        # registration and registry helper
+        pass

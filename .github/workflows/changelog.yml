@@ -1,5 +1,7 @@
 name: Update Changelog
 
+run-name: Creates PR for updating the CHANGELOG.md
+
 on:
   release:
     types: [published, unpublished, created, edited, deleted, released]

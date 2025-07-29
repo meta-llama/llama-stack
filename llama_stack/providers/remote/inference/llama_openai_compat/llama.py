@@ -5,55 +5,53 @@
 # the root directory of this source tree.
 import logging
 
-from llama_api_client import AsyncLlamaAPIClient, NotFoundError
-
 from llama_stack.providers.remote.inference.llama_openai_compat.config import LlamaCompatConfig
 from llama_stack.providers.utils.inference.litellm_openai_mixin import LiteLLMOpenAIMixin
+from llama_stack.providers.utils.inference.openai_mixin import OpenAIMixin
 
 from .models import MODEL_ENTRIES
 
 logger = logging.getLogger(__name__)
 
 
-class LlamaCompatInferenceAdapter(LiteLLMOpenAIMixin):
+class LlamaCompatInferenceAdapter(OpenAIMixin, LiteLLMOpenAIMixin):
+    """
+    Llama API Inference Adapter for Llama Stack.
+
+    Note: The inheritance order is important here. OpenAIMixin must come before
+    LiteLLMOpenAIMixin to ensure that OpenAIMixin.check_model_availability()
+    is used instead of ModelRegistryHelper.check_model_availability().
+
+    - OpenAIMixin.check_model_availability() queries the Llama API to check if a model exists
+    - ModelRegistryHelper.check_model_availability() (inherited by LiteLLMOpenAIMixin) just returns False and shows a warning
+    """
+
     _config: LlamaCompatConfig
 
     def __init__(self, config: LlamaCompatConfig):
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
+            litellm_provider_name="meta_llama",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="llama_api_key",
             openai_compat_api_base=config.openai_compat_api_base,
         )
         self.config = config
 
-    async def check_model_availability(self, model: str) -> bool:
+    # Delegate the client data handling get_api_key method to LiteLLMOpenAIMixin
+    get_api_key = LiteLLMOpenAIMixin.get_api_key
+
+    def get_base_url(self) -> str:
         """
-        Check if a specific model is available from Llama API.
+        Get the base URL for OpenAI mixin.
 
-        :param model: The model identifier to check.
-        :return: True if the model is available dynamically, False otherwise.
+        :return: The Llama API base URL
         """
-        try:
-            llama_api_client = self._get_llama_api_client()
-            retrieved_model = await llama_api_client.models.retrieve(model)
-            logger.info(f"Model {retrieved_model.id} is available from Llama API")
-            return True
-
-        except NotFoundError:
-            logger.error(f"Model {model} is not available from Llama API")
-            return False
-
-        except Exception as e:
-            logger.error(f"Failed to check model availability from Llama API: {e}")
-            return False
+        return self.config.openai_compat_api_base
 
     async def initialize(self):
         await super().initialize()
 
     async def shutdown(self):
         await super().shutdown()
-
-    def _get_llama_api_client(self) -> AsyncLlamaAPIClient:
-        return AsyncLlamaAPIClient(api_key=self.get_api_key(), base_url=self.config.openai_compat_api_base)

@@ -1,3 +1,6 @@
+---
+orphan: true
+---
 # NVIDIA Distribution
 
 The `llamastack/distribution-{{ name }}` distribution consists of the following provider configurations.

@@ -6895,7 +6895,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The content of the model's response
         name:
           type: string
@@ -6934,11 +6934,13 @@ components:
       oneOf:
         - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
         - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+        - $ref: '#/components/schemas/OpenAIFile'
       discriminator:
         propertyName: type
         mapping:
           text: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           image_url: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+          file: '#/components/schemas/OpenAIFile'
     OpenAIChatCompletionContentPartTextParam:
       type: object
       properties:
@@ -7037,7 +7039,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The content of the developer message
         name:
           type: string
@@ -7050,6 +7052,31 @@ components:
       title: OpenAIDeveloperMessageParam
       description: >-
         A message from the developer in an OpenAI-compatible chat completion request.
+    OpenAIFile:
+      type: object
+      properties:
+        type:
+          type: string
+          const: file
+          default: file
+        file:
+          $ref: '#/components/schemas/OpenAIFileFile'
+      additionalProperties: false
+      required:
+        - type
+        - file
+      title: OpenAIFile
+    OpenAIFileFile:
+      type: object
+      properties:
+        file_data:
+          type: string
+        file_id:
+          type: string
+        filename:
+          type: string
+      additionalProperties: false
+      title: OpenAIFileFile
     OpenAIImageURL:
       type: object
       properties:
@@ -7090,7 +7117,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: >-
             The content of the "system prompt". If multiple system messages are provided,
             they are concatenated. The underlying Llama Stack code may also add other
@@ -7148,7 +7175,7 @@ components:
             - type: string
             - type: array
               items:
-                $ref: '#/components/schemas/OpenAIChatCompletionContentPartParam'
+                $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
           description: The response content from the tool
       additionalProperties: false
       required:
@@ -9497,8 +9524,6 @@ components:
           description: >-
             The ID of the provider to use for this vector store.
       additionalProperties: false
-      required:
-        - name
       title: OpenaiCreateVectorStoreRequest
     VectorStoreFileCounts:
       type: object

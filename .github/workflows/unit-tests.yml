@@ -1,5 +1,7 @@
 name: Unit Tests
 
+run-name: Run the unit test suite
+
 on:
   push:
     branches: [ main ]
@@ -33,6 +35,8 @@ jobs:
 
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
+        with:
+          python-version: ${{ matrix.python }}
 
       - name: Run unit tests
         run: |

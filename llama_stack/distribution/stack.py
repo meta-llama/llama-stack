@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import asyncio
 import importlib.resources
 import os
 import re
@@ -38,6 +39,7 @@ from llama_stack.distribution.distribution import get_provider_registry
 from llama_stack.distribution.inspect import DistributionInspectConfig, DistributionInspectImpl
 from llama_stack.distribution.providers import ProviderImpl, ProviderImplConfig
 from llama_stack.distribution.resolver import ProviderRegistry, resolve_impls
+from llama_stack.distribution.routing_tables.common import CommonRoutingTableImpl
 from llama_stack.distribution.store.registry import create_dist_registry
 from llama_stack.distribution.utils.dynamic import instantiate_class_type
 from llama_stack.log import get_logger
@@ -90,6 +92,10 @@ RESOURCES = [
 ]
 
 
+REGISTRY_REFRESH_INTERVAL_SECONDS = 300
+REGISTRY_REFRESH_TASK = None
+
+
 async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
     for rsrc, api, register_method, list_method in RESOURCES:
         objects = getattr(run_config, rsrc)
@@ -99,23 +105,10 @@ async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
         method = getattr(impls[api], register_method)
         for obj in objects:
             logger.debug(f"registering {rsrc.capitalize()} {obj} for provider {obj.provider_id}")
-            # Do not register models on disabled providers
-            if hasattr(obj, "provider_id") and obj.provider_id is not None and obj.provider_id == "__disabled__":
-                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
-                continue
-            # In complex templates, like our starter template, we may have dynamic model ids
-            # given by environment variables. This allows those environment variables to have
-            # a default value of __disabled__ to skip registration of the model if not set.
-            if (
-                hasattr(obj, "provider_model_id")
-                and obj.provider_model_id is not None
-                and "__disabled__" in obj.provider_model_id
-            ):
-                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled model.")
-                continue
 
-            if hasattr(obj, "shield_id") and obj.shield_id is not None and obj.shield_id == "__disabled__":
-                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled shield.")
+            # Do not register models on disabled providers
+            if hasattr(obj, "provider_id") and (not obj.provider_id or obj.provider_id == "__disabled__"):
+                logger.debug(f"Skipping {rsrc.capitalize()} registration for disabled provider.")
                 continue
 
             # we want to maintain the type information in arguments to method.
@@ -324,7 +317,59 @@ async def construct_stack(
     add_internal_implementations(impls, run_config)
 
     await register_resources(run_config, impls)
+
+    await refresh_registry_once(impls)
+
+    global REGISTRY_REFRESH_TASK
+    REGISTRY_REFRESH_TASK = asyncio.create_task(refresh_registry_task(impls))
+
+    def cb(task):
+        import traceback
+
+        if task.cancelled():
+            logger.error("Model refresh task cancelled")
+        elif task.exception():
+            logger.error(f"Model refresh task failed: {task.exception()}")
+            traceback.print_exception(task.exception())
+        else:
+            logger.debug("Model refresh task completed")
+
+    REGISTRY_REFRESH_TASK.add_done_callback(cb)
     return impls
+
+
+async def shutdown_stack(impls: dict[Api, Any]):
+    for impl in impls.values():
+        impl_name = impl.__class__.__name__
+        logger.info(f"Shutting down {impl_name}")
+        try:
+            if hasattr(impl, "shutdown"):
+                await asyncio.wait_for(impl.shutdown(), timeout=5)
+            else:
+                logger.warning(f"No shutdown method for {impl_name}")
+        except TimeoutError:
+            logger.exception(f"Shutdown timeout for {impl_name}")
+        except (Exception, asyncio.CancelledError) as e:
+            logger.exception(f"Failed to shutdown {impl_name}: {e}")
+
+    global REGISTRY_REFRESH_TASK
+    if REGISTRY_REFRESH_TASK:
+        REGISTRY_REFRESH_TASK.cancel()
+
+
+async def refresh_registry_once(impls: dict[Api, Any]):
+    logger.debug("refreshing registry")
+    routing_tables = [v for v in impls.values() if isinstance(v, CommonRoutingTableImpl)]
+    for routing_table in routing_tables:
+        await routing_table.refresh()
+
+
+async def refresh_registry_task(impls: dict[Api, Any]):
+    logger.info("starting registry refresh task")
+    while True:
+        await refresh_registry_once(impls)
+
+        await asyncio.sleep(REGISTRY_REFRESH_INTERVAL_SECONDS)
 
 
 def get_stack_run_config_from_template(template: str) -> StackRunConfig:

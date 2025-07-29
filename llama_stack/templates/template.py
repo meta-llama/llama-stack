@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import jinja2
 import rich
@@ -19,6 +19,7 @@ from llama_stack.distribution.datatypes import (
     Api,
     BenchmarkInput,
     BuildConfig,
+    BuildProvider,
     DatasetInput,
     DistributionSpec,
     ModelInput,
@@ -33,6 +34,51 @@ from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from llama_stack.providers.utils.kvstore.config import get_pip_packages as get_kv_pip_packages
 from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import get_pip_packages as get_sql_pip_packages
+
+
+def filter_empty_values(obj: Any) -> Any:
+    """Recursively filter out specific empty values from a dictionary or list.
+
+    This function removes:
+    - Empty strings ('') only when they are the 'module' field
+    - Empty dictionaries ({}) only when they are the 'config' field
+    - None values (always excluded)
+    """
+    if obj is None:
+        return None
+
+    if isinstance(obj, dict):
+        filtered = {}
+        for key, value in obj.items():
+            # Special handling for specific fields
+            if key == "module" and isinstance(value, str) and value == "":
+                # Skip empty module strings
+                continue
+            elif key == "config" and isinstance(value, dict) and not value:
+                # Skip empty config dictionaries
+                continue
+            elif key == "container_image" and not value:
+                # Skip empty container_image names
+                continue
+            else:
+                # For all other fields, recursively filter but preserve empty values
+                filtered_value = filter_empty_values(value)
+                # if filtered_value is not None:
+                filtered[key] = filtered_value
+        return filtered
+
+    elif isinstance(obj, list):
+        filtered = []
+        for item in obj:
+            filtered_item = filter_empty_values(item)
+            if filtered_item is not None:
+                filtered.append(filtered_item)
+        return filtered
+
+    else:
+        # For all other types (including empty strings and dicts that aren't module/config),
+        # preserve them as-is
+        return obj
 
 
 def get_model_registry(
@@ -138,31 +184,26 @@ class RunConfigSettings(BaseModel):
     def run_config(
         self,
         name: str,
-        providers: dict[str, list[str]],
+        providers: dict[str, list[BuildProvider]],
         container_image: str | None = None,
     ) -> dict:
         provider_registry = get_provider_registry()
-
         provider_configs = {}
-        for api_str, provider_types in providers.items():
+        for api_str, provider_objs in providers.items():
             if api_providers := self.provider_overrides.get(api_str):
                 # Convert Provider objects to dicts for YAML serialization
-                provider_configs[api_str] = [
-                    p.model_dump(exclude_none=True) if isinstance(p, Provider) else p for p in api_providers
-                ]
+                provider_configs[api_str] = [p.model_dump(exclude_none=True) for p in api_providers]
                 continue
 
             provider_configs[api_str] = []
-            for provider_type in provider_types:
-                provider_id = provider_type.split("::")[-1]
-
+            for provider in provider_objs:
                 api = Api(api_str)
-                if provider_type not in provider_registry[api]:
-                    raise ValueError(f"Unknown provider type: {provider_type} for API: {api_str}")
-
-                config_class = provider_registry[api][provider_type].config_class
+                if provider.provider_type not in provider_registry[api]:
+                    raise ValueError(f"Unknown provider type: {provider.provider_type} for API: {api_str}")
+                provider_id = provider.provider_type.split("::")[-1]
+                config_class = provider_registry[api][provider.provider_type].config_class
                 assert config_class is not None, (
-                    f"No config class for provider type: {provider_type} for API: {api_str}"
+                    f"No config class for provider type: {provider.provider_type} for API: {api_str}"
                 )
 
                 config_class = instantiate_class_type(config_class)
@@ -170,15 +211,14 @@ class RunConfigSettings(BaseModel):
                     config = config_class.sample_run_config(__distro_dir__=f"~/.llama/distributions/{name}")
                 else:
                     config = {}
-
+                # BuildProvider does not have a config attribute; skip assignment
                 provider_configs[api_str].append(
                     Provider(
                         provider_id=provider_id,
-                        provider_type=provider_type,
+                        provider_type=provider.provider_type,
                         config=config,
                     ).model_dump(exclude_none=True)
                 )
-
         # Get unique set of APIs from providers
         apis = sorted(providers.keys())
 
@@ -222,7 +262,8 @@ class DistributionTemplate(BaseModel):
     description: str
     distro_type: Literal["self_hosted", "remote_hosted", "ondevice"]
 
-    providers: dict[str, list[str]]
+    # Now uses BuildProvider for build config, not Provider
+    providers: dict[str, list[BuildProvider]]
     run_configs: dict[str, RunConfigSettings]
     template_path: Path | None = None
 
@@ -255,13 +296,26 @@ class DistributionTemplate(BaseModel):
         if self.additional_pip_packages:
             additional_pip_packages.extend(self.additional_pip_packages)
 
+        # Create minimal providers for build config (without runtime configs)
+        build_providers = {}
+        for api, providers in self.providers.items():
+            build_providers[api] = []
+            for provider in providers:
+                # Create a minimal build provider object with only essential build information
+                build_provider = BuildProvider(
+                    provider_type=provider.provider_type,
+                    module=provider.module,
+                )
+                build_providers[api].append(build_provider)
+
         return BuildConfig(
             distribution_spec=DistributionSpec(
                 description=self.description,
                 container_image=self.container_image,
-                providers=self.providers,
+                providers=build_providers,
             ),
-            image_type="conda",  # default to conda, can be overridden
+            image_type="conda",
+            image_name=self.name,
             additional_pip_packages=sorted(set(additional_pip_packages)),
         )
 
@@ -270,53 +324,55 @@ class DistributionTemplate(BaseModel):
         providers_table += "|-----|-------------|\n"
 
         for api, providers in sorted(self.providers.items()):
-            providers_str = ", ".join(f"`{p}`" for p in providers)
+            providers_str = ", ".join(f"`{p.provider_type}`" for p in providers)
             providers_table += f"| {api} | {providers_str} |\n"
 
-        template = self.template_path.read_text()
-        comment = "<!-- This file was auto-generated by distro_codegen.py, please edit source -->\n"
-        orphantext = "---\norphan: true\n---\n"
+        if self.template_path is not None:
+            template = self.template_path.read_text()
+            comment = "<!-- This file was auto-generated by distro_codegen.py, please edit source -->\n"
+            orphantext = "---\norphan: true\n---\n"
 
-        if template.startswith(orphantext):
-            template = template.replace(orphantext, orphantext + comment)
-        else:
-            template = comment + template
+            if template.startswith(orphantext):
+                template = template.replace(orphantext, orphantext + comment)
+            else:
+                template = comment + template
 
-        # Render template with rich-generated table
-        env = jinja2.Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            # NOTE: autoescape is required to prevent XSS attacks
-            autoescape=True,
-        )
-        template = env.from_string(template)
+            # Render template with rich-generated table
+            env = jinja2.Environment(
+                trim_blocks=True,
+                lstrip_blocks=True,
+                # NOTE: autoescape is required to prevent XSS attacks
+                autoescape=True,
+            )
+            template = env.from_string(template)
 
-        default_models = []
-        if self.available_models_by_provider:
-            has_multiple_providers = len(self.available_models_by_provider.keys()) > 1
-            for provider_id, model_entries in self.available_models_by_provider.items():
-                for model_entry in model_entries:
-                    doc_parts = []
-                    if model_entry.aliases:
-                        doc_parts.append(f"aliases: {', '.join(model_entry.aliases)}")
-                    if has_multiple_providers:
-                        doc_parts.append(f"provider: {provider_id}")
+            default_models = []
+            if self.available_models_by_provider:
+                has_multiple_providers = len(self.available_models_by_provider.keys()) > 1
+                for provider_id, model_entries in self.available_models_by_provider.items():
+                    for model_entry in model_entries:
+                        doc_parts = []
+                        if model_entry.aliases:
+                            doc_parts.append(f"aliases: {', '.join(model_entry.aliases)}")
+                        if has_multiple_providers:
+                            doc_parts.append(f"provider: {provider_id}")
 
-                    default_models.append(
-                        DefaultModel(
-                            model_id=model_entry.provider_model_id,
-                            doc_string=(f"({' -- '.join(doc_parts)})" if doc_parts else ""),
+                        default_models.append(
+                            DefaultModel(
+                                model_id=model_entry.provider_model_id,
+                                doc_string=(f"({' -- '.join(doc_parts)})" if doc_parts else ""),
+                            )
                         )
-                    )
 
-        return template.render(
-            name=self.name,
-            description=self.description,
-            providers=self.providers,
-            providers_table=providers_table,
-            run_config_env_vars=self.run_config_env_vars,
-            default_models=default_models,
-        )
+            return template.render(
+                name=self.name,
+                description=self.description,
+                providers=self.providers,
+                providers_table=providers_table,
+                run_config_env_vars=self.run_config_env_vars,
+                default_models=default_models,
+            )
+        return ""
 
     def save_distribution(self, yaml_output_dir: Path, doc_output_dir: Path) -> None:
         def enum_representer(dumper, data):
@@ -334,7 +390,7 @@ class DistributionTemplate(BaseModel):
         build_config = self.build_config()
         with open(yaml_output_dir / "build.yaml", "w") as f:
             yaml.safe_dump(
-                build_config.model_dump(exclude_none=True),
+                filter_empty_values(build_config.model_dump(exclude_none=True)),
                 f,
                 sort_keys=False,
             )
@@ -343,7 +399,7 @@ class DistributionTemplate(BaseModel):
             run_config = settings.run_config(self.name, self.providers, self.container_image)
             with open(yaml_output_dir / yaml_pth, "w") as f:
                 yaml.safe_dump(
-                    {k: v for k, v in run_config.items() if v is not None},
+                    filter_empty_values(run_config),
                     f,
                     sort_keys=False,
                 )

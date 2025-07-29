@@ -6,9 +6,11 @@
 
 from typing import Any
 
+from llama_stack.apis.models import Model
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import ScoringFn
 from llama_stack.distribution.access_control.access_control import AccessDeniedError, is_action_allowed
+from llama_stack.distribution.access_control.datatypes import Action
 from llama_stack.distribution.datatypes import (
     AccessRule,
     RoutableObject,
@@ -115,7 +117,10 @@ class CommonRoutingTableImpl(RoutingTable):
         for p in self.impls_by_provider_id.values():
             await p.shutdown()
 
-    def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
+    async def refresh(self) -> None:
+        pass
+
+    async def get_provider_impl(self, routing_key: str, provider_id: str | None = None) -> Any:
         from .benchmarks import BenchmarksRoutingTable
         from .datasets import DatasetsRoutingTable
         from .models import ModelsRoutingTable
@@ -204,10 +209,23 @@ class CommonRoutingTableImpl(RoutingTable):
         if obj.type == ResourceType.model.value:
             await self.dist_registry.register(registered_obj)
             return registered_obj
-
         else:
             await self.dist_registry.register(obj)
             return obj
+
+    async def assert_action_allowed(
+        self,
+        action: Action,
+        type: str,
+        identifier: str,
+    ) -> None:
+        """Fetch a registered object by type/identifier and enforce the given action permission."""
+        obj = await self.get_object_by_identifier(type, identifier)
+        if obj is None:
+            raise ValueError(f"{type.capitalize()} '{identifier}' not found")
+        user = get_authenticated_user()
+        if not is_action_allowed(self.policy, action, obj, user):
+            raise AccessDeniedError(action, obj, user)
 
     async def get_all_with_type(self, type: str) -> list[RoutableObjectWithProvider]:
         objs = await self.dist_registry.get_all()
@@ -220,3 +238,28 @@ class CommonRoutingTableImpl(RoutingTable):
             ]
 
         return filtered_objs
+
+
+async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> Model:
+    # first try to get the model by identifier
+    # this works if model_id is an alias or is of the form provider_id/provider_model_id
+    model = await routing_table.get_object_by_identifier("model", model_id)
+    if model is not None:
+        return model
+
+    logger.warning(
+        f"WARNING: model identifier '{model_id}' not found in routing table. Falling back to "
+        "searching in all providers. This is only for backwards compatibility and will stop working "
+        "soon. Migrate your calls to use fully scoped `provider_id/model_id` names."
+    )
+    # if not found, this means model_id is an unscoped provider_model_id, we need
+    # to iterate (given a lack of an efficient index on the KVStore)
+    models = await routing_table.get_all_with_type("model")
+    matching_models = [m for m in models if m.provider_resource_id == model_id]
+    if len(matching_models) == 0:
+        raise ValueError(f"Model '{model_id}' not found")
+
+    if len(matching_models) > 1:
+        raise ValueError(f"Multiple providers found for '{model_id}': {[m.provider_id for m in matching_models]}")
+
+    return matching_models[0]

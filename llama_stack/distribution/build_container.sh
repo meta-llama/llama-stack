@@ -18,58 +18,108 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
-
 # Path to the run.yaml file in the container
 RUN_CONFIG_PATH=/app/run.yaml
 
 BUILD_CONTEXT_DIR=$(pwd)
 
-if [ "$#" -lt 4 ]; then
-  # This only works for templates
-  echo "Usage: $0 <template_or_config> <image_name> <container_base> <pip_dependencies> [<run_config>] [<special_pip_deps>]" >&2
-  exit 1
-fi
 set -euo pipefail
-
-template_or_config="$1"
-shift
-image_name="$1"
-shift
-container_base="$1"
-shift
-pip_dependencies="$1"
-shift
-
-# Handle optional arguments
-run_config=""
-special_pip_deps=""
-
-# Check if there are more arguments
-# The logics is becoming cumbersom, we should refactor it if we can do better
-if [ $# -gt 0 ]; then
-  # Check if the argument ends with .yaml
-  if [[ "$1" == *.yaml ]]; then
-    run_config="$1"
-    shift
-    # If there's another argument after .yaml, it must be special_pip_deps
-    if [ $# -gt 0 ]; then
-      special_pip_deps="$1"
-    fi
-  else
-    # If it's not .yaml, it must be special_pip_deps
-    special_pip_deps="$1"
-  fi
-fi
 
 # Define color codes
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Usage function
+usage() {
+  echo "Usage: $0 --image-name <image_name> --container-base <container_base> --normal-deps <pip_dependencies> [--run-config <run_config>] [--external-provider-deps <external_provider_deps>] [--optional-deps <special_pip_deps>]"
+  echo "Example: $0 --image-name llama-stack-img --container-base python:3.12-slim --normal-deps 'numpy pandas' --run-config ./run.yaml --external-provider-deps 'foo' --optional-deps 'bar'"
+  exit 1
+}
+
+# Parse arguments
+image_name=""
+container_base=""
+normal_deps=""
+external_provider_deps=""
+optional_deps=""
+run_config=""
+template_or_config=""
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case "$key" in
+    --image-name)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --image-name requires a string value" >&2
+        usage
+      fi
+      image_name="$2"
+      shift 2
+      ;;
+    --container-base)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --container-base requires a string value" >&2
+        usage
+      fi
+      container_base="$2"
+      shift 2
+      ;;
+    --normal-deps)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --normal-deps requires a string value" >&2
+        usage
+      fi
+      normal_deps="$2"
+      shift 2
+      ;;
+    --external-provider-deps)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --external-provider-deps requires a string value" >&2
+        usage
+      fi
+      external_provider_deps="$2"
+      shift 2
+      ;;
+    --optional-deps)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --optional-deps requires a string value" >&2
+        usage
+      fi
+      optional_deps="$2"
+      shift 2
+      ;;
+    --run-config)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --run-config requires a string value" >&2
+        usage
+      fi
+      run_config="$2"
+      shift 2
+      ;;
+    --template-or-config)
+      if [[ -z "$2" || "$2" == --* ]]; then
+        echo "Error: --template-or-config requires a string value" >&2
+        usage
+      fi
+      template_or_config="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage
+      ;;
+  esac
+done
+
+# Check required arguments
+if [[ -z "$image_name" || -z "$container_base" || -z "$normal_deps" ]]; then
+  echo "Error: --image-name, --container-base, and --normal-deps are required." >&2
+  usage
+fi
+
 CONTAINER_BINARY=${CONTAINER_BINARY:-docker}
 CONTAINER_OPTS=${CONTAINER_OPTS:---progress=plain}
-
 TEMP_DIR=$(mktemp -d)
-
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 source "$SCRIPT_DIR/common.sh"
 
@@ -78,18 +128,15 @@ add_to_container() {
   if [ -t 0 ]; then
     printf '%s\n' "$1" >>"$output_file"
   else
-    # If stdin is not a terminal, read from it (heredoc)
     cat >>"$output_file"
   fi
 }
 
-# Check if container command is available
 if ! is_command_available "$CONTAINER_BINARY"; then
   printf "${RED}Error: ${CONTAINER_BINARY} command not found. Is ${CONTAINER_BINARY} installed and in your PATH?${NC}" >&2
   exit 1
 fi
 
-# Update and install UBI9 components if UBI9 base image is used
 if [[ $container_base == *"registry.access.redhat.com/ubi9"* ]]; then
   add_to_container << EOF
 FROM $container_base
@@ -127,22 +174,52 @@ fi
 
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
-if [ -n "$pip_dependencies" ]; then
+if [ -n "$normal_deps" ]; then
+  read -ra pip_args <<<  "$normal_deps"
+  quoted_deps=$(printf " %q" "${pip_args[@]}")
   add_to_container << EOF
-RUN uv pip install --no-cache $pip_dependencies
+RUN uv pip install --no-cache $quoted_deps
 EOF
 fi
 
-if [ -n "$special_pip_deps" ]; then
-  IFS='#' read -ra parts <<<"$special_pip_deps"
+if [ -n "$optional_deps" ]; then
+  IFS='#' read -ra parts <<<"$optional_deps"
   for part in "${parts[@]}"; do
+    read -ra pip_args <<< "$part"
+    quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN uv pip install --no-cache $part
+RUN uv pip install --no-cache $quoted_deps
 EOF
   done
 fi
 
-# Function to get Python command
+if [ -n "$external_provider_deps" ]; then
+  IFS='#' read -ra parts <<<"$external_provider_deps"
+  for part in "${parts[@]}"; do
+    read -ra pip_args <<< "$part"
+    quoted_deps=$(printf " %q" "${pip_args[@]}")
+    add_to_container <<EOF
+RUN uv pip install --no-cache $quoted_deps
+EOF
+    add_to_container <<EOF
+RUN python3 - <<PYTHON | uv pip install --no-cache -r -
+import importlib
+import sys
+
+try:
+    package_name = '$part'.split('==')[0].split('>=')[0].split('<=')[0].split('!=')[0].split('<')[0].split('>')[0]
+    module = importlib.import_module(f'{package_name}.provider')
+    spec = module.get_provider_spec()
+    if hasattr(spec, 'pip_packages') and spec.pip_packages:
+        if isinstance(spec.pip_packages, (list, tuple)):
+            print('\n'.join(spec.pip_packages))
+except Exception as e:
+    print(f'Error getting provider spec for {package_name}: {e}', file=sys.stderr)
+PYTHON
+EOF
+  done
+fi
+
 get_python_cmd() {
     if is_command_available python; then
         echo "python"
@@ -222,7 +299,7 @@ else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     add_to_container << EOF
-RUN uv pip install fastapi libcst
+RUN uv pip install --no-cache fastapi libcst
 EOF
     add_to_container << EOF
 RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
@@ -328,7 +405,7 @@ $CONTAINER_BINARY build \
   "$BUILD_CONTEXT_DIR"
 
 # clean up tmp/configs
-rm -f "$BUILD_CONTEXT_DIR/run.yaml"
+rm -rf "$BUILD_CONTEXT_DIR/run.yaml" "$TEMP_DIR"
 set +x
 
 echo "Success!"

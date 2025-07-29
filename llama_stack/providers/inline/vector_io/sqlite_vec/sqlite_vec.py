@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import json
 import logging
 import re
 import sqlite3
@@ -426,6 +425,35 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
+    async def delete_chunk(self, chunk_id: str) -> None:
+        """Remove a chunk from the SQLite vector store."""
+
+        def _delete_chunk():
+            connection = _create_sqlite_connection(self.db_path)
+            cur = connection.cursor()
+            try:
+                cur.execute("BEGIN TRANSACTION")
+
+                # Delete from metadata table
+                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id = ?", (chunk_id,))
+
+                # Delete from vector table
+                cur.execute(f"DELETE FROM {self.vector_table} WHERE id = ?", (chunk_id,))
+
+                # Delete from FTS table
+                cur.execute(f"DELETE FROM {self.fts_table} WHERE id = ?", (chunk_id,))
+
+                connection.commit()
+            except Exception as e:
+                connection.rollback()
+                logger.error(f"Error deleting chunk {chunk_id}: {e}")
+                raise
+            finally:
+                cur.close()
+                connection.close()
+
+        await asyncio.to_thread(_delete_chunk)
+
 
 class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
     """
@@ -506,140 +534,6 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         await self.cache[vector_db_id].index.delete()
         del self.cache[vector_db_id]
 
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        """Save vector store file metadata to SQLite database."""
-
-        def _create_or_store():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                # Create a table to persist OpenAI vector store files.
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS openai_vector_store_files (
-                        store_id TEXT,
-                        file_id TEXT,
-                        metadata TEXT,
-                        PRIMARY KEY (store_id, file_id)
-                    );
-                """)
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS openai_vector_store_files_contents (
-                        store_id TEXT,
-                        file_id TEXT,
-                        contents TEXT,
-                        PRIMARY KEY (store_id, file_id)
-                    );
-                """)
-                connection.commit()
-                cur.execute(
-                    "INSERT OR REPLACE INTO openai_vector_store_files (store_id, file_id, metadata) VALUES (?, ?, ?)",
-                    (store_id, file_id, json.dumps(file_info)),
-                )
-                cur.execute(
-                    "INSERT OR REPLACE INTO openai_vector_store_files_contents (store_id, file_id, contents) VALUES (?, ?, ?)",
-                    (store_id, file_id, json.dumps(file_contents)),
-                )
-                connection.commit()
-            except Exception as e:
-                logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
-                raise
-            finally:
-                cur.close()
-                connection.close()
-
-        try:
-            await asyncio.to_thread(_create_or_store)
-        except Exception as e:
-            logger.error(f"Error saving openai vector store file {store_id} {file_id}: {e}")
-            raise
-
-    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        """Load vector store file metadata from SQLite database."""
-
-        def _load():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "SELECT metadata FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?",
-                    (store_id, file_id),
-                )
-                row = cur.fetchone()
-                if row is None:
-                    return None
-                (metadata,) = row
-                return metadata
-            finally:
-                cur.close()
-                connection.close()
-
-        stored_data = await asyncio.to_thread(_load)
-        return json.loads(stored_data) if stored_data else {}
-
-    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        """Load vector store file contents from SQLite database."""
-
-        def _load():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "SELECT contents FROM openai_vector_store_files_contents WHERE store_id = ? AND file_id = ?",
-                    (store_id, file_id),
-                )
-                row = cur.fetchone()
-                if row is None:
-                    return None
-                (contents,) = row
-                return contents
-            finally:
-                cur.close()
-                connection.close()
-
-        stored_contents = await asyncio.to_thread(_load)
-        return json.loads(stored_contents) if stored_contents else []
-
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        """Update vector store file metadata in SQLite database."""
-
-        def _update():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "UPDATE openai_vector_store_files SET metadata = ? WHERE store_id = ? AND file_id = ?",
-                    (json.dumps(file_info), store_id, file_id),
-                )
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_update)
-
-    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        """Delete vector store file metadata from SQLite database."""
-
-        def _delete():
-            connection = _create_sqlite_connection(self.config.db_path)
-            cur = connection.cursor()
-            try:
-                cur.execute(
-                    "DELETE FROM openai_vector_store_files WHERE store_id = ? AND file_id = ?", (store_id, file_id)
-                )
-                cur.execute(
-                    "DELETE FROM openai_vector_store_files_contents WHERE store_id = ? AND file_id = ?",
-                    (store_id, file_id),
-                )
-                connection.commit()
-            finally:
-                cur.close()
-                connection.close()
-
-        await asyncio.to_thread(_delete)
-
     async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
@@ -655,3 +549,13 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
         if not index:
             raise ValueError(f"Vector DB {vector_db_id} not found")
         return await index.query_chunks(query, params)
+
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a sqlite_vec index."""
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
+
+        for chunk_id in chunk_ids:
+            # Use the index's delete_chunk method
+            await index.index.delete_chunk(chunk_id)

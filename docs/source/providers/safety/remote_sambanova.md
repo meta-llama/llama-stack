@@ -15,7 +15,7 @@ SambaNova's safety provider for content moderation and safety filtering.
 
 ```yaml
 url: https://api.sambanova.ai/v1
-api_key: ${env.SAMBANOVA_API_KEY}
+api_key: ${env.SAMBANOVA_API_KEY:=}
 
 ```
 

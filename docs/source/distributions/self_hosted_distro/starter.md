@@ -158,7 +158,7 @@ export ENABLE_PGVECTOR=__disabled__
 The starter distribution uses several patterns for provider IDs:
 
 1. **Direct provider IDs**: `faiss`, `ollama`, `vllm`
-2. **Environment-based provider IDs**: `${env.ENABLE_SQLITE_VEC+sqlite-vec}`
+2. **Environment-based provider IDs**: `${env.ENABLE_SQLITE_VEC:+sqlite-vec}`
 3. **Model-based provider IDs**: `${env.OLLAMA_INFERENCE_MODEL:__disabled__}`
 
 When using the `+` pattern (like `${env.ENABLE_SQLITE_VEC+sqlite-vec}`), the provider is enabled by default and can be disabled by setting the environment variable to `__disabled__`.
