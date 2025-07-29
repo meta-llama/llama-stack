@@ -132,7 +132,6 @@ class ProviderSpec(BaseModel):
     )
 
     is_external: bool = Field(default=False, description="Notes whether this provider is an external provider.")
-
     # used internally by the resolver; this is a hack for now
     deps__: list[str] = Field(default_factory=list)
 
@@ -182,7 +181,7 @@ A description of the provider. This is used to display in the documentation.
 class InlineProviderSpec(ProviderSpec):
     pip_packages: list[str] = Field(
         default_factory=list,
-        description="The pip dependencies needed for this implementation",
+        description="The pip dependencies needed for this implementation (deprecated - use package_name instead)",
     )
     container_image: str | None = Field(
         default=None,
