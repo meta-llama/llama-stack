@@ -7,6 +7,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
@@ -39,6 +40,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test-type: ${{ steps.generate-matrix.outputs.test-type }}
+      rerecord_tests: ${{ steps.check_rerecord_tests.outputs.rerecord_tests }}
+    permissions:
+      # we need write if rerecord_tests is true
+      contents: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' && 'write' || 'read' }}
+      pull-requests: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' && 'write' || 'read' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -52,9 +59,24 @@ jobs:
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-type=$TEST_TYPES" >> $GITHUB_OUTPUT
 
+      - name: Check if re-record-tests label exists
+        id: check_rerecord_tests
+        run: |
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
+            echo "rerecord_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "rerecord_tests=false" >> $GITHUB_OUTPUT
+          fi
+
   test-matrix:
     needs: discover-tests
     runs-on: ubuntu-latest
+
+    env:
+      # Create reusable variable for the re-record tests condition
+      SHOULD_RECORD: ${{ needs.discover-tests.outputs.rerecord_tests == 'true' }}
+      # TODO: set up another var to track whether we need ollama or not
+      # not every matrix type needs ollama
 
     strategy:
       fail-fast: false
@@ -74,6 +96,16 @@ jobs:
             test-type: tool_runtime
 
     steps:
+      - name: Debug
+        run: |
+          echo "test-type: ${{ matrix.test-type }}"
+          echo "client-type: ${{ matrix.client-type }}"
+          echo "provider: ${{ matrix.provider }}"
+          echo "python-version: ${{ matrix.python-version }}"
+          echo "client-version: ${{ matrix.client-version }}"
+          echo "SHOULD_RECORD: ${{ env.SHOULD_RECORD }}"
+          echo "rerecord_tests: ${{ needs.discover-tests.outputs.rerecord_tests }}"
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -84,7 +116,7 @@ jobs:
           client-version: ${{ matrix.client-version }}
 
       - name: Setup ollama
-        if: ${{ matrix.provider == 'ollama' }}
+        if: ${{ matrix.provider == 'ollama' && env.SHOULD_RECORD == 'true' }}
         uses: ./.github/actions/setup-ollama
 
       - name: Setup vllm
@@ -116,6 +148,14 @@ jobs:
           fi
 
           EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
+          export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
+
+          if [ "$SHOULD_RECORD" == "true" ]; then
+            export LLAMA_STACK_TEST_INFERENCE_MODE="record"
+          else
+            export LLAMA_STACK_TEST_INFERENCE_MODE="replay"
+          fi
+
           if [ "${{ matrix.provider }}" == "ollama" ]; then
             export OLLAMA_URL="http://0.0.0.0:11434"
             export TEXT_MODEL=ollama/llama3.2:3b-instruct-fp16
@@ -129,13 +169,24 @@ jobs:
             EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
           fi
 
-
           uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
             -k "not( ${EXCLUDE_TESTS} )" \
             --text-model=$TEXT_MODEL \
             --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
             --color=yes ${EXTRA_PARAMS} \
             --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
+
+      - name: Update the PR if tests/integration/recordings/ has changed
+        if: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' }}
+        run: |
+          if [ -n "$(git diff --exit-code tests/integration/recordings/)" ]; then
+            echo "Updating PR with updated recordings"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add tests/integration/recordings/
+            git commit -m "Update recordings"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}
@@ -144,13 +195,13 @@ jobs:
           df -h
 
       - name: Write inference logs to file
-        if: ${{ always() }}
+        if: ${{ env.SHOULD_RECORD == 'true' }}
         run: |
           sudo docker logs ollama > ollama.log || true
           sudo docker logs vllm > vllm.log || true
 
       - name: Upload all logs to artifacts
-        if: ${{ always() }}
+        if: ${{ env.SHOULD_RECORD == 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
