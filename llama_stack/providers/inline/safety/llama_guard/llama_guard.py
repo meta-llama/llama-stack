@@ -146,9 +146,9 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         pass
 
     async def register_shield(self, shield: Shield) -> None:
-        # Allow any model to be registered as a shield
-        # The model will be validated during runtime when making inference calls
-        pass
+        model_id = shield.provider_resource_id
+        if not model_id:
+            raise ValueError("Llama Guard shield must have a model id")
 
     async def run_shield(
         self,

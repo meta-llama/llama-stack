@@ -45,6 +45,7 @@ class OpenAIInferenceAdapter(OpenAIMixin, LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             MODEL_ENTRIES,
+            litellm_provider_name="openai",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="openai_api_key",
         )
@@ -64,9 +65,9 @@ class OpenAIInferenceAdapter(OpenAIMixin, LiteLLMOpenAIMixin):
         """
         Get the OpenAI API base URL.
 
-        Returns the standard OpenAI API base URL for direct OpenAI API calls.
+        Returns the OpenAI API base URL from the configuration.
         """
-        return "https://api.openai.com/v1"
+        return self.config.base_url
 
     async def initialize(self) -> None:
         await super().initialize()

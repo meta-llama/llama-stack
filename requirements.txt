@@ -86,7 +86,7 @@ httpx==0.28.1
     #   llama-stack
     #   llama-stack-client
     #   openai
-huggingface-hub==0.33.0
+huggingface-hub==0.34.1
     # via llama-stack
 idna==3.10
     # via
@@ -106,7 +106,7 @@ jsonschema-specifications==2024.10.1
     # via jsonschema
 llama-api-client==0.1.2
     # via llama-stack
-llama-stack-client==0.2.15
+llama-stack-client==0.2.16
     # via llama-stack
 markdown-it-py==3.0.0
     # via rich
@@ -167,14 +167,14 @@ pyasn1==0.4.8
     #   rsa
 pycparser==2.22 ; platform_python_implementation != 'PyPy'
     # via cffi
-pydantic==2.10.6
+pydantic==2.11.7
     # via
     #   fastapi
     #   llama-api-client
     #   llama-stack
     #   llama-stack-client
     #   openai
-pydantic-core==2.27.2
+pydantic-core==2.33.2
     # via pydantic
 pygments==2.19.1
     # via rich
@@ -253,6 +253,9 @@ typing-extensions==4.12.2
     #   pydantic
     #   pydantic-core
     #   referencing
+    #   typing-inspection
+typing-inspection==0.4.1
+    # via pydantic
 tzdata==2025.1
     # via pandas
 urllib3==2.5.0

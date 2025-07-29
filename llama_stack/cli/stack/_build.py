@@ -31,6 +31,7 @@ from llama_stack.distribution.build import (
 from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
 from llama_stack.distribution.datatypes import (
     BuildConfig,
+    BuildProvider,
     DistributionSpec,
     Provider,
     StackRunConfig,
@@ -94,7 +95,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             )
             sys.exit(1)
     elif args.providers:
-        provider_list: dict[str, list[Provider]] = dict()
+        provider_list: dict[str, list[BuildProvider]] = dict()
         for api_provider in args.providers.split(","):
             if "=" not in api_provider:
                 cprint(
@@ -113,10 +114,8 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 )
                 sys.exit(1)
             if provider_type in providers_for_api:
-                provider = Provider(
+                provider = BuildProvider(
                     provider_type=provider_type,
-                    provider_id=provider_type.split("::")[1],
-                    config={},
                     module=None,
                 )
                 provider_list.setdefault(api, []).append(provider)
@@ -189,7 +188,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
 
         cprint("Tip: use <TAB> to see options for the providers.\n", color="green", file=sys.stderr)
 
-        providers: dict[str, list[Provider]] = dict()
+        providers: dict[str, list[BuildProvider]] = dict()
         for api, providers_for_api in get_provider_registry().items():
             available_providers = [x for x in providers_for_api.keys() if x not in ("remote", "remote::sample")]
             if not available_providers:
@@ -204,7 +203,10 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 ),
             )
 
-            providers[api.value] = api_provider
+            string_providers = api_provider.split(" ")
+
+            for provider in string_providers:
+                providers.setdefault(api.value, []).append(BuildProvider(provider_type=provider))
 
         description = prompt(
             "\n > (Optional) Enter a short description for your Llama Stack: ",
@@ -307,7 +309,7 @@ def _generate_run_config(
         providers = build_config.distribution_spec.providers[api]
 
         for provider in providers:
-            pid = provider.provider_id
+            pid = provider.provider_type.split("::")[-1]
 
             p = provider_registry[Api(api)][provider.provider_type]
             if p.deprecation_error:

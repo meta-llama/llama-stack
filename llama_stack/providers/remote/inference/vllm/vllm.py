@@ -299,7 +299,10 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         self.client = None
 
     async def initialize(self) -> None:
-        pass
+        if not self.config.url:
+            raise ValueError(
+                "You must provide a URL in run.yaml (or via the VLLM_URL environment variable) to use vLLM."
+            )
 
     async def should_refresh_models(self) -> bool:
         return self.config.refresh_models
@@ -337,9 +340,6 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             HealthResponse: A dictionary containing the health status.
         """
         try:
-            if not self.config.url:
-                return HealthResponse(status=HealthStatus.ERROR, message="vLLM URL is not set")
-
             client = self._create_client() if self.client is None else self.client
             _ = [m async for m in client.models.list()]  # Ensure the client is initialized
             return HealthResponse(status=HealthStatus.OK)
@@ -354,11 +354,6 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
     def _lazy_initialize_client(self):
         if self.client is not None:
             return
-
-        if not self.config.url:
-            raise ValueError(
-                "You must provide a vLLM URL in the run.yaml file (or set the VLLM_URL environment variable)"
-            )
 
         log.info(f"Initializing vLLM client with base_url={self.config.url}")
         self.client = self._create_client()

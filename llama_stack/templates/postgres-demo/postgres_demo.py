@@ -7,6 +7,7 @@
 
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import (
+    BuildProvider,
     ModelInput,
     Provider,
     ShieldInput,
@@ -34,24 +35,19 @@ def get_distribution_template() -> DistributionTemplate:
         ),
     ]
     providers = {
-        "inference": inference_providers
-        + [
-            Provider(provider_id="sentence-transformers", provider_type="inline::sentence-transformers"),
+        "inference": [
+            BuildProvider(provider_type="remote::vllm"),
+            BuildProvider(provider_type="inline::sentence-transformers"),
         ],
-        "vector_io": [
-            Provider(provider_id="chromadb", provider_type="remote::chromadb"),
-        ],
-        "safety": [Provider(provider_id="llama-guard", provider_type="inline::llama-guard")],
-        "agents": [Provider(provider_id="meta-reference", provider_type="inline::meta-reference")],
-        "telemetry": [Provider(provider_id="meta-reference", provider_type="inline::meta-reference")],
+        "vector_io": [BuildProvider(provider_type="remote::chromadb")],
+        "safety": [BuildProvider(provider_type="inline::llama-guard")],
+        "agents": [BuildProvider(provider_type="inline::meta-reference")],
+        "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
         "tool_runtime": [
-            Provider(provider_id="brave-search", provider_type="remote::brave-search"),
-            Provider(provider_id="tavily-search", provider_type="remote::tavily-search"),
-            Provider(provider_id="rag-runtime", provider_type="inline::rag-runtime"),
-            Provider(
-                provider_id="model-context-protocol",
-                provider_type="remote::model-context-protocol",
-            ),
+            BuildProvider(provider_type="remote::brave-search"),
+            BuildProvider(provider_type="remote::tavily-search"),
+            BuildProvider(provider_type="inline::rag-runtime"),
+            BuildProvider(provider_type="remote::model-context-protocol"),
         ],
     }
     name = "postgres-demo"

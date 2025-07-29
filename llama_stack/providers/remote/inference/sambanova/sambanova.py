@@ -182,6 +182,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
+            litellm_provider_name="sambanova",
             api_key_from_config=self.config.api_key.get_secret_value() if self.config.api_key else None,
             provider_data_api_key_field="sambanova_api_key",
         )
