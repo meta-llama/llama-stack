@@ -345,7 +345,7 @@ def test_inference_store(compat_client, client_with_models, text_model_id, strea
         response_id = response.id
         content = response.choices[0].message.content
 
-    responses = client.chat.completions.list()
+    responses = client.chat.completions.list(limit=1000)
     assert response_id in [r.id for r in responses.data]
 
     retrieved_response = client.chat.completions.retrieve(response_id)
@@ -410,7 +410,7 @@ def test_inference_store_tool_calls(compat_client, client_with_models, text_mode
         response_id = response.id
         content = response.choices[0].message.content
 
-    responses = client.chat.completions.list()
+    responses = client.chat.completions.list(limit=1000)
     assert response_id in [r.id for r in responses.data]
 
     retrieved_response = client.chat.completions.retrieve(response_id)
