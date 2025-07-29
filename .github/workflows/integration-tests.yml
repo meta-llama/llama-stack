@@ -177,7 +177,7 @@ jobs:
             --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
 
       - name: Update the PR if tests/integration/recordings/ has changed
-        if: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' }}
+        if: ${{ env.SHOULD_RECORD == 'true' }}
         run: |
           if [ -n "$(git diff --exit-code tests/integration/recordings/)" ]; then
             echo "Updating PR with updated recordings"
