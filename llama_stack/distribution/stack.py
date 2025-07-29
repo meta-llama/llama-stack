@@ -308,14 +308,14 @@ def add_internal_implementations(impls: dict[Api, Any], run_config: StackRunConf
 async def construct_stack(
     run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
 ) -> dict[Api, Any]:
-    inference_mode = os.environ.get("LLAMA_STACK_TEST_INFERENCE_MODE", "live").lower()
-    if inference_mode in ["record", "replay"]:
-        global TEST_RECORDING_CONTEXT
+    if "LLAMA_STACK_TEST_INFERENCE_MODE" in os.environ:
         from llama_stack.testing.inference_recorder import setup_inference_recording
 
+        global TEST_RECORDING_CONTEXT
         TEST_RECORDING_CONTEXT = setup_inference_recording()
-        TEST_RECORDING_CONTEXT.__enter__()
-        logger.info(f"Inference recording enabled: mode={inference_mode}")
+        if TEST_RECORDING_CONTEXT:
+            TEST_RECORDING_CONTEXT.__enter__()
+            logger.info(f"Inference recording enabled: mode={os.environ.get('LLAMA_STACK_TEST_INFERENCE_MODE')}")
 
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
     policy = run_config.server.auth.access_policy if run_config.server.auth else []

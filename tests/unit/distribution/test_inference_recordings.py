@@ -22,6 +22,7 @@ from llama_stack.apis.inference import (
     OpenAIEmbeddingUsage,
 )
 from llama_stack.testing.inference_recorder import (
+    InferenceMode,
     ResponseStorage,
     inference_recording,
     normalize_request,
@@ -169,7 +170,7 @@ class TestInferenceRecording:
 
         temp_storage_dir = temp_storage_dir / "test_recording_mode"
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
-            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.RECORD, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
@@ -198,7 +199,7 @@ class TestInferenceRecording:
         temp_storage_dir = temp_storage_dir / "test_replay_mode"
         # First, record a response
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
-            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.RECORD, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
@@ -210,7 +211,7 @@ class TestInferenceRecording:
 
         # Now test replay mode - should not call the original method
         with patch("openai.resources.chat.completions.AsyncCompletions.create") as mock_create_patch:
-            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.REPLAY, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
@@ -230,7 +231,7 @@ class TestInferenceRecording:
         """Test that replay mode fails when no recording is found."""
         temp_storage_dir = temp_storage_dir / "test_replay_missing_recording"
         with patch("openai.resources.chat.completions.AsyncCompletions.create"):
-            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.REPLAY, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 with pytest.raises(RuntimeError, match="No recorded response found"):
@@ -247,7 +248,7 @@ class TestInferenceRecording:
         temp_storage_dir = temp_storage_dir / "test_embeddings_recording"
         # Record
         with patch("openai.resources.embeddings.AsyncEmbeddings.create", side_effect=mock_create):
-            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.RECORD, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.embeddings.create(
@@ -258,7 +259,7 @@ class TestInferenceRecording:
 
         # Replay
         with patch("openai.resources.embeddings.AsyncEmbeddings.create") as mock_create_patch:
-            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode=InferenceMode.REPLAY, storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.embeddings.create(
@@ -279,7 +280,7 @@ class TestInferenceRecording:
             return real_openai_chat_response
 
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
-            with inference_recording(mode="live"):
+            with inference_recording(mode=InferenceMode.LIVE):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
