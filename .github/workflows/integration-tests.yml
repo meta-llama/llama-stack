@@ -48,7 +48,7 @@ jobs:
         run: |
           # Get test directories dynamically, excluding non-test directories
           TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
-            grep -Ev "^(__pycache__|fixtures|test_cases)$" |
+            grep -Ev "^(__pycache__|fixtures|test_cases|recordings)$" |
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-type=$TEST_TYPES" >> $GITHUB_OUTPUT
 
