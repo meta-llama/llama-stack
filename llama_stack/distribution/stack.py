@@ -94,6 +94,7 @@ RESOURCES = [
 
 REGISTRY_REFRESH_INTERVAL_SECONDS = 300
 REGISTRY_REFRESH_TASK = None
+TEST_RECORDING_CONTEXT = None
 
 
 async def register_resources(run_config: StackRunConfig, impls: dict[Api, Any]):
@@ -307,6 +308,15 @@ def add_internal_implementations(impls: dict[Api, Any], run_config: StackRunConf
 async def construct_stack(
     run_config: StackRunConfig, provider_registry: ProviderRegistry | None = None
 ) -> dict[Api, Any]:
+    if "LLAMA_STACK_TEST_INFERENCE_MODE" in os.environ:
+        from llama_stack.testing.inference_recorder import setup_inference_recording
+
+        global TEST_RECORDING_CONTEXT
+        TEST_RECORDING_CONTEXT = setup_inference_recording()
+        if TEST_RECORDING_CONTEXT:
+            TEST_RECORDING_CONTEXT.__enter__()
+            logger.info(f"Inference recording enabled: mode={os.environ.get('LLAMA_STACK_TEST_INFERENCE_MODE')}")
+
     dist_registry, _ = await create_dist_registry(run_config.metadata_store, run_config.image_name)
     policy = run_config.server.auth.access_policy if run_config.server.auth else []
     impls = await resolve_impls(
@@ -351,6 +361,13 @@ async def shutdown_stack(impls: dict[Api, Any]):
             logger.exception(f"Shutdown timeout for {impl_name}")
         except (Exception, asyncio.CancelledError) as e:
             logger.exception(f"Failed to shutdown {impl_name}: {e}")
+
+    global TEST_RECORDING_CONTEXT
+    if TEST_RECORDING_CONTEXT:
+        try:
+            TEST_RECORDING_CONTEXT.__exit__(None, None, None)
+        except Exception as e:
+            logger.error(f"Error during inference recording cleanup: {e}")
 
     global REGISTRY_REFRESH_TASK
     if REGISTRY_REFRESH_TASK:

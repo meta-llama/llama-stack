@@ -1,0 +1,989 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "prompt": "Respond to this question and explain your answer. Complete the sentence using one word: Roses are red, violets are ",
+      "max_tokens": 50,
+      "stream": true
+    },
+    "endpoint": "/v1/completions",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": [
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "Blue"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ".\n\n"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "My"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " response"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " is"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " based"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " on"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " a"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " traditional"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " poem"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " with"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " the"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " first"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " line"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " being"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " \""
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "R"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "oses"
+            }
+          ],
+          "created": 1753814831,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " are"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " red"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "\","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " but"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " in"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " reality"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " roses"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " come"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " in"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " various"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " colors"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " such"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " as"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " red"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " pink"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " yellow"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " white"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " and"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " purple"
+            }
+          ],
+          "created": 1753814832,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "."
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " V"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "io"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "lets"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ","
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " on"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " the"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " other"
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "cmpl-313",
+          "choices": [
+            {
+              "finish_reason": "length",
+              "index": 0,
+              "logprobs": null,
+              "text": ""
+            }
+          ],
+          "created": 1753814833,
+          "model": "llama3.2:3b-instruct-fp16",
+          "object": "text_completion",
+          "system_fingerprint": "fp_ollama",
+          "usage": null
+        }
+      }
+    ],
+    "is_streaming": true
+  }
+}

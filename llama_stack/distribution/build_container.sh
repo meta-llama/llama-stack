@@ -18,10 +18,6 @@ UV_HTTP_TIMEOUT=${UV_HTTP_TIMEOUT:-500}
 
 # mounting is not supported by docker buildx, so we use COPY instead
 USE_COPY_NOT_MOUNT=${USE_COPY_NOT_MOUNT:-}
-
-# Mount command for cache container .cache, can be overridden by the user if needed
-MOUNT_CACHE=${MOUNT_CACHE:-"--mount=type=cache,id=llama-stack-cache,target=/root/.cache"}
-
 # Path to the run.yaml file in the container
 RUN_CONFIG_PATH=/app/run.yaml
 
@@ -176,18 +172,13 @@ RUN pip install uv
 EOF
 fi
 
-# Set the link mode to copy so that uv doesn't attempt to symlink to the cache directory
-add_to_container << EOF
-ENV UV_LINK_MODE=copy
-EOF
-
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
 if [ -n "$normal_deps" ]; then
   read -ra pip_args <<<  "$normal_deps"
   quoted_deps=$(printf " %q" "${pip_args[@]}")
   add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install $quoted_deps
+RUN uv pip install --no-cache $quoted_deps
 EOF
 fi
 
@@ -197,7 +188,7 @@ if [ -n "$optional_deps" ]; then
     read -ra pip_args <<< "$part"
     quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN $MOUNT_CACHE uv pip install $quoted_deps
+RUN uv pip install --no-cache $quoted_deps
 EOF
   done
 fi
@@ -208,10 +199,10 @@ if [ -n "$external_provider_deps" ]; then
     read -ra pip_args <<< "$part"
     quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN $MOUNT_CACHE uv pip install $quoted_deps
+RUN uv pip install --no-cache $quoted_deps
 EOF
     add_to_container <<EOF
-RUN python3 - <<PYTHON | $MOUNT_CACHE uv pip install -r -
+RUN python3 - <<PYTHON | uv pip install --no-cache -r -
 import importlib
 import sys
 
@@ -293,7 +284,7 @@ COPY $dir $mount_point
 EOF
   fi
   add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install -e $mount_point
+RUN uv pip install --no-cache -e $mount_point
 EOF
 }
 
@@ -308,10 +299,10 @@ else
   if [ -n "$TEST_PYPI_VERSION" ]; then
     # these packages are damaged in test-pypi, so install them first
     add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install fastapi libcst
+RUN uv pip install --no-cache fastapi libcst
 EOF
     add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install --extra-index-url https://test.pypi.org/simple/ \
+RUN uv pip install --no-cache --extra-index-url https://test.pypi.org/simple/ \
   --index-strategy unsafe-best-match \
   llama-stack==$TEST_PYPI_VERSION
 
@@ -323,7 +314,7 @@ EOF
       SPEC_VERSION="llama-stack"
     fi
     add_to_container << EOF
-RUN $MOUNT_CACHE uv pip install $SPEC_VERSION
+RUN uv pip install --no-cache $SPEC_VERSION
 EOF
   fi
 fi
