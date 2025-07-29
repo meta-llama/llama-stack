@@ -77,8 +77,6 @@ class InferenceRouter(Inference):
             self.tokenizer = Tokenizer.get_instance()
             self.formatter = ChatFormat(self.tokenizer)
 
-        self.recording_context = None
-
     async def initialize(self) -> None:
         logger.debug("InferenceRouter.initialize")
 
