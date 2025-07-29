@@ -45,6 +45,8 @@ spec:
           value: http://vllm-server.default.svc.cluster.local:8000/v1
         - name: VLLM_MAX_TOKENS
           value: "3072"
+        - name: NVIDIA_BASE_URL
+          value: http://llama-nano-nim.default.svc.cluster.local:8000/v1
         - name: VLLM_SAFETY_URL
           value: http://vllm-server-safety.default.svc.cluster.local:8001/v1
         - name: POSTGRES_HOST
