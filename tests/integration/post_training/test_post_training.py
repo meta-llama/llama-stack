@@ -38,9 +38,8 @@ sys.stdout.reconfigure(line_buffering=True)
 
 # How to run this test:
 #
-# pytest llama_stack/providers/tests/post_training/test_post_training.py
-#   -m "torchtune_post_training_huggingface_datasetio"
-#   -v -s --tb=short --disable-warnings
+# LLAMA_STACK_CONFIG=ci-tests uv run --dev pytest tests/integration/post_training/test_post_training.py
+#
 
 
 class TestPostTraining:
@@ -113,6 +112,7 @@ class TestPostTraining:
                 break
 
             logger.info(f"Current status: {status}")
+            assert status.status in ["scheduled", "in_progress", "completed"]
             if status.status == "completed":
                 break
 
