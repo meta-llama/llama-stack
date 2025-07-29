@@ -5,7 +5,12 @@
     "headers": {},
     "body": {
       "model": "llama3.2:3b-instruct-fp16",
-      "prompt": "Respond to this question and explain your answer. Complete the sentence using one word: Roses are red, violets are ",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Which planet do humans live on?"
+        }
+      ],
       "stream": false
     },
     "endpoint": "/v1/completions",
@@ -13,25 +18,34 @@
   },
   "response": {
     "body": {
-      "__type__": "openai.types.completion.Completion",
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
       "__data__": {
-        "id": "cmpl-719",
+        "id": "chatcmpl-4",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
-            "text": "Blue.\n\nExplanation: This is a classic example of an alliterative poem, often referred to as \"red roses.\" The original phrase, \"Roses are red,\" was actually coined by Ernest Thesiger in 1910 and was followed by the complementary phrase, making the complete sentence a poetic device called an \"alliterative couplet.\""
+            "message": {
+              "content": "Humans live on Earth.",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": null
+            }
           }
         ],
-        "created": 1753814830,
+        "created": 1753814880,
         "model": "llama3.2:3b-instruct-fp16",
-        "object": "text_completion",
+        "object": "chat.completion",
+        "service_tier": null,
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 71,
-          "prompt_tokens": 50,
-          "total_tokens": 121,
+          "completion_tokens": 6,
+          "prompt_tokens": 32,
+          "total_tokens": 38,
           "completion_tokens_details": null,
           "prompt_tokens_details": null
         }
