@@ -30,6 +30,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
             "remote::qdrant",
             "inline::qdrant",
             "remote::weaviate",
+            "remote::milvus",
         ]:
             return
 
@@ -49,12 +50,16 @@ def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_mode
             "remote::chromadb",
             "remote::weaviate",
             "remote::qdrant",
+            "remote::milvus",
         ],
         "keyword": [
             "inline::sqlite-vec",
+            "remote::milvus",
         ],
         "hybrid": [
             "inline::sqlite-vec",
+            "inline::milvus",
+            "remote::milvus",
         ],
     }
     supported_providers = search_mode_support.get(search_mode, [])
