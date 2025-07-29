@@ -5,7 +5,6 @@ Llama Stack uses GitHub Actions for Continous Integration (CI). Below is a table
 | Name | File | Purpose |
 | ---- | ---- | ------- |
 | Update Changelog | [changelog.yml](changelog.yml) | Creates PR for updating the CHANGELOG.md |
-| Coverage Badge | [coverage-badge.yml](coverage-badge.yml) | Creates PR for updating the code coverage badge |
 | Installer CI | [install-script-ci.yml](install-script-ci.yml) | Test the installation script |
 | Integration Auth Tests | [integration-auth-tests.yml](integration-auth-tests.yml) | Run the integration test suite with Kubernetes authentication |
 | SqlStore Integration Tests | [integration-sql-store-tests.yml](integration-sql-store-tests.yml) | Run the integration test suite with SqlStore |
