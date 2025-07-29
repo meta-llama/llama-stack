@@ -58,5 +58,8 @@ response = agent.create_turn(
     stream=True,
 )
 
+# NOTE: `AgentEventLogger().log(response)` only works with streaming responses.
+# So, if you change the value for `stream` to `False` in the `create_turn` call,
+# comment out the following two lines!
 for log in AgentEventLogger().log(response):
     log.print()
