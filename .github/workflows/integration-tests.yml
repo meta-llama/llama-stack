@@ -40,11 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test-type: ${{ steps.generate-matrix.outputs.test-type }}
-      rerecord_tests: ${{ steps.check_rerecord_tests.outputs.rerecord_tests }}
-    permissions:
-      # we need write if rerecord_tests is true
-      contents: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' && 'write' || 'read' }}
-      pull-requests: ${{ needs.check_rerecord_tests.outputs.rerecord_tests == 'true' && 'write' || 'read' }}
+      rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
 
     steps:
       - name: Checkout repository
@@ -60,21 +56,26 @@ jobs:
           echo "test-type=$TEST_TYPES" >> $GITHUB_OUTPUT
 
       - name: Check if re-record-tests label exists
-        id: check_rerecord_tests
+        id: check-rerecord-tests
         run: |
           if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
-            echo "rerecord_tests=true" >> $GITHUB_OUTPUT
+            echo "rerecord-tests=true" >> $GITHUB_OUTPUT
           else
-            echo "rerecord_tests=false" >> $GITHUB_OUTPUT
+            echo "rerecord-tests=false" >> $GITHUB_OUTPUT
           fi
 
   test-matrix:
     needs: discover-tests
     runs-on: ubuntu-latest
 
+    permissions:
+      # we need write if rerecord-tests is true
+      contents: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' && 'write' || 'read' }}
+      pull-requests: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' && 'write' || 'read' }}
+
     env:
       # Create reusable variable for the re-record tests condition
-      SHOULD_RECORD: ${{ needs.discover-tests.outputs.rerecord_tests == 'true' }}
+      SHOULD_RECORD: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' }}
       # TODO: set up another var to track whether we need ollama or not
       # not every matrix type needs ollama
 
@@ -104,7 +105,7 @@ jobs:
           echo "python-version: ${{ matrix.python-version }}"
           echo "client-version: ${{ matrix.client-version }}"
           echo "SHOULD_RECORD: ${{ env.SHOULD_RECORD }}"
-          echo "rerecord_tests: ${{ needs.discover-tests.outputs.rerecord_tests }}"
+          echo "rerecord-tests: ${{ needs.discover-tests.outputs.rerecord-tests }}"
 
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
