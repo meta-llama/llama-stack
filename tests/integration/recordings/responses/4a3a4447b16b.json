@@ -14,7 +14,7 @@
         "models": [
           {
             "model": "nomic-embed-text:latest",
-            "modified_at": "2025-07-29T14:55:45.755906-07:00",
+            "modified_at": "2025-07-29T16:26:10.815830-07:00",
             "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f",
             "size": 274302450,
             "details": {
