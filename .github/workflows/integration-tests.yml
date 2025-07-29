@@ -69,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      # we need write if rerecord-tests is true
-      contents: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' && 'write' || 'read' }}
-      pull-requests: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' && 'write' || 'read' }}
+      # Set write permissions since we might need to commit recordings
+      contents: write
+      pull-requests: write
 
     env:
       # Create reusable variable for the re-record tests condition
@@ -180,13 +180,15 @@ jobs:
       - name: Update the PR if tests/integration/recordings/ has changed
         if: ${{ env.SHOULD_RECORD == 'true' }}
         run: |
-          if [ -n "$(git diff --exit-code tests/integration/recordings/)" ]; then
+          if ! git diff --quiet tests/integration/recordings/; then
             echo "Updating PR with updated recordings"
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
             git add tests/integration/recordings/
-            git commit -m "Update recordings"
+            git commit -m "Update recordings from integration tests"
             git push origin HEAD:${{ github.head_ref }}
+          else
+            echo "No changes to recordings detected"
           fi
 
       - name: Check Storage and Memory Available After Tests
