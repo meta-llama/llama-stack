@@ -7,11 +7,20 @@
 import sqlite3
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from openai import AsyncOpenAI
 
+# Import the real Pydantic response types instead of using Mocks
+from llama_stack.apis.inference import (
+    OpenAIAssistantMessageParam,
+    OpenAIChatCompletion,
+    OpenAIChoice,
+    OpenAIEmbeddingData,
+    OpenAIEmbeddingsResponse,
+    OpenAIEmbeddingUsage,
+)
 from llama_stack.testing.inference_recorder import (
     ResponseStorage,
     inference_recording,
@@ -27,44 +36,36 @@ def temp_storage_dir():
 
 
 @pytest.fixture
-def mock_openai_response():
-    """Mock OpenAI response object."""
-    mock_response = Mock()
-    mock_response.choices = [Mock()]
-    mock_response.choices[0].message.content = "Hello! I'm doing well, thank you for asking."
-    mock_response.model_dump.return_value = {
-        "id": "chatcmpl-test123",
-        "object": "chat.completion",
-        "choices": [
-            {
-                "index": 0,
-                "message": {"role": "assistant", "content": "Hello! I'm doing well, thank you for asking."},
-                "finish_reason": "stop",
-            }
+def real_openai_chat_response():
+    """Real OpenAI chat completion response using proper Pydantic objects."""
+    return OpenAIChatCompletion(
+        id="chatcmpl-test123",
+        choices=[
+            OpenAIChoice(
+                index=0,
+                message=OpenAIAssistantMessageParam(
+                    role="assistant", content="Hello! I'm doing well, thank you for asking."
+                ),
+                finish_reason="stop",
+            )
         ],
-        "model": "llama3.2:3b",
-        "usage": {"prompt_tokens": 10, "completion_tokens": 15, "total_tokens": 25},
-    }
-
-    return mock_response
+        created=1234567890,
+        model="llama3.2:3b",
+    )
 
 
 @pytest.fixture
-def mock_embeddings_response():
-    """Mock OpenAI embeddings response object."""
-    mock_response = Mock()
-    mock_response.data = [Mock(embedding=[0.1, 0.2, 0.3]), Mock(embedding=[0.4, 0.5, 0.6])]
-    mock_response.model_dump.return_value = {
-        "object": "list",
-        "data": [
-            {"object": "embedding", "embedding": [0.1, 0.2, 0.3], "index": 0},
-            {"object": "embedding", "embedding": [0.4, 0.5, 0.6], "index": 1},
+def real_embeddings_response():
+    """Real OpenAI embeddings response using proper Pydantic objects."""
+    return OpenAIEmbeddingsResponse(
+        object="list",
+        data=[
+            OpenAIEmbeddingData(object="embedding", embedding=[0.1, 0.2, 0.3], index=0),
+            OpenAIEmbeddingData(object="embedding", embedding=[0.4, 0.5, 0.6], index=1),
         ],
-        "model": "nomic-embed-text",
-        "usage": {"prompt_tokens": 6, "total_tokens": 6},
-    }
-
-    return mock_response
+        model="nomic-embed-text",
+        usage=OpenAIEmbeddingUsage(prompt_tokens=6, total_tokens=6),
+    )
 
 
 class TestInferenceRecording:
@@ -160,11 +161,11 @@ class TestInferenceRecording:
         assert retrieved["request"]["model"] == "llama3.2:3b"
         assert retrieved["response"]["body"]["content"] == "test response"
 
-    async def test_recording_mode(self, temp_storage_dir, mock_openai_response):
+    async def test_recording_mode(self, temp_storage_dir, real_openai_chat_response):
         """Test that recording mode captures and stores responses."""
 
         async def mock_create(*args, **kwargs):
-            return mock_openai_response
+            return real_openai_chat_response
 
         temp_storage_dir = temp_storage_dir / "test_recording_mode"
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
@@ -188,11 +189,11 @@ class TestInferenceRecording:
 
         assert recordings == 1
 
-    async def test_replay_mode(self, temp_storage_dir, mock_openai_response):
+    async def test_replay_mode(self, temp_storage_dir, real_openai_chat_response):
         """Test that replay mode returns stored responses without making real calls."""
 
         async def mock_create(*args, **kwargs):
-            return mock_openai_response
+            return real_openai_chat_response
 
         temp_storage_dir = temp_storage_dir / "test_replay_mode"
         # First, record a response
@@ -200,7 +201,7 @@ class TestInferenceRecording:
             with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
-                await client.chat.completions.create(
+                response = await client.chat.completions.create(
                     model="llama3.2:3b",
                     messages=[{"role": "user", "content": "Hello, how are you?"}],
                     temperature=0.7,
@@ -220,7 +221,7 @@ class TestInferenceRecording:
                 )
 
                 # Verify we got the recorded response
-                assert response["choices"][0]["message"]["content"] == "Hello! I'm doing well, thank you for asking."
+                assert response.choices[0].message.content == "Hello! I'm doing well, thank you for asking."
 
                 # Verify the original method was NOT called
                 mock_create_patch.assert_not_called()
@@ -237,11 +238,11 @@ class TestInferenceRecording:
                         model="llama3.2:3b", messages=[{"role": "user", "content": "This was never recorded"}]
                     )
 
-    async def test_embeddings_recording(self, temp_storage_dir, mock_embeddings_response):
+    async def test_embeddings_recording(self, temp_storage_dir, real_embeddings_response):
         """Test recording and replay of embeddings calls."""
 
         async def mock_create(*args, **kwargs):
-            return mock_embeddings_response
+            return real_embeddings_response
 
         temp_storage_dir = temp_storage_dir / "test_embeddings_recording"
         # Record
@@ -265,17 +266,17 @@ class TestInferenceRecording:
                 )
 
                 # Verify we got the recorded response
-                assert len(response["data"]) == 2
-                assert response["data"][0]["embedding"] == [0.1, 0.2, 0.3]
+                assert len(response.data) == 2
+                assert response.data[0].embedding == [0.1, 0.2, 0.3]
 
                 # Verify original method was not called
                 mock_create_patch.assert_not_called()
 
-    async def test_live_mode(self, mock_openai_response):
+    async def test_live_mode(self, real_openai_chat_response):
         """Test that live mode passes through to original methods."""
 
         async def mock_create(*args, **kwargs):
-            return mock_openai_response
+            return real_openai_chat_response
 
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
             with inference_recording(mode="live"):

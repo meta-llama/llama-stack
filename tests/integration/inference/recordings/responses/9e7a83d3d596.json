@@ -13,25 +13,28 @@
   },
   "response": {
     "body": {
-      "id": "cmpl-68",
-      "choices": [
-        {
-          "finish_reason": "stop",
-          "index": 0,
-          "logprobs": null,
-          "text": "Blue.\n\nThe completed quote is a well-known poetic phrase often used as a tongue-in-cheek romantic gesture. However, it's worth noting that true violets are actually purple in color, not blue. This phrase is a playful variation of the traditional \"Roses are red, violets are blue,\" which typically goes like this:\n\n\"Roses are red, violets are blue,\nSugar is sweet, and so are you.\"\n\nThis original quote has been used for centuries to make a lighthearted, whimsical compliment in poetry, songs, and spoken words."
+      "__type__": "openai.types.completion.Completion",
+      "__data__": {
+        "id": "cmpl-256",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "text": "Blue.\n\nMy response is a play on words of the classic nursery rhyme \"Roses are red, violets are blue.\" In traditional rhymes, violets are typically depicted as being purple or blue in color. I've taken this convention and completed the sentence with the word \"blue\" to create a punny adaptation of the original phrase."
+          }
+        ],
+        "created": 1753810618,
+        "model": "llama3.2:3b-instruct-fp16",
+        "object": "text_completion",
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 72,
+          "prompt_tokens": 50,
+          "total_tokens": 122,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
         }
-      ],
-      "created": 1753762608,
-      "model": "llama3.2:3b-instruct-fp16",
-      "object": "text_completion",
-      "system_fingerprint": "fp_ollama",
-      "usage": {
-        "completion_tokens": 120,
-        "prompt_tokens": 50,
-        "total_tokens": 170,
-        "completion_tokens_details": null,
-        "prompt_tokens_details": null
       }
     },
     "is_streaming": false

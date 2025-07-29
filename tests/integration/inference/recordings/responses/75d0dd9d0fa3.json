@@ -42,19 +42,22 @@
   },
   "response": {
     "body": {
-      "model": "llama3.2:3b-instruct-fp16",
-      "created_at": "2025-07-29T04:16:57.15491Z",
-      "done": true,
-      "done_reason": "stop",
-      "total_duration": 1570055875,
-      "load_duration": 87677125,
-      "prompt_eval_count": 119,
-      "prompt_eval_duration": 190281458,
-      "eval_count": 29,
-      "eval_duration": 1291217083,
-      "response": "{ \"name\": \"Michael Jordan\", \"year_born\": \"1963\", \"year_retired\": \"2003\"}\n    ",
-      "thinking": null,
-      "context": null
+      "__type__": "ollama._types.GenerateResponse",
+      "__data__": {
+        "model": "llama3.2:3b-instruct-fp16",
+        "created_at": "2025-07-29T17:37:05.293829Z",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 1587647875,
+        "load_duration": 58102458,
+        "prompt_eval_count": 119,
+        "prompt_eval_duration": 199832792,
+        "eval_count": 29,
+        "eval_duration": 1328951417,
+        "response": "{ \"name\": \"Michael Jordan\", \"year_born\": \"1963\", \"year_retired\": \"2003\"}\n    ",
+        "thinking": null,
+        "context": null
+      }
     },
     "is_streaming": false
   }
