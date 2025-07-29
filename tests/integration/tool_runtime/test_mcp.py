@@ -10,7 +10,6 @@ import pytest
 from llama_stack_client import Agent
 
 from llama_stack import LlamaStackAsLibraryClient
-from llama_stack.apis.models import ModelType
 from llama_stack.distribution.datatypes import AuthenticationRequiredError
 
 AUTH_TOKEN = "test-token"
