@@ -49,7 +49,7 @@ def github_token_app():
     )
 
     # Add auth middleware
-    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
+    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config, impls={})
 
     @app.get("/test")
     def test_endpoint():
@@ -149,7 +149,7 @@ def test_github_enterprise_support(mock_client_class):
         access_policy=[],
     )
 
-    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config)
+    app.add_middleware(AuthenticationMiddleware, auth_config=auth_config, impls={})
 
     @app.get("/test")
     def test_endpoint():

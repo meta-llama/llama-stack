@@ -5,8 +5,14 @@
 # the root directory of this source tree.
 
 
+import base64
+import os
+import tempfile
+
 import pytest
 from openai import OpenAI
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
@@ -80,6 +86,14 @@ def skip_if_provider_isnt_vllm(client_with_models, model_id):
     provider = provider_from_model(client_with_models, model_id)
     if provider.provider_type != "remote::vllm":
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support vllm extra_body parameters.")
+
+
+def skip_if_provider_isnt_openai(client_with_models, model_id):
+    provider = provider_from_model(client_with_models, model_id)
+    if provider.provider_type != "remote::openai":
+        pytest.skip(
+            f"Model {model_id} hosted by {provider.provider_type} doesn't support chat completion calls with base64 encoded files."
+        )
 
 
 @pytest.fixture
@@ -418,3 +432,45 @@ def test_inference_store_tool_calls(compat_client, client_with_models, text_mode
         # failed tool call parses show up as a message with content, so ensure
         # that the retrieve response content matches the original request
         assert retrieved_response.choices[0].message.content == content
+
+
+def test_openai_chat_completion_non_streaming_with_file(openai_client, client_with_models, text_model_id):
+    skip_if_provider_isnt_openai(client_with_models, text_model_id)
+
+    # Generate temporary PDF with "Hello World" text
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_pdf:
+        c = canvas.Canvas(temp_pdf.name, pagesize=letter)
+        c.drawString(100, 750, "Hello World")
+        c.save()
+
+        # Read the PDF and sencode to base64
+        with open(temp_pdf.name, "rb") as pdf_file:
+            pdf_base64 = base64.b64encode(pdf_file.read()).decode("utf-8")
+
+        # Clean up temporary file
+        os.unlink(temp_pdf.name)
+
+    response = openai_client.chat.completions.create(
+        model=text_model_id,
+        messages=[
+            {
+                "role": "user",
+                "content": "Describe what you see in this PDF file.",
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "file",
+                        "file": {
+                            "filename": "my-temp-hello-world-pdf",
+                            "file_data": f"data:application/pdf;base64,{pdf_base64}",
+                        },
+                    }
+                ],
+            },
+        ],
+        stream=False,
+    )
+    message_content = response.choices[0].message.content.lower().strip()
+    assert "hello world" in message_content

@@ -358,7 +358,7 @@ async def shutdown_stack(impls: dict[Api, Any]):
 
 
 async def refresh_registry_once(impls: dict[Api, Any]):
-    logger.info("refreshing registry")
+    logger.debug("refreshing registry")
     routing_tables = [v for v in impls.values() if isinstance(v, CommonRoutingTableImpl)]
     for routing_table in routing_tables:
         await routing_table.refresh()
