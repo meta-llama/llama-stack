@@ -39,7 +39,7 @@ from llama_stack.distribution.request_headers import (
     request_provider_data_context,
 )
 from llama_stack.distribution.resolver import ProviderRegistry
-from llama_stack.distribution.server.routes import find_matching_route, initialize_route_impls
+from llama_stack.distribution.server.routes import RouteImpls, find_matching_route, initialize_route_impls
 from llama_stack.distribution.stack import (
     construct_stack,
     get_stack_run_config_from_template,
@@ -236,6 +236,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         self.config = config
         self.custom_provider_registry = custom_provider_registry
         self.provider_data = provider_data
+        self.route_impls: RouteImpls | None = None  # Initialize to None to prevent AttributeError
 
     async def initialize(self) -> bool:
         try:
@@ -297,8 +298,8 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         stream=False,
         stream_cls=None,
     ):
-        if not self.route_impls:
-            raise ValueError("Client not initialized")
+        if self.route_impls is None:
+            raise ValueError("Client not initialized. Please call initialize() first.")
 
         # Create headers with provider data if available
         headers = options.headers or {}
@@ -353,9 +354,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         cast_to: Any,
         options: Any,
     ):
-        if self.route_impls is None:
-            raise ValueError("Client not initialized")
-
+        assert self.route_impls is not None  # Should be guaranteed by request() method, assertion for mypy
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
@@ -412,9 +411,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         options: Any,
         stream_cls: Any,
     ):
-        if self.route_impls is None:
-            raise ValueError("Client not initialized")
-
+        assert self.route_impls is not None  # Should be guaranteed by request() method, assertion for mypy
         path = options.url
         body = options.params or {}
         body |= options.json_data or {}
@@ -474,9 +471,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         if not body:
             return {}
 
-        if self.route_impls is None:
-            raise ValueError("Client not initialized")
-
+        assert self.route_impls is not None  # Should be guaranteed by request() method, assertion for mypy
         exclude_params = exclude_params or set()
 
         func, _, _, _ = find_matching_route(method, path, self.route_impls)
