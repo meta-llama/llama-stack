@@ -1,0 +1,39 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "prompt": "Respond to this question and explain your answer. Complete the sentence using one word: Roses are red, violets are ",
+      "stream": false
+    },
+    "endpoint": "/v1/completions",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": {
+      "id": "cmpl-68",
+      "choices": [
+        {
+          "finish_reason": "stop",
+          "index": 0,
+          "logprobs": null,
+          "text": "Blue.\n\nThe completed quote is a well-known poetic phrase often used as a tongue-in-cheek romantic gesture. However, it's worth noting that true violets are actually purple in color, not blue. This phrase is a playful variation of the traditional \"Roses are red, violets are blue,\" which typically goes like this:\n\n\"Roses are red, violets are blue,\nSugar is sweet, and so are you.\"\n\nThis original quote has been used for centuries to make a lighthearted, whimsical compliment in poetry, songs, and spoken words."
+        }
+      ],
+      "created": 1753762608,
+      "model": "llama3.2:3b-instruct-fp16",
+      "object": "text_completion",
+      "system_fingerprint": "fp_ollama",
+      "usage": {
+        "completion_tokens": 120,
+        "prompt_tokens": 50,
+        "total_tokens": 170,
+        "completion_tokens_details": null,
+        "prompt_tokens_details": null
+      }
+    },
+    "is_streaming": false
+  }
+}

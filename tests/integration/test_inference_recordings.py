@@ -105,8 +105,8 @@ class TestInferenceRecording:
         assert hash1 != hash3
 
     def test_request_normalization_edge_cases(self):
-        """Test request normalization handles edge cases correctly."""
-        # Test whitespace normalization
+        """Test request normalization is precise about request content."""
+        # Test that different whitespace produces different hashes (no normalization)
         hash1 = normalize_request(
             "POST",
             "http://test/v1/chat/completions",
@@ -116,16 +116,17 @@ class TestInferenceRecording:
         hash2 = normalize_request(
             "POST", "http://test/v1/chat/completions", {}, {"messages": [{"role": "user", "content": "Hello world"}]}
         )
-        assert hash1 == hash2
+        assert hash1 != hash2  # Different whitespace should produce different hashes
 
-        # Test float precision normalization
+        # Test that different float precision produces different hashes (no rounding)
         hash3 = normalize_request("POST", "http://test/v1/chat/completions", {}, {"temperature": 0.7000001})
         hash4 = normalize_request("POST", "http://test/v1/chat/completions", {}, {"temperature": 0.7})
-        assert hash3 == hash4
+        assert hash3 != hash4  # Different precision should produce different hashes
 
     def test_response_storage(self, temp_storage_dir):
         """Test the ResponseStorage class."""
-        storage = ResponseStorage(temp_storage_dir, "test_storage")
+        temp_storage_dir = temp_storage_dir / "test_response_storage"
+        storage = ResponseStorage(temp_storage_dir)
 
         # Test directory creation
         assert storage.test_dir.exists()
@@ -161,13 +162,13 @@ class TestInferenceRecording:
 
     async def test_recording_mode(self, temp_storage_dir, mock_openai_response):
         """Test that recording mode captures and stores responses."""
-        test_id = "test_recording_mode"
 
         async def mock_create(*args, **kwargs):
             return mock_openai_response
 
+        temp_storage_dir = temp_storage_dir / "test_recording_mode"
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
-            with inference_recording(mode="record", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
@@ -181,7 +182,7 @@ class TestInferenceRecording:
                 assert response.choices[0].message.content == "Hello! I'm doing well, thank you for asking."
 
         # Verify recording was stored
-        storage = ResponseStorage(temp_storage_dir, test_id)
+        storage = ResponseStorage(temp_storage_dir)
         with sqlite3.connect(storage.db_path) as conn:
             recordings = conn.execute("SELECT COUNT(*) FROM recordings").fetchone()[0]
 
@@ -189,14 +190,14 @@ class TestInferenceRecording:
 
     async def test_replay_mode(self, temp_storage_dir, mock_openai_response):
         """Test that replay mode returns stored responses without making real calls."""
-        test_id = "test_replay_mode"
 
         async def mock_create(*args, **kwargs):
             return mock_openai_response
 
+        temp_storage_dir = temp_storage_dir / "test_replay_mode"
         # First, record a response
         with patch("openai.resources.chat.completions.AsyncCompletions.create", side_effect=mock_create):
-            with inference_recording(mode="record", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 await client.chat.completions.create(
@@ -208,7 +209,7 @@ class TestInferenceRecording:
 
         # Now test replay mode - should not call the original method
         with patch("openai.resources.chat.completions.AsyncCompletions.create") as mock_create_patch:
-            with inference_recording(mode="replay", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.chat.completions.create(
@@ -226,10 +227,9 @@ class TestInferenceRecording:
 
     async def test_replay_missing_recording(self, temp_storage_dir):
         """Test that replay mode fails when no recording is found."""
-        test_id = "test_missing_recording"
-
+        temp_storage_dir = temp_storage_dir / "test_replay_missing_recording"
         with patch("openai.resources.chat.completions.AsyncCompletions.create"):
-            with inference_recording(mode="replay", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 with pytest.raises(RuntimeError, match="No recorded response found"):
@@ -239,14 +239,14 @@ class TestInferenceRecording:
 
     async def test_embeddings_recording(self, temp_storage_dir, mock_embeddings_response):
         """Test recording and replay of embeddings calls."""
-        test_id = "test_embeddings"
 
         async def mock_create(*args, **kwargs):
             return mock_embeddings_response
 
+        temp_storage_dir = temp_storage_dir / "test_embeddings_recording"
         # Record
         with patch("openai.resources.embeddings.AsyncEmbeddings.create", side_effect=mock_create):
-            with inference_recording(mode="record", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="record", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.embeddings.create(
@@ -257,7 +257,7 @@ class TestInferenceRecording:
 
         # Replay
         with patch("openai.resources.embeddings.AsyncEmbeddings.create") as mock_create_patch:
-            with inference_recording(mode="replay", test_id=test_id, storage_dir=str(temp_storage_dir)):
+            with inference_recording(mode="replay", storage_dir=str(temp_storage_dir)):
                 client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="test")
 
                 response = await client.embeddings.create(
