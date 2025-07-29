@@ -8,19 +8,8 @@ import gc
 import json
 import logging
 import multiprocessing
-import os
 from pathlib import Path
 from typing import Any
-
-from llama_stack.providers.inline.post_training.common.utils import evacuate_model_from_device
-
-# Set tokenizer parallelism environment variable
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-
-# Force PyTorch to use OpenBLAS instead of MKL
-os.environ["MKL_THREADING_LAYER"] = "GNU"
-os.environ["MKL_SERVICE_FORCE_INTEL"] = "0"
-os.environ["MKL_NUM_THREADS"] = "1"
 
 import torch
 from datasets import Dataset
@@ -39,6 +28,7 @@ from llama_stack.apis.post_training import (
     LoraFinetuningConfig,
     TrainingConfig,
 )
+from llama_stack.providers.inline.post_training.common.utils import evacuate_model_from_device
 
 from ..config import HuggingFacePostTrainingConfig
 from ..utils import (
@@ -47,8 +37,8 @@ from ..utils import (
     get_memory_stats,
     get_save_strategy,
     load_model,
-    setup_data,
-    setup_multiprocessing_for_device,
+    load_rows_from_dataset,
+    setup_environment,
     setup_signal_handlers,
     setup_torch_device,
     split_dataset,
@@ -239,7 +229,7 @@ class HFFinetuningSingleDevice:
 
         # Load dataset
         logger.info(f"Loading dataset: {config.data_config.dataset_id}")
-        rows = await setup_data(self.datasetio_api, config.data_config.dataset_id)
+        rows = await load_rows_from_dataset(self.datasetio_api, config.data_config.dataset_id)
         if not self.validate_dataset_format(rows):
             raise ValueError("Dataset is missing required fields: input_query, expected_answer, chat_completion_input")
         logger.info(f"Loaded {len(rows)} rows from dataset")
@@ -383,6 +373,9 @@ class HFFinetuningSingleDevice:
     ) -> None:
         """Run the training process with signal handling."""
 
+        # Setup environment variables
+        setup_environment()
+
         # Setup signal handlers
         setup_signal_handlers()
 
@@ -489,7 +482,8 @@ class HFFinetuningSingleDevice:
         logger.info("Starting training in separate process")
         try:
             # Setup multiprocessing for device
-            setup_multiprocessing_for_device(device)
+            if device.type in ["cuda", "mps"]:
+                multiprocessing.set_start_method("spawn", force=True)
 
             process = multiprocessing.Process(
                 target=self._run_training_sync,

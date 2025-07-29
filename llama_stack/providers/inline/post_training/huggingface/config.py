@@ -71,6 +71,7 @@ class HuggingFacePostTrainingConfig(BaseModel):
     dpo_beta: float = 0.1
     use_reference_model: bool = True
     dpo_loss_type: Literal["sigmoid", "hinge", "ipo", "kto_pair"] = "sigmoid"
+    dpo_output_dir: str = "./checkpoints/dpo"
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:

@@ -132,12 +132,9 @@ class HuggingFacePostTrainingImpl:
                 datasets_api=self.datasets_api,
             )
 
-            # Use default checkpoint directory
-            output_dir = f"./checkpoints/dpo/{job_uuid}"
-
             resources_allocated, checkpoints = await recipe.train(
                 model=finetuned_model,
-                output_dir=output_dir,
+                output_dir=f"{self.config.dpo_output_dir}/{job_uuid}",
                 job_uuid=job_uuid,
                 dpo_config=algorithm_config,
                 config=training_config,
