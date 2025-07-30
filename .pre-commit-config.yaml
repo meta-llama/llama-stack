@@ -159,7 +159,7 @@ repos:
   hooks:
     - id: check-uv-upload-time
       name: Check upload-time in uv.lock
-      entry: python3 scripts/check_uv_upload_time.py
+      entry: python3 ./scripts/check_uv_upload_time.py
       language: system
       files: ^uv\.lock$
 
