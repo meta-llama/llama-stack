@@ -14,6 +14,10 @@ inputs:
   inference-mode:
     description: 'Inference mode: "record" or "replay"'
     required: true
+  run-vision-tests:
+    description: 'Run vision tests: "true" or "false"'
+    required: false
+    default: 'false'
 
 outputs:
   logs-path:
@@ -44,6 +48,22 @@ runs:
           export TEXT_MODEL="vllm/meta-llama/Llama-3.2-1B-Instruct"
           EXTRA_PARAMS=""
           EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
+        fi
+
+        if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          if uv run pytest -s -v tests/integration/inference/test_vision_inference.py --stack-config=${stack_config} \
+            -k "not( ${EXCLUDE_TESTS} )" \
+            --vision-model=ollama/llama3.2-vision:11b \
+            --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
+            --color=yes ${EXTRA_PARAMS} \
+            --capture=tee-sys | tee pytest-${{ inputs.inference-mode }}-vision.log; then
+            echo "✅ Tests completed for vision"
+          else
+            echo "❌ Tests failed for vision"
+            exit 1
+          fi
+
+          exit 0
         fi
 
         TEST_TYPES='${{ inputs.test-types }}'
