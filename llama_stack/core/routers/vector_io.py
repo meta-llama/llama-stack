@@ -11,6 +11,7 @@ from typing import Any
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
 )
+from llama_stack.apis.common.errors import MissingEmbeddingModelError
 from llama_stack.apis.common.vector_store_config import VectorStoreConfig
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.vector_io import (
@@ -106,9 +107,6 @@ class VectorIORouter(VectorIO):
             return cfg.default_embedding_model, cfg.default_embedding_dimension or 384
 
         # 3. error - no default
-        class MissingEmbeddingModelError(RuntimeError):
-            pass
-
         raise MissingEmbeddingModelError(
             "Failed to create vector store: No embedding model provided. Set vector_store_config.default_embedding_model or supply one in the API call."
         )

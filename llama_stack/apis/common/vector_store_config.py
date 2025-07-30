@@ -29,7 +29,7 @@ class VectorStoreConfig(BaseModel):
     default_embedding_model
         The model *id* the stack should use when an embedding model is
         required but not supplied by the API caller.  When *None* the
-        router will raise a :class:`~llama_stack.errors.MissingEmbeddingModelError`.
+        router will raise a :class:`~llama_stack.apis.common.errors.MissingEmbeddingModelError`.
     default_embedding_dimension
         Optional integer hint for vector dimension.  Routers/providers
         may validate that the chosen model emits vectors of this size.
