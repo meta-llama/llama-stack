@@ -12,6 +12,7 @@ from numpy.typing import NDArray
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.models import PointStruct
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
@@ -173,7 +174,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         index = VectorDBWithIndex(
             vector_db=vector_db,
@@ -191,7 +192,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         await index.insert_chunks(chunks)
 
@@ -203,7 +204,7 @@ class QdrantVectorIOAdapter(VectorIO, VectorDBsProtocolPrivate):
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         return await index.query_chunks(query, params)
 
