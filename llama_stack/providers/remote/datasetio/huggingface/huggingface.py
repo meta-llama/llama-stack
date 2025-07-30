@@ -24,10 +24,29 @@ def parse_hf_params(dataset_def: Dataset):
     uri = dataset_def.source.uri
     parsed_uri = urlparse(uri)
     params = parse_qs(parsed_uri.query)
-    params = {k: v[0] for k, v in params.items()}
+
+    # Convert parameters to appropriate types
+    processed_params = {}
+    for k, v in params.items():
+        # Parameters that should remain as arrays/lists
+        if k in ("paths", "data_files"):
+            processed_params[k] = v  # Keep as list
+        # Parameters that should be booleans
+        elif k in ("expand", "streaming", "trust_remote_code"):
+            processed_params[k] = v[0].lower() in ("true", "1", "yes")
+        # Parameters that should be integers
+        elif k in ("num_proc", "batch_size"):
+            try:
+                processed_params[k] = int(v[0])
+            except ValueError:
+                raise ValueError(f"Parameter '{k}' must be an integer, got '{v[0]}'") from None
+        # All other parameters remain as strings
+        else:
+            processed_params[k] = v[0]
+
     path = parsed_uri.path.lstrip("/")
 
-    return path, params
+    return path, processed_params
 
 
 class HuggingfaceDatasetIOImpl(DatasetIO, DatasetsProtocolPrivate):
