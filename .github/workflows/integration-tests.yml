@@ -40,7 +40,7 @@ jobs:
   discover-tests:
     runs-on: ubuntu-latest
     outputs:
-      test-type: ${{ steps.generate-matrix.outputs.test-type }}
+      test-types: ${{ steps.generate-test-types.outputs.test-types }}
       rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
 
     steps:
@@ -54,7 +54,7 @@ jobs:
           TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
             grep -Ev "^(__pycache__|fixtures|test_cases|recordings)$" |
             sort | jq -R -s -c 'split("\n")[:-1]')
-          echo "test-type=$TEST_TYPES" >> $GITHUB_OUTPUT
+          echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
       - name: Check if re-record-tests label exists
         id: check-rerecord-tests
@@ -105,7 +105,7 @@ jobs:
       - name: Run Integration Tests for All Types (Recording Mode)
         uses: ./.github/actions/run-integration-tests
         with:
-          test-types: ${{ needs.discover-tests.outputs.test-type }}
+          test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: 'ci-tests'
           provider: ${{ inputs.test-provider }}
           inference-mode: 'record'
@@ -181,7 +181,7 @@ jobs:
       - name: Run Integration Tests (Replay Mode)
         uses: ./.github/actions/run-integration-tests
         with:
-          test-types: ${{ needs.discover-tests.outputs.test-type }}
+          test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
@@ -196,7 +196,7 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: test-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
+          name: test-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
           path: |
             *.log
           retention-days: 1

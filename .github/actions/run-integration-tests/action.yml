@@ -35,7 +35,7 @@ runs:
       run: |
         stack_config="${{ inputs.stack-config }}"
         EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
-        
+
         # Configure provider-specific settings
         if [ "${{ inputs.provider }}" == "ollama" ]; then
           export OLLAMA_URL="http://0.0.0.0:11434"
@@ -48,13 +48,13 @@ runs:
           EXTRA_PARAMS=""
           EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
         fi
-        
+
         TEST_TYPES='${{ inputs.test-types }}'
         echo "Test types to run: $TEST_TYPES"
-        
+
         for test_type in $(echo "$TEST_TYPES" | jq -r '.[]'); do
           echo "=== Running tests for: $test_type ==="
-          
+
           if uv run pytest -s -v tests/integration/$test_type --stack-config=${stack_config} \
             -k "not( ${EXCLUDE_TESTS} )" \
             --text-model=$TEXT_MODEL \
