@@ -457,9 +457,6 @@ class OllamaInferenceAdapter(
         user: str | None = None,
     ) -> OpenAIEmbeddingsResponse:
         model_obj = await self._get_model(model)
-        if model_obj.model_type != ModelType.embedding:
-            raise ValueError(f"Model {model} is not an embedding model")
-
         if model_obj.provider_resource_id is None:
             raise ValueError(f"Model {model} has no provider_resource_id set")
 
