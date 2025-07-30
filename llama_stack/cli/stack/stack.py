@@ -11,13 +11,6 @@ from llama_stack.cli.stack.list_stacks import StackListBuilds
 from llama_stack.cli.stack.utils import print_subcommand_description
 from llama_stack.cli.subcommand import Subcommand
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-from .build import StackBuild
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 from .list_apis import StackListApis
 from .list_providers import StackListProviders
 from .remove import StackRemove
@@ -46,7 +39,6 @@ class StackParser(Subcommand):
         subparsers = self.parser.add_subparsers(title="stack_subcommands")
 
         # Add sub-commands
-        StackBuild.create(subparsers)
         StackSync.create(subparsers)
         StackListApis.create(subparsers)
         StackListProviders.create(subparsers)
