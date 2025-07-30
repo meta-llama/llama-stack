@@ -3940,6 +3940,21 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ToolParamDefinition'
+        annotations:
+          type: object
+          properties:
+            title:
+              type: string
+            read_only_hint:
+              type: boolean
+            destructive_hint:
+              type: boolean
+            idempotent_hint:
+              type: boolean
+            open_world_hint:
+              type: boolean
+          additionalProperties: false
+          title: ToolAnnotations
       additionalProperties: false
       required:
         - tool_name
@@ -4638,6 +4653,21 @@ components:
               - type: string
               - type: array
               - type: object
+        annotations:
+          type: object
+          properties:
+            title:
+              type: string
+            read_only_hint:
+              type: boolean
+            destructive_hint:
+              type: boolean
+            idempotent_hint:
+              type: boolean
+            open_world_hint:
+              type: boolean
+          additionalProperties: false
+          title: ToolAnnotations
       additionalProperties: false
       required:
         - name
@@ -5990,6 +6020,21 @@ components:
                 type: string
               description:
                 type: string
+              annotations:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  read_only_hint:
+                    type: boolean
+                  destructive_hint:
+                    type: boolean
+                  idempotent_hint:
+                    type: boolean
+                  open_world_hint:
+                    type: boolean
+                additionalProperties: false
+                title: ToolAnnotations
             additionalProperties: false
             required:
               - input_schema
@@ -7795,6 +7840,21 @@ components:
               - type: string
               - type: array
               - type: object
+        annotations:
+          type: object
+          properties:
+            title:
+              type: string
+            read_only_hint:
+              type: boolean
+            destructive_hint:
+              type: boolean
+            idempotent_hint:
+              type: boolean
+            open_world_hint:
+              type: boolean
+          additionalProperties: false
+          title: ToolAnnotations
       additionalProperties: false
       required:
         - identifier
