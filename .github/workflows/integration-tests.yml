@@ -150,13 +150,6 @@ jobs:
         provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
         python-version: ["3.12", "3.13"]
         client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
-        exclude: # TODO: look into why these tests are failing and fix them
-          - provider: vllm
-            test-type: safety
-          - provider: vllm
-            test-type: post_training
-          - provider: vllm
-            test-type: tool_runtime
 
     steps:
       - name: Checkout repository

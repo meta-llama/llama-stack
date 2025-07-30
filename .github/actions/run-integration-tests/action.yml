@@ -53,6 +53,13 @@ runs:
         echo "Test types to run: $TEST_TYPES"
 
         for test_type in $(echo "$TEST_TYPES" | jq -r '.[]'); do
+          # if provider is vllm, exclude the following tests: (safety, post_training, tool_runtime)
+          if [ "${{ inputs.provider }}" == "vllm" ]; then
+            if [ "$test_type" == "safety" ] || [ "$test_type" == "post_training" ] || [ "$test_type" == "tool_runtime" ]; then
+              continue
+            fi
+          fi
+
           echo "=== Running tests for: $test_type ==="
 
           if uv run pytest -s -v tests/integration/$test_type --stack-config=${stack_config} \
