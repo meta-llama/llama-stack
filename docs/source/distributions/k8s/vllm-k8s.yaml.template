@@ -34,7 +34,7 @@ spec:
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args:
-        - "vllm serve ${INFERENCE_MODEL} --enforce-eager --max-model-len 8192 --gpu-memory-utilization 0.7 --enable-auto-tool-choice --tool-call-parser llama3_json --max-num-seqs 4"
+        - "vllm serve ${INFERENCE_MODEL} --enforce-eager --max-model-len 8192 --gpu-memory-utilization 0.7 --enable-auto-tool-choice --tool-call-parser llama3_json --max-num-seqs 4 --port 8001"
         env:
         - name: INFERENCE_MODEL
           value: "${INFERENCE_MODEL}"
@@ -44,7 +44,7 @@ spec:
               name: hf-token-secret
               key: token
         ports:
-          - containerPort: 8000
+          - containerPort: 8001
         resources:
           limits:
             nvidia.com/gpu: 1
@@ -67,6 +67,6 @@ spec:
     app.kubernetes.io/name: vllm
   ports:
   - protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 8001
+    targetPort: 8001
   type: ClusterIP

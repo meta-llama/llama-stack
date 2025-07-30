@@ -1,25 +1,25 @@
 # -------------------------------------------------
-# NVIDIA NIM — Llama-3 1 Nemotron-Nano-4B-v1 1
+# NVIDIA NIM - Code
 # -------------------------------------------------
 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llama-nano-nim
+  name: llm-nim-code
   labels:
-    app: llama-nano-nim
+    app: llm-nim-code
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: llama-nano-nim
+      app: llm-nim-code
   template:
     metadata:
       labels:
-        app: llama-nano-nim
+        app: llm-nim-code
     spec:
       imagePullSecrets:
-        - name: ngc-secret          # docker-registry secret: nvcr.io / $oauthtoken / <NGC_DOCKER_API_KEY>
+        - name: ngc-docker-registry          # docker-registry secret: nvcr.io / $oauthtoken / <NGC_DOCKER_API_KEY>
       volumes:
         - name: model-cache
           emptyDir:
@@ -27,7 +27,7 @@ spec:
             sizeLimit: 12Gi          # fits the 4 B model + tensors; adjust if needed
       containers:
         - name: nim
-          image: nvcr.io/nim/meta/llama-3_1-nemotron-nano-4b-v1_1:1.0.0
+          image: nvcr.io/nim/bigcode/starcoder2-7b:1.8.1
           ports:
             - name: http-openai
               containerPort: 8000
@@ -36,7 +36,7 @@ spec:
               nvidia.com/gpu: 1
           env:
             - name: NIM_MODEL_NAME
-              value: "nvidia/llama-3_1-nemotron-nano-4b-v1_1"
+              value: "nvidia/starcoder2-7b"
             - name: NGC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -49,23 +49,23 @@ spec:
             httpGet:
               path: /v1/models
               port: http-openai
-            initialDelaySeconds: 20
-            periodSeconds: 10
+            initialDelaySeconds: 360
+            periodSeconds: 360
           livenessProbe:
             httpGet:
               path: /v1/health
               port: http-openai
-            initialDelaySeconds: 60
-            periodSeconds: 30
+            initialDelaySeconds: 600
+            periodSeconds: 360
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: llama-nano-nim
+  name: llm-nim-code
 spec:
   selector:
-    app: llama-nano-nim
+    app: llm-nim-code
   ports:
     - name: http-openai
       port: 8000

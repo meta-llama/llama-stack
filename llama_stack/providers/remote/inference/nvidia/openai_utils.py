@@ -155,7 +155,8 @@ def convert_completion_request(
 
     if request.logprobs:
         payload.update(logprobs=request.logprobs.top_k)
-
+    if request.suffix:
+        payload.update(suffix=request.suffix)
     if request.sampling_params:
         nvext.update(repetition_penalty=request.sampling_params.repetition_penalty)
 

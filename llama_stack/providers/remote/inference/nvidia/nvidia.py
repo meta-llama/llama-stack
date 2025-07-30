@@ -273,6 +273,7 @@ class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper, Models
         response_format: ResponseFormat | None = None,
         stream: bool | None = False,
         logprobs: LogProbConfig | None = None,
+        suffix: str | None = None,
     ) -> CompletionResponse | AsyncIterator[CompletionResponseStreamChunk]:
         if sampling_params is None:
             sampling_params = SamplingParams()
@@ -293,6 +294,7 @@ class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper, Models
                 response_format=response_format,
                 stream=stream,
                 logprobs=logprobs,
+                suffix=suffix,
             ),
             n=1,
         )

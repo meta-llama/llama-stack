@@ -21,6 +21,14 @@ if [ -n "${HF_TOKEN:-}" ]; then
   export HF_TOKEN_BASE64=$(echo -n "$HF_TOKEN" | base64)
 fi
 
+# NGC_API_KEY should be set by the user; base64 encode it for the secret
+if [ -n "${NGC_API_KEY:-}" ]; then
+  export NGC_API_KEY_BASE64=$(echo -n "$NGC_API_KEY" | base64)
+  # Create Docker config JSON for NGC image pull
+  NGC_DOCKER_CONFIG="{\"auths\":{\"nvcr.io\":{\"username\":\"\$oauthtoken\",\"password\":\"$NGC_API_KEY\"}}}"
+  export NGC_DOCKER_CONFIG_JSON=$(echo -n "$NGC_DOCKER_CONFIG" | base64)
+fi
+
 set -euo pipefail
 set -x
 
@@ -45,14 +53,16 @@ envsubst < ./chroma-k8s.yaml.template | kubectl delete -f - --ignore-not-found=t
 envsubst < ./postgres-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 
 # Delete vllm-safety deployment
-envsubst < ./vllm-safety-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
+envsubst < ./llama-nim.yaml.template | kubectl delete -f - --ignore-not-found=true
 
 # Delete vllm deployment
 envsubst < ./vllm-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 
 # Delete the HF token secret if it exists
 if [ -n "${HF_TOKEN:-}" ]; then
-  envsubst < ./hf-token-secret.yaml.template | kubectl delete -f - --ignore-not-found=true
+  envsubst < ./set-secret.yaml.template | kubectl delete -f - --ignore-not-found=true
 fi
+
+# NGC API key secrets are now part of llama-nim.yaml.template and are deleted with it
 
 echo "All LlamaStack Kubernetes resources have been deleted."
