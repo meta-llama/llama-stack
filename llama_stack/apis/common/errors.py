@@ -19,3 +19,11 @@ class ModelNotFoundError(ValueError):
     def __init__(self, model_name: str) -> None:
         message = f"Model '{model_name}' not found. Use client.models.list() to list available models."
         super().__init__(message)
+
+
+class VectorStoreNotFoundError(ValueError):
+    """raised when Llama Stack cannot find a referenced vector store"""
+
+    def __init__(self, vector_store_name: str) -> None:
+        message = f"Vector store '{vector_store_name}' not found. Use client.vector_dbs.list() to list available vector stores."
+        super().__init__(message)

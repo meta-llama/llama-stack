@@ -13,6 +13,7 @@ from typing import Any
 from numpy.typing import NDArray
 from pymilvus import DataType, Function, FunctionType, MilvusClient
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
@@ -329,11 +330,11 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             return self.cache[vector_db_id]
 
         if self.vector_db_store is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         index = VectorDBWithIndex(
             vector_db=vector_db,
@@ -356,7 +357,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         await index.insert_chunks(chunks)
 
@@ -368,7 +369,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         if params and params.get("mode") == "keyword":
             # Check if this is inline Milvus (Milvus-Lite)
@@ -384,7 +385,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         """Delete a chunk from a milvus vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
-            raise ValueError(f"Vector DB {store_id} not found")
+            raise VectorStoreNotFoundError(store_id)
 
         for chunk_id in chunk_ids:
             # Use the index's delete_chunk method

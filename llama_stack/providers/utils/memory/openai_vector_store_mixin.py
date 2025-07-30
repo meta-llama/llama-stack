@@ -13,6 +13,7 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Any
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files import Files, OpenAIFileObject
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import (
@@ -322,7 +323,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreObject:
         """Retrieves a vector store."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         store_info = self.openai_vector_stores[vector_store_id]
         return VectorStoreObject(**store_info)
@@ -336,7 +337,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreObject:
         """Modifies a vector store."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         store_info = self.openai_vector_stores[vector_store_id].copy()
 
@@ -365,7 +366,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreDeleteResponse:
         """Delete a vector store."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         # Delete from persistent storage (provider-specific)
         await self._delete_openai_vector_store_from_storage(vector_store_id)
@@ -403,7 +404,7 @@ class OpenAIVectorStoreMixin(ABC):
             raise ValueError(f"search_mode must be one of {valid_modes}, got {search_mode}")
 
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         if isinstance(query, list):
             search_query = " ".join(query)
@@ -556,7 +557,7 @@ class OpenAIVectorStoreMixin(ABC):
         chunking_strategy: VectorStoreChunkingStrategy | None = None,
     ) -> VectorStoreFileObject:
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         attributes = attributes or {}
         chunking_strategy = chunking_strategy or VectorStoreChunkingStrategyAuto()
@@ -661,7 +662,7 @@ class OpenAIVectorStoreMixin(ABC):
         order = order or "desc"
 
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         store_info = self.openai_vector_stores[vector_store_id]
 
@@ -709,7 +710,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreFileObject:
         """Retrieves a vector store file."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         store_info = self.openai_vector_stores[vector_store_id]
         if file_id not in store_info["file_ids"]:
@@ -725,7 +726,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreFileContentsResponse:
         """Retrieves the contents of a vector store file."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         file_info = await self._load_openai_vector_store_file(vector_store_id, file_id)
         dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
@@ -748,7 +749,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreFileObject:
         """Updates a vector store file."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         store_info = self.openai_vector_stores[vector_store_id]
         if file_id not in store_info["file_ids"]:
@@ -766,7 +767,7 @@ class OpenAIVectorStoreMixin(ABC):
     ) -> VectorStoreFileDeleteResponse:
         """Deletes a vector store file."""
         if vector_store_id not in self.openai_vector_stores:
-            raise ValueError(f"Vector store {vector_store_id} not found")
+            raise VectorStoreNotFoundError(vector_store_id)
 
         dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
         chunks = [Chunk.model_validate(c) for c in dict_chunks]
