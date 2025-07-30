@@ -19,7 +19,7 @@ providers:
     config:
       base_url: https://api.cerebras.ai
       api_key: ${env.CEREBRAS_API_KEY:=}
-  - provider_id: ollama
+  - provider_id: ${env.OLLAMA_URL:+ollama}
     provider_type: remote::ollama
     config:
       url: ${env.OLLAMA_URL:=http://localhost:11434}

@@ -100,10 +100,6 @@ The following environment variables can be configured:
 ### Model Configuration
 - `INFERENCE_MODEL`: HuggingFace model for serverless inference
 - `INFERENCE_ENDPOINT_NAME`: HuggingFace endpoint name
-- `OLLAMA_INFERENCE_MODEL`: Ollama model name
-- `OLLAMA_EMBEDDING_MODEL`: Ollama embedding model name
-- `OLLAMA_EMBEDDING_DIMENSION`: Ollama embedding dimension (default: `384`)
-- `VLLM_INFERENCE_MODEL`: vLLM model name
 
 ### Vector Database Configuration
 - `SQLITE_STORE_DIR`: SQLite store directory (default: `~/.llama/distributions/starter`)
@@ -127,43 +123,25 @@ The following environment variables can be configured:
 
 ## Enabling Providers
 
-You can enable specific providers by setting their provider ID to a valid value using environment variables. This is useful when you want to use certain providers or don't have the required API keys.
+You can enable specific providers by setting appropriate environment variables. For example,
 
-### Examples of Enabling Providers
-
-#### Enable FAISS Vector Provider
 ```bash
-export ENABLE_FAISS=faiss
+# self-hosted
+export OLLAMA_URL=http://localhost:11434   # enables the Ollama inference provider
+export VLLM_URL=http://localhost:8000/v1   # enables the vLLM inference provider
+export TGI_URL=http://localhost:8000/v1   # enables the TGI inference provider
+
+# cloud-hosted requiring API key configuration on the server
+export CEREBRAS_API_KEY=your_cerebras_api_key   # enables the Cerebras inference provider
+export NVIDIA_API_KEY=your_nvidia_api_key   # enables the NVIDIA inference provider
+
+# vector providers
+export MILVUS_URL=http://localhost:19530   # enables the Milvus vector provider
+export CHROMADB_URL=http://localhost:8000/v1   # enables the ChromaDB vector provider
+export PGVECTOR_DB=llama_stack_db   # enables the PGVector vector provider
 ```
 
-#### Enable Ollama Models
-```bash
-export ENABLE_OLLAMA=ollama
-```
-
-#### Disable vLLM Models
-```bash
-export VLLM_INFERENCE_MODEL=__disabled__
-```
-
-#### Disable Optional Vector Providers
-```bash
-export ENABLE_SQLITE_VEC=__disabled__
-export ENABLE_CHROMADB=__disabled__
-export ENABLE_PGVECTOR=__disabled__
-```
-
-### Provider ID Patterns
-
-The starter distribution uses several patterns for provider IDs:
-
-1. **Direct provider IDs**: `faiss`, `ollama`, `vllm`
-2. **Environment-based provider IDs**: `${env.ENABLE_SQLITE_VEC:+sqlite-vec}`
-3. **Model-based provider IDs**: `${env.OLLAMA_INFERENCE_MODEL:__disabled__}`
-
-When using the `+` pattern (like `${env.ENABLE_SQLITE_VEC+sqlite-vec}`), the provider is enabled by default and can be disabled by setting the environment variable to `__disabled__`.
-
-When using the `:` pattern (like `${env.OLLAMA_INFERENCE_MODEL:__disabled__}`), the provider is disabled by default and can be enabled by setting the environment variable to a valid value.
+This distribution comes with a default "llama-guard" shield that can be enabled by setting the `SAFETY_MODEL` environment variable to point to an appropriate Llama Guard model id. Use `llama-stack-client models list` to see the list of available models.
 
 ## Running the Distribution
 
