@@ -8,6 +8,7 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
+from llama_stack.apis.common.errors import ModelNotFoundError
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
@@ -63,7 +64,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
                 raise ValueError("No provider available. Please configure a vector_io provider.")
         model = await lookup_model(self, embedding_model)
         if model is None:
-            raise ValueError(f"Model {embedding_model} not found")
+            raise ModelNotFoundError(embedding_model)
         if model.model_type != ModelType.embedding:
             raise ValueError(f"Model {embedding_model} is not an embedding model")
         if "embedding_dimension" not in model.metadata:
