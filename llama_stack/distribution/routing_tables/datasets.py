@@ -7,6 +7,7 @@
 import uuid
 from typing import Any
 
+from llama_stack.apis.common.errors import DatasetNotFoundError
 from llama_stack.apis.datasets import (
     Dataset,
     DatasetPurpose,
@@ -35,7 +36,7 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def get_dataset(self, dataset_id: str) -> Dataset:
         dataset = await self.get_object_by_identifier("dataset", dataset_id)
         if dataset is None:
-            raise ValueError(f"Dataset '{dataset_id}' not found")
+            raise DatasetNotFoundError(dataset_id)
         return dataset
 
     async def register_dataset(
@@ -88,5 +89,5 @@ class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def unregister_dataset(self, dataset_id: str) -> None:
         dataset = await self.get_dataset(dataset_id)
         if dataset is None:
-            raise ValueError(f"Dataset {dataset_id} not found")
+            raise DatasetNotFoundError(dataset_id)
         await self.unregister_object(dataset)
