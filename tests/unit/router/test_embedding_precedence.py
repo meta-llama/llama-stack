@@ -7,6 +7,7 @@
 
 import pytest
 
+from llama_stack.apis.common.errors import MissingEmbeddingModelError
 from llama_stack.apis.models import ModelType
 from llama_stack.distribution.routers.vector_io import VectorIORouter
 
@@ -76,5 +77,5 @@ async def test_error_when_no_default():
 
     router = VectorIORouter(routing_table=_DummyRoutingTable())
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(MissingEmbeddingModelError):
         await router._resolve_embedding_model(None)
