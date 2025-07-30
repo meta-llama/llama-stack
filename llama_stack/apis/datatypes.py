@@ -103,6 +103,7 @@ class Api(Enum, metaclass=DynamicApiMeta):
     :cvar files: File storage and management
     :cvar inspect: Built-in system inspection and introspection
     """
+
     providers = "providers"
     inference = "inference"
     safety = "safety"
