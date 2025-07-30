@@ -7,7 +7,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, labeled]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
@@ -33,11 +33,15 @@ on:
         default: 'ollama'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay' }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
+    if: |
+      github.event.action == 'opened' ||
+      github.event.action == 'synchronize' ||
+      (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
     runs-on: ubuntu-latest
     outputs:
       test-types: ${{ steps.generate-test-types.outputs.test-types }}
