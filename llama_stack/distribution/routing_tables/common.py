@@ -6,6 +6,7 @@
 
 from typing import Any
 
+from llama_stack.apis.common.errors import ModelNotFoundError
 from llama_stack.apis.models import Model
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.scoring_functions import ScoringFn
@@ -257,7 +258,7 @@ async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> 
     models = await routing_table.get_all_with_type("model")
     matching_models = [m for m in models if m.provider_resource_id == model_id]
     if len(matching_models) == 0:
-        raise ValueError(f"Model '{model_id}' not found")
+        raise ModelNotFoundError(model_id)
 
     if len(matching_models) > 1:
         raise ValueError(f"Multiple providers found for '{model_id}': {[m.provider_id for m in matching_models]}")
