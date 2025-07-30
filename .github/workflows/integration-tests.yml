@@ -7,7 +7,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
@@ -17,9 +17,6 @@ on:
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-ollama/action.yml'
       - '.github/actions/run-integration-tests/action.yml'
-  pull_request:
-    types: [labeled]
-    labels: [re-record-tests]
   schedule:
     # If changing the cron schedule, update the provider in the test-matrix job
     - cron: '0 0 * * *'  # (test latest client) Daily at 12 AM UTC
@@ -36,11 +33,15 @@ on:
         default: 'ollama'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay' }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
+    if: |
+      github.event.action == 'opened' ||
+      github.event.action == 'synchronize' ||
+      (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
     runs-on: ubuntu-latest
     outputs:
       test-types: ${{ steps.generate-test-types.outputs.test-types }}
