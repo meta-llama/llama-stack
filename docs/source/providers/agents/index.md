@@ -1,5 +1,13 @@
-# Agents Providers
+# Agents 
+
+## Overview
 
 This section contains documentation for all available providers for the **agents** API.
 
-- [inline::meta-reference](inline_meta-reference.md)
+## Providers
+
+```{toctree}
+:maxdepth: 1
+
+inline_meta-reference
+```

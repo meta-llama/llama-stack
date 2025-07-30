@@ -8,6 +8,7 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
+from llama_stack.apis.common.errors import ModelNotFoundError, VectorStoreNotFoundError
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
@@ -39,7 +40,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def get_vector_db(self, vector_db_id: str) -> VectorDB:
         vector_db = await self.get_object_by_identifier("vector_db", vector_db_id)
         if vector_db is None:
-            raise ValueError(f"Vector DB '{vector_db_id}' not found")
+            raise VectorStoreNotFoundError(vector_db_id)
         return vector_db
 
     async def register_vector_db(
@@ -63,7 +64,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
                 raise ValueError("No provider available. Please configure a vector_io provider.")
         model = await lookup_model(self, embedding_model)
         if model is None:
-            raise ValueError(f"Model {embedding_model} not found")
+            raise ModelNotFoundError(embedding_model)
         if model.model_type != ModelType.embedding:
             raise ValueError(f"Model {embedding_model} is not an embedding model")
         if "embedding_dimension" not in model.metadata:
@@ -84,7 +85,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         existing_vector_db = await self.get_vector_db(vector_db_id)
         if existing_vector_db is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
         await self.unregister_object(existing_vector_db)
 
     async def openai_retrieve_vector_store(

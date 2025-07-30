@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # inline::meta-reference
 
 ## Description

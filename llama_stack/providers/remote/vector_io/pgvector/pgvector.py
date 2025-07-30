@@ -13,6 +13,7 @@ from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
 from pydantic import BaseModel, TypeAdapter
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
@@ -275,7 +276,7 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         """Delete a chunk from a PostgreSQL vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
-            raise ValueError(f"Vector DB {store_id} not found")
+            raise VectorStoreNotFoundError(store_id)
 
         for chunk_id in chunk_ids:
             # Use the index's delete_chunk method

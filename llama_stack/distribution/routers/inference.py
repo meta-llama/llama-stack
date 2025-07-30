@@ -17,6 +17,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
+from llama_stack.apis.common.errors import ModelNotFoundError
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
     BatchCompletionResponse,
@@ -188,7 +189,7 @@ class InferenceRouter(Inference):
             sampling_params = SamplingParams()
         model = await self.routing_table.get_model(model_id)
         if model is None:
-            raise ValueError(f"Model '{model_id}' not found")
+            raise ModelNotFoundError(model_id)
         if model.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         if tool_config:
@@ -317,7 +318,7 @@ class InferenceRouter(Inference):
         )
         model = await self.routing_table.get_model(model_id)
         if model is None:
-            raise ValueError(f"Model '{model_id}' not found")
+            raise ModelNotFoundError(model_id)
         if model.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
         provider = await self.routing_table.get_provider_impl(model_id)
@@ -390,7 +391,7 @@ class InferenceRouter(Inference):
         logger.debug(f"InferenceRouter.embeddings: {model_id}")
         model = await self.routing_table.get_model(model_id)
         if model is None:
-            raise ValueError(f"Model '{model_id}' not found")
+            raise ModelNotFoundError(model_id)
         if model.model_type == ModelType.llm:
             raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
         provider = await self.routing_table.get_provider_impl(model_id)
@@ -430,7 +431,7 @@ class InferenceRouter(Inference):
         )
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
-            raise ValueError(f"Model '{model}' not found")
+            raise ModelNotFoundError(model)
         if model_obj.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model}' is an embedding model and does not support completions")
 
@@ -491,7 +492,7 @@ class InferenceRouter(Inference):
         )
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
-            raise ValueError(f"Model '{model}' not found")
+            raise ModelNotFoundError(model)
         if model_obj.model_type == ModelType.embedding:
             raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
 
@@ -562,7 +563,7 @@ class InferenceRouter(Inference):
         )
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
-            raise ValueError(f"Model '{model}' not found")
+            raise ModelNotFoundError(model)
         if model_obj.model_type != ModelType.embedding:
             raise ValueError(f"Model '{model}' is not an embedding model")
 

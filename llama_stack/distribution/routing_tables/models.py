@@ -7,6 +7,7 @@
 import time
 from typing import Any
 
+from llama_stack.apis.common.errors import ModelNotFoundError
 from llama_stack.apis.models import ListModelsResponse, Model, Models, ModelType, OpenAIListModelsResponse, OpenAIModel
 from llama_stack.distribution.datatypes import (
     ModelWithOwner,
@@ -111,7 +112,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
     async def unregister_model(self, model_id: str) -> None:
         existing_model = await self.get_model(model_id)
         if existing_model is None:
-            raise ValueError(f"Model {model_id} not found")
+            raise ModelNotFoundError(model_id)
         await self.unregister_object(existing_model)
 
     async def update_registered_models(

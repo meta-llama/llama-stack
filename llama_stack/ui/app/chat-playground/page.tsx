@@ -10,8 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Chat } from "@/components/chat/chat";
-import { type Message } from "@/components/chat/chat-message";
+import { Chat } from "@/components/chat-playground/chat";
+import { type Message } from "@/components/chat-playground/chat-message";
 import { useAuthClient } from "@/hooks/use-auth-client";
 import type { CompletionCreateParams } from "llama-stack-client/resources/chat/completions";
 import type { Model } from "llama-stack-client/resources/models";

@@ -1,5 +1,13 @@
-# Telemetry Providers
+# Telemetry 
+
+## Overview
 
 This section contains documentation for all available providers for the **telemetry** API.
 
-- [inline::meta-reference](inline_meta-reference.md)
+## Providers
+
+```{toctree}
+:maxdepth: 1
+
+inline_meta-reference
+```

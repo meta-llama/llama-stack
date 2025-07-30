@@ -1,6 +1,14 @@
-# Eval Providers
+# Eval 
+
+## Overview
 
 This section contains documentation for all available providers for the **eval** API.
 
-- [inline::meta-reference](inline_meta-reference.md)
-- [remote::nvidia](remote_nvidia.md)
+## Providers
+
+```{toctree}
+:maxdepth: 1
+
+inline_meta-reference
+remote_nvidia
+```

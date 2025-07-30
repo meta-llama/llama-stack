@@ -14,6 +14,7 @@ from weaviate.classes.init import Auth
 from weaviate.classes.query import Filter
 
 from llama_stack.apis.common.content_types import InterleavedContent
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, QueryChunksResponse, VectorIO
@@ -212,7 +213,7 @@ class WeaviateVectorIOAdapter(
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         client = self._get_client()
         if not client.collections.exists(vector_db.identifier):
@@ -234,7 +235,7 @@ class WeaviateVectorIOAdapter(
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         await index.insert_chunks(chunks)
 
@@ -246,7 +247,7 @@ class WeaviateVectorIOAdapter(
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         return await index.query_chunks(query, params)
 

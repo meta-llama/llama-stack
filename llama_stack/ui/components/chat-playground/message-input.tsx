@@ -11,7 +11,7 @@ import { useAutosizeTextArea } from "@/hooks/use-autosize-textarea"
 import { AudioVisualizer } from "@/components/ui/audio-visualizer"
 import { Button } from "@/components/ui/button"
 import { FilePreview } from "@/components/ui/file-preview"
-import { InterruptPrompt } from "@/components/chat/interrupt-prompt"
+import { InterruptPrompt } from "@/components/chat-playground/interrupt-prompt"
 
 interface MessageInputBaseProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {

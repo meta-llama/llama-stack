@@ -66,6 +66,7 @@ ENABLED_INFERENCE_PROVIDERS = [
 ]
 
 INFERENCE_PROVIDER_IDS = {
+    "ollama": "${env.OLLAMA_URL:+ollama}",
     "vllm": "${env.VLLM_URL:+vllm}",
     "tgi": "${env.TGI_URL:+tgi}",
     "cerebras": "${env.CEREBRAS_API_KEY:+cerebras}",

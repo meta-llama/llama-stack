@@ -16,10 +16,13 @@ as the inference [provider](../providers/inference/index) for a Llama Model.
 ```bash
 ollama run llama3.2:3b --keepalive 60m
 ```
+
 #### Step 2: Run the Llama Stack server
+
 We will use `uv` to run the Llama Stack server.
 ```bash
-uv run --with llama-stack llama stack build --template starter --image-type venv --run
+OLLAMA_URL=http://localhost:11434 \
+  uv run --with llama-stack llama stack build --template starter --image-type venv --run
 ```
 #### Step 3: Run the demo
 Now open up a new terminal and copy the following script into a file named `demo_script.py`.
