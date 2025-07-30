@@ -8,15 +8,12 @@ inputs:
   stack-config:
     description: 'Stack configuration: "ci-tests" or "server:ci-tests"'
     required: true
-    default: 'ci-tests'
   provider:
     description: 'Provider to use: "ollama" or "vllm"'
     required: true
-    default: 'ollama'
   inference-mode:
     description: 'Inference mode: "record" or "replay"'
     required: true
-    default: 'replay'
 
 outputs:
   logs-path:

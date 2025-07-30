@@ -1,6 +1,6 @@
 name: Integration Tests
 
-run-name: Run the integration test suite with Ollama
+run-name: Run the integration test suite from tests/integration
 
 on:
   push:
