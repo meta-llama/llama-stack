@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { flushSync } from "react-dom";
-import { Button } from "@/components/chat/button";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/chat/select";
+} from "@/components/ui/select";
 import { Chat } from "@/components/chat/chat";
 import { type Message } from "@/components/chat/chat-message";
 import { useAuthClient } from "@/hooks/use-auth-client";

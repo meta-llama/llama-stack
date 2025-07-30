@@ -10,8 +10,8 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/chat/collapsible"
-import { FilePreview } from "@/components/chat/file-preview"
+} from "@/components/ui/collapsible"
+import { FilePreview } from "@/components/ui/file-preview"
 import { MarkdownRenderer } from "@/components/chat/markdown-renderer"
 
 const chatBubbleVariants = cva(

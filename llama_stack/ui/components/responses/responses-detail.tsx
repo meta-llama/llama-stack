@@ -1,8 +1,8 @@
 "use client";
 
 import { OpenAIResponse, InputItemListResponse } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/chat/card";
-import { Skeleton } from "@/components/chat/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DetailLoadingView,
   DetailErrorView,

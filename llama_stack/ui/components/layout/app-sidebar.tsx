@@ -21,7 +21,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-} from "@/components/chat/sidebar";
+} from "@/components/ui/sidebar";
 // Extracted Chat Playground item
 const chatPlaygroundItem = {
   title: "Chat Playground",

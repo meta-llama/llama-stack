@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/chat/theme-provider";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ModeToggle } from "@/components/chat/mode-toggle";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   description: "Llama Stack UI",
 };
 
-import { SidebarProvider, SidebarTrigger } from "@/components/chat/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { SignInButton } from "@/components/chat/sign-in-button";
+import { SignInButton } from "@/components/ui/sign-in-button";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
