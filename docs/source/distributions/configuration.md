@@ -705,7 +705,7 @@ Precedence rules at runtime:
 
 1. If `embedding_model` is explicitly passed in an API call, that value is used.
 2. Otherwise the value in `vector_store_config.default_embedding_model` is used.
-3. If neither is available the server will raise **MissingEmbeddingModelError** at store-creation time so mis-configuration is caught early.
+3. If neither is available the server will raise `MissingEmbeddingModelError` at store-creation time so mis-configuration is caught early.
 
 #### Environment variables
 
