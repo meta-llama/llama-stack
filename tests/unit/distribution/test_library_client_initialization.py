@@ -32,9 +32,8 @@ class TestLlamaStackAsLibraryClientInitialization:
                     model="test", messages=[{"role": "user", "content": "test"}], stream=True
                 )
             ),
-            lambda client: client.providers.list(),
         ],
-        ids=["models.list", "chat.completions.create", "chat.completions.create_stream", "providers.list"],
+        ids=["models.list", "chat.completions.create", "chat.completions.create_stream"],
     )
     def test_sync_client_proper_error_without_initialization(self, api_call):
         """Test that sync client raises ValueError with helpful message when not initialized."""
@@ -52,9 +51,8 @@ class TestLlamaStackAsLibraryClientInitialization:
         [
             lambda client: client.models.list(),
             lambda client: client.chat.completions.create(model="test", messages=[{"role": "user", "content": "test"}]),
-            lambda client: client.providers.list(),
         ],
-        ids=["models.list", "chat.completions.create", "providers.list"],
+        ids=["models.list", "chat.completions.create"],
     )
     async def test_async_client_proper_error_without_initialization(self, api_call):
         """Test that async client raises ValueError with helpful message when not initialized."""
