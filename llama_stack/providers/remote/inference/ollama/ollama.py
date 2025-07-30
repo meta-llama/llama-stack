@@ -20,7 +20,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContentItem,
     TextContentItem,
 )
-from llama_stack.apis.common.errors import UnsupportedModelError
+from llama_stack.apis.common.errors import ModelTypeError, UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -457,7 +457,7 @@ class OllamaInferenceAdapter(
     ) -> OpenAIEmbeddingsResponse:
         model_obj = await self._get_model(model)
         if model_obj.model_type != ModelType.embedding:
-            raise ValueError(f"Model {model} is not an embedding model")
+            raise ModelTypeError(model, model_obj.model_type, ModelType.embedding)
 
         if model_obj.provider_resource_id is None:
             raise ValueError(f"Model {model} has no provider_resource_id set")

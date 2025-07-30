@@ -8,7 +8,7 @@ from typing import Any
 
 from pydantic import TypeAdapter
 
-from llama_stack.apis.common.errors import ModelNotFoundError, VectorStoreNotFoundError
+from llama_stack.apis.common.errors import ModelNotFoundError, ModelTypeError, VectorStoreNotFoundError
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.resource import ResourceType
 from llama_stack.apis.vector_dbs import ListVectorDBsResponse, VectorDB, VectorDBs
@@ -66,7 +66,7 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
         if model is None:
             raise ModelNotFoundError(embedding_model)
         if model.model_type != ModelType.embedding:
-            raise ValueError(f"Model {embedding_model} is not an embedding model")
+            raise ModelTypeError(embedding_model, model.model_type, ModelType.embedding)
         if "embedding_dimension" not in model.metadata:
             raise ValueError(f"Model {embedding_model} does not have an embedding dimension")
         vector_db_data = {
