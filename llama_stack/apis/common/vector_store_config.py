@@ -41,5 +41,6 @@ class VectorStoreConfig(BaseModel):
     default_embedding_dimension: int | None = Field(
         default_factory=lambda: int(os.getenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", 0)) or None, ge=1
     )
+    # Note: If not set, the router will fall back to 384 as the default dimension
 
     model_config = ConfigDict(frozen=True)
