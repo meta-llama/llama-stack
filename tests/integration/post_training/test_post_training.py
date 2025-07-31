@@ -194,9 +194,12 @@ class TestPostTraining:
         # DPO algorithm configuration
         algorithm_config = DPOAlignmentConfig(
             beta=0.1,
-            loss_type=DPOLossType.sigmoid,
+            loss_type=DPOLossType.sigmoid,  # Default loss type
+            reward_scale=1.0,  # Scaling factor for reward signal (neutral scaling)
+            reward_clip=5.0,  # Maximum absolute value for reward clipping (prevents extreme values)
+            epsilon=1e-8,  # Small value for numerical stability
+            gamma=1.0,
         )
-
         data_config = DataConfig(
             dataset_id=dataset.identifier,
             batch_size=1,
