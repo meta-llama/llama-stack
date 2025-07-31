@@ -122,7 +122,7 @@ jobs:
         uses: ./.github/actions/run-integration-tests
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
-          stack-config: 'ci-tests'
+          stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
           provider: ${{ inputs.test-provider }}
           inference-mode: 'record'
 
