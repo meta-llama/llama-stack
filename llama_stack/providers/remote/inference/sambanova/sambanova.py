@@ -40,18 +40,6 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             provider_data_api_key_field="sambanova_api_key",
         )
 
-    def _get_api_key(self) -> str:
-        config_api_key = self.config.api_key if self.config.api_key else None
-        if config_api_key:
-            return config_api_key.get_secret_value()
-        else:
-            provider_data = self.get_request_provider_data()
-            if provider_data is None or not provider_data.sambanova_api_key:
-                raise ValueError(
-                    'Pass Sambanova API Key in the header X-LlamaStack-Provider-Data as { "sambanova_api_key": <your api key> }'
-                )
-            return provider_data.sambanova_api_key
-
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         input_dict = {}
 
@@ -94,7 +82,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
         if provider_data and getattr(provider_data, key_field, None):
             api_key = getattr(provider_data, key_field)
         else:
-            api_key = self._get_api_key()
+            api_key = self.get_api_key()
 
         return {
             "model": request.model,
