@@ -167,6 +167,7 @@ class WeaviateVectorIOAdapter(
 
     def _get_client(self) -> weaviate.Client:
         if self.config.weaviate_cluster_url == "localhost:8080":
+            log.info("using Weaviate locally in container")
             host, port = self.config.weaviate_cluster_url.split(":")
             key = "local_test"
             client = weaviate.connect_to_local(
@@ -174,6 +175,7 @@ class WeaviateVectorIOAdapter(
                 port=port,
             )
         else:
+            log.info("Using Weaviate remote cluster with URL")
             key = f"{self.config.weaviate_cluster_url}::{self.config.weaviate_api_key}"
             if key in self.client_cache:
                 return self.client_cache[key]
