@@ -122,7 +122,7 @@ def build_image(
                 normal_deps.extend(api_spec.pip_packages)
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
-        script = str(importlib.resources.files("llama_stack") / "distribution/build_container.sh")
+        script = str(importlib.resources.files("llama_stack") / "core/build_container.sh")
         args = [
             script,
             "--template-or-config",
@@ -139,7 +139,7 @@ def build_image(
         if run_config is not None:
             args.extend(["--run-config", run_config])
     elif build_config.image_type == LlamaStackImageType.CONDA.value:
-        script = str(importlib.resources.files("llama_stack") / "distribution/build_conda_env.sh")
+        script = str(importlib.resources.files("llama_stack") / "core/build_conda_env.sh")
         args = [
             script,
             "--env-name",
@@ -150,7 +150,7 @@ def build_image(
             " ".join(normal_deps),
         ]
     elif build_config.image_type == LlamaStackImageType.VENV.value:
-        script = str(importlib.resources.files("llama_stack") / "distribution/build_venv.sh")
+        script = str(importlib.resources.files("llama_stack") / "core/build_venv.sh")
         args = [
             script,
             "--env-name",
