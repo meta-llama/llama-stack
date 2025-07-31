@@ -9,12 +9,14 @@ import json
 import re
 import secrets
 import string
+import time
 import uuid
 import warnings
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 
 import httpx
+from opentelemetry.trace import get_current_span
 
 from llama_stack.apis.agents import (
     AgentConfig,
@@ -59,6 +61,7 @@ from llama_stack.apis.inference import (
     UserMessage,
 )
 from llama_stack.apis.safety import Safety
+from llama_stack.apis.telemetry import MetricEvent, Telemetry
 from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.core.datatypes import AccessRule
@@ -83,6 +86,13 @@ MEMORY_QUERY_TOOL = "knowledge_search"
 WEB_SEARCH_TOOL = "web_search"
 RAG_TOOL_GROUP = "builtin::rag"
 
+# Tool name mapping for consistent metrics
+TOOL_NAME_MAPPING = {
+    "knowledge_search": "rag",
+    "web_search": "web_search",
+    "brave_search": "web_search",
+}
+
 logger = get_logger(name=__name__, category="agents")
 
 
@@ -96,6 +106,7 @@ class ChatAgent(ShieldRunnerMixin):
         tool_runtime_api: ToolRuntime,
         tool_groups_api: ToolGroups,
         vector_io_api: VectorIO,
+        telemetry_api: Telemetry | None,
         persistence_store: KVStore,
         created_at: str,
         policy: list[AccessRule],
@@ -105,6 +116,7 @@ class ChatAgent(ShieldRunnerMixin):
         self.inference_api = inference_api
         self.safety_api = safety_api
         self.vector_io_api = vector_io_api
+        self.telemetry_api = telemetry_api
         self.storage = AgentPersistence(agent_id, persistence_store, policy)
         self.tool_runtime_api = tool_runtime_api
         self.tool_groups_api = tool_groups_api
@@ -166,6 +178,103 @@ class ChatAgent(ShieldRunnerMixin):
     async def create_session(self, name: str) -> str:
         return await self.storage.create_session(name)
 
+    def _construct_agent_metric(
+        self,
+        metric_name: str,
+        value: int | float,
+        unit: str,
+        labels: dict[str, str] | None = None,
+    ) -> MetricEvent | None:
+        """Construct MetricEvent for agent metrics"""
+        span = get_current_span()
+        if span is None:
+            return None
+
+        # Get span context to access trace_id and span_id
+        context = span.get_span_context()
+
+        # Don't create metrics for non-recording spans (trace_id = 0)
+        if context.trace_id == 0:
+            return None
+
+        # Handle formatting for both real trace IDs and mock objects
+        try:
+            trace_id_str = format(context.trace_id, "x")
+        except (TypeError, AttributeError):
+            trace_id_str = str(context.trace_id)
+
+        try:
+            span_id_str = format(context.span_id, "x")
+        except (TypeError, AttributeError):
+            span_id_str = str(context.span_id)
+
+        return MetricEvent(
+            trace_id=trace_id_str,  # Convert to hex string
+            span_id=span_id_str,  # Convert to hex string
+            metric=metric_name,
+            value=value,
+            timestamp=time.time(),
+            unit=unit,
+            attributes={
+                "agent_id": self.agent_id,
+                **(labels or {}),
+            },
+        )
+
+    def _log_agent_metric_safe(self, metric_event: MetricEvent | None) -> None:
+        """Safely log agent metric with error handling"""
+        if not metric_event or not self.telemetry_api:
+            return
+
+        try:
+            # Use asyncio.create_task to avoid blocking the agent workflow
+            import asyncio
+
+            asyncio.create_task(self.telemetry_api.log_event(metric_event))
+        except Exception as e:
+            # Log warning but don't fail the agent workflow
+            logger.warning(f"Failed to log agent metric {metric_event.metric}: {e}")
+
+    def _log_workflow_completion(self, status: str, duration: float) -> None:
+        """Log workflow completion metrics"""
+        # Workflow completion counter
+        completion_metric = self._construct_agent_metric(
+            metric_name="llama_stack_agent_workflows_total",
+            value=1,
+            unit="1",
+            labels={"status": status},
+        )
+        self._log_agent_metric_safe(completion_metric)
+
+        # Workflow duration histogram
+        duration_metric = self._construct_agent_metric(
+            metric_name="llama_stack_agent_workflow_duration_seconds",
+            value=duration,
+            unit="s",
+        )
+        self._log_agent_metric_safe(duration_metric)
+
+    def _log_step_execution(self, step_count: int) -> None:
+        """Log step execution metrics"""
+        step_metric = self._construct_agent_metric(
+            metric_name="llama_stack_agent_steps_total",
+            value=step_count,
+            unit="1",
+        )
+        self._log_agent_metric_safe(step_metric)
+
+    def _log_tool_usage(self, tool_name: str) -> None:
+        """Log tool usage metrics with name normalization"""
+        normalized_tool_name = TOOL_NAME_MAPPING.get(tool_name, tool_name)
+
+        tool_metric = self._construct_agent_metric(
+            metric_name="llama_stack_agent_tool_calls_total",
+            value=1,
+            unit="1",
+            labels={"tool": normalized_tool_name},
+        )
+        self._log_agent_metric_safe(tool_metric)
+
     async def get_messages_from_turns(self, turns: list[Turn]) -> list[Message]:
         messages = []
         if self.agent_config.instructions != "":
@@ -176,12 +285,12 @@ class ChatAgent(ShieldRunnerMixin):
         return messages
 
     async def create_and_execute_turn(self, request: AgentTurnCreateRequest) -> AsyncGenerator:
+        turn_id = str(uuid.uuid4())
         span = tracing.get_current_span()
         if span:
             span.set_attribute("session_id", request.session_id)
             span.set_attribute("agent_id", self.agent_id)
             span.set_attribute("request", request.model_dump_json())
-            turn_id = str(uuid.uuid4())
             span.set_attribute("turn_id", turn_id)
             if self.agent_config.name:
                 span.set_attribute("agent_name", self.agent_config.name)
@@ -211,116 +320,130 @@ class ChatAgent(ShieldRunnerMixin):
     ) -> AsyncGenerator:
         assert request.stream is True, "Non-streaming not supported"
 
-        is_resume = isinstance(request, AgentTurnResumeRequest)
-        session_info = await self.storage.get_session_info(request.session_id)
-        if session_info is None:
-            raise ValueError(f"Session {request.session_id} not found")
+        # Track workflow start time for metrics
+        workflow_start_time = time.time()
 
-        turns = await self.storage.get_session_turns(request.session_id)
-        if is_resume and len(turns) == 0:
-            raise ValueError("No turns found for session")
+        try:
+            is_resume = isinstance(request, AgentTurnResumeRequest)
+            session_info = await self.storage.get_session_info(request.session_id)
+            if session_info is None:
+                raise ValueError(f"Session {request.session_id} not found")
 
-        steps = []
-        messages = await self.get_messages_from_turns(turns)
-        if is_resume:
-            tool_response_messages = [
-                ToolResponseMessage(call_id=x.call_id, content=x.content) for x in request.tool_responses
-            ]
-            messages.extend(tool_response_messages)
-            last_turn = turns[-1]
-            last_turn_messages = self.turn_to_messages(last_turn)
-            last_turn_messages = [
-                x for x in last_turn_messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
-            ]
-            last_turn_messages.extend(tool_response_messages)
+            turns = await self.storage.get_session_turns(request.session_id)
+            if is_resume and len(turns) == 0:
+                raise ValueError("No turns found for session")
 
-            # get steps from the turn
-            steps = last_turn.steps
+            steps = []
+            messages = await self.get_messages_from_turns(turns)
+            if is_resume:
+                tool_response_messages = [
+                    ToolResponseMessage(call_id=x.call_id, content=x.content) for x in request.tool_responses
+                ]
+                messages.extend(tool_response_messages)
+                last_turn = turns[-1]
+                last_turn_messages = self.turn_to_messages(last_turn)
+                last_turn_messages = [
+                    x for x in last_turn_messages if isinstance(x, UserMessage) or isinstance(x, ToolResponseMessage)
+                ]
+                last_turn_messages.extend(tool_response_messages)
 
-            # mark tool execution step as complete
-            # if there's no tool execution in progress step (due to storage, or tool call parsing on client),
-            # we'll create a new tool execution step with current time
-            in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
-                request.session_id, request.turn_id
-            )
-            now = datetime.now(UTC).isoformat()
-            tool_execution_step = ToolExecutionStep(
-                step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
-                turn_id=request.turn_id,
-                tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
-                tool_responses=request.tool_responses,
-                completed_at=now,
-                started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
-            )
-            steps.append(tool_execution_step)
-            yield AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseStepCompletePayload(
-                        step_type=StepType.tool_execution.value,
-                        step_id=tool_execution_step.step_id,
-                        step_details=tool_execution_step,
+                # get steps from the turn
+                steps = last_turn.steps
+
+                # mark tool execution step as complete
+                # if there's no tool execution in progress step (due to storage, or tool call parsing on client),
+                # we'll create a new tool execution step with current time
+                in_progress_tool_call_step = await self.storage.get_in_progress_tool_call_step(
+                    request.session_id, request.turn_id
+                )
+                now = datetime.now(UTC).isoformat()
+                tool_execution_step = ToolExecutionStep(
+                    step_id=(in_progress_tool_call_step.step_id if in_progress_tool_call_step else str(uuid.uuid4())),
+                    turn_id=request.turn_id,
+                    tool_calls=(in_progress_tool_call_step.tool_calls if in_progress_tool_call_step else []),
+                    tool_responses=request.tool_responses,
+                    completed_at=now,
+                    started_at=(in_progress_tool_call_step.started_at if in_progress_tool_call_step else now),
+                )
+                steps.append(tool_execution_step)
+                yield AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseStepCompletePayload(
+                            step_type=StepType.tool_execution.value,
+                            step_id=tool_execution_step.step_id,
+                            step_details=tool_execution_step,
+                        )
                     )
                 )
+                input_messages = last_turn.input_messages
+
+                turn_id = request.turn_id
+                start_time = last_turn.started_at
+            else:
+                messages.extend(request.messages)
+                start_time = datetime.now(UTC).isoformat()
+                input_messages = request.messages
+
+            output_message = None
+            async for chunk in self.run(
+                session_id=request.session_id,
+                turn_id=turn_id,
+                input_messages=messages,
+                sampling_params=self.agent_config.sampling_params,
+                stream=request.stream,
+                documents=request.documents if not is_resume else None,
+            ):
+                if isinstance(chunk, CompletionMessage):
+                    output_message = chunk
+                    continue
+
+                assert isinstance(chunk, AgentTurnResponseStreamChunk), f"Unexpected type {type(chunk)}"
+                event = chunk.event
+                if event.payload.event_type == AgentTurnResponseEventType.step_complete.value:
+                    steps.append(event.payload.step_details)
+
+                yield chunk
+
+            assert output_message is not None
+
+            turn = Turn(
+                turn_id=turn_id,
+                session_id=request.session_id,
+                input_messages=input_messages,
+                output_message=output_message,
+                started_at=start_time,
+                completed_at=datetime.now(UTC).isoformat(),
+                steps=steps,
             )
-            input_messages = last_turn.input_messages
-
-            turn_id = request.turn_id
-            start_time = last_turn.started_at
-        else:
-            messages.extend(request.messages)
-            start_time = datetime.now(UTC).isoformat()
-            input_messages = request.messages
-
-        output_message = None
-        async for chunk in self.run(
-            session_id=request.session_id,
-            turn_id=turn_id,
-            input_messages=messages,
-            sampling_params=self.agent_config.sampling_params,
-            stream=request.stream,
-            documents=request.documents if not is_resume else None,
-        ):
-            if isinstance(chunk, CompletionMessage):
-                output_message = chunk
-                continue
-
-            assert isinstance(chunk, AgentTurnResponseStreamChunk), f"Unexpected type {type(chunk)}"
-            event = chunk.event
-            if event.payload.event_type == AgentTurnResponseEventType.step_complete.value:
-                steps.append(event.payload.step_details)
+            await self.storage.add_turn_to_session(request.session_id, turn)
+            if output_message.tool_calls:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnAwaitingInputPayload(
+                            turn=turn,
+                        )
+                    )
+                )
+            else:
+                chunk = AgentTurnResponseStreamChunk(
+                    event=AgentTurnResponseEvent(
+                        payload=AgentTurnResponseTurnCompletePayload(
+                            turn=turn,
+                        )
+                    )
+                )
 
             yield chunk
 
-        assert output_message is not None
+            # Log successful workflow completion
+            workflow_duration = time.time() - workflow_start_time
+            self._log_workflow_completion("completed", workflow_duration)
 
-        turn = Turn(
-            turn_id=turn_id,
-            session_id=request.session_id,
-            input_messages=input_messages,
-            output_message=output_message,
-            started_at=start_time,
-            completed_at=datetime.now(UTC).isoformat(),
-            steps=steps,
-        )
-        await self.storage.add_turn_to_session(request.session_id, turn)
-        if output_message.tool_calls:
-            chunk = AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseTurnAwaitingInputPayload(
-                        turn=turn,
-                    )
-                )
-            )
-        else:
-            chunk = AgentTurnResponseStreamChunk(
-                event=AgentTurnResponseEvent(
-                    payload=AgentTurnResponseTurnCompletePayload(
-                        turn=turn,
-                    )
-                )
-            )
-
-        yield chunk
+        except Exception:
+            # Log failed workflow completion
+            workflow_duration = time.time() - workflow_start_time
+            self._log_workflow_completion("failed", workflow_duration)
+            raise
 
     async def run(
         self,
@@ -421,6 +544,9 @@ class ChatAgent(ShieldRunnerMixin):
                 )
                 span.set_attribute("output", e.violation.model_dump_json())
 
+                # Log step execution metric
+                self._log_step_execution(1)
+
                 yield CompletionMessage(
                     content=str(e),
                     stop_reason=StopReason.end_of_turn,
@@ -443,6 +569,9 @@ class ChatAgent(ShieldRunnerMixin):
                 )
             )
             span.set_attribute("output", "no violations")
+
+            # Log step execution metric
+            self._log_step_execution(1)
 
     async def _run(
         self,
@@ -610,6 +739,9 @@ class ChatAgent(ShieldRunnerMixin):
                 )
             )
 
+            # Log step execution metric
+            self._log_step_execution(1)
+
             if n_iter >= self.agent_config.max_infer_iters:
                 logger.info(f"done with MAX iterations ({n_iter}), exiting.")
                 # NOTE: mark end_of_turn to indicate to client that we are done with the turn
@@ -724,6 +856,9 @@ class ChatAgent(ShieldRunnerMixin):
                                 )
                             )
                         )
+
+                        # Log step execution metric
+                        self._log_step_execution(1)
 
                         # Add the result message to input_messages for the next iteration
                         input_messages.append(result_message)
@@ -899,6 +1034,10 @@ class ChatAgent(ShieldRunnerMixin):
             },
         )
         logger.debug(f"tool call {tool_name_str} completed with result: {result}")
+
+        # Log tool usage metric
+        self._log_tool_usage(tool_name_str)
+
         return result
 
 
