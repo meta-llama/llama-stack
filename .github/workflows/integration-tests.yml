@@ -40,10 +40,8 @@ concurrency:
   # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
   group: >-
     ${{ github.workflow }}-${{ github.ref }}-${{
-    (github.event.action == 'opened' ||
-     github.event.action == 'synchronize' ||
-     (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))) &&
-    (contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay') ||
+    (github.event.action == 'opened' || github.event.action == 'synchronize') && 'replay' ||
+    (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests')) && 'rerecord' ||
     'no-run'
     }}
   cancel-in-progress: true
