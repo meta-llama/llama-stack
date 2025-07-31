@@ -102,11 +102,11 @@ jobs:
           client-version: "latest"
 
       - name: Setup ollama
-        if: ${{ inputs.test-provider == 'ollama' }}
+        if: ${{ (inputs.test-provider || 'ollama') == 'ollama' }}
         uses: ./.github/actions/setup-ollama
 
       - name: Setup vllm
-        if: ${{ inputs.test-provider == 'vllm' }}
+        if: ${{ (inputs.test-provider || 'ollama') == 'vllm' }}
         uses: ./.github/actions/setup-vllm
 
       - name: Build Llama Stack
@@ -123,7 +123,7 @@ jobs:
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
-          provider: ${{ inputs.test-provider }}
+          provider: ${{ inputs.test-provider || 'ollama' }}
           inference-mode: 'record'
 
       - name: Commit and push recordings
