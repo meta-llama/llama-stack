@@ -15,7 +15,7 @@ Importantly, Llama Stack always strives to provide at least one fully inline pro
 ```{toctree}
 :maxdepth: 1
 
-external
+external/index
 openai
 inference/index
 agents/index

@@ -1,9 +1,4 @@
-# External Providers Guide
-
-Llama Stack supports external providers that live outside of the main codebase. This allows you to:
-- Create and maintain your own providers independently
-- Share providers with others without contributing to the main codebase
-- Keep provider-specific code separate from the core Llama Stack code
+# Creating External Providers
 
 ## Configuration
 
@@ -54,17 +49,6 @@ Llama Stack supports two types of external providers:
 
 1. **Remote Providers**: Providers that communicate with external services (e.g., cloud APIs)
 2. **Inline Providers**: Providers that run locally within the Llama Stack process
-
-## Known External Providers
-
-Here's a list of known external providers that you can use with Llama Stack:
-
-| Name | Description | API | Type | Repository |
-|------|-------------|-----|------|------------|
-| KubeFlow Training | Train models with KubeFlow | Post Training | Remote | [llama-stack-provider-kft](https://github.com/opendatahub-io/llama-stack-provider-kft) |
-| KubeFlow Pipelines | Train models with KubeFlow Pipelines | Post Training | Inline **and** Remote | [llama-stack-provider-kfp-trainer](https://github.com/opendatahub-io/llama-stack-provider-kfp-trainer) |
-| RamaLama | Inference models with RamaLama | Inference | Remote | [ramalama-stack](https://github.com/containers/ramalama-stack) |
-| TrustyAI LM-Eval | Evaluate models with TrustyAI LM-Eval | Eval | Remote | [llama-stack-provider-lmeval](https://github.com/trustyai-explainability/llama-stack-provider-lmeval) |
 
 ### Remote Provider Specification
 
@@ -119,9 +103,9 @@ container_image: custom-vector-store:latest  # optional
 - `provider_data_validator`: Optional validator for provider data
 - `container_image`: Optional container image to use instead of pip packages
 
-## Required Implementation
+## Required Fields
 
-## All Providers
+### All Providers
 
 All providers must contain a `get_provider_spec` function in their `provider` module. This is a standardized structure that Llama Stack expects and is necessary for getting things such as the config class. The `get_provider_spec` method returns a structure identical to the `adapter`. An example function may look like:
 
@@ -146,7 +130,7 @@ def get_provider_spec() -> ProviderSpec:
     )
 ```
 
-### Remote Providers
+#### Remote Providers
 
 Remote providers must expose a `get_adapter_impl()` function in their module that takes two arguments:
 1. `config`: An instance of the provider's config class
@@ -162,7 +146,7 @@ async def get_adapter_impl(
     return OllamaInferenceAdapter(config)
 ```
 
-### Inline Providers
+#### Inline Providers
 
 Inline providers must expose a `get_provider_impl()` function in their module that takes two arguments:
 1. `config`: An instance of the provider's config class
@@ -189,7 +173,40 @@ Version: 0.1.0
 Location: /path/to/venv/lib/python3.10/site-packages
 ```
 
-## Example using `external_providers_dir`: Custom Ollama Provider
+## Best Practices
+
+1. **Package Naming**: Use the prefix `llama-stack-provider-` for your provider packages to make them easily identifiable.
+
+2. **Version Management**: Keep your provider package versioned and compatible with the Llama Stack version you're using.
+
+3. **Dependencies**: Only include the minimum required dependencies in your provider package.
+
+4. **Documentation**: Include clear documentation in your provider package about:
+   - Installation requirements
+   - Configuration options
+   - Usage examples
+   - Any limitations or known issues
+
+5. **Testing**: Include tests in your provider package to ensure it works correctly with Llama Stack.
+You can refer to the [integration tests
+guide](https://github.com/meta-llama/llama-stack/blob/main/tests/integration/README.md) for more
+information. Execute the test for the Provider type you are developing.
+
+## Troubleshooting
+
+If your external provider isn't being loaded:
+
+1. Check that `module` points to a published pip package with a top level `provider` module including `get_provider_spec`.
+1. Check that the `external_providers_dir` path is correct and accessible.
+2. Verify that the YAML files are properly formatted.
+3. Ensure all required Python packages are installed.
+4. Check the Llama Stack server logs for any error messages - turn on debug logging to get more
+   information using `LLAMA_STACK_LOGGING=all=debug`.
+5. Verify that the provider package is installed in your Python environment if using `external_providers_dir`.
+
+## Examples
+
+### Example using `external_providers_dir`: Custom Ollama Provider
 
 Here's a complete example of creating and using a custom Ollama provider:
 
@@ -241,7 +258,7 @@ external_providers_dir: ~/.llama/providers.d/
 The provider will now be available in Llama Stack with the type `remote::custom_ollama`.
 
 
-## Example using `module`: ramalama-stack
+### Example using `module`: ramalama-stack
 
 [ramalama-stack](https://github.com/containers/ramalama-stack) is a recognized external provider that supports installation via module.
 
@@ -267,34 +284,3 @@ additional_pip_packages:
 No other steps are required other than `llama stack build` and `llama stack run`. The build process will use `module` to install all of the provider dependencies, retrieve the spec, etc.
 
 The provider will now be available in Llama Stack with the type `remote::ramalama`.
-
-## Best Practices
-
-1. **Package Naming**: Use the prefix `llama-stack-provider-` for your provider packages to make them easily identifiable.
-
-2. **Version Management**: Keep your provider package versioned and compatible with the Llama Stack version you're using.
-
-3. **Dependencies**: Only include the minimum required dependencies in your provider package.
-
-4. **Documentation**: Include clear documentation in your provider package about:
-   - Installation requirements
-   - Configuration options
-   - Usage examples
-   - Any limitations or known issues
-
-5. **Testing**: Include tests in your provider package to ensure it works correctly with Llama Stack.
-You can refer to the [integration tests
-guide](https://github.com/meta-llama/llama-stack/blob/main/tests/integration/README.md) for more
-information. Execute the test for the Provider type you are developing.
-
-## Troubleshooting
-
-If your external provider isn't being loaded:
-
-1. Check that `module` points to a published pip package with a top level `provider` module including `get_provider_spec`.
-1. Check that the `external_providers_dir` path is correct and accessible.
-2. Verify that the YAML files are properly formatted.
-3. Ensure all required Python packages are installed.
-4. Check the Llama Stack server logs for any error messages - turn on debug logging to get more
-   information using `LLAMA_STACK_LOGGING=all=debug`.
-5. Verify that the provider package is installed in your Python environment if using `external_providers_dir`.
