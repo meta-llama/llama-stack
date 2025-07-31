@@ -1,0 +1,77 @@
+name: 'Run and Record Tests'
+description: 'Run integration tests and handle recording/artifact upload'
+
+inputs:
+  test-types:
+    description: 'JSON array of test types to run'
+    required: true
+  stack-config:
+    description: 'Stack configuration to use'
+    required: true
+  provider:
+    description: 'Provider to use for tests'
+    required: true
+  inference-mode:
+    description: 'Inference mode (record or replay)'
+    required: true
+  run-vision-tests:
+    description: 'Whether to run vision tests'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Storage and Memory Available Before Tests
+      if: ${{ always() }}
+      run: |
+        free -h
+        df -h
+
+    - name: Run Integration Tests
+      uses: ./.github/actions/run-integration-tests
+      with:
+        test-types: ${{ inputs.test-types }}
+        stack-config: ${{ inputs.stack-config }}
+        provider: ${{ inputs.provider }}
+        inference-mode: ${{ inputs.inference-mode }}
+        run-vision-tests: ${{ inputs.run-vision-tests }}
+
+    - name: Check Storage and Memory Available After Tests
+      if: ${{ always() }}
+      run: |
+        free -h
+        df -h
+
+    - name: Commit and push recordings
+      if: ${{ inputs.inference-mode == 'record' }}
+      shell: bash
+      run: |
+        git status --porcelain tests/integration/recordings/
+        if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
+          echo "New recordings detected, committing and pushing"
+          git add tests/integration/recordings/
+          git commit -m "Recordings update from CI"
+
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git rebase origin/${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
+        else
+          echo "No recording changes"
+        fi
+
+    - name: Write inference logs to file
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        sudo docker logs ollama > ollama-${{ inputs.inference-mode }}.log || true
+
+    - name: Upload logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: ${{ inputs.inference-mode }}-logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ inputs.provider }}
+        path: |
+          *.log
+        retention-days: 1 

@@ -13,9 +13,10 @@ on:
       - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-test-environment/action.yml'
+      - '.github/actions/run-and-record-tests/action.yml'
       - '.github/actions/run-integration-tests/action.yml'
   schedule:
     # If changing the cron schedule, update the provider in the test-matrix job
@@ -92,70 +93,23 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: "3.12"  # Use single Python version for recording
           client-version: "latest"
+          provider: ${{ inputs.test-provider || 'ollama' }}
+          inference-mode: 'record'
 
-      - name: Setup ollama
-        if: ${{ (inputs.test-provider || 'ollama') == 'ollama' }}
-        uses: ./.github/actions/setup-ollama
-
-      - name: Setup vllm
-        if: ${{ (inputs.test-provider || 'ollama') == 'vllm' }}
-        uses: ./.github/actions/setup-vllm
-
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Configure git for commits
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Run Integration Tests for All Types (Recording Mode)
-        uses: ./.github/actions/run-integration-tests
+      - name: Run and record tests
+        uses: ./.github/actions/run-and-record-tests
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
           provider: ${{ inputs.test-provider || 'ollama' }}
           inference-mode: 'record'
 
-      - name: Commit and push recordings
-        run: |
-          if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
-            echo "New recordings detected, committing and pushing"
-            
-            git checkout -B ${{ github.head_ref }}
-            
-            git add tests/integration/recordings/
-            git commit -m "Update recordings"            
-            git pull --rebase origin ${{ github.head_ref }}
-            git push origin ${{ github.head_ref }}
-          else
-            echo "No recording changes"
-          fi
-
-      - name: Write inference logs to file
-        if: ${{ always() }}
-        run: |
-          sudo docker logs ollama > ollama-recording.log || true
-
-      - name: Upload recording logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: recording-logs-${{ github.run_id }}
-          path: |
-            *.log
-          retention-days: 1
-
-  run-tests:
+  run-replay-mode-tests:
     # Skip this job if we're in recording mode (handled by record-tests job)
     if: ${{ needs.discover-tests.outputs.rerecord-tests != 'true' }}
     needs: discover-tests
@@ -171,44 +125,17 @@ jobs:
         client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
+          provider: ${{ matrix.provider }}
 
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Check Storage and Memory Available Before Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Run Integration Tests (Replay Mode)
-        uses: ./.github/actions/run-integration-tests
+      - name: Run and record tests
+        uses: ./.github/actions/run-and-record-tests
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
-
-      - name: Check Storage and Memory Available After Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Upload test logs on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: test-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
-          path: |
-            *.log
-          retention-days: 1

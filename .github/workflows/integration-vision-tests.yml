@@ -13,9 +13,10 @@ on:
       - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/integration-vision-tests.yml' # This workflow
-      - '.github/actions/setup-vision-ollama/action.yml'
+      - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-test-environment/action.yml'
+      - '.github/actions/run-and-record-tests/action.yml'
       - '.github/actions/run-integration-tests/action.yml'
   workflow_dispatch:
     inputs:
@@ -43,17 +44,11 @@ jobs:
       (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
     runs-on: ubuntu-latest
     outputs:
-      test-types: ${{ steps.generate-test-types.outputs.test-types }}
       rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Generate test types
-        id: generate-test-types
-        run: |
-          echo "test-types='[\"vision\"]'" >> $GITHUB_OUTPUT
 
       - name: Check if re-record-tests label exists
         id: check-rerecord-tests
@@ -75,75 +70,25 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: "3.12"  # Use single Python version for recording
           client-version: "latest"
+          provider: 'ollama'
+          inference-mode: 'record'
+          run-vision-tests: 'true'
 
-      # - name: Setup ollama for vision tests
-      #   uses: ./.github/actions/setup-vision-ollama
-
-      # - name: Build Llama Stack
-      #   run: |
-      #     uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Configure git for commits
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      # - name: Run Integration Tests for All Types (Recording Mode)
-      #   uses: ./.github/actions/run-integration-tests
-      #   with:
-      #     test-types: ${{ needs.discover-tests.outputs.test-types }}
-      #     stack-config: 'server:ci-tests'  # re-recording must be done in server mode
-      #     provider: 'ollama'
-      #     inference-mode: 'record'
-      #     run-vision-tests: 'true'
-
-      - name: Commit and push recordings
-        run: |
-          echo "Testing testing" > tests/integration/recordings/test.txt
-          echo "head ref: ${{ github.head_ref }}"
-          echo "ref: ${{ github.ref }}"
-
-          pwd
-          ls -la tests/integration/recordings/
-          git status --porcelain tests/integration/recordings/
-          git status
-
-          if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
-            echo "New recordings detected, committing and pushing"
-            git add tests/integration/recordings/
-            git commit -m "Update recordings"
-
-            git push --force-with-lease origin HEAD:${{ github.event.pull_request.head.ref }}
-          else
-            echo "No recording changes"
-          fi
-
-      - name: Write inference logs to file
-        if: ${{ always() }}
-        run: |
-          sudo docker logs ollama > ollama-recording.log || true
-
-      - name: Upload recording logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Run and record tests
+        uses: ./.github/actions/run-and-record-tests
         with:
-          name: recording-logs-${{ github.run_id }}
-          path: |
-            *.log
-          retention-days: 1
+          test-types: '["vision"]'
+          stack-config: 'server:ci-tests'  # re-recording must be done in server mode
+          provider: 'ollama'
+          inference-mode: 'record'
+          run-vision-tests: 'true'
 
-  run-tests:
+  run-replay-mode-tests:
     # Skip this job if we're in recording mode (handled by record-tests job)
     if: ${{ needs.discover-tests.outputs.rerecord-tests != 'true' }}
     needs: discover-tests
@@ -158,45 +103,19 @@ jobs:
         client-version: ["latest"]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
+          provider: ${{ matrix.provider }}
+          run-vision-tests: 'true'
 
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Check Storage and Memory Available Before Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Run Integration Tests (Replay Mode)
-        uses: ./.github/actions/run-integration-tests
+      - name: Run and record tests
+        uses: ./.github/actions/run-and-record-tests
         with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
+          test-types: '["vision"]'
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
           run-vision-tests: 'true'
-
-      - name: Check Storage and Memory Available After Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Upload test logs on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: test-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
-          path: |
-            *.log
-          retention-days: 1
