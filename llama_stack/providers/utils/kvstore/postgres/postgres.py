@@ -4,16 +4,17 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from datetime import datetime
 
 import psycopg2
 from psycopg2.extras import DictCursor
 
+from llama_stack.log import get_logger
+
 from ..api import KVStore
 from ..config import PostgresKVStoreConfig
 
-log = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 class PostgresKVStoreImpl(KVStore):
@@ -45,7 +46,7 @@ class PostgresKVStoreImpl(KVStore):
                 """
             )
         except Exception as e:
-            log.exception("Could not connect to PostgreSQL database server")
+            logger.exception("Could not connect to PostgreSQL database server")
             raise RuntimeError("Could not connect to PostgreSQL database server") from e
 
     def _namespaced_key(self, key: str) -> str:

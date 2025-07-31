@@ -6,16 +6,17 @@
 
 # type: ignore
 import collections
-import logging
 
-log = logging.getLogger(__name__)
+from llama_stack.log import get_logger
+
+logger = get_logger(__name__, category="core")
 
 try:
     import fbgemm_gpu.experimental.gen_ai  # noqa: F401
 
-    log.info("Using efficient FP8 or INT4 operators in FBGEMM.")
+    logger.info("Using efficient FP8 or INT4 operators in FBGEMM.")
 except ImportError:
-    log.error("No efficient FP8 or INT4 operators. Please install FBGEMM.")
+    logger.error("No efficient FP8 or INT4 operators. Please install FBGEMM.")
     raise
 
 import torch

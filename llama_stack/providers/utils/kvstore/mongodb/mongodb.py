@@ -4,16 +4,16 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from datetime import datetime
 
 from pymongo import AsyncMongoClient
 
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore
 
 from ..config import MongoDBKVStoreConfig
 
-log = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 
 class MongoDBKVStoreImpl(KVStore):
@@ -34,7 +34,7 @@ class MongoDBKVStoreImpl(KVStore):
             self.conn = AsyncMongoClient(**conn_creds)
             self.collection = self.conn[self.config.db][self.config.collection_name]
         except Exception as e:
-            log.exception("Could not connect to MongoDB database server")
+            logger.exception("Could not connect to MongoDB database server")
             raise RuntimeError("Could not connect to MongoDB database server") from e
 
     def _namespaced_key(self, key: str) -> str:

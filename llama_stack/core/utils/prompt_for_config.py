@@ -6,7 +6,6 @@
 
 import inspect
 import json
-import logging
 from enum import Enum
 from typing import Annotated, Any, Literal, Union, get_args, get_origin
 
@@ -14,7 +13,9 @@ from pydantic import BaseModel
 from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefinedType
 
-log = logging.getLogger(__name__)
+from llama_stack.log import get_logger
+
+logger = get_logger(name=__name__, category="distribution")
 
 
 def is_list_of_primitives(field_type):
@@ -107,7 +108,7 @@ def prompt_for_discriminated_union(
 
         if discriminator_value in type_map:
             chosen_type = type_map[discriminator_value]
-            log.info(f"\nConfiguring {chosen_type.__name__}:")
+            logger.info(f"\nConfiguring {chosen_type.__name__}:")
 
             if existing_value and (getattr(existing_value, discriminator) != discriminator_value):
                 existing_value = None
@@ -117,7 +118,7 @@ def prompt_for_discriminated_union(
             setattr(sub_config, discriminator, discriminator_value)
             return sub_config
         else:
-            log.error(f"Invalid {discriminator}. Please try again.")
+            logger.error(f"Invalid {discriminator}. Please try again.")
 
 
 # This is somewhat elaborate, but does not purport to be comprehensive in any way.
@@ -166,7 +167,7 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                     config_data[field_name] = validated_value
                     break
                 except KeyError:
-                    log.error(f"Invalid choice. Please choose from: {', '.join(e.name for e in field_type)}")
+                    logger.error(f"Invalid choice. Please choose from: {', '.join(e.name for e in field_type)}")
             continue
 
         if is_discriminated_union(field):
@@ -179,7 +180,7 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                 config_data[field_name] = None
                 continue
             nested_type = get_non_none_type(field_type)
-            log.info(f"Entering sub-configuration for {field_name}:")
+            logger.info(f"Entering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(nested_type, existing_value)
         elif is_optional(field_type) and is_discriminated_union(get_non_none_type(field_type)):
             prompt = f"Do you want to configure {field_name}? (y/n): "
@@ -193,7 +194,7 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                 existing_value,
             )
         elif can_recurse(field_type):
-            log.info(f"\nEntering sub-configuration for {field_name}:")
+            logger.info(f"\nEntering sub-configuration for {field_name}:")
             config_data[field_name] = prompt_for_config(
                 field_type,
                 existing_value,
@@ -220,7 +221,7 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                         config_data[field_name] = None
                         break
                     else:
-                        log.error("This field is required. Please provide a value.")
+                        logger.error("This field is required. Please provide a value.")
                         continue
                 else:
                     try:
@@ -242,10 +243,10 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                                 value = [element_type(item) for item in value]
 
                             except json.JSONDecodeError:
-                                log.error('Invalid JSON. Please enter a valid JSON-encoded list e.g., ["foo","bar"]')
+                                logger.error('Invalid JSON. Please enter a valid JSON-encoded list e.g., ["foo","bar"]')
                                 continue
                             except ValueError as e:
-                                log.error(f"{str(e)}")
+                                logger.error(f"{str(e)}")
                                 continue
 
                         elif get_origin(field_type) is dict:
@@ -255,7 +256,7 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                                     raise ValueError("Input must be a JSON-encoded dictionary")
 
                             except json.JSONDecodeError:
-                                log.error("Invalid JSON. Please enter a valid JSON-encoded dict.")
+                                logger.error("Invalid JSON. Please enter a valid JSON-encoded dict.")
                                 continue
 
                         # Convert the input to the correct type
@@ -268,7 +269,9 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                             value = field_type(user_input)
 
                     except ValueError:
-                        log.error(f"Invalid input. Expected type: {getattr(field_type, '__name__', str(field_type))}")
+                        logger.error(
+                            f"Invalid input. Expected type: {getattr(field_type, '__name__', str(field_type))}"
+                        )
                         continue
 
                 try:
@@ -277,6 +280,6 @@ def prompt_for_config(config_type: type[BaseModel], existing_config: BaseModel |
                     config_data[field_name] = validated_value
                     break
                 except ValueError as e:
-                    log.error(f"Validation error: {str(e)}")
+                    logger.error(f"Validation error: {str(e)}")
 
     return config_type(**config_data)

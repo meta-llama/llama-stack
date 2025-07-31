@@ -54,7 +54,7 @@ from llama_stack.providers.datatypes import (
     VectorDBsProtocolPrivate,
 )
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="distribution")
 
 
 class InvalidProviderError(Exception):
