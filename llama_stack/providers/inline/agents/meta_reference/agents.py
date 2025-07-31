@@ -64,8 +64,8 @@ class MetaReferenceAgentsImpl(Agents):
         safety_api: Safety,
         tool_runtime_api: ToolRuntime,
         tool_groups_api: ToolGroups,
-        telemetry_api: Telemetry | None,
         policy: list[AccessRule],
+        telemetry_api: Telemetry | None = None,
     ):
         self.config = config
         self.inference_api = inference_api
