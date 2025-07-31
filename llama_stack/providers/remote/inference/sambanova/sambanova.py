@@ -4,13 +4,10 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.litellm_openai_mixin import LiteLLMOpenAIMixin
 
 from .config import SambaNovaImplConfig
 from .models import MODEL_ENTRIES
-
-logger = get_logger(name=__name__, category="inference")
 
 
 class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
