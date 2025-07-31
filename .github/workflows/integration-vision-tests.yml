@@ -84,12 +84,12 @@ jobs:
           python-version: "3.12"  # Use single Python version for recording
           client-version: "latest"
 
-      - name: Setup ollama for vision tests
-        uses: ./.github/actions/setup-vision-ollama
+      # - name: Setup ollama for vision tests
+      #   uses: ./.github/actions/setup-vision-ollama
 
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
+      # - name: Build Llama Stack
+      #   run: |
+      #     uv run llama stack build --template ci-tests --image-type venv
 
       - name: Configure git for commits
         run: |
@@ -107,7 +107,12 @@ jobs:
 
       - name: Commit and push recordings
         run: |
+          set -x
           echo "Testing testing" > tests/integration/recordings/test.txt
+
+          echo "head ref: ${{ github.head_ref }}"
+          echo "base ref: ${{ github.base_ref }}"
+          echo "ref: ${{ github.ref }}"
 
           pwd
           ls -la tests/integration/recordings/
@@ -117,12 +122,13 @@ jobs:
           if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
             echo "New recordings detected, committing and pushing"
 
-            git checkout -B ${{ github.head_ref }}
+            git checkout -B test-branch-foobar
 
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            git pull --rebase origin ${{ github.head_ref }}
-            git push origin ${{ github.head_ref }}
+            git fetch origin ${{ github.head_ref }}
+            git rebase origin/${{ github.head_ref }}
+            git push origin HEAD:${{ github.head_ref }}
           else
             echo "No recording changes"
           fi
