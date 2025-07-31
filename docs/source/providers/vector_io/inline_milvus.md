@@ -13,6 +13,7 @@ Please refer to the remote provider documentation.
 | `db_path` | `<class 'str'>` | No | PydanticUndefined |  |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend (SQLite only for now) |
 | `consistency_level` | `<class 'str'>` | No | Strong | The consistency level of the Milvus server |
+| `embedding` | `utils.vector_io.embedding_config.EmbeddingConfig \| None` | No |  | Default embedding configuration for this provider. When specified, vector databases created with this provider will use these embedding settings as defaults. |
 
 ## Sample Configuration
 

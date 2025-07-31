@@ -79,13 +79,23 @@ class VectorIORouter(VectorIO):
     async def register_vector_db(
         self,
         vector_db_id: str,
-        embedding_model: str,
-        embedding_dimension: int | None = 384,
+        embedding_model: str | None = None,
+        embedding_dimension: int | None = None,
         provider_id: str | None = None,
         vector_db_name: str | None = None,
         provider_vector_db_id: str | None = None,
     ) -> None:
-        logger.debug(f"VectorIORouter.register_vector_db: {vector_db_id}, {embedding_model}")
+        logger.debug(
+            f"VectorIORouter.register_vector_db: {vector_db_id}, embedding_model={embedding_model}, provider_id={provider_id}"
+        )
+
+        # If embedding model/dimension not provided, they will be applied by the provider
+        # from its embedding configuration during register_vector_db call
+        if embedding_model is None and embedding_dimension is None:
+            # Use fallback defaults if no provider defaults are available
+            embedding_model = embedding_model or "all-MiniLM-L6-v2"
+            embedding_dimension = embedding_dimension or 384
+
         await self.routing_table.register_vector_db(
             vector_db_id,
             embedding_model,

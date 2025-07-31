@@ -29,6 +29,7 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
+    apply_provider_embedding_defaults,
 )
 
 from .config import PGVectorVectorIOConfig
@@ -222,6 +223,9 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
             log.info("Connection to PGVector database server closed")
 
     async def register_vector_db(self, vector_db: VectorDB) -> None:
+        # Apply provider-level embedding defaults if configured
+        vector_db = apply_provider_embedding_defaults(vector_db, self.config.embedding)
+
         # Persist vector DB metadata in the KV store
         assert self.kvstore is not None
         # Upsert model metadata in Postgres

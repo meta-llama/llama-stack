@@ -16306,15 +16306,15 @@
                     },
                     "embedding_model": {
                         "type": "string",
-                        "description": "The embedding model to use."
+                        "description": "The embedding model to use (optional if provider has defaults)."
                     },
                     "embedding_dimension": {
                         "type": "integer",
-                        "description": "The dimension of the embedding model."
+                        "description": "The dimension of the embedding model (optional if provider has defaults)."
                     },
                     "provider_id": {
                         "type": "string",
-                        "description": "The identifier of the provider."
+                        "description": "The identifier of the provider (can provide embedding defaults)."
                     },
                     "vector_db_name": {
                         "type": "string",
@@ -16327,8 +16327,7 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "vector_db_id",
-                    "embedding_model"
+                    "vector_db_id"
                 ],
                 "title": "RegisterVectorDbRequest"
             },
