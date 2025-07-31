@@ -30,27 +30,23 @@ on:
 
 concurrency:
   # This creates three concurrency groups:
-  #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for valid triggers with re-record-tests label)
-  #   ${{ github.workflow }}-${{ github.ref }}-replay (for valid triggers without re-record-tests label)
-  #   ${{ github.workflow }}-${{ github.ref }}-no-run (for invalid triggers that will be skipped)
+  #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for labeled events with re-record-tests label)
+  #   ${{ github.workflow }}-${{ github.ref }}-replay (for all non-labeled events)
+  #   ${{ github.workflow }}-${{ github.ref }}-no-run (for labeled events without re-record-tests label)
   # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
   group: >-
     ${{ github.workflow }}-${{ github.ref }}-${{
-    ((github.event.action == 'opened' || github.event.action == 'synchronize') && 'replay') ||
-    ((github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests')) && 'rerecord' ||
-    'no-run')
+    github.event.action == 'labeled' && (
+      contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'no-run'
+    ) || 'replay'
     }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
     if: |
-      github.event_name == 'push' ||
-      github.event_name == 'schedule' ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event.action == 'opened' ||
-      github.event.action == 'synchronize' ||
-      (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
+      github.event.action != 'labeled' ||
+      contains(github.event.pull_request.labels.*.name, 're-record-tests')
     runs-on: ubuntu-latest
     outputs:
       rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
