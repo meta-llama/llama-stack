@@ -128,7 +128,7 @@ jobs:
 
       - name: Commit and push recordings
         run: |
-          if ! git status --porcelain tests/integration/recordings/ | grep -q .; then
+          if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
             echo "New recordings detected, committing and pushing"
             git add tests/integration/recordings/
             git commit -m "Update recordings"
