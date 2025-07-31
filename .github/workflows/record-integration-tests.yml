@@ -56,6 +56,7 @@ jobs:
             modes_array+=("non-vision")
           fi
           matrix_modes=$(jq -n -c '$ARGS.positional' --jsonargs -- "${modes_array[@]}")
+          echo "matrix_modes=$matrix_modes"
           echo "matrix-modes=$matrix_modes" >> $GITHUB_OUTPUT
 
   record-tests:
