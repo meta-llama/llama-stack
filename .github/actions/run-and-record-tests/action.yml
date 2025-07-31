@@ -106,28 +106,48 @@ runs:
         TEST_TYPES='${{ inputs.test-types }}'
         echo "Test types to run: $TEST_TYPES"
 
+        # Collect all test files for the specified test types
+        TEST_FILES=""
         for test_type in $(echo "$TEST_TYPES" | jq -r '.[]'); do
           # if provider is vllm, exclude the following tests: (safety, post_training, tool_runtime)
           if [ "${{ inputs.provider }}" == "vllm" ]; then
             if [ "$test_type" == "safety" ] || [ "$test_type" == "post_training" ] || [ "$test_type" == "tool_runtime" ]; then
+              echo "Skipping $test_type for vllm provider"
               continue
             fi
           fi
 
-          echo "=== Running tests for: $test_type ==="
-
-          if uv run pytest -s -v tests/integration/$test_type --stack-config=${stack_config} \
-            -k "not( ${EXCLUDE_TESTS} )" \
-            --text-model=$TEXT_MODEL \
-            --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
-            --color=yes ${EXTRA_PARAMS} \
-            --capture=tee-sys | tee pytest-${{ inputs.inference-mode }}-$test_type.log; then
-            echo "✅ Tests completed for $test_type"
+          if [ -d "tests/integration/$test_type" ]; then
+            # Find all Python test files in this directory
+            test_files=$(find tests/integration/$test_type -name "test_*.py" -o -name "*_test.py")
+            if [ -n "$test_files" ]; then
+              TEST_FILES="$TEST_FILES $test_files"
+              echo "Added test files from $test_type: $(echo $test_files | wc -w) files"
+            fi
           else
-            echo "❌ Tests failed for $test_type"
-            exit 1
+            echo "Warning: Directory tests/integration/$test_type does not exist"
           fi
         done
+
+        if [ -z "$TEST_FILES" ]; then
+          echo "No test files found for the specified test types"
+          exit 1
+        fi
+
+        echo "=== Running all collected tests in a single pytest command ==="
+        echo "Total test files: $(echo $TEST_FILES | wc -w)"
+
+        if uv run pytest -s -v $TEST_FILES --stack-config=${stack_config} \
+          -k "not( ${EXCLUDE_TESTS} )" \
+          --text-model=$TEXT_MODEL \
+          --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
+          --color=yes ${EXTRA_PARAMS} \
+          --capture=tee-sys | tee pytest-${{ inputs.inference-mode }}-all.log; then
+          echo "✅ All tests completed successfully"
+        else
+          echo "❌ Tests failed"
+          exit 1
+        fi
 
     - name: Check Storage and Memory Available After Tests
       if: ${{ always() }}
@@ -155,8 +175,9 @@ runs:
 
           git fetch origin ${{ github.event.pull_request.head.ref }}
           git rebase origin/${{ github.event.pull_request.head.ref }}
+          echo "Rebased successfully"
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          fi
+          echo "Pushed successfully"
         else
           echo "No recording changes"
         fi
