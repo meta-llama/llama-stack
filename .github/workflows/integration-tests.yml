@@ -130,9 +130,13 @@ jobs:
         run: |
           if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
             echo "New recordings detected, committing and pushing"
+            
+            git checkout -B ${{ github.head_ref }}
+            
             git add tests/integration/recordings/
-            git commit -m "Update recordings"
-            git push origin HEAD:${{ github.head_ref }}
+            git commit -m "Update recordings"            
+            git pull --rebase origin ${{ github.head_ref }}
+            git push origin ${{ github.head_ref }}
           else
             echo "No recording changes"
           fi

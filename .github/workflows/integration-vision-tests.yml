@@ -96,17 +96,19 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
-      - name: Run Integration Tests for All Types (Recording Mode)
-        uses: ./.github/actions/run-integration-tests
-        with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
-          stack-config: 'server:ci-tests'  # re-recording must be done in server mode
-          provider: 'ollama'
-          inference-mode: 'record'
-          run-vision-tests: 'true'
+      # - name: Run Integration Tests for All Types (Recording Mode)
+      #   uses: ./.github/actions/run-integration-tests
+      #   with:
+      #     test-types: ${{ needs.discover-tests.outputs.test-types }}
+      #     stack-config: 'server:ci-tests'  # re-recording must be done in server mode
+      #     provider: 'ollama'
+      #     inference-mode: 'record'
+      #     run-vision-tests: 'true'
 
       - name: Commit and push recordings
         run: |
+          echo "Testing testing" > tests/integration/recordings/test.txt
+
           pwd
           ls -la tests/integration/recordings/
           git status --porcelain tests/integration/recordings/
@@ -114,9 +116,13 @@ jobs:
 
           if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
             echo "New recordings detected, committing and pushing"
+
+            git checkout -B ${{ github.head_ref }}
+
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            git push origin HEAD:${{ github.head_ref }}
+            git pull --rebase origin ${{ github.head_ref }}
+            git push origin ${{ github.head_ref }}
           else
             echo "No recording changes"
           fi
