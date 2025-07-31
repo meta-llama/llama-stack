@@ -110,9 +110,11 @@ async def stream_and_store_openai_completion(
                 logprobs_content = choice_data["logprobs_content_parts"]
                 final_logprobs = OpenAIChoiceLogprobs(content=logprobs_content) if logprobs_content else None
 
+                # Ensure finish_reason is a string as required by OpenAIChoice
+                finish_reason = choice_data["finish_reason"] or "unknown"
                 assembled_choices.append(
                     OpenAIChoice(
-                        finish_reason=choice_data["finish_reason"],
+                        finish_reason=finish_reason,
                         index=choice_idx,
                         message=message,
                         logprobs=final_logprobs,

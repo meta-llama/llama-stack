@@ -28,10 +28,10 @@ spec:
       initContainers:
       - name: wait-for-vllm-server
         image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z vllm-server.default.svc.cluster.local 8001; do echo waiting for vllm-server on port 8000; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z vllm-server.default.svc.cluster.local 8001; do echo waiting for vllm-server on port 8001; sleep 2; done;']
       - name: wait-for-llm-nim-code
         image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z llm-nim-code.default.svc.cluster.local 8000; do echo waiting for llm-nim-code on port 8001; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z llm-nim-code.default.svc.cluster.local 8000; do echo waiting for llm-nim-code on port 8000; sleep 2; done;']
       containers:
       - name: llama-stack
         image: llamastack/distribution-starter:0.2.15
@@ -54,7 +54,7 @@ spec:
         - name: VLLM_MAX_TOKENS
           value: "3072"
         - name: NVIDIA_BASE_URL
-          value: http://llm-nim-code.default.svc.cluster.local:8000/v1
+          value: http://llm-nim-code.default.svc.cluster.local:8000
         - name: POSTGRES_HOST
           value: postgres-server.default.svc.cluster.local
         - name: POSTGRES_PORT
@@ -67,7 +67,22 @@ spec:
           value: "${CODE_MODEL}"
         - name: TAVILY_SEARCH_API_KEY
           value: "${TAVILY_SEARCH_API_KEY}"
-        command: ["python", "-m", "llama_stack.distribution.server.server", "--config", "/etc/config/stack_run_config.yaml", "--port", "8321"]
+        command: ["/bin/sh"]
+        args:
+          - -c
+          - |
+            # Install pip and git
+            /usr/local/bin/python -m pip install --upgrade pip
+            apt-get update && apt-get install -y git
+            # Clone the repository
+            git clone https://github.com/meta-llama/llama-stack.git /app
+            git checkout k8s_demo
+
+            cd /app/llama_stack/
+            # Install llama-stack
+            pip install -e .
+            # Run the llama-stack server
+            python -m llama_stack.distribution.server.server --config /etc/config/stack_run_config.yaml --port 8321
         ports:
           - containerPort: 8321
         volumeMounts:

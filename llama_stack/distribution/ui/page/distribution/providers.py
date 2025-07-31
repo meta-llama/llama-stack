@@ -8,6 +8,7 @@ import os
 import streamlit as st
 
 from llama_stack.distribution.ui.modules.api import llama_stack_api
+from llama_stack_client import LlamaStackClient
 
 
 def providers():
@@ -37,7 +38,18 @@ def providers():
             st.session_state["tavily_search_api_key"] = tavily_search_api_key
             
             # Update the client with the new API key
-            llama_stack_api.update_provider_data("tavily_search_api_key", tavily_search_api_key)
+            # Check if update_provider_data method exists, otherwise update manually
+            if hasattr(llama_stack_api, "update_provider_data"):
+                llama_stack_api.update_provider_data("tavily_search_api_key", tavily_search_api_key)
+            else:
+                # Fallback implementation if method doesn't exist
+                llama_stack_api.provider_data = llama_stack_api.provider_data or {}
+                llama_stack_api.provider_data["tavily_search_api_key"] = tavily_search_api_key
+                # Reinitialize the client with updated provider data
+                llama_stack_api.client = LlamaStackClient(
+                    base_url=os.environ.get("LLAMA_STACK_ENDPOINT", "http://localhost:8321"),
+                    provider_data=llama_stack_api.provider_data,
+                )
             
             st.success("API keys saved successfully!")
     

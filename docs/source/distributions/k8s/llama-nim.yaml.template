@@ -48,15 +48,9 @@ spec:
           readinessProbe:
             httpGet:
               path: /v1/models
-              port: http-openai
-            initialDelaySeconds: 360
-            periodSeconds: 360
-          livenessProbe:
-            httpGet:
-              path: /v1/health
-              port: http-openai
-            initialDelaySeconds: 600
-            periodSeconds: 360
+              port: 8000
+            initialDelaySeconds: 100
+            periodSeconds: 100
 
 ---
 apiVersion: v1
