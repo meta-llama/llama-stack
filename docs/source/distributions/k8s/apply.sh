@@ -16,7 +16,7 @@ export POSTGRES_USER=llamastack
 export POSTGRES_DB=llamastack
 export POSTGRES_PASSWORD=llamastack
 
-export INFERENCE_MODEL=meta-llama/Llama-3.1-8B-Instruct
+export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CODE_MODEL=bigcode/starcoder2-7b
 
 # Set USE_EBS to false if you don't have permission to use EKS EBS
