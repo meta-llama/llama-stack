@@ -29,9 +29,3 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             download_images=True,  # SambaNova requires base64 image encoding
             json_schema_strict=False,  # SambaNova doesn't support strict=True yet
         )
-
-    async def initialize(self):
-        await super().initialize()
-
-    async def shutdown(self):
-        await super().shutdown()
