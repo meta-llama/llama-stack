@@ -14,8 +14,6 @@ logger = get_logger(name=__name__, category="inference")
 
 
 class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
-    _config: SambaNovaImplConfig
-
     def __init__(self, config: SambaNovaImplConfig):
         self.config = config
         self.environment_available_models = []
