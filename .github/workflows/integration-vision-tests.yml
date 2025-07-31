@@ -107,6 +107,11 @@ jobs:
 
       - name: Commit and push recordings
         run: |
+          pwd
+          ls -la tests/integration/recordings/
+          git status --porcelain tests/integration/recordings/
+          git status
+
           if ! git status --porcelain tests/integration/recordings/ | grep -q .; then
             echo "New recordings detected, committing and pushing"
             git add tests/integration/recordings/

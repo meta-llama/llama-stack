@@ -30,11 +30,12 @@ runs:
     - name: Run Integration Tests
       env:
         LLAMA_STACK_CLIENT_TIMEOUT: "300"
-        LLAMA_STACK_TEST_INFERENCE_MODE: ${{ inputs.inference-mode }}
       shell: bash
       run: |
         stack_config="${{ inputs.stack-config }}"
         EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
+
+        export LLAMA_STACK_TEST_INFERENCE_MODE="${{ inputs.inference-mode }}"
 
         # Configure provider-specific settings
         if [ "${{ inputs.provider }}" == "ollama" ]; then
