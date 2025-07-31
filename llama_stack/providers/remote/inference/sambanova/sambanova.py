@@ -77,16 +77,9 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
                     else request.tool_config.tool_choice
                 )
 
-        provider_data = self.get_request_provider_data()
-        key_field = self.provider_data_api_key_field
-        if provider_data and getattr(provider_data, key_field, None):
-            api_key = getattr(provider_data, key_field)
-        else:
-            api_key = self.get_api_key()
-
         return {
             "model": request.model,
-            "api_key": api_key,
+            "api_key": self.get_api_key(),
             "api_base": self.config.url,
             **input_dict,
             "stream": request.stream,
