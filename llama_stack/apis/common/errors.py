@@ -40,3 +40,11 @@ class DatasetNotFoundError(ValueError):
     def __init__(self, dataset_name: str) -> None:
         message = f"Dataset '{dataset_name}' not found. Use client.datasets.list() to list available datasets."
         super().__init__(message)
+
+
+class MissingTrainingConfigError(ValueError):
+    """raise when Llama Stack is missing configuration for training"""
+
+    def __init__(self, config_name: str) -> None:
+        message = f"'{config_name}' is required for training with this provider"
+        super().__init__(message)
