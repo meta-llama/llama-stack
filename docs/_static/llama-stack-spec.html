@@ -15078,22 +15078,6 @@
             "DPOAlignmentConfig": {
                 "type": "object",
                 "properties": {
-                    "reward_scale": {
-                        "type": "number",
-                        "description": "Scaling factor for the reward signal"
-                    },
-                    "reward_clip": {
-                        "type": "number",
-                        "description": "Maximum absolute value for reward clipping"
-                    },
-                    "epsilon": {
-                        "type": "number",
-                        "description": "Small value added for numerical stability"
-                    },
-                    "gamma": {
-                        "type": "number",
-                        "description": "Discount factor for future rewards"
-                    },
                     "beta": {
                         "type": "number",
                         "description": "Temperature parameter for the DPO loss"
@@ -15106,10 +15090,6 @@
                 },
                 "additionalProperties": false,
                 "required": [
-                    "reward_scale",
-                    "reward_clip",
-                    "epsilon",
-                    "gamma",
                     "beta",
                     "loss_type"
                 ],
