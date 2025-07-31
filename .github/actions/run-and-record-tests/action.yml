@@ -188,11 +188,19 @@ runs:
       run: |
         sudo docker logs ollama > ollama-${{ inputs.inference-mode }}.log || true
 
+    - name: Set artifact name
+      shell: bash
+      run: |
+        # Replace colons with dashes in stack-config for artifact naming
+        suffix="${{ inputs.stack-config }}"
+        suffix="${suffix//:/-}"
+        echo "ARTIFACT_NAME_SUFFIX=$suffix" >> $GITHUB_ENV
+
     - name: Upload logs
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: ${{ inputs.inference-mode }}-logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ inputs.provider }}-${{ inputs.run-vision-tests }}-${{ inputs.stack-config }}
+        name: logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ inputs.provider }}-${{ inputs.run-vision-tests }}-${{ env.ARTIFACT_NAME_SUFFIX }}
         path: |
           *.log
         retention-days: 1
