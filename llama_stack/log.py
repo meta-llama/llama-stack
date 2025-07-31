@@ -15,7 +15,7 @@ from rich.errors import MarkupError
 from rich.logging import RichHandler
 from termcolor import cprint
 
-from .distribution.datatypes import LoggingConfig
+from llama_stack.core.datatypes import LoggingConfig
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO

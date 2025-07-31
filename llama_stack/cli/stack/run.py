@@ -85,8 +85,8 @@ class StackRun(Subcommand):
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
 
-        from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-        from llama_stack.distribution.utils.exec import formulate_run_args, run_command
+        from llama_stack.core.configure import parse_and_maybe_upgrade_config
+        from llama_stack.core.utils.exec import formulate_run_args, run_command
 
         if args.enable_ui:
             self._start_ui_development_server(args.port)
@@ -94,7 +94,7 @@ class StackRun(Subcommand):
 
         if args.config:
             try:
-                from llama_stack.distribution.utils.config_resolution import Mode, resolve_config_or_template
+                from llama_stack.core.utils.config_resolution import Mode, resolve_config_or_template
 
                 config_file = resolve_config_or_template(args.config, Mode.RUN)
             except ValueError as e:
@@ -127,7 +127,7 @@ class StackRun(Subcommand):
         # using the current environment packages.
         if not image_type and not image_name:
             logger.info("No image type or image name provided. Assuming environment packages.")
-            from llama_stack.distribution.server.server import main as server_main
+            from llama_stack.core.server.server import main as server_main
 
             # Build the server args from the current args passed to the CLI
             server_args = argparse.Namespace()

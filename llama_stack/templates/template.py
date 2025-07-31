@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 from llama_stack.apis.datasets import DatasetPurpose
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.datatypes import (
     LLAMA_STACK_RUN_CONFIG_VERSION,
     Api,
     BenchmarkInput,
@@ -27,8 +27,8 @@ from llama_stack.distribution.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.core.distribution import get_provider_registry
+from llama_stack.core.utils.dynamic import instantiate_class_type
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
 from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 from llama_stack.providers.utils.kvstore.config import get_pip_packages as get_kv_pip_packages

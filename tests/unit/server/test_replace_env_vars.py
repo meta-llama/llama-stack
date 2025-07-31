@@ -8,7 +8,7 @@ import os
 
 import pytest
 
-from llama_stack.distribution.stack import replace_env_vars
+from llama_stack.core.stack import replace_env_vars
 
 
 @pytest.fixture

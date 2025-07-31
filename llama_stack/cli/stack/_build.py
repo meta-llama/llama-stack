@@ -23,27 +23,27 @@ from termcolor import colored, cprint
 
 from llama_stack.cli.stack.utils import ImageType
 from llama_stack.cli.table import print_table
-from llama_stack.distribution.build import (
+from llama_stack.core.build import (
     SERVER_DEPENDENCIES,
     build_image,
     get_provider_dependencies,
 )
-from llama_stack.distribution.configure import parse_and_maybe_upgrade_config
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.configure import parse_and_maybe_upgrade_config
+from llama_stack.core.datatypes import (
     BuildConfig,
     BuildProvider,
     DistributionSpec,
     Provider,
     StackRunConfig,
 )
-from llama_stack.distribution.distribution import get_provider_registry
-from llama_stack.distribution.external import load_external_apis
-from llama_stack.distribution.resolver import InvalidProviderError
-from llama_stack.distribution.stack import replace_env_vars
-from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
-from llama_stack.distribution.utils.dynamic import instantiate_class_type
-from llama_stack.distribution.utils.exec import formulate_run_args, run_command
-from llama_stack.distribution.utils.image_types import LlamaStackImageType
+from llama_stack.core.distribution import get_provider_registry
+from llama_stack.core.external import load_external_apis
+from llama_stack.core.resolver import InvalidProviderError
+from llama_stack.core.stack import replace_env_vars
+from llama_stack.core.utils.config_dirs import DISTRIBS_BASE_DIR, EXTERNAL_PROVIDERS_DIR
+from llama_stack.core.utils.dynamic import instantiate_class_type
+from llama_stack.core.utils.exec import formulate_run_args, run_command
+from llama_stack.core.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
 TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
@@ -279,7 +279,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         config = parse_and_maybe_upgrade_config(config_dict)
         if config.external_providers_dir and not config.external_providers_dir.exists():
             config.external_providers_dir.mkdir(exist_ok=True)
-        run_args = formulate_run_args(args.image_type, args.image_name)
+        run_args = formulate_run_args(args.image_type, image_name or config.image_name)
         run_args.extend([str(os.getenv("LLAMA_STACK_PORT", 8321)), "--config", str(run_config)])
         run_command(run_args)
 

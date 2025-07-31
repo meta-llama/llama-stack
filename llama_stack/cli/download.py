@@ -323,7 +323,7 @@ def _hf_download(
     from huggingface_hub import snapshot_download
     from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
 
-    from llama_stack.distribution.utils.model_utils import model_local_dir
+    from llama_stack.core.utils.model_utils import model_local_dir
 
     repo_id = model.huggingface_repo
     if repo_id is None:
@@ -361,7 +361,7 @@ def _meta_download(
     info: "LlamaDownloadInfo",
     max_concurrent_downloads: int,
 ):
-    from llama_stack.distribution.utils.model_utils import model_local_dir
+    from llama_stack.core.utils.model_utils import model_local_dir
 
     output_dir = Path(model_local_dir(model.descriptor()))
     os.makedirs(output_dir, exist_ok=True)
@@ -403,7 +403,7 @@ class Manifest(BaseModel):
 
 
 def _download_from_manifest(manifest_file: str, max_concurrent_downloads: int):
-    from llama_stack.distribution.utils.model_utils import model_local_dir
+    from llama_stack.core.utils.model_utils import model_local_dir
 
     with open(manifest_file) as f:
         d = json.load(f)
