@@ -16,6 +16,9 @@ inputs:
     description: 'Whether to setup provider for vision tests'
     required: false
     default: 'false'
+  inference-mode:
+    description: 'Inference mode (record or replay)'
+    required: true
 
 runs:
   using: 'composite'
@@ -27,13 +30,13 @@ runs:
         client-version: ${{ inputs.client-version }}
 
     - name: Setup ollama
-      if: ${{ inputs.provider == 'ollama' }}
+      if: ${{ inputs.provider == 'ollama' && inputs.inference-mode == 'record' }}
       uses: ./.github/actions/setup-ollama
       with:
         run-vision-tests: ${{ inputs.run-vision-tests }}
 
     - name: Setup vllm
-      if: ${{ inputs.provider == 'vllm' }}
+      if: ${{ inputs.provider == 'vllm' && inputs.inference-mode == 'record' }}
       uses: ./.github/actions/setup-vllm
 
     - name: Build Llama Stack

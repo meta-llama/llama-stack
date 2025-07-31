@@ -82,6 +82,7 @@ jobs:
           client-version: ${{ matrix.client-version }}
           provider: ${{ matrix.provider }}
           run-vision-tests: ${{ matrix.run-vision-tests }}
+          inference-mode: 'replay'
 
       - name: Run tests
         uses: ./.github/actions/run-and-record-tests
