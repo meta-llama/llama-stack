@@ -32,7 +32,7 @@ import os
 os.environ["NVIDIA_API_KEY"] = "your-api-key"
 os.environ["NVIDIA_GUARDRAILS_URL"] = "http://guardrails.test"
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 client = LlamaStackAsLibraryClient("nvidia")
 client.initialize()

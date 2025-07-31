@@ -7,7 +7,7 @@
 import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from llama_stack.distribution.stack import replace_env_vars
+from llama_stack.core.stack import replace_env_vars
 from llama_stack.providers.remote.inference.openai.config import OpenAIConfig
 from llama_stack.providers.remote.inference.openai.openai import OpenAIInferenceAdapter
 

@@ -7,7 +7,7 @@
 
 from llama_stack.apis.datasets import DatasetPurpose, URIDataSource
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.datatypes import (
     BenchmarkInput,
     BuildProvider,
     DatasetInput,

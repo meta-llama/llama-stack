@@ -10,8 +10,8 @@ from llama_stack.apis.inference import (
     OpenAIMessageParam,
     Order,
 )
-from llama_stack.distribution.datatypes import AccessRule
-from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
+from llama_stack.core.datatypes import AccessRule
+from llama_stack.core.utils.config_dirs import RUNTIME_BASE_DIR
 
 from ..sqlstore.api import ColumnDefinition, ColumnType
 from ..sqlstore.authorized_sqlstore import AuthorizedSqlStore

@@ -7,14 +7,14 @@
 
 from typing import Any
 
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.datatypes import (
     BuildProvider,
     Provider,
     ProviderSpec,
     ShieldInput,
     ToolGroupInput,
 )
-from llama_stack.distribution.utils.dynamic import instantiate_class_type
+from llama_stack.core.utils.dynamic import instantiate_class_type
 from llama_stack.providers.datatypes import RemoteProviderSpec
 from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplConfig
 from llama_stack.providers.inline.inference.sentence_transformers import (

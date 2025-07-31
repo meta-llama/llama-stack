@@ -22,7 +22,7 @@ from llama_stack.apis.tools import (
     ToolInvocationResult,
     ToolParameter,
 )
-from llama_stack.distribution.datatypes import AuthenticationRequiredError
+from llama_stack.core.datatypes import AuthenticationRequiredError
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.tools.ttl_dict import TTLDict
 

@@ -59,7 +59,7 @@ Build a Llama stack container
 
 options:
   -h, --help            show this help message and exit
-  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack/distributions/**/build.yaml. If this argument is not provided, you will
+  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack.cores/**/build.yaml. If this argument is not provided, you will
                         be prompted to enter information interactively (default: None)
   --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates (default: None)
   --list-templates      Show the available templates for building a Llama Stack distribution (default: False)
