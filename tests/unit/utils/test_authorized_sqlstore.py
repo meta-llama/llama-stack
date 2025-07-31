@@ -7,9 +7,9 @@
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from llama_stack.distribution.access_control.access_control import default_policy, is_action_allowed
-from llama_stack.distribution.access_control.datatypes import Action
-from llama_stack.distribution.datatypes import User
+from llama_stack.core.access_control.access_control import default_policy, is_action_allowed
+from llama_stack.core.access_control.datatypes import Action
+from llama_stack.core.datatypes import User
 from llama_stack.providers.utils.sqlstore.api import ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore, SqlRecord
 from llama_stack.providers.utils.sqlstore.sqlalchemy_sqlstore import SqlAlchemySqlStoreImpl

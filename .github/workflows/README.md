@@ -1,6 +1,6 @@
 # Llama Stack CI
 
-Llama Stack uses GitHub Actions for Continous Integration (CI). Below is a table detailing what CI the project includes and the purpose.
+Llama Stack uses GitHub Actions for Continuous Integration (CI). Below is a table detailing what CI the project includes and the purpose.
 
 | Name | File | Purpose |
 | ---- | ---- | ------- |
@@ -8,7 +8,7 @@ Llama Stack uses GitHub Actions for Continous Integration (CI). Below is a table
 | Installer CI | [install-script-ci.yml](install-script-ci.yml) | Test the installation script |
 | Integration Auth Tests | [integration-auth-tests.yml](integration-auth-tests.yml) | Run the integration test suite with Kubernetes authentication |
 | SqlStore Integration Tests | [integration-sql-store-tests.yml](integration-sql-store-tests.yml) | Run the integration test suite with SqlStore |
-| Integration Tests | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration |
+| Integration Tests (Replay) | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration in replay mode |
 | Vector IO Integration Tests | [integration-vector-io-tests.yml](integration-vector-io-tests.yml) | Run the integration test suite with various VectorIO providers |
 | Pre-commit | [pre-commit.yml](pre-commit.yml) | Run pre-commit checks |
 | Test Llama Stack Build | [providers-build.yml](providers-build.yml) | Test llama stack build |

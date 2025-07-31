@@ -1,22 +1,22 @@
-name: Integration Tests
+name: Integration Tests (Replay)
 
-run-name: Run the integration test suite from tests/integration
+run-name: Run the integration test suite from tests/integration in replay mode
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-    types: [opened, synchronize, labeled]
+    types: [opened, synchronize, reopened]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-ollama/action.yml'
-      - '.github/actions/run-integration-tests/action.yml'
+      - '.github/actions/setup-test-environment/action.yml'
+      - '.github/actions/run-and-record-tests/action.yml'
   schedule:
     # If changing the cron schedule, update the provider in the test-matrix job
     - cron: '0 0 * * *'  # (test latest client) Daily at 12 AM UTC
@@ -33,31 +33,15 @@ on:
         default: 'ollama'
 
 concurrency:
-  # This creates three concurrency groups:
-  #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for valid triggers with re-record-tests label)
-  #   ${{ github.workflow }}-${{ github.ref }}-replay (for valid triggers without re-record-tests label)
-  #   ${{ github.workflow }}-${{ github.ref }}-no-run (for invalid triggers that will be skipped)
-  # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
-  group: >-
-    ${{ github.workflow }}-${{ github.ref }}-${{
-    (github.event.action == 'opened' ||
-     github.event.action == 'synchronize' ||
-     (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))) &&
-    (contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay') ||
-    'no-run'
-    }}
+  # Skip concurrency for pushes to main - each commit should be tested independently
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
-    if: |
-      github.event.action == 'opened' ||
-      github.event.action == 'synchronize' ||
-      (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
     runs-on: ubuntu-latest
     outputs:
       test-types: ${{ steps.generate-test-types.outputs.test-types }}
-      rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
 
     steps:
       - name: Checkout repository
@@ -67,94 +51,13 @@ jobs:
         id: generate-test-types
         run: |
           # Get test directories dynamically, excluding non-test directories
+          # NOTE: we are excluding post_training since the tests take too long
           TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
-            grep -Ev "^(__pycache__|fixtures|test_cases|recordings)$" |
+            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|post_training)$" |
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
-      - name: Check if re-record-tests label exists
-        id: check-rerecord-tests
-        run: |
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
-            echo "rerecord-tests=true" >> $GITHUB_OUTPUT
-          else
-            echo "rerecord-tests=false" >> $GITHUB_OUTPUT
-          fi
-
-  record-tests:
-    # Sequential job for recording to avoid SQLite conflicts
-    if: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' }}
-    needs: discover-tests
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
-        with:
-          python-version: "3.12"  # Use single Python version for recording
-          client-version: "latest"
-
-      - name: Setup ollama
-        if: ${{ inputs.test-provider == 'ollama' }}
-        uses: ./.github/actions/setup-ollama
-
-      - name: Setup vllm
-        if: ${{ inputs.test-provider == 'vllm' }}
-        uses: ./.github/actions/setup-vllm
-
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Configure git for commits
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Run Integration Tests for All Types (Recording Mode)
-        uses: ./.github/actions/run-integration-tests
-        with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
-          stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
-          provider: ${{ inputs.test-provider }}
-          inference-mode: 'record'
-
-      - name: Commit and push recordings
-        run: |
-          if ! git diff --quiet tests/integration/recordings/; then
-            echo "Committing recordings"
-            git add tests/integration/recordings/
-            git commit -m "Update recordings"
-            echo "Pushing all recording commits to PR"
-            git push origin HEAD:${{ github.head_ref }}
-          else
-            echo "No recording changes"
-          fi
-
-      - name: Write inference logs to file
-        if: ${{ always() }}
-        run: |
-          sudo docker logs ollama > ollama-recording.log || true
-
-      - name: Upload recording logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: recording-logs-${{ github.run_id }}
-          path: |
-            *.log
-          retention-days: 1
-
-  run-tests:
-    # Skip this job if we're in recording mode (handled by record-tests job)
-    if: ${{ needs.discover-tests.outputs.rerecord-tests != 'true' }}
+  run-replay-mode-tests:
     needs: discover-tests
     runs-on: ubuntu-latest
 
@@ -164,48 +67,29 @@ jobs:
         client-type: [library, server]
         # Use vllm on weekly schedule, otherwise use test-provider input (defaults to ollama)
         provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
-        python-version: ["3.12", "3.13"]
-        client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        # Use Python 3.13 only on nightly schedule (daily latest client test), otherwise use 3.12
+        python-version: ${{ github.event.schedule == '0 0 * * *' && fromJSON('["3.12", "3.13"]') || fromJSON('["3.12"]') }}
+        client-version: ${{ (github.event.schedule == '0 0 * * *' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        run-vision-tests: ['true', 'false']
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
+          provider: ${{ matrix.provider }}
+          run-vision-tests: ${{ matrix.run-vision-tests }}
+          inference-mode: 'replay'
 
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Check Storage and Memory Available Before Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Run Integration Tests (Replay Mode)
-        uses: ./.github/actions/run-integration-tests
+      - name: Run tests
+        uses: ./.github/actions/run-and-record-tests
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
-
-      - name: Check Storage and Memory Available After Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Upload test logs on failure
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: test-logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
-          path: |
-            *.log
-          retention-days: 1
+          run-vision-tests: ${{ matrix.run-vision-tests }}

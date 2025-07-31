@@ -1,0 +1,198 @@
+name: 'Run and Record Tests'
+description: 'Run integration tests and handle recording/artifact upload'
+
+inputs:
+  test-types:
+    description: 'JSON array of test types to run'
+    required: true
+  stack-config:
+    description: 'Stack configuration to use'
+    required: true
+  provider:
+    description: 'Provider to use for tests'
+    required: true
+  inference-mode:
+    description: 'Inference mode (record or replay)'
+    required: true
+  run-vision-tests:
+    description: 'Whether to run vision tests'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Storage and Memory Available Before Tests
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        free -h
+        df -h
+
+    - name: Set environment variables
+      shell: bash
+      run: |
+        echo "LLAMA_STACK_CLIENT_TIMEOUT=300" >> $GITHUB_ENV
+        echo "LLAMA_STACK_TEST_INFERENCE_MODE=${{ inputs.inference-mode }}" >> $GITHUB_ENV
+
+        # Configure provider-specific settings
+        if [ "${{ inputs.provider }}" == "ollama" ]; then
+          echo "OLLAMA_URL=http://0.0.0.0:11434" >> $GITHUB_ENV
+          echo "TEXT_MODEL=ollama/llama3.2:3b-instruct-fp16" >> $GITHUB_ENV
+          echo "SAFETY_MODEL=ollama/llama-guard3:1b" >> $GITHUB_ENV
+        else
+          echo "VLLM_URL=http://localhost:8000/v1" >> $GITHUB_ENV
+          echo "TEXT_MODEL=vllm/meta-llama/Llama-3.2-1B-Instruct" >> $GITHUB_ENV
+        fi
+
+        if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          echo "LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings/vision" >> $GITHUB_ENV
+        else
+          echo "LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings" >> $GITHUB_ENV
+        fi
+
+    - name: Run Llama Stack Server
+      if: ${{ contains(inputs.stack-config, 'server:') }}
+      shell: bash
+      run: |
+        # Run this so pytest in a loop doesn't start-stop servers in a loop
+        echo "Starting Llama Stack Server"
+        nohup uv run llama stack run ci-tests --image-type venv > server.log 2>&1 &
+
+        echo "Waiting for Llama Stack Server to start"
+        for i in {1..30}; do
+          if curl -s http://localhost:8321/v1/health | grep -q "OK"; then
+            echo "Llama Stack Server started"
+            exit 0
+          fi
+          sleep 1
+        done
+
+        echo "Llama Stack Server failed to start"
+        cat server.log
+        exit 1
+
+    - name: Run Integration Tests
+      shell: bash
+      run: |
+        stack_config="${{ inputs.stack-config }}"
+        EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
+
+        # Configure provider-specific settings
+        if [ "${{ inputs.provider }}" == "ollama" ]; then
+          EXTRA_PARAMS="--safety-shield=llama-guard"
+        else
+          EXTRA_PARAMS=""
+          EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
+        fi
+
+        if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          if uv run pytest -s -v tests/integration/inference/test_vision_inference.py --stack-config=${stack_config} \
+            -k "not( ${EXCLUDE_TESTS} )" \
+            --vision-model=ollama/llama3.2-vision:11b \
+            --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
+            --color=yes ${EXTRA_PARAMS} \
+            --capture=tee-sys | tee pytest-${{ inputs.inference-mode }}-vision.log; then
+            echo "✅ Tests completed for vision"
+          else
+            echo "❌ Tests failed for vision"
+            exit 1
+          fi
+
+          exit 0
+        fi
+
+        # Run non-vision tests
+        TEST_TYPES='${{ inputs.test-types }}'
+        echo "Test types to run: $TEST_TYPES"
+
+        # Collect all test files for the specified test types
+        TEST_FILES=""
+        for test_type in $(echo "$TEST_TYPES" | jq -r '.[]'); do
+          # if provider is vllm, exclude the following tests: (safety, post_training, tool_runtime)
+          if [ "${{ inputs.provider }}" == "vllm" ]; then
+            if [ "$test_type" == "safety" ] || [ "$test_type" == "post_training" ] || [ "$test_type" == "tool_runtime" ]; then
+              echo "Skipping $test_type for vllm provider"
+              continue
+            fi
+          fi
+
+          if [ -d "tests/integration/$test_type" ]; then
+            # Find all Python test files in this directory
+            test_files=$(find tests/integration/$test_type -name "test_*.py" -o -name "*_test.py")
+            if [ -n "$test_files" ]; then
+              TEST_FILES="$TEST_FILES $test_files"
+              echo "Added test files from $test_type: $(echo $test_files | wc -w) files"
+            fi
+          else
+            echo "Warning: Directory tests/integration/$test_type does not exist"
+          fi
+        done
+
+        if [ -z "$TEST_FILES" ]; then
+          echo "No test files found for the specified test types"
+          exit 1
+        fi
+
+        echo "=== Running all collected tests in a single pytest command ==="
+        echo "Total test files: $(echo $TEST_FILES | wc -w)"
+
+        if uv run pytest -s -v $TEST_FILES --stack-config=${stack_config} \
+          -k "not( ${EXCLUDE_TESTS} )" \
+          --text-model=$TEXT_MODEL \
+          --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
+          --color=yes ${EXTRA_PARAMS} \
+          --capture=tee-sys | tee pytest-${{ inputs.inference-mode }}-all.log; then
+          echo "✅ All tests completed successfully"
+        else
+          echo "❌ Tests failed"
+          exit 1
+        fi
+
+    - name: Check Storage and Memory Available After Tests
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        free -h
+        df -h
+
+    - name: Commit and push recordings
+      if: ${{ inputs.inference-mode == 'record' }}
+      shell: bash
+      run: |
+        echo "Checking for recording changes"
+        git status --porcelain tests/integration/recordings/
+
+        if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
+          echo "New recordings detected, committing and pushing"
+          git add tests/integration/recordings/
+
+          if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+            git commit -m "Recordings update from CI (vision)"
+          else
+            git commit -m "Recordings update from CI"
+          fi
+
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git rebase origin/${{ github.event.pull_request.head.ref }}
+          echo "Rebased successfully"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          echo "Pushed successfully"
+        else
+          echo "No recording changes"
+        fi
+
+    - name: Write inference logs to file
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        sudo docker logs ollama > ollama-${{ inputs.inference-mode }}.log || true
+
+    - name: Upload logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ strategy.job-index }}
+        path: |
+          *.log
+        retention-days: 1

@@ -24,10 +24,10 @@ from llama_stack.apis.vector_io.vector_io import (
     VectorStoreObject,
     VectorStoreSearchResponsePage,
 )
-from llama_stack.distribution.access_control.datatypes import AccessRule, Scope
-from llama_stack.distribution.datatypes import User
-from llama_stack.distribution.request_headers import request_provider_data_context
-from llama_stack.distribution.routing_tables.vector_dbs import VectorDBsRoutingTable
+from llama_stack.core.access_control.datatypes import AccessRule, Scope
+from llama_stack.core.datatypes import User
+from llama_stack.core.request_headers import request_provider_data_context
+from llama_stack.core.routing_tables.vector_dbs import VectorDBsRoutingTable
 from tests.unit.distribution.routers.test_routing_tables import Impl, InferenceImpl, ModelsRoutingTable
 
 

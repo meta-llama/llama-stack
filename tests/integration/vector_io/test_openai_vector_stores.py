@@ -14,7 +14,7 @@ from openai import BadRequestError as OpenAIBadRequestError
 from openai import OpenAI
 
 from llama_stack.apis.vector_io import Chunk
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 logger = logging.getLogger(__name__)
 

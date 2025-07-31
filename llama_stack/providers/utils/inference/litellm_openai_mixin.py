@@ -38,7 +38,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.core.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -254,6 +254,12 @@ class LiteLLMOpenAIMixin(
             api_key = getattr(provider_data, key_field)
         else:
             api_key = self.api_key_from_config
+        if not api_key:
+            raise ValueError(
+                "API key is not set. Please provide a valid API key in the "
+                "provider data header, e.g. x-llamastack-provider-data: "
+                f'{{"{key_field}": "<API_KEY>"}}, or in the provider config.'
+            )
         return api_key
 
     async def embeddings(

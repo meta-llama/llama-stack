@@ -15,14 +15,14 @@ from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.shields.shields import Shield
 from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolGroup, ToolParameter
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.distribution.datatypes import RegistryEntrySource
-from llama_stack.distribution.routing_tables.benchmarks import BenchmarksRoutingTable
-from llama_stack.distribution.routing_tables.datasets import DatasetsRoutingTable
-from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
-from llama_stack.distribution.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
-from llama_stack.distribution.routing_tables.shields import ShieldsRoutingTable
-from llama_stack.distribution.routing_tables.toolgroups import ToolGroupsRoutingTable
-from llama_stack.distribution.routing_tables.vector_dbs import VectorDBsRoutingTable
+from llama_stack.core.datatypes import RegistryEntrySource
+from llama_stack.core.routing_tables.benchmarks import BenchmarksRoutingTable
+from llama_stack.core.routing_tables.datasets import DatasetsRoutingTable
+from llama_stack.core.routing_tables.models import ModelsRoutingTable
+from llama_stack.core.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
+from llama_stack.core.routing_tables.shields import ShieldsRoutingTable
+from llama_stack.core.routing_tables.toolgroups import ToolGroupsRoutingTable
+from llama_stack.core.routing_tables.vector_dbs import VectorDBsRoutingTable
 
 
 class Impl:

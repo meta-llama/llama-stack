@@ -355,7 +355,7 @@ server:
 8. Run the server:
 
 ```bash
-python -m llama_stack.distribution.server.server --yaml-config ~/.llama/run-byoa.yaml
+python -m llama_stack.core.server.server --yaml-config ~/.llama/run-byoa.yaml
 ```
 
 9. Test the API:

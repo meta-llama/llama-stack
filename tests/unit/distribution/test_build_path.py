@@ -9,8 +9,8 @@ from pathlib import Path
 from llama_stack.cli.stack._build import (
     _run_stack_build_command_from_build_config,
 )
-from llama_stack.distribution.datatypes import BuildConfig, DistributionSpec
-from llama_stack.distribution.utils.image_types import LlamaStackImageType
+from llama_stack.core.datatypes import BuildConfig, DistributionSpec
+from llama_stack.core.utils.image_types import LlamaStackImageType
 
 
 def test_container_build_passes_path(monkeypatch, tmp_path):

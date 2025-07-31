@@ -12,7 +12,7 @@ from typing import Any
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.core.distribution import get_provider_registry
 
 REPO_ROOT = Path(__file__).parent.parent
 
