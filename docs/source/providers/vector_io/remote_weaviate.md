@@ -37,19 +37,15 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `host` | `str \| None` | No | localhost |  |
-| `port` | `int \| None` | No | 8080 |  |
 | `weaviate_api_key` | `str \| None` | No |  | The API key for the Weaviate instance |
-| `weaviate_cluster_url` | `str \| None` | No |  | The URL of the Weaviate cluster |
+| `weaviate_cluster_url` | `str \| None` | No | localhost:8080 | The URL of the Weaviate cluster |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig, annotation=NoneType, required=False, default='sqlite', discriminator='type'` | No |  | Config for KV store backend (SQLite only for now) |
 
 ## Sample Configuration
 
 ```yaml
-host: ${env.WEAVIATE_HOST:=localhost}
-port: ${env.WEAVIATE_PORT:=8080}
 weaviate_api_key: null
-weaviate_cluster_url: null
+weaviate_cluster_url: ${env.WEAVIATE_CLUSTER_URL:=localhost:8080}
 kvstore:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/weaviate_registry.db

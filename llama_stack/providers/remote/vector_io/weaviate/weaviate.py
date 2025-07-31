@@ -166,11 +166,12 @@ class WeaviateVectorIOAdapter(
         self.metadata_collection_name = "openai_vector_stores_metadata"
 
     def _get_client(self) -> weaviate.Client:
-        if self.config.weaviate_cluster_url is None:
+        if self.config.weaviate_cluster_url == "localhost:8080":
+            host, port = self.config.weaviate_cluster_url.split(":")
             key = "local_test"
             client = weaviate.connect_to_local(
-                host=self.config.host,
-                port=self.config.port,
+                host=host,
+                port=port,
             )
         else:
             key = f"{self.config.weaviate_cluster_url}::{self.config.weaviate_api_key}"
