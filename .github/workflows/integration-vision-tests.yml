@@ -29,13 +29,14 @@ on:
         default: ''
 
 concurrency:
-  # This creates three concurrency groups:
+  # Skip concurrency for pushes to main - each commit should be tested independently
+  # For other events, create concurrency groups:
   #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for labeled events with re-record-tests label)
   #   ${{ github.workflow }}-${{ github.ref }}-replay (for all non-labeled events)
   #   ${{ github.workflow }}-${{ github.ref }}-no-run (for labeled events without re-record-tests label)
   # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
   group: >-
-    ${{ github.workflow }}-${{ github.ref }}-${{
+    ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}-${{
     github.event.action == 'labeled' && (
       contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'no-run'
     ) || 'replay'
