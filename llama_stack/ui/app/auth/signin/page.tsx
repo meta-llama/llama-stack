@@ -1,14 +1,14 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Button } from "@/components/chat/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/chat/card";
+} from "@/components/ui/card";
 import { Copy, Check, Home, Github } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

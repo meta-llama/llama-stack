@@ -9,7 +9,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/chat/breadcrumb";
+} from "@/components/ui/breadcrumb";
 
 export interface BreadcrumbSegment {
   label: string;

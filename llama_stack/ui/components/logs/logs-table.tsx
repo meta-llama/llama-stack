@@ -13,8 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/chat/table";
-import { Skeleton } from "@/components/chat/skeleton";
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Generic table row data interface
 export interface LogTableRow {

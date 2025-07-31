@@ -2,7 +2,7 @@
 
 import { ChatMessage, ChatCompletion } from "@/lib/types";
 import { ChatMessageItem } from "@/components/chat-completions/chat-messasge-item";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/chat/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DetailLoadingView,
   DetailErrorView,

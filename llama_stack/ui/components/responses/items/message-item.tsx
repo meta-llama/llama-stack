@@ -1,4 +1,4 @@
-import { MessageBlock } from "@/components/chat/message-components";
+import { MessageBlock } from "@/components/chat-playground/message-components";
 import { MessageItem } from "../utils/item-types";
 
 interface MessageItemProps {
