@@ -67,6 +67,12 @@ class HuggingFacePostTrainingConfig(BaseModel):
     # Can improve data transfer speed to GPU but uses more memory
     dataloader_pin_memory: bool = True
 
+    # DPO-specific parameters
+    dpo_beta: float = 0.1
+    use_reference_model: bool = True
+    dpo_loss_type: Literal["sigmoid", "hinge", "ipo", "kto_pair"] = "sigmoid"
+    dpo_output_dir: str = "./checkpoints/dpo"
+
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
         return {"checkpoint_format": "huggingface", "distributed_backend": None, "device": "cpu"}
