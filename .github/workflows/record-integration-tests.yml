@@ -48,9 +48,10 @@ jobs:
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
-          modes_array=()
           labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
           echo "labels=$labels"
+
+          modes_array=()
           if [[ $labels == *"re-record-vision-tests"* ]]; then
             modes_array+=("vision")
           fi
@@ -96,6 +97,7 @@ jobs:
           client-version: "latest"
           provider: ${{ inputs.test-provider || 'ollama' }}
           run-vision-tests: ${{ matrix.mode == 'vision' && 'true' || 'false' }}
+          inference-mode: 'record'
 
       - name: Run and record tests
         uses: ./.github/actions/run-and-record-tests
