@@ -51,6 +51,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - name: Generate test types
         id: generate-test-types
@@ -122,7 +123,12 @@ jobs:
             echo "New recordings detected, committing and pushing"
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            git push origin HEAD:${{ github.head_ref }}
+
+            # re-sync with whatever is now on GitHub
+            git fetch origin ${{ github.head_ref }}
+            git rebase origin/${{ github.head_ref }}
+
+            git push --force-with-lease origin HEAD:${{ github.head_ref }}
           else
             echo "No recording changes"
           fi
