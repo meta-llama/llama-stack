@@ -110,7 +110,7 @@ class TestPostTraining:
         # train with HF trl SFTTrainer as the default
         _ = llama_stack_client.post_training.supervised_fine_tune(
             job_uuid=job_uuid,
-            model="HuggingFaceTB/SmolLM2-135M-Instruct",  # a smaller model that supports the current sft recipe
+            model="HuggingFaceTB/SmolLM2-135M-Instruct",  # smaller model that supports the current sft recipe
             algorithm_config=algorithm_config,
             training_config=training_config,
             hyperparam_search_config={},
