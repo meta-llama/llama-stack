@@ -79,7 +79,7 @@ def formulate_run_args(image_type: str, image_name: str) -> list[str]:
             return
         cprint(f"Using virtual environment: {env_name}", file=sys.stderr)
 
-    script = importlib.resources.files("llama_stack") / "distribution/start_stack.sh"
+    script = importlib.resources.files("llama_stack") / "core/start_stack.sh"
     run_args = [
         script,
         image_type,
