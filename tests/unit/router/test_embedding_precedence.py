@@ -9,7 +9,7 @@ import pytest
 
 from llama_stack.apis.common.errors import MissingEmbeddingModelError
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.routers.vector_io import VectorIORouter
+from llama_stack.core.routers.vector_io import VectorIORouter
 
 
 class _DummyModel:
