@@ -44,4 +44,5 @@ class DatasetNotFoundError(ValueError):
 
 class MissingEmbeddingModelError(RuntimeError):
     """Raised when no embedding model is provided and no global default is configured."""
+
     pass
