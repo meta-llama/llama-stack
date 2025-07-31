@@ -49,10 +49,12 @@ jobs:
           echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
           modes_array=()
-          if [[ ${{ github.event.pull_request.labels.*.name }} == *"re-record-vision-tests"* ]]; then
+          labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
+          echo "labels=$labels"
+          if [[ $labels == *"re-record-vision-tests"* ]]; then
             modes_array+=("vision")
           fi
-          if [[ ${{ github.event.pull_request.labels.*.name }} == *"re-record-tests"* ]]; then
+          if [[ $labels == *"re-record-tests"* ]]; then
             modes_array+=("non-vision")
           fi
           matrix_modes=$(jq -n -c '$ARGS.positional' --jsonargs -- "${modes_array[@]}")
