@@ -254,6 +254,12 @@ class LiteLLMOpenAIMixin(
             api_key = getattr(provider_data, key_field)
         else:
             api_key = self.api_key_from_config
+        if not api_key:
+            raise ValueError(
+                "API key is not set. Please provide a valid API key in the "
+                "provider data header, e.g. x-llamastack-provider-data: "
+                f'{{"{key_field}": "<API_KEY>"}}, or in the provider config.'
+            )
         return api_key
 
     async def embeddings(
