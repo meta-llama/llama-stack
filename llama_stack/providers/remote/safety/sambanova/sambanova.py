@@ -19,7 +19,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.core.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import convert_message_to_openai_dict_new
 

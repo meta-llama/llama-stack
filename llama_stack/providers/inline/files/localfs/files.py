@@ -19,7 +19,7 @@ from llama_stack.apis.files import (
     OpenAIFileObject,
     OpenAIFilePurpose,
 )
-from llama_stack.distribution.datatypes import AccessRule
+from llama_stack.core.datatypes import AccessRule
 from llama_stack.providers.utils.sqlstore.api import ColumnDefinition, ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from llama_stack.providers.utils.sqlstore.sqlstore import sqlstore_impl

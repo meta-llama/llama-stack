@@ -43,8 +43,8 @@ from llama_stack.apis.post_training import (
     QATFinetuningConfig,
     TrainingConfig,
 )
-from llama_stack.distribution.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
-from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.core.utils.config_dirs import DEFAULT_CHECKPOINT_DIR
+from llama_stack.core.utils.model_utils import model_local_dir
 from llama_stack.models.llama.sku_list import resolve_model
 from llama_stack.providers.inline.post_training.common.utils import evacuate_model_from_device
 from llama_stack.providers.inline.post_training.torchtune.common import utils
