@@ -36,7 +36,7 @@ def generate_ci_docs():
     # Header section to preserve
     header = """# Llama Stack CI
 
-Llama Stack uses GitHub Actions for Continous Integration (CI). Below is a table detailing what CI the project includes and the purpose.
+Llama Stack uses GitHub Actions for Continuous Integration (CI). Below is a table detailing what CI the project includes and the purpose.
 
 | Name | File | Purpose |
 | ---- | ---- | ------- |
