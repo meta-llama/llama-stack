@@ -195,4 +195,4 @@ runs:
         name: ${{ inputs.inference-mode }}-logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ inputs.provider }}
         path: |
           *.log
-        retention-days: 1 
+        retention-days: 1

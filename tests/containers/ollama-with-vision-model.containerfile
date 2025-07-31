@@ -1,5 +1,5 @@
 # Containerfile used to build our Ollama image with vision model to run tests in CI
-# 
+#
 # podman build --platform linux/amd64 -f ./ollama-with-vision-model.containerfile -t ollama-with-vision-model .
 #
 FROM --platform=linux/amd64 ollama/ollama:latest
