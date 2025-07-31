@@ -40,3 +40,13 @@ class DatasetNotFoundError(ValueError):
     def __init__(self, dataset_name: str) -> None:
         message = f"Dataset '{dataset_name}' not found. Use client.datasets.list() to list available datasets."
         super().__init__(message)
+
+
+class ToolGroupNotFoundError(ValueError):
+    """raised when Llama Stack cannot find a referenced tool group"""
+
+    def __init__(self, toolgroup_name: str) -> None:
+        message = (
+            f"Tool group '{toolgroup_name}' not found. Use client.toolgroups.list() to list available tool groups."
+        )
+        super().__init__(message)

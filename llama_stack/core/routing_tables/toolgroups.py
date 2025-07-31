@@ -7,6 +7,7 @@
 from typing import Any
 
 from llama_stack.apis.common.content_types import URL
+from llama_stack.apis.common.errors import ToolGroupNotFoundError
 from llama_stack.apis.tools import ListToolGroupsResponse, ListToolsResponse, Tool, ToolGroup, ToolGroups
 from llama_stack.core.datatypes import ToolGroupWithOwner
 from llama_stack.log import get_logger
@@ -87,7 +88,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
         tool_group = await self.get_object_by_identifier("tool_group", toolgroup_id)
         if tool_group is None:
-            raise ValueError(f"Tool group '{toolgroup_id}' not found")
+            raise ToolGroupNotFoundError(toolgroup_id)
         return tool_group
 
     async def get_tool(self, tool_name: str) -> Tool:
@@ -125,7 +126,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
     async def unregister_toolgroup(self, toolgroup_id: str) -> None:
         tool_group = await self.get_tool_group(toolgroup_id)
         if tool_group is None:
-            raise ValueError(f"Tool group {toolgroup_id} not found")
+            raise ToolGroupNotFoundError(toolgroup_id)
         await self.unregister_object(tool_group)
 
     async def shutdown(self) -> None:
