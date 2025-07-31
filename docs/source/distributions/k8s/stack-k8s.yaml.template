@@ -34,17 +34,16 @@ spec:
         command: ['sh', '-c', 'until nc -z llm-nim-code.default.svc.cluster.local 8000; do echo waiting for llm-nim-code on port 8001; sleep 2; done;']
       containers:
       - name: llama-stack
-        image: llamastack/distribution-starter:latest
-        imagePullPolicy: Always # since we have specified latest instead of a version
+        image: llamastack/distribution-starter:0.2.15
         resources:
           requests:
             memory: "512Mi"
             cpu: "500m"
-            ephemeral-storage: "2Gi"
+            ephemeral-storage: "6Gi"
           limits:
             memory: "1Gi"
             cpu: "1000m"
-            ephemeral-storage: "5Gi"
+            ephemeral-storage: "6Gi"
         env:
         - name: ENABLE_CHROMADB
           value: "true"

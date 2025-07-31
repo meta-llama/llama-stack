@@ -35,7 +35,7 @@ spec:
             apt-get update && apt-get install -y git
             # Clone the repository
             git clone https://github.com/meta-llama/llama-stack.git /app
-
+            git checkout k8s_demo
             # Navigate to the playground directory
             cd /app/llama_stack/distribution/ui
 
@@ -45,4 +45,4 @@ spec:
             # Run the Streamlit app
             streamlit run app.py --server.port=8322 --server.address=0.0.0.0
         ports:
-        - containerPort: 8501
+        - containerPort: 8322

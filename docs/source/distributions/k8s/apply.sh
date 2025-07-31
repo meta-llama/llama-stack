@@ -21,7 +21,8 @@ export CODE_MODEL=bigcode/starcoder2-7b
 
 # Set USE_EBS to false if you don't have permission to use EKS EBS
 export USE_EBS=${USE_EBS:-false}
-
+set -euo pipefail
+set -x
 # HF_TOKEN should be set by the user; base64 encode it for the secret
 if [ -n "${HF_TOKEN:-}" ]; then
   export HF_TOKEN_BASE64=$(echo -n "$HF_TOKEN" | base64)
@@ -50,13 +51,35 @@ fi
 
 
 
-# Apply the HF token secret if HF_TOKEN is provided
-if [ -n "${HF_TOKEN:-}" ]; then
-  envsubst < ./set-secret.yaml.template | kubectl apply -f -
-fi
+# Create secrets and capture any errors
+echo "Creating Kubernetes secrets..."
+SECRET_OUTPUT=$(envsubst < ./set-secret.yaml.template | kubectl apply -f - 2>&1) || {
+  echo "ERROR: Failed to create secrets. Error output:"
+  echo "$SECRET_OUTPUT"
+  exit 1
+}
 
-set -euo pipefail
-set -x
+# Wait a moment for Kubernetes to process the secrets
+echo "Waiting for secrets to be processed..."
+sleep 2
+
+# Verify that the secrets were created successfully
+echo "Verifying that secrets were created successfully..."
+
+# Check each secret with better error handling
+for SECRET_NAME in "hf-token-secret" "ngc-docker-registry" "ngc-api"; do
+  echo "Checking for secret: $SECRET_NAME"
+  if ! kubectl get secret "$SECRET_NAME" &> /dev/null; then
+    echo "ERROR: Secret '$SECRET_NAME' not found in the cluster."
+    echo "Secret creation output was:"
+    echo "$SECRET_OUTPUT"
+    echo "Current secrets in the namespace:"
+    kubectl get secrets
+    exit 1
+  fi
+done
+
+echo "Secret verification successful. All required secrets are present."
 # Apply templates with appropriate storage configuration based on USE_EBS setting
 if [ "$USE_EBS" = "true" ]; then
   echo "Using EBS storage for persistent volumes"
@@ -73,6 +96,7 @@ if [ "$USE_EBS" = "true" ]; then
   envsubst < ./stack-k8s.yaml.template | kubectl apply -f -
   envsubst < ./ingress-k8s.yaml.template | kubectl apply -f -
   envsubst < ./ui-k8s.yaml.template | kubectl apply -f -
+  envsubst < ./ui-service-k8s.yaml.template | kubectl apply -f -
 else
   echo "Using emptyDir for storage (data will not persist across pod restarts)"
   # Process templates to replace EBS storage with emptyDir
@@ -90,4 +114,5 @@ else
   envsubst < ./stack-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./ingress-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./ui-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
+  envsubst < ./ui-service-k8s.yaml.template | kubectl apply -f -
 fi
