@@ -29,6 +29,28 @@ runs:
         free -h
         df -h
 
+    - name: Set environment variables
+      shell: bash
+      run: |
+        export LLAMA_STACK_CLIENT_TIMEOUT="300"
+        export LLAMA_STACK_TEST_INFERENCE_MODE="${{ inputs.inference-mode }}"
+        export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
+
+        # Configure provider-specific settings
+        if [ "${{ inputs.provider }}" == "ollama" ]; then
+          export OLLAMA_URL="http://0.0.0.0:11434"
+          export TEXT_MODEL="ollama/llama3.2:3b-instruct-fp16"
+          export SAFETY_MODEL="ollama/llama-guard3:1b"
+        else
+          export VLLM_URL="http://localhost:8000/v1"
+          export TEXT_MODEL="vllm/meta-llama/Llama-3.2-1B-Instruct"
+        fi
+
+        if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings/vision"
+        fi
+
+
     - name: Run Llama Stack Server
       if: ${{ contains(inputs.stack-config, 'server:') }}
       shell: bash
@@ -51,30 +73,20 @@ runs:
         exit 1
 
     - name: Run Integration Tests
-      env:
-        LLAMA_STACK_CLIENT_TIMEOUT: "300"
       shell: bash
       run: |
         stack_config="${{ inputs.stack-config }}"
         EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
 
-        export LLAMA_STACK_TEST_INFERENCE_MODE="${{ inputs.inference-mode }}"
-
         # Configure provider-specific settings
         if [ "${{ inputs.provider }}" == "ollama" ]; then
-          export OLLAMA_URL="http://0.0.0.0:11434"
-          export TEXT_MODEL="ollama/llama3.2:3b-instruct-fp16"
-          export SAFETY_MODEL="ollama/llama-guard3:1b"
           EXTRA_PARAMS="--safety-shield=llama-guard"
         else
-          export VLLM_URL="http://localhost:8000/v1"
-          export TEXT_MODEL="vllm/meta-llama/Llama-3.2-1B-Instruct"
           EXTRA_PARAMS=""
           EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
         fi
 
         if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
-          export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings/vision"
           if uv run pytest -s -v tests/integration/inference/test_vision_inference.py --stack-config=${stack_config} \
             -k "not( ${EXCLUDE_TESTS} )" \
             --vision-model=ollama/llama3.2-vision:11b \
@@ -91,7 +103,6 @@ runs:
         fi
 
         # Run non-vision tests
-        export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
         TEST_TYPES='${{ inputs.test-types }}'
         echo "Test types to run: $TEST_TYPES"
 

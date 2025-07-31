@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
-          image="ollama/ollama-with-vision-model"
+          image="ollama-with-vision-model"
         else
           image="ollama-with-models"
         fi
