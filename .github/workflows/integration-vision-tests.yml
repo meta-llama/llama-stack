@@ -50,7 +50,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Generate test types
@@ -119,24 +119,15 @@ jobs:
           git status --porcelain tests/integration/recordings/
           git status
 
-          # if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
-          #   echo "New recordings detected, committing and pushing"
-          #   git add tests/integration/recordings/
-          #   git commit -m "Update recordings"
+          if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
+            echo "New recordings detected, committing and pushing"
+            git add tests/integration/recordings/
+            git commit -m "Update recordings"
 
-          #   # re-sync with whatever is now on GitHub
-          #   git fetch origin ${{ github.head_ref }}
-          #   git rebase origin/${{ github.head_ref }}
-
-          #   git push --force-with-lease origin HEAD:${{ github.head_ref }}
-          # else
-          #   echo "No recording changes"
-          # fi
-
-      - name: Commit and push recordings
-        uses: stefanzweifel/git-auto-commit-action@v6
-        with:
-          commit_message: "style: auto-format from CI"
+            git push --force-with-lease origin HEAD:${{ github.event.pull_request.head.ref }}
+          else
+            echo "No recording changes"
+          fi
 
       - name: Write inference logs to file
         if: ${{ always() }}
