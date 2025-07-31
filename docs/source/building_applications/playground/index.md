@@ -103,5 +103,5 @@ llama stack run together
 
 2. Start Streamlit UI
 ```bash
-uv run --with ".[ui]" streamlit run llama_stack/distribution/ui/app.py
+uv run --with ".[ui]" streamlit run llama_stack.core/ui/app.py
 ```

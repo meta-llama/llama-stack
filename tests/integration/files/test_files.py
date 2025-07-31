@@ -10,8 +10,8 @@ from unittest.mock import patch
 import pytest
 from openai import OpenAI
 
-from llama_stack.distribution.datatypes import User
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.core.datatypes import User
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 
 def test_openai_client_basic_operations(compat_client, client_with_models):

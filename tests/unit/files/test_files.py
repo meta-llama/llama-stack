@@ -9,7 +9,7 @@ import pytest
 
 from llama_stack.apis.common.responses import Order
 from llama_stack.apis.files import OpenAIFilePurpose
-from llama_stack.distribution.access_control.access_control import default_policy
+from llama_stack.core.access_control.access_control import default_policy
 from llama_stack.providers.inline.files.localfs import (
     LocalfsFilesImpl,
     LocalfsFilesImplConfig,

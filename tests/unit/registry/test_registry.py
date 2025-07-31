@@ -9,7 +9,7 @@ import pytest
 
 from llama_stack.apis.inference import Model
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.distribution.store.registry import (
+from llama_stack.core.store.registry import (
     KEY_FORMAT,
     CachedDiskDistributionRegistry,
     DiskDistributionRegistry,

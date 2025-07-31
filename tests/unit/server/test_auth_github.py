@@ -11,8 +11,8 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from llama_stack.distribution.datatypes import AuthenticationConfig, AuthProviderType, GitHubTokenAuthConfig
-from llama_stack.distribution.server.auth import AuthenticationMiddleware
+from llama_stack.core.datatypes import AuthenticationConfig, AuthProviderType, GitHubTokenAuthConfig
+from llama_stack.core.server.auth import AuthenticationMiddleware
 
 
 class MockResponse:
@@ -78,7 +78,7 @@ def test_authenticated_endpoint_with_invalid_bearer_format(github_token_client):
     assert "Invalid Authorization header format" in response.json()["error"]["message"]
 
 
-@patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")
+@patch("llama_stack.core.server.auth_providers.httpx.AsyncClient")
 def test_authenticated_endpoint_with_valid_github_token(mock_client_class, github_token_client):
     """Test accessing protected endpoint with valid GitHub token"""
     # Mock the GitHub API responses
@@ -118,7 +118,7 @@ def test_authenticated_endpoint_with_valid_github_token(mock_client_class, githu
     assert calls[0][1]["headers"]["Authorization"] == "Bearer github_token_123"
 
 
-@patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")
+@patch("llama_stack.core.server.auth_providers.httpx.AsyncClient")
 def test_authenticated_endpoint_with_invalid_github_token(mock_client_class, github_token_client):
     """Test accessing protected endpoint with invalid GitHub token"""
     # Mock the GitHub API to return 401 Unauthorized
@@ -135,7 +135,7 @@ def test_authenticated_endpoint_with_invalid_github_token(mock_client_class, git
     )
 
 
-@patch("llama_stack.distribution.server.auth_providers.httpx.AsyncClient")
+@patch("llama_stack.core.server.auth_providers.httpx.AsyncClient")
 def test_github_enterprise_support(mock_client_class):
     """Test GitHub Enterprise support with custom API base URL"""
     app = FastAPI()

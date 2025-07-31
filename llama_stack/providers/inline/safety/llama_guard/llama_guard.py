@@ -21,7 +21,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.datatypes import Api
+from llama_stack.core.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
 from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate

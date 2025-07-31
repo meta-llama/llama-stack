@@ -16,6 +16,9 @@ on:
       - 'tests/external/*'
       - '.github/workflows/test-external-provider-module.yml' # This workflow
 
+# This workflow is disabled. See https://github.com/meta-llama/llama-stack/pull/2975#issuecomment-3138702984 for details
+if: false
+
 jobs:
   test-external-providers-from-module:
     runs-on: ubuntu-latest
@@ -47,7 +50,7 @@ jobs:
 
       - name: Build distro from config file
         run: |
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. llama stack build --config tests/external/ramalama-stack/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config tests/external/ramalama-stack/build.yaml
 
       - name: Start Llama Stack server in background
         if: ${{ matrix.image-type }} == 'venv'

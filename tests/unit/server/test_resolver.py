@@ -12,14 +12,14 @@ from unittest.mock import AsyncMock, MagicMock
 from pydantic import BaseModel, Field
 
 from llama_stack.apis.inference import Inference
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.datatypes import (
     Api,
     Provider,
     StackRunConfig,
 )
-from llama_stack.distribution.resolver import resolve_impls
-from llama_stack.distribution.routers.inference import InferenceRouter
-from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
+from llama_stack.core.resolver import resolve_impls
+from llama_stack.core.routers.inference import InferenceRouter
+from llama_stack.core.routing_tables.models import ModelsRoutingTable
 from llama_stack.providers.datatypes import InlineProviderSpec, ProviderSpec
 
 

@@ -18,7 +18,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.utils.model_utils import model_local_dir
+from llama_stack.core.utils.model_utils import model_local_dir
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,

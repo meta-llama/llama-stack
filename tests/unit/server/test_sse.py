@@ -8,7 +8,7 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.distribution.server.server import create_dynamic_typed_route, create_sse_event, sse_generator
+from llama_stack.core.server.server import create_dynamic_typed_route, create_sse_event, sse_generator
 
 
 async def test_sse_generator_basic():
