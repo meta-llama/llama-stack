@@ -93,13 +93,18 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
       - name: Setup test environment
         uses: ./.github/actions/setup-test-environment
         with:
           python-version: "3.12"  # Use single Python version for recording
           client-version: "latest"
           provider: ${{ inputs.test-provider || 'ollama' }}
-          inference-mode: 'record'
 
       - name: Run and record tests
         uses: ./.github/actions/run-and-record-tests
@@ -125,6 +130,9 @@ jobs:
         client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
       - name: Setup test environment
         uses: ./.github/actions/setup-test-environment
         with:

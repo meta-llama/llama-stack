@@ -16,19 +16,10 @@ inputs:
     description: 'Whether to setup provider for vision tests'
     required: false
     default: 'false'
-  inference-mode:
-    description: 'Inference mode (record or replay)'
-    required: true
 
 runs:
   using: 'composite'
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        ref: ${{ inputs.inference-mode == 'record' && github.event.pull_request.head.ref || '' }}
-        fetch-depth: ${{ inputs.inference-mode == 'record' && '0' || '1' }}
-
     - name: Install dependencies
       uses: ./.github/actions/setup-runner
       with:
