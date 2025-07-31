@@ -23,6 +23,10 @@ on:
         description: 'Test against both the latest and published versions'
         type: boolean
         default: false
+      force-inference-mode:
+        description: 'Force inference mode (record or replay)'
+        type: string
+        default: ''
 
 concurrency:
   group: >-
@@ -52,10 +56,16 @@ jobs:
       - name: Check if re-record-tests label exists
         id: check-rerecord-tests
         run: |
-          if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
+          if [[ "${{ inputs.force-inference-mode }}" == "record" ]]; then
             echo "rerecord-tests=true" >> $GITHUB_OUTPUT
-          else
+          elif [[ "${{ inputs.force-inference-mode }}" == "replay" ]]; then
             echo "rerecord-tests=false" >> $GITHUB_OUTPUT
+          else
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
+              echo "rerecord-tests=true" >> $GITHUB_OUTPUT
+            else
+              echo "rerecord-tests=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
   record-tests:
