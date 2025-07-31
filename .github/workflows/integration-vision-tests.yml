@@ -45,9 +45,9 @@ concurrency:
 jobs:
   discover-tests:
     if: |
-      github.event_name == "push" ||
-      github.event_name == "schedule" ||
-      github.event_name == "workflow_dispatch" ||
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
       github.event.action == 'opened' ||
       github.event.action == 'synchronize' ||
       (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))
