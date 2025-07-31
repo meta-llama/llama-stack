@@ -72,3 +72,11 @@ class ModelTypeError(TypeError):
             f"Model '{model_name}' is of type '{model_type}' rather than the expected type '{expected_model_type}'"
         )
         super().__init__(message)
+
+
+class MissingTrainingConfigError(ValueError):
+    """raise when Llama Stack is missing configuration for training"""
+
+    def __init__(self, config_name: str) -> None:
+        message = f"'{config_name}' is required for training"
+        super().__init__(message)
