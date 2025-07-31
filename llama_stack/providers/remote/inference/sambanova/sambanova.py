@@ -6,19 +6,9 @@
 
 import requests
 
-from llama_stack.apis.inference import (
-    ChatCompletionRequest,
-    JsonSchemaResponseFormat,
-    ToolChoice,
-)
 from llama_stack.apis.models import Model
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.litellm_openai_mixin import LiteLLMOpenAIMixin
-from llama_stack.providers.utils.inference.openai_compat import (
-    convert_message_to_openai_dict_new,
-    convert_tooldef_to_openai_tool,
-    get_sampling_options,
-)
 
 from .config import SambaNovaImplConfig
 from .models import MODEL_ENTRIES
@@ -39,53 +29,9 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             api_key_from_config=self.config.api_key.get_secret_value() if self.config.api_key else None,
             provider_data_api_key_field="sambanova_api_key",
             openai_compat_api_base=self.config.url,
+            download_images=True,  # SambaNova requires base64 image encoding
+            json_schema_strict=False,  # SambaNova doesn't support strict=True yet
         )
-
-    async def _get_params(self, request: ChatCompletionRequest) -> dict:
-        input_dict = {}
-
-        input_dict["messages"] = [
-            await convert_message_to_openai_dict_new(m, download_images=True) for m in request.messages
-        ]
-        if fmt := request.response_format:
-            if not isinstance(fmt, JsonSchemaResponseFormat):
-                raise ValueError(
-                    f"Unsupported response format: {type(fmt)}. Only JsonSchemaResponseFormat is supported."
-                )
-
-            fmt = fmt.json_schema
-            name = fmt["title"]
-            del fmt["title"]
-            fmt["additionalProperties"] = False
-
-            # Apply additionalProperties: False recursively to all objects
-            fmt = self._add_additional_properties_recursive(fmt)
-
-            input_dict["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": name,
-                    "schema": fmt,
-                    "strict": False,
-                },
-            }
-        if request.tools:
-            input_dict["tools"] = [convert_tooldef_to_openai_tool(tool) for tool in request.tools]
-            if request.tool_config.tool_choice:
-                input_dict["tool_choice"] = (
-                    request.tool_config.tool_choice.value
-                    if isinstance(request.tool_config.tool_choice, ToolChoice)
-                    else request.tool_config.tool_choice
-                )
-
-        return {
-            "model": request.model,
-            "api_key": self.get_api_key(),
-            "api_base": self.api_base,
-            **input_dict,
-            "stream": request.stream,
-            **get_sampling_options(request.sampling_params),
-        }
 
     async def register_model(self, model: Model) -> Model:
         model_id = self.get_provider_model_id(model.provider_resource_id)
