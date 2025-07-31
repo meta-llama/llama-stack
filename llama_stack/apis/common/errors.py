@@ -18,6 +18,14 @@ class UnsupportedModelError(ValueError):
         super().__init__(message)
 
 
+class UnsupportedDatabaseError(ValueError):
+    """raised when database is not present in the list of supported databases"""
+
+    def __init__(self, database_name: str, supported_databases_list: list[str]):
+        message = f"'{database_name}' database is not supported. Supported databases are: {', '.join(supported_databases_list)}"
+        super().__init__(message)
+
+
 class ModelNotFoundError(ValueError):
     """raised when Llama Stack cannot find a referenced model"""
 
