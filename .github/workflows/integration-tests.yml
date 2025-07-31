@@ -1,13 +1,13 @@
-name: Integration Tests
+name: Integration Tests (Replay)
 
-run-name: Run the integration test suite from tests/integration
+run-name: Run the integration test suite from tests/integration in replay mode
 
 on:
   push:
     branches: [ main ]
-  pull_request_target:
+  pull_request:
     branches: [ main ]
-    types: [opened, synchronize, labeled]
+    types: [opened, synchronize, reopened]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
@@ -31,35 +31,17 @@ on:
         description: 'Test against a specific provider'
         type: string
         default: 'ollama'
-      force-inference-mode:
-        description: 'Force inference mode (record or replay)'
-        type: string
-        default: ''
 
 concurrency:
   # Skip concurrency for pushes to main - each commit should be tested independently
-  # For other events, create concurrency groups:
-  #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for labeled events with re-record-tests label)
-  #   ${{ github.workflow }}-${{ github.ref }}-replay (for all non-labeled events)
-  #   ${{ github.workflow }}-${{ github.ref }}-no-run (for labeled events without re-record-tests label)
-  # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
-  group: >-
-    ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}-${{
-    github.event.action == 'labeled' && (
-      contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'no-run'
-    ) || 'replay'
-    }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
-    if: |
-      github.event.action != 'labeled' ||
-      contains(github.event.pull_request.labels.*.name, 're-record-tests')
     runs-on: ubuntu-latest
     outputs:
       test-types: ${{ steps.generate-test-types.outputs.test-types }}
-      rerecord-tests: ${{ steps.check-rerecord-tests.outputs.rerecord-tests }}
 
     steps:
       - name: Checkout repository
@@ -74,56 +56,7 @@ jobs:
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
-      - name: Check if re-record-tests label exists
-        id: check-rerecord-tests
-        run: |
-          if [[ "${{ inputs.force-inference-mode }}" == "record" ]]; then
-            echo "rerecord-tests=true" >> $GITHUB_OUTPUT
-          elif [[ "${{ inputs.force-inference-mode }}" == "replay" ]]; then
-            echo "rerecord-tests=false" >> $GITHUB_OUTPUT
-          else
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') }}" == "true" ]]; then
-              echo "rerecord-tests=true" >> $GITHUB_OUTPUT
-            else
-              echo "rerecord-tests=false" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-  record-tests:
-    # Sequential job for recording to avoid SQLite conflicts
-    if: ${{ needs.discover-tests.outputs.rerecord-tests == 'true' }}
-    needs: discover-tests
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-
-      - name: Setup test environment
-        uses: ./.github/actions/setup-test-environment
-        with:
-          python-version: "3.12"  # Use single Python version for recording
-          client-version: "latest"
-          provider: ${{ inputs.test-provider || 'ollama' }}
-
-      - name: Run and record tests
-        uses: ./.github/actions/run-and-record-tests
-        with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
-          stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
-          provider: ${{ inputs.test-provider || 'ollama' }}
-          inference-mode: 'record'
-
   run-replay-mode-tests:
-    # Skip this job if we're in recording mode (handled by record-tests job)
-    if: ${{ needs.discover-tests.outputs.rerecord-tests != 'true' }}
     needs: discover-tests
     runs-on: ubuntu-latest
 
@@ -135,6 +68,7 @@ jobs:
         provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
         python-version: ["3.12", "3.13"]
         client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        run-vision-tests: ['true', 'false']
 
     steps:
       - name: Checkout repository
@@ -146,11 +80,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
           provider: ${{ matrix.provider }}
+          run-vision-tests: ${{ matrix.run-vision-tests }}
 
-      - name: Run and record tests
+      - name: Run tests
         uses: ./.github/actions/run-and-record-tests
         with:
           test-types: ${{ needs.discover-tests.outputs.test-types }}
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
+          run-vision-tests: ${{ matrix.run-vision-tests }}
