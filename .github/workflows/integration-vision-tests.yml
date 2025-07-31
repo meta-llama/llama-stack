@@ -5,7 +5,7 @@ run-name: Run vision inference integration test suite from tests/integration/inf
 on:
   push:
     branches: [ main ]
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     types: [opened, synchronize, labeled]
     paths:
@@ -29,13 +29,16 @@ on:
         default: ''
 
 concurrency:
+  # This creates three concurrency groups:
+  #   ${{ github.workflow }}-${{ github.ref }}-rerecord (for valid triggers with re-record-tests label)
+  #   ${{ github.workflow }}-${{ github.ref }}-replay (for valid triggers without re-record-tests label)
+  #   ${{ github.workflow }}-${{ github.ref }}-no-run (for invalid triggers that will be skipped)
+  # The "no-run" group ensures that irrelevant label events don't interfere with the real workflows.
   group: >-
     ${{ github.workflow }}-${{ github.ref }}-${{
-    (github.event.action == 'opened' ||
-     github.event.action == 'synchronize' ||
-     (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))) &&
-    (contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay') ||
-    'no-run'
+    ((github.event.action == 'opened' || github.event.action == 'synchronize') && 'replay') ||
+    ((github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests')) && 'rerecord' ||
+    'no-run')
     }}
   cancel-in-progress: true
 
