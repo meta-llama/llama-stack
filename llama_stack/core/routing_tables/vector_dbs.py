@@ -84,8 +84,6 @@ class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
 
     async def unregister_vector_db(self, vector_db_id: str) -> None:
         existing_vector_db = await self.get_vector_db(vector_db_id)
-        if existing_vector_db is None:
-            raise VectorStoreNotFoundError(vector_db_id)
         await self.unregister_object(existing_vector_db)
 
     async def openai_retrieve_vector_store(
