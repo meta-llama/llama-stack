@@ -38,6 +38,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
             litellm_provider_name="sambanova",
             api_key_from_config=self.config.api_key.get_secret_value() if self.config.api_key else None,
             provider_data_api_key_field="sambanova_api_key",
+            openai_compat_api_base=self.config.url,
         )
 
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
@@ -80,7 +81,7 @@ class SambaNovaInferenceAdapter(LiteLLMOpenAIMixin):
         return {
             "model": request.model,
             "api_key": self.get_api_key(),
-            "api_base": self.config.url,
+            "api_base": self.api_base,
             **input_dict,
             "stream": request.stream,
             **get_sampling_options(request.sampling_params),
