@@ -47,7 +47,7 @@ jobs:
 
       - name: Build distro from config file
         run: |
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. llama stack build --config tests/external/ramalama-stack/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config tests/external/ramalama-stack/build.yaml
 
       - name: Start Llama Stack server in background
         if: ${{ matrix.image-type }} == 'venv'
