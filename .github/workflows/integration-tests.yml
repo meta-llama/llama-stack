@@ -128,11 +128,10 @@ jobs:
 
       - name: Commit and push recordings
         run: |
-          if ! git diff --quiet tests/integration/recordings/; then
-            echo "Committing recordings"
+          if ! git status --porcelain tests/integration/recordings/ | grep -q .; then
+            echo "New recordings detected, committing and pushing"
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            echo "Pushing all recording commits to PR"
             git push origin HEAD:${{ github.head_ref }}
           else
             echo "No recording changes"

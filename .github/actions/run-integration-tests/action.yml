@@ -30,7 +30,6 @@ runs:
     - name: Run Integration Tests
       env:
         LLAMA_STACK_CLIENT_TIMEOUT: "300"
-        LLAMA_STACK_TEST_RECORDING_DIR: "tests/integration/recordings"
         LLAMA_STACK_TEST_INFERENCE_MODE: ${{ inputs.inference-mode }}
       shell: bash
       run: |
@@ -51,6 +50,7 @@ runs:
         fi
 
         if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings/vision"
           if uv run pytest -s -v tests/integration/inference/test_vision_inference.py --stack-config=${stack_config} \
             -k "not( ${EXCLUDE_TESTS} )" \
             --vision-model=ollama/llama3.2-vision:11b \
@@ -66,6 +66,8 @@ runs:
           exit 0
         fi
 
+        # Run non-vision tests
+        export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
         TEST_TYPES='${{ inputs.test-types }}'
         echo "Test types to run: $TEST_TYPES"
 

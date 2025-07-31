@@ -25,7 +25,14 @@ on:
         default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay' }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+    (github.event.action == 'opened' ||
+     github.event.action == 'synchronize' ||
+     (github.event.action == 'labeled' && contains(github.event.pull_request.labels.*.name, 're-record-tests'))) &&
+    (contains(github.event.pull_request.labels.*.name, 're-record-tests') && 'rerecord' || 'replay') ||
+    'no-run'
+    }}
   cancel-in-progress: true
 
 jobs:
@@ -100,11 +107,10 @@ jobs:
 
       - name: Commit and push recordings
         run: |
-          if ! git diff --quiet tests/integration/recordings/; then
-            echo "Committing recordings"
+          if ! git status --porcelain tests/integration/recordings/ | grep -q .; then
+            echo "New recordings detected, committing and pushing"
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            echo "Pushing all recording commits to PR"
             git push origin HEAD:${{ github.head_ref }}
           else
             echo "No recording changes"
