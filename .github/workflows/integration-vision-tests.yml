@@ -119,19 +119,24 @@ jobs:
           git status --porcelain tests/integration/recordings/
           git status
 
-          if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
-            echo "New recordings detected, committing and pushing"
-            git add tests/integration/recordings/
-            git commit -m "Update recordings"
+          # if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
+          #   echo "New recordings detected, committing and pushing"
+          #   git add tests/integration/recordings/
+          #   git commit -m "Update recordings"
 
-            # re-sync with whatever is now on GitHub
-            git fetch origin ${{ github.head_ref }}
-            git rebase origin/${{ github.head_ref }}
+          #   # re-sync with whatever is now on GitHub
+          #   git fetch origin ${{ github.head_ref }}
+          #   git rebase origin/${{ github.head_ref }}
 
-            git push --force-with-lease origin HEAD:${{ github.head_ref }}
-          else
-            echo "No recording changes"
-          fi
+          #   git push --force-with-lease origin HEAD:${{ github.head_ref }}
+          # else
+          #   echo "No recording changes"
+          # fi
+
+      - name: Commit and push recordings
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "style: auto-format from CI"
 
       - name: Write inference logs to file
         if: ${{ always() }}
