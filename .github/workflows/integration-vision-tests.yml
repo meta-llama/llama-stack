@@ -17,7 +17,6 @@ on:
       - '.github/actions/setup-ollama/action.yml'
       - '.github/actions/setup-test-environment/action.yml'
       - '.github/actions/run-and-record-tests/action.yml'
-      - '.github/actions/run-integration-tests/action.yml'
   workflow_dispatch:
     inputs:
       test-all-client-versions:
