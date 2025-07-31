@@ -49,6 +49,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Generate test types
         id: generate-test-types
@@ -107,11 +109,8 @@ jobs:
 
       - name: Commit and push recordings
         run: |
-          set -x
           echo "Testing testing" > tests/integration/recordings/test.txt
-
           echo "head ref: ${{ github.head_ref }}"
-          echo "base ref: ${{ github.base_ref }}"
           echo "ref: ${{ github.ref }}"
 
           pwd
@@ -121,13 +120,8 @@ jobs:
 
           if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
             echo "New recordings detected, committing and pushing"
-
-            git checkout -B test-branch-foobar
-
             git add tests/integration/recordings/
             git commit -m "Update recordings"
-            git fetch origin ${{ github.head_ref }}
-            git rebase origin/${{ github.head_ref }}
             git push origin HEAD:${{ github.head_ref }}
           else
             echo "No recording changes"
