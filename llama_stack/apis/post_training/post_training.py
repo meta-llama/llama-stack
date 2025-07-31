@@ -193,18 +193,10 @@ class DPOLossType(Enum):
 class DPOAlignmentConfig(BaseModel):
     """Configuration for Direct Preference Optimization (DPO) alignment.
 
-    :param reward_scale: Scaling factor for the reward signal
-    :param reward_clip: Maximum absolute value for reward clipping
-    :param epsilon: Small value added for numerical stability
-    :param gamma: Discount factor for future rewards
     :param beta: Temperature parameter for the DPO loss
     :param loss_type: The type of loss function to use for DPO
     """
 
-    reward_scale: float
-    reward_clip: float
-    epsilon: float
-    gamma: float
     beta: float
     loss_type: DPOLossType = DPOLossType.sigmoid
 
