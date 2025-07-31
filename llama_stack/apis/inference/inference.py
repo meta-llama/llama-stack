@@ -41,11 +41,23 @@ from enum import StrEnum
 
 @json_schema_type
 class GreedySamplingStrategy(BaseModel):
+    """Greedy sampling strategy that selects the highest probability token at each step.
+
+    :param type: Must be "greedy" to identify this sampling strategy
+    """
+
     type: Literal["greedy"] = "greedy"
 
 
 @json_schema_type
 class TopPSamplingStrategy(BaseModel):
+    """Top-p (nucleus) sampling strategy that samples from the smallest set of tokens with cumulative probability >= p.
+
+    :param type: Must be "top_p" to identify this sampling strategy
+    :param temperature: Controls randomness in sampling. Higher values increase randomness
+    :param top_p: Cumulative probability threshold for nucleus sampling. Defaults to 0.95
+    """
+
     type: Literal["top_p"] = "top_p"
     temperature: float | None = Field(..., gt=0.0)
     top_p: float | None = 0.95
@@ -53,6 +65,12 @@ class TopPSamplingStrategy(BaseModel):
 
 @json_schema_type
 class TopKSamplingStrategy(BaseModel):
+    """Top-k sampling strategy that restricts sampling to the k most likely tokens.
+
+    :param type: Must be "top_k" to identify this sampling strategy
+    :param top_k: Number of top tokens to consider for sampling. Must be at least 1
+    """
+
     type: Literal["top_k"] = "top_k"
     top_k: int = Field(..., ge=1)
 
@@ -108,11 +126,21 @@ class QuantizationType(Enum):
 
 @json_schema_type
 class Fp8QuantizationConfig(BaseModel):
+    """Configuration for 8-bit floating point quantization.
+
+    :param type: Must be "fp8_mixed" to identify this quantization type
+    """
+
     type: Literal["fp8_mixed"] = "fp8_mixed"
 
 
 @json_schema_type
 class Bf16QuantizationConfig(BaseModel):
+    """Configuration for BFloat16 precision (typically no quantization).
+
+    :param type: Must be "bf16" to identify this quantization type
+    """
+
     type: Literal["bf16"] = "bf16"
 
 
@@ -202,6 +230,14 @@ register_schema(Message, name="Message")
 
 @json_schema_type
 class ToolResponse(BaseModel):
+    """Response from a tool invocation.
+
+    :param call_id: Unique identifier for the tool call this response is for
+    :param tool_name: Name of the tool that was invoked
+    :param content: The response content from the tool
+    :param metadata: (Optional) Additional metadata about the tool response
+    """
+
     call_id: str
     tool_name: BuiltinTool | str
     content: InterleavedContent
@@ -439,18 +475,36 @@ class EmbeddingsResponse(BaseModel):
 
 @json_schema_type
 class OpenAIChatCompletionContentPartTextParam(BaseModel):
+    """Text content part for OpenAI-compatible chat completion messages.
+
+    :param type: Must be "text" to identify this as text content
+    :param text: The text content of the message
+    """
+
     type: Literal["text"] = "text"
     text: str
 
 
 @json_schema_type
 class OpenAIImageURL(BaseModel):
+    """Image URL specification for OpenAI-compatible chat completion messages.
+
+    :param url: URL of the image to include in the message
+    :param detail: (Optional) Level of detail for image processing. Can be "low", "high", or "auto"
+    """
+
     url: str
     detail: str | None = None
 
 
 @json_schema_type
 class OpenAIChatCompletionContentPartImageParam(BaseModel):
+    """Image content part for OpenAI-compatible chat completion messages.
+
+    :param type: Must be "image_url" to identify this as image content
+    :param image_url: Image URL specification and processing details
+    """
+
     type: Literal["image_url"] = "image_url"
     image_url: OpenAIImageURL
 
@@ -510,12 +564,26 @@ class OpenAISystemMessageParam(BaseModel):
 
 @json_schema_type
 class OpenAIChatCompletionToolCallFunction(BaseModel):
+    """Function call details for OpenAI-compatible tool calls.
+
+    :param name: (Optional) Name of the function to call
+    :param arguments: (Optional) Arguments to pass to the function as a JSON string
+    """
+
     name: str | None = None
     arguments: str | None = None
 
 
 @json_schema_type
 class OpenAIChatCompletionToolCall(BaseModel):
+    """Tool call specification for OpenAI-compatible chat completion responses.
+
+    :param index: (Optional) Index of the tool call in the list
+    :param id: (Optional) Unique identifier for the tool call
+    :param type: Must be "function" to identify this as a function call
+    :param function: (Optional) Function call details
+    """
+
     index: int | None = None
     id: str | None = None
     type: Literal["function"] = "function"
@@ -579,11 +647,24 @@ register_schema(OpenAIMessageParam, name="OpenAIMessageParam")
 
 @json_schema_type
 class OpenAIResponseFormatText(BaseModel):
+    """Text response format for OpenAI-compatible chat completion requests.
+
+    :param type: Must be "text" to indicate plain text response format
+    """
+
     type: Literal["text"] = "text"
 
 
 @json_schema_type
 class OpenAIJSONSchema(TypedDict, total=False):
+    """JSON schema specification for OpenAI-compatible structured response format.
+
+    :param name: Name of the schema
+    :param description: (Optional) Description of the schema
+    :param strict: (Optional) Whether to enforce strict adherence to the schema
+    :param schema: (Optional) The JSON schema definition
+    """
+
     name: str
     description: str | None
     strict: bool | None
@@ -597,12 +678,23 @@ class OpenAIJSONSchema(TypedDict, total=False):
 
 @json_schema_type
 class OpenAIResponseFormatJSONSchema(BaseModel):
+    """JSON schema response format for OpenAI-compatible chat completion requests.
+
+    :param type: Must be "json_schema" to indicate structured JSON response format
+    :param json_schema: The JSON schema specification for the response
+    """
+
     type: Literal["json_schema"] = "json_schema"
     json_schema: OpenAIJSONSchema
 
 
 @json_schema_type
 class OpenAIResponseFormatJSONObject(BaseModel):
+    """JSON object response format for OpenAI-compatible chat completion requests.
+
+    :param type: Must be "json_object" to indicate generic JSON object response format
+    """
+
     type: Literal["json_object"] = "json_object"
 
 
@@ -861,11 +953,21 @@ class EmbeddingTaskType(Enum):
 
 @json_schema_type
 class BatchCompletionResponse(BaseModel):
+    """Response from a batch completion request.
+
+    :param batch: List of completion responses, one for each input in the batch
+    """
+
     batch: list[CompletionResponse]
 
 
 @json_schema_type
 class BatchChatCompletionResponse(BaseModel):
+    """Response from a batch chat completion request.
+
+    :param batch: List of chat completion responses, one for each conversation in the batch
+    """
+
     batch: list[ChatCompletionResponse]
 
 
@@ -875,6 +977,15 @@ class OpenAICompletionWithInputMessages(OpenAIChatCompletion):
 
 @json_schema_type
 class ListOpenAIChatCompletionResponse(BaseModel):
+    """Response from listing OpenAI-compatible chat completions.
+
+    :param data: List of chat completion objects with their input messages
+    :param has_more: Whether there are more completions available beyond this list
+    :param first_id: ID of the first completion in this list
+    :param last_id: ID of the last completion in this list
+    :param object: Must be "list" to identify this as a list response
+    """
+
     data: list[OpenAICompletionWithInputMessages]
     has_more: bool
     first_id: str

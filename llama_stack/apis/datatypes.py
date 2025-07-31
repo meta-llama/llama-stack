@@ -81,6 +81,29 @@ class DynamicApiMeta(EnumMeta):
 
 @json_schema_type
 class Api(Enum, metaclass=DynamicApiMeta):
+    """Enumeration of all available APIs in the Llama Stack system.
+    :cvar providers: Provider management and configuration
+    :cvar inference: Text generation, chat completions, and embeddings
+    :cvar safety: Content moderation and safety shields
+    :cvar agents: Agent orchestration and execution
+    :cvar vector_io: Vector database operations and queries
+    :cvar datasetio: Dataset input/output operations
+    :cvar scoring: Model output evaluation and scoring
+    :cvar eval: Model evaluation and benchmarking framework
+    :cvar post_training: Fine-tuning and model training
+    :cvar tool_runtime: Tool execution and management
+    :cvar telemetry: Observability and system monitoring
+    :cvar models: Model metadata and management
+    :cvar shields: Safety shield implementations
+    :cvar vector_dbs: Vector database management
+    :cvar datasets: Dataset creation and management
+    :cvar scoring_functions: Scoring function definitions
+    :cvar benchmarks: Benchmark suite management
+    :cvar tool_groups: Tool group organization
+    :cvar files: File storage and management
+    :cvar inspect: Built-in system inspection and introspection
+    """
+
     providers = "providers"
     inference = "inference"
     safety = "safety"
