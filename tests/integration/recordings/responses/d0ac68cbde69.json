@@ -13,30 +13,12 @@
       "__data__": {
         "models": [
           {
-            "model": "all-minilm:l6-v2",
-            "name": "all-minilm:l6-v2",
-            "digest": "1b226e2802dbb772b5fc32a58f103ca1804ef7501331012de126ab22f67475ef",
-            "expires_at": "2025-07-31T18:05:06.618179Z",
-            "size": 53334016,
-            "size_vram": 0,
-            "details": {
-              "parent_model": "",
-              "format": "gguf",
-              "family": "bert",
-              "families": [
-                "bert"
-              ],
-              "parameter_size": "23M",
-              "quantization_level": "F16"
-            }
-          },
-          {
             "model": "llama3.2:3b-instruct-fp16",
             "name": "llama3.2:3b-instruct-fp16",
             "digest": "195a8c01d91ec3cb1e0aad4624a51f2602c51fa7d96110f8ab5a20c84081804d",
-            "expires_at": "2025-07-31T18:04:42.166739Z",
-            "size": 7382700032,
-            "size_vram": 0,
+            "expires_at": "2025-08-01T16:18:11.656155-07:00",
+            "size": 8581748736,
+            "size_vram": 8581748736,
             "details": {
               "parent_model": "",
               "format": "gguf",
@@ -52,9 +34,9 @@
             "model": "llama-guard3:1b",
             "name": "llama-guard3:1b",
             "digest": "494147e06bf99e10dbe67b63a07ac81c162f18ef3341aa3390007ac828571b3b",
-            "expires_at": "2025-07-31T18:04:06.788447Z",
-            "size": 1814095872,
-            "size_vram": 0,
+            "expires_at": "2025-08-01T16:17:54.635270-07:00",
+            "size": 2770397184,
+            "size_vram": 2770397184,
             "details": {
               "parent_model": "",
               "format": "gguf",
