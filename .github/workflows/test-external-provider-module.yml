@@ -12,15 +12,13 @@ on:
       - 'tests/integration/**'
       - 'uv.lock'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - 'tests/external/*'
       - '.github/workflows/test-external-provider-module.yml' # This workflow
 
-# This workflow is disabled. See https://github.com/meta-llama/llama-stack/pull/2975#issuecomment-3138702984 for details
-if: false
-
 jobs:
   test-external-providers-from-module:
+    # This workflow is disabled. See https://github.com/meta-llama/llama-stack/pull/2975#issuecomment-3138702984 for details
+    if: false
     runs-on: ubuntu-latest
     strategy:
       matrix:

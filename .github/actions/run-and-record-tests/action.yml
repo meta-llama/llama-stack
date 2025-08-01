@@ -192,7 +192,7 @@ runs:
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: ${{ inputs.inference-mode }}-logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ inputs.provider }}-${{ inputs.run-vision-tests }}-${{ inputs.stack-config }}
+        name: logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ strategy.job-index }}
         path: |
           *.log
         retention-days: 1

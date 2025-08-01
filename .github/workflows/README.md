@@ -8,9 +8,8 @@ Llama Stack uses GitHub Actions for Continuous Integration (CI). Below is a tabl
 | Installer CI | [install-script-ci.yml](install-script-ci.yml) | Test the installation script |
 | Integration Auth Tests | [integration-auth-tests.yml](integration-auth-tests.yml) | Run the integration test suite with Kubernetes authentication |
 | SqlStore Integration Tests | [integration-sql-store-tests.yml](integration-sql-store-tests.yml) | Run the integration test suite with SqlStore |
-| Integration Tests | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration |
+| Integration Tests (Replay) | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration in replay mode |
 | Vector IO Integration Tests | [integration-vector-io-tests.yml](integration-vector-io-tests.yml) | Run the integration test suite with various VectorIO providers |
-| Vision Inference Integration Tests | [integration-vision-tests.yml](integration-vision-tests.yml) | Run vision inference integration test suite from tests/integration/inference |
 | Pre-commit | [pre-commit.yml](pre-commit.yml) | Run pre-commit checks |
 | Test Llama Stack Build | [providers-build.yml](providers-build.yml) | Test llama stack build |
 | Python Package Build Test | [python-build-test.yml](python-build-test.yml) | Test building the llama-stack PyPI project |
