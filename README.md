@@ -111,29 +111,33 @@ Here is a list of the various API providers and available distributions that can
 Please checkout for [full list](https://llama-stack.readthedocs.io/en/latest/providers/index.html)
 
 | API Provider Builder | Environments | Agents | Inference | VectorIO | Safety | Telemetry | Post Training | Eval | DatasetIO |
-|:-------------------:|:------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:--------:|
-| Meta Reference | Single Node | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SambaNova | Hosted | | ✅ | | ✅ | | | | |
-| Cerebras | Hosted | | ✅ | | | | | | |
-| Fireworks | Hosted | ✅ | ✅ | ✅ | | | | | |
-| AWS Bedrock | Hosted | | ✅ | | ✅ | | | | |
-| Together | Hosted | ✅ | ✅ | | ✅ | | | | |
-| Groq | Hosted | | ✅ | | | | | | |
-| Ollama | Single Node | | ✅ | | | | | | |
-| TGI | Hosted/Single Node | | ✅ | | | | | | |
-| NVIDIA NIM | Hosted/Single Node | | ✅ | | ✅ | | | | |
-| ChromaDB | Hosted/Single Node | | | ✅ | | | | | |
-| PG Vector | Single Node | | | ✅ | | | | | |
-| PyTorch ExecuTorch | On-device iOS | ✅ | ✅ | | | | | | |
-| vLLM | Single Node | | ✅ | | | | | | |
-| OpenAI | Hosted | | ✅ | | | | | | |
-| Anthropic | Hosted | | ✅ | | | | | | |
-| Gemini | Hosted | | ✅ | | | | | | |
-| WatsonX | Hosted | | ✅ | | | | | | |
-| HuggingFace | Single Node | | | | | | ✅ | | ✅ |
-| TorchTune | Single Node | | | | | | ✅ | | |
-| NVIDIA NEMO | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
-| NVIDIA | Hosted | | | | | | ✅ | ✅ | ✅ |
+|:--------------------:|:------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:--------:|
+|    Meta Reference    | Single Node | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+|      SambaNova       | Hosted | | ✅ | | ✅ | | | | |
+|       Cerebras       | Hosted | | ✅ | | | | | | |
+|      Fireworks       | Hosted | ✅ | ✅ | ✅ | | | | | |
+|     AWS Bedrock      | Hosted | | ✅ | | ✅ | | | | |
+|       Together       | Hosted | ✅ | ✅ | | ✅ | | | | |
+|         Groq         | Hosted | | ✅ | | | | | | |
+|        Ollama        | Single Node | | ✅ | | | | | | |
+|         TGI          | Hosted/Single Node | | ✅ | | | | | | |
+|      NVIDIA NIM      | Hosted/Single Node | | ✅ | | ✅ | | | | |
+|       ChromaDB       | Hosted/Single Node | | | ✅ | | | | | |
+|        Milvus        | Hosted/Single Node | | | ✅ | | | | | |
+|        Qdrant        | Hosted/Single Node | | | ✅ | | | | | |
+|       Weaviate       | Hosted/Single Node | | | ✅ | | | | | |
+|      SQLite-vec      | Single Node | | | ✅ | | | | | |
+|      PG Vector       | Single Node | | | ✅ | | | | | |
+|  PyTorch ExecuTorch  | On-device iOS | ✅ | ✅ | | | | | | |
+|         vLLM         | Single Node | | ✅ | | | | | | |
+|        OpenAI        | Hosted | | ✅ | | | | | | |
+|      Anthropic       | Hosted | | ✅ | | | | | | |
+|        Gemini        | Hosted | | ✅ | | | | | | |
+|       WatsonX        | Hosted | | ✅ | | | | | | |
+|     HuggingFace      | Single Node | | | | | | ✅ | | ✅ |
+|      TorchTune       | Single Node | | | | | | ✅ | | |
+|     NVIDIA NEMO      | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
+|        NVIDIA        | Hosted | | | | | | ✅ | ✅ | ✅ |
 
 > **Note**: Additional providers are available through external packages. See [External Providers](https://llama-stack.readthedocs.io/en/latest/providers/external.html) documentation.
 
