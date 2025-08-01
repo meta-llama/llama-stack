@@ -18,7 +18,7 @@ export POSTGRES_PASSWORD=llamastack
 
 export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
 export CODE_MODEL=bigcode/starcoder2-7b
-
+export OLLAMA_MODEL=llama-guard3:1b
 # Set USE_EBS to false if you don't have permission to use EKS EBS
 export USE_EBS=${USE_EBS:-false}
 set -euo pipefail
@@ -44,10 +44,6 @@ else
   exit 1
 fi
 
-if [ -z "${LLAMA_STACK_UI_URL:-}" ]; then
-  echo "ERROR: LLAMA_STACK_UI_URL not set. Should be set to the external URL of the UI (excluding port). You need it for Github login to work. Refer to https://llama-stack.readthedocs.io/en/latest/deploying/index.html#kubernetes-deployment-guide"
-  exit 1
-fi
 
 
 
@@ -84,6 +80,7 @@ echo "Secret verification successful. All required secrets are present."
 if [ "$USE_EBS" = "true" ]; then
   echo "Using EBS storage for persistent volumes"
   envsubst < ./vllm-k8s.yaml.template | kubectl apply -f -
+  envsubst < ./ollama-safety-k8s.yaml.template | kubectl apply -f -
   envsubst < ./llama-nim.yaml.template | kubectl apply -f -
   envsubst < ./postgres-k8s.yaml.template | kubectl apply -f -
   envsubst < ./chroma-k8s.yaml.template | kubectl apply -f -
@@ -114,6 +111,7 @@ else
   echo "Using emptyDir for storage (data will not persist across pod restarts)"
   # Process templates to replace EBS storage with emptyDir
   envsubst < ./vllm-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
+  envsubst < ./ollama-safety-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./llama-nim.yaml.template | kubectl apply -f -
   envsubst < ./postgres-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./chroma-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -

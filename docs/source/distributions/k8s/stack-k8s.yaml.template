@@ -55,6 +55,8 @@ spec:
           value: "3072"
         - name: NVIDIA_BASE_URL
           value: http://llm-nim-code.default.svc.cluster.local:8000
+        - name: OLLAMA_BASE_URL
+          value: http://ollama-safety.default.svc.cluster.local:8000
         - name: POSTGRES_HOST
           value: postgres-server.default.svc.cluster.local
         - name: POSTGRES_PORT
@@ -67,6 +69,8 @@ spec:
           value: "${CODE_MODEL}"
         - name: TAVILY_SEARCH_API_KEY
           value: "${TAVILY_SEARCH_API_KEY}"
+        - name: OLLAMA_MODLE
+          value: "${OLLAMA_MODEL}"
         command: ["/bin/sh"]
         args:
           - -c

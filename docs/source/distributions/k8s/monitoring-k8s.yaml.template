@@ -18,7 +18,7 @@ data:
 
     scrape_configs:
       # NVIDIA DCGM exporter for GPU metrics
-      - job_name: 'nvidia-dcgm-exporter'
+      - job_name: 'dcgm'
         static_configs:
           - targets: ['dcgm-exporter:9400']
 
@@ -98,6 +98,30 @@ data:
           - targets: ['llm-nim-code:8000']
         metrics_path: /v1/metrics
         scrape_interval: 5s
+
+      # Specific job for Ollama pods
+      - job_name: 'ollama-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_name]
+            regex: ollama-safety
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
 ---
 # Prometheus Deployment
 apiVersion: apps/v1
@@ -262,9 +286,9 @@ data:
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
-          "targets": [
+        "targets": [
             {
-              "expr": "DCGM_FI_DEV_GPU_UTIL{pod=~\"llm-nim-code.*\"}",
+              "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"dcgm-exporter:9400\", pod=~\"(llm-nim-code|vllm).*\"}",
               "refId": "A",
               "legendFormat": "GPU {{gpu}} - {{pod}}"
             }
@@ -351,7 +375,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "DCGM_FI_DEV_FB_USED{pod=~\"llm-nim-code.*\"} / 1024 / 1024 / 1024",
+              "expr": "DCGM_FI_DEV_FB_USED{instance=\"dcgm-exporter:9400\", pod=~\"(llm-nim-code|vllm).*\"} / 1024 / 1024 / 1024",
               "refId": "A",
               "legendFormat": "GPU {{gpu}} - {{pod}}"
             }
@@ -438,7 +462,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "DCGM_FI_DEV_POWER_USAGE{pod=~\"llm-nim-code.*\"}",
+              "expr": "DCGM_FI_DEV_POWER_USAGE{instance=\"dcgm-exporter:9400\", pod=~\"(llm-nim-code|vllm).*\"}",
               "refId": "A",
               "legendFormat": "GPU {{gpu}} - {{pod}}"
             }
@@ -525,7 +549,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "DCGM_FI_DEV_GPU_TEMP{pod=~\"llm-nim-code.*\"}",
+              "expr": "DCGM_FI_DEV_GPU_TEMP{instance=\"dcgm-exporter:9400\", pod=~\"(llm-nim-code|vllm).*\"}",
               "refId": "A",
               "legendFormat": "GPU {{gpu}} - {{pod}}"
             }
@@ -954,6 +978,763 @@ data:
       "uid": "nim-dashboard",
       "version": 1
     }
+  ollama-dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "gnetId": null,
+      "graphTooltip": 0,
+      "id": 3,
+      "links": [],
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "hiddenSeries": false,
+          "id": 1,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "rate(ollama_requests_total{kubernetes_pod_name=~\"ollama-safety.*\"}[1m])",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama Request Rate",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "reqps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 0
+          },
+          "hiddenSeries": false,
+          "id": 2,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, sum(rate(ollama_request_duration_seconds_bucket{kubernetes_pod_name=~\"ollama-safety.*\"}[5m])) by (le))",
+              "refId": "A",
+              "legendFormat": "p95"
+            },
+            {
+              "expr": "histogram_quantile(0.50, sum(rate(ollama_request_duration_seconds_bucket{kubernetes_pod_name=~\"ollama-safety.*\"}[5m])) by (le))",
+              "refId": "B",
+              "legendFormat": "p50"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama Request Latency",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 8
+          },
+          "hiddenSeries": false,
+          "id": 3,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "ollama_active_requests{kubernetes_pod_name=~\"ollama-safety.*\"}",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama Active Requests",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 8
+          },
+          "hiddenSeries": false,
+          "id": 4,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "ollama_tokens_per_second{kubernetes_pod_name=~\"ollama-safety.*\"}",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama Tokens Per Second",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "hiddenSeries": false,
+          "id": 5,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum by(kubernetes_pod_name) (container_memory_usage_bytes{pod=~\"ollama-safety.*\"})",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama Memory Usage",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "bytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 16
+          },
+          "hiddenSeries": false,
+          "id": 6,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum by(kubernetes_pod_name) (rate(container_cpu_usage_seconds_total{pod=~\"ollama-safety.*\"}[5m]))",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama CPU Usage",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 24
+          },
+          "hiddenSeries": false,
+          "id": 7,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "ollama_gpu_memory_used_bytes{kubernetes_pod_name=~\"ollama-safety.*\"}",
+              "refId": "A",
+              "legendFormat": "Used - {{kubernetes_pod_name}}"
+            },
+            {
+              "expr": "ollama_gpu_memory_total_bytes{kubernetes_pod_name=~\"ollama-safety.*\"}",
+              "refId": "B",
+              "legendFormat": "Total - {{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama GPU Memory",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "bytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "Prometheus",
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 24
+          },
+          "hiddenSeries": false,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": true,
+            "max": true,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "dataLinks": []
+          },
+          "percentage": false,
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "ollama_gpu_utilization{kubernetes_pod_name=~\"ollama-safety.*\"}",
+              "refId": "A",
+              "legendFormat": "{{kubernetes_pod_name}}"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ollama GPU Utilization",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "percent",
+              "label": null,
+              "logBase": 1,
+              "max": "100",
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        }
+      ],
+      "schemaVersion": 22,
+      "style": "dark",
+      "tags": [],
+      "templating": {
+        "list": []
+      },
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": [
+          "5s",
+          "10s",
+          "30s",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "1h",
+          "2h",
+          "1d"
+        ]
+      },
+      "timezone": "",
+      "title": "Ollama Monitoring",
+      "uid": "ollama-dashboard",
+      "version": 1
+    }
   k8s-pods-dashboard.json: |
     {
       "annotations": {
@@ -1378,8 +2159,9 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "gpu_utilization{model_name=~\".+\"}",
-              "refId": "A"
+              "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"dcgm-exporter:9400\"}",
+              "refId": "A",
+              "legendFormat": "GPU {{gpu}}"
             }
           ],
           "thresholds": [],
@@ -1464,8 +2246,9 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "gpu_memory_used_bytes{model_name=~\".+\"} / gpu_memory_total_bytes{model_name=~\".+\"} * 100",
-              "refId": "A"
+              "expr": "DCGM_FI_DEV_FB_USED{instance=\"dcgm-exporter:9400\"} / (DCGM_FI_DEV_FB_USED{instance=\"dcgm-exporter:9400\"} + DCGM_FI_DEV_FB_FREE{instance=\"dcgm-exporter:9400\"}) * 100",
+              "refId": "A",
+              "legendFormat": "GPU {{gpu}}"
             }
           ],
           "thresholds": [],
@@ -1550,8 +2333,9 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "gpu_power_usage_watts{model_name=~\".+\"}",
-              "refId": "A"
+              "expr": "DCGM_FI_DEV_POWER_USAGE{instance=\"dcgm-exporter:9400\"}",
+              "refId": "A",
+              "legendFormat": "GPU {{gpu}}"
             }
           ],
           "thresholds": [],
@@ -2298,20 +3082,65 @@ spec:
     spec:
       containers:
       - name: dcgm-exporter
-        image: nvidia/dcgm-exporter:2.4.6-2.6.10-ubuntu20.04
+        image: nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.3.0-ubuntu22.04
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
         ports:
         - containerPort: 9400
           name: metrics
+        args:
+        - -f
+        - /etc/dcgm-exporter/dcp-metrics-included.csv
         volumeMounts:
         - name: device-metrics
           mountPath: /dev/metrics
+        - name: dcgm-config
+          mountPath: /etc/dcgm-exporter
       volumes:
       - name: device-metrics
         hostPath:
           path: /dev/metrics
+      - name: dcgm-config
+        configMap:
+          name: dcgm-config
+---
+# DCGM Exporter ConfigMap for metrics configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dcgm-config
+  namespace: monitoring
+data:
+  dcp-metrics-included.csv: |
+    # Format:
+    # DCGM_FI_DEV_<fieldname>, <description>, <units>
+    DCGM_FI_DEV_GPU_UTIL, GPU utilization, %
+    DCGM_FI_DEV_MEM_COPY_UTIL, Memory utilization, %
+    DCGM_FI_DEV_FB_FREE, Framebuffer memory free, MiB
+    DCGM_FI_DEV_FB_USED, Framebuffer memory used, MiB
+    DCGM_FI_DEV_FB_TOTAL, Framebuffer memory total, MiB
+    DCGM_FI_DEV_GPU_TEMP, GPU temperature, C
+    DCGM_FI_DEV_POWER_USAGE, Power usage, W
+    DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION, Total energy consumption, mJ
+    DCGM_FI_DEV_PCIE_REPLAY_COUNTER, PCIe replay counter, count
+    DCGM_FI_DEV_PCIE_TX_THROUGHPUT, PCIe transmit throughput, KiB/s
+    DCGM_FI_DEV_PCIE_RX_THROUGHPUT, PCIe receive throughput, KiB/s
+    DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL, NVLink bandwidth total, KiB/s
+    DCGM_FI_DEV_VGPU_LICENSE_STATUS, vGPU license status, N/A
+    DCGM_FI_DEV_UNCORRECTABLE_REMAPPED_ROWS, Uncorrectable remapped rows, count
+    DCGM_FI_DEV_CORRECTABLE_REMAPPED_ROWS, Correctable remapped rows, count
+    DCGM_FI_DEV_ROW_REMAP_FAILURE, Row remap failure, count
+    DCGM_FI_DEV_XID_ERRORS, XID errors, count
+    DCGM_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL, NVLink CRC flit error count total, count
+    DCGM_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT_TOTAL, NVLink CRC data error count total, count
+    DCGM_FI_DEV_NVLINK_REPLAY_ERROR_COUNT_TOTAL, NVLink replay error count total, count
+    DCGM_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT_TOTAL, NVLink recovery error count total, count
+    DCGM_FI_DEV_RETIRED_PAGES_SBE, Retired pages SBE, count
+    DCGM_FI_DEV_RETIRED_PAGES_DBE, Retired pages DBE, count
+    DCGM_FI_DEV_RETIRED_PAGES_PENDING, Retired pages pending, count
+    DCGM_FI_DEV_GRAPHICS_PIDS, Graphics processes, count
+    DCGM_FI_DEV_COMPUTE_PIDS, Compute processes, count
 ---
 # NVIDIA DCGM Exporter Service
 apiVersion: v1

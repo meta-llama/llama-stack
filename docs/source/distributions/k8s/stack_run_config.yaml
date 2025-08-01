@@ -22,6 +22,10 @@ providers:
       url: ${env.NVIDIA_BASE_URL:=http://localhost:8000/v1}
       api_key: ${env.NVIDIA_API_KEY:=}
       append_api_version: ${env.NVIDIA_APPEND_API_VERSION:=True}
+  - provider_id: ollama-safety
+    provider_type: remote::ollama
+    config:
+      url: ${env.OLLAMA_BASE_URL:=http://localhost:11434/v1}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}
@@ -105,6 +109,12 @@ models:
   model_id: ${env.CODE_MODEL:=bigcode/starcoder2-7b}
   provider_id: nvidia
   model_type: llm
+- metadata: {}
+  model_id: ${env.OLLAMA_MODEL:=llama-guard3:1b}
+  provider_id: ollama-safety
+  model_type: llm
+shields:
+- shield_id: ${env.OLLAMA_MODEL:=meta-llama/Llama-Guard-3-1B}
 vector_dbs: []
 datasets: []
 scoring_fns: []
