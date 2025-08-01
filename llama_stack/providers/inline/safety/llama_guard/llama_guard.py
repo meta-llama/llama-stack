@@ -423,7 +423,7 @@ class LlamaGuardShield:
     def create_safe_moderation_object(self, model: str) -> ModerationObject:
         """Create a ModerationObject for safe content."""
         categories = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), False)
-        category_scores = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), 0.0)
+        category_scores = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), 1.0)
         category_applied_input_types = {key: [] for key in OPENAI_TO_LLAMA_CATEGORIES_MAP.keys()}
 
         return ModerationObject(
