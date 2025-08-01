@@ -173,11 +173,23 @@ runs:
             git commit -m "Recordings update from CI"
           fi
 
-          git fetch origin ${{ github.event.pull_request.head.ref }}
-          git rebase origin/${{ github.event.pull_request.head.ref }}
-          echo "Rebased successfully"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          echo "Pushed successfully"
+          # Handle both fork PRs and regular PRs
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "Fork PR detected from ${{ github.event.pull_request.head.repo.full_name }}"
+            echo "📦 Updated recordings are available as workflow artifacts"
+            echo ""
+            echo "To update your PR:"
+            echo "1. Download the 'updated-recordings' artifact from this workflow run"
+            echo "2. Extract the ZIP file"
+            echo "3. Replace tests/integration/recordings/ in your fork with the extracted files"
+            echo "4. Commit and push: git add tests/integration/recordings/ && git commit -m 'Update recordings' && git push"
+          else
+            git fetch origin ${{ github.event.pull_request.head.ref }}
+            git rebase origin/${{ github.event.pull_request.head.ref }}
+            echo "Rebased successfully"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            echo "Pushed successfully"
+          fi
         else
           echo "No recording changes"
         fi
@@ -187,6 +199,14 @@ runs:
       shell: bash
       run: |
         sudo docker logs ollama > ollama-${{ inputs.inference-mode }}.log || true
+
+    - name: Upload recordings (for fork PRs)
+      if: ${{ inputs.inference-mode == 'record' && github.event.pull_request.head.repo.full_name != github.repository }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: updated-recordings-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ strategy.job-index }}
+        path: tests/integration/recordings/
+        retention-days: 7
 
     - name: Upload logs
       if: ${{ always() }}
