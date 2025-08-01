@@ -22,12 +22,16 @@ from llama_stack.core.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
+from llama_stack.providers.utils.memory.openai_vector_store_mixin import (
+    OpenAIVectorStoreMixin,
+)
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collection_name
 
-from .config import WeaviateRequestProviderData, WeaviateVectorIOConfig
+from .config import WeaviateVectorIOConfig
 
 log = logging.getLogger(__name__)
 
@@ -40,10 +44,18 @@ OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_conten
 
 
 class WeaviateIndex(EmbeddingIndex):
-    def __init__(self, client: weaviate.Client, collection_name: str, kvstore: KVStore | None = None):
+    def __init__(
+        self,
+        client: weaviate.Client,
+        collection_name: str,
+        kvstore: KVStore | None = None,
+    ):
         self.client = client
-        self.collection_name = collection_name
+        self.collection_name = sanitize_collection_name(collection_name, weaviate_format=True)
         self.kvstore = kvstore
+
+    async def initialize(self):
+        pass
 
     async def add_chunks(self, chunks: list[Chunk], embeddings: NDArray):
         assert len(chunks) == len(embeddings), (
@@ -68,10 +80,13 @@ class WeaviateIndex(EmbeddingIndex):
         collection.data.insert_many(data_objects)
 
     async def delete_chunk(self, chunk_id: str) -> None:
-        raise NotImplementedError("delete_chunk is not supported in Chroma")
+        sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
+        collection = self.client.collections.get(sanitized_collection_name)
+        collection.data.delete_many(where=Filter.by_property("id").contains_any([chunk_id]))
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
-        collection = self.client.collections.get(self.collection_name)
+        sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
+        collection = self.client.collections.get(sanitized_collection_name)
 
         results = collection.query.near_vector(
             near_vector=embedding.tolist(),
@@ -95,8 +110,17 @@ class WeaviateIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
-    async def delete(self, chunk_ids: list[str]) -> None:
-        collection = self.client.collections.get(self.collection_name)
+    async def delete(self, chunk_ids: list[str] | None = None) -> None:
+        """
+        Delete chunks by IDs if provided, otherwise drop the entire collection.
+        """
+        sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
+        if chunk_ids is None:
+            # Drop entire collection if it exists
+            if self.client.collections.exists(sanitized_collection_name):
+                self.client.collections.delete(sanitized_collection_name)
+            return
+        collection = self.client.collections.get(sanitized_collection_name)
         collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
 
     async def query_keyword(
@@ -120,6 +144,7 @@ class WeaviateIndex(EmbeddingIndex):
 
 
 class WeaviateVectorIOAdapter(
+    OpenAIVectorStoreMixin,
     VectorIO,
     NeedsRequestProviderData,
     VectorDBsProtocolPrivate,
@@ -141,42 +166,56 @@ class WeaviateVectorIOAdapter(
         self.metadata_collection_name = "openai_vector_stores_metadata"
 
     def _get_client(self) -> weaviate.Client:
-        provider_data = self.get_request_provider_data()
-        assert provider_data is not None, "Request provider data must be set"
-        assert isinstance(provider_data, WeaviateRequestProviderData)
-
-        key = f"{provider_data.weaviate_cluster_url}::{provider_data.weaviate_api_key}"
-        if key in self.client_cache:
-            return self.client_cache[key]
-
-        client = weaviate.connect_to_weaviate_cloud(
-            cluster_url=provider_data.weaviate_cluster_url,
-            auth_credentials=Auth.api_key(provider_data.weaviate_api_key),
-        )
+        if "localhost" in self.config.weaviate_cluster_url:
+            log.info("using Weaviate locally in container")
+            host, port = self.config.weaviate_cluster_url.split(":")
+            key = "local_test"
+            client = weaviate.connect_to_local(
+                host=host,
+                port=port,
+            )
+        else:
+            log.info("Using Weaviate remote cluster with URL")
+            key = f"{self.config.weaviate_cluster_url}::{self.config.weaviate_api_key}"
+            if key in self.client_cache:
+                return self.client_cache[key]
+            client = weaviate.connect_to_weaviate_cloud(
+                cluster_url=self.config.weaviate_cluster_url,
+                auth_credentials=Auth.api_key(self.config.weaviate_api_key),
+            )
         self.client_cache[key] = client
         return client
 
     async def initialize(self) -> None:
         """Set up KV store and load existing vector DBs and OpenAI vector stores."""
-        # Initialize KV store for metadata
-        self.kvstore = await kvstore_impl(self.config.kvstore)
+        # Initialize KV store for metadata if configured
+        if self.config.kvstore is not None:
+            self.kvstore = await kvstore_impl(self.config.kvstore)
+        else:
+            self.kvstore = None
+            log.info("No kvstore configured, registry will not persist across restarts")
 
         # Load existing vector DB definitions
-        start_key = VECTOR_DBS_PREFIX
-        end_key = f"{VECTOR_DBS_PREFIX}\xff"
-        stored = await self.kvstore.values_in_range(start_key, end_key)
-        for raw in stored:
-            vector_db = VectorDB.model_validate_json(raw)
-            client = self._get_client()
-            idx = WeaviateIndex(client=client, collection_name=vector_db.identifier, kvstore=self.kvstore)
-            self.cache[vector_db.identifier] = VectorDBWithIndex(
-                vector_db=vector_db,
-                index=idx,
-                inference_api=self.inference_api,
-            )
+        if self.kvstore is not None:
+            start_key = VECTOR_DBS_PREFIX
+            end_key = f"{VECTOR_DBS_PREFIX}\xff"
+            stored = await self.kvstore.values_in_range(start_key, end_key)
+            for raw in stored:
+                vector_db = VectorDB.model_validate_json(raw)
+                client = self._get_client()
+                idx = WeaviateIndex(
+                    client=client,
+                    collection_name=vector_db.identifier,
+                    kvstore=self.kvstore,
+                )
+                self.cache[vector_db.identifier] = VectorDBWithIndex(
+                    vector_db=vector_db,
+                    index=idx,
+                    inference_api=self.inference_api,
+                )
 
-        # Load OpenAI vector stores metadata into cache
-        await self.initialize_openai_vector_stores()
+            # Load OpenAI vector stores metadata into cache
+            await self.initialize_openai_vector_stores()
 
     async def shutdown(self) -> None:
         for client in self.client_cache.values():
@@ -187,11 +226,11 @@ class WeaviateVectorIOAdapter(
         vector_db: VectorDB,
     ) -> None:
         client = self._get_client()
-
+        sanitized_collection_name = sanitize_collection_name(vector_db.identifier, weaviate_format=True)
         # Create collection if it doesn't exist
-        if not client.collections.exists(vector_db.identifier):
+        if not client.collections.exists(sanitized_collection_name):
             client.collections.create(
-                name=vector_db.identifier,
+                name=sanitized_collection_name,
                 vectorizer_config=wvc.config.Configure.Vectorizer.none(),
                 properties=[
                     wvc.config.Property(
@@ -201,30 +240,41 @@ class WeaviateVectorIOAdapter(
                 ],
             )
 
-        self.cache[vector_db.identifier] = VectorDBWithIndex(
+        self.cache[sanitized_collection_name] = VectorDBWithIndex(
             vector_db,
-            WeaviateIndex(client=client, collection_name=vector_db.identifier),
+            WeaviateIndex(client=client, collection_name=sanitized_collection_name),
             self.inference_api,
         )
 
-    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
-        if vector_db_id in self.cache:
-            return self.cache[vector_db_id]
+    async def unregister_vector_db(self, vector_db_id: str) -> None:
+        client = self._get_client()
+        sanitized_collection_name = sanitize_collection_name(vector_db_id, weaviate_format=True)
+        if sanitized_collection_name not in self.cache or client.collections.exists(sanitized_collection_name) is False:
+            log.warning(f"Vector DB {sanitized_collection_name} not found")
+            return
+        client.collections.delete(sanitized_collection_name)
+        await self.cache[sanitized_collection_name].index.delete()
+        del self.cache[sanitized_collection_name]
 
-        vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
+    async def _get_and_cache_vector_db_index(self, vector_db_id: str) -> VectorDBWithIndex | None:
+        sanitized_collection_name = sanitize_collection_name(vector_db_id, weaviate_format=True)
+        if sanitized_collection_name in self.cache:
+            return self.cache[sanitized_collection_name]
+
+        vector_db = await self.vector_db_store.get_vector_db(sanitized_collection_name)
         if not vector_db:
             raise VectorStoreNotFoundError(vector_db_id)
 
         client = self._get_client()
         if not client.collections.exists(vector_db.identifier):
-            raise ValueError(f"Collection with name `{vector_db.identifier}` not found")
+            raise ValueError(f"Collection with name `{sanitized_collection_name}` not found")
 
         index = VectorDBWithIndex(
             vector_db=vector_db,
-            index=WeaviateIndex(client=client, collection_name=vector_db.identifier),
+            index=WeaviateIndex(client=client, collection_name=sanitized_collection_name),
             inference_api=self.inference_api,
         )
-        self.cache[vector_db_id] = index
+        self.cache[sanitized_collection_name] = index
         return index
 
     async def insert_chunks(
@@ -233,7 +283,8 @@ class WeaviateVectorIOAdapter(
         chunks: list[Chunk],
         ttl_seconds: int | None = None,
     ) -> None:
-        index = await self._get_and_cache_vector_db_index(vector_db_id)
+        sanitized_collection_name = sanitize_collection_name(vector_db_id, weaviate_format=True)
+        index = await self._get_and_cache_vector_db_index(sanitized_collection_name)
         if not index:
             raise VectorStoreNotFoundError(vector_db_id)
 
@@ -245,29 +296,17 @@ class WeaviateVectorIOAdapter(
         query: InterleavedContent,
         params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        index = await self._get_and_cache_vector_db_index(vector_db_id)
+        sanitized_collection_name = sanitize_collection_name(vector_db_id, weaviate_format=True)
+        index = await self._get_and_cache_vector_db_index(sanitized_collection_name)
         if not index:
             raise VectorStoreNotFoundError(vector_db_id)
 
         return await index.query_chunks(query, params)
 
-    # OpenAI Vector Stores File operations are not supported in Weaviate
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
-    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
-
     async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Weaviate")
+        sanitized_collection_name = sanitize_collection_name(store_id, weaviate_format=True)
+        index = await self._get_and_cache_vector_db_index(sanitized_collection_name)
+        if not index:
+            raise ValueError(f"Vector DB {sanitized_collection_name} not found")
+
+        await index.delete(chunk_ids)

@@ -30,7 +30,7 @@ from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
-from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
+from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
 log = logging.getLogger(__name__)
 

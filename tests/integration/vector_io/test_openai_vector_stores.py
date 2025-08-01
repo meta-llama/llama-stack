@@ -31,6 +31,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
             "remote::chromadb",
             "remote::qdrant",
             "inline::qdrant",
+            "remote::weaviate",
         ]:
             return
 
@@ -111,11 +112,11 @@ def test_openai_create_vector_store(compat_client_with_empty_stores, client_with
 
     # Create a vector store
     vector_store = client.vector_stores.create(
-        name="test_vector_store", metadata={"purpose": "testing", "environment": "integration"}
+        name="Vs_test_vector_store", metadata={"purpose": "testing", "environment": "integration"}
     )
 
     assert vector_store is not None
-    assert vector_store.name == "test_vector_store"
+    assert vector_store.name == "Vs_test_vector_store"
     assert vector_store.object == "vector_store"
     assert vector_store.status in ["completed", "in_progress"]
     assert vector_store.metadata["purpose"] == "testing"
