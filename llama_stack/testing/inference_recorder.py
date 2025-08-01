@@ -79,9 +79,11 @@ def setup_inference_recording():
     if mode == InferenceMode.LIVE:
         return None
 
-    if "LLAMA_STACK_TEST_RECORDING_DIR" not in os.environ:
-        raise ValueError("LLAMA_STACK_TEST_RECORDING_DIR must be set for recording or replaying")
-    storage_dir = os.environ["LLAMA_STACK_TEST_RECORDING_DIR"]
+    if "LLAMA_STACK_TEST_RECORDING_DIR" in os.environ:
+        storage_dir = os.environ["LLAMA_STACK_TEST_RECORDING_DIR"]
+    else:
+        logger.warning("LLAMA_STACK_TEST_RECORDING_DIR not set, using default directory: tests/integration/recordings")
+        storage_dir = "tests/integration/recordings"
 
     return inference_recording(mode=mode, storage_dir=storage_dir)
 
