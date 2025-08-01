@@ -72,6 +72,8 @@ class LiteLLMOpenAIMixin(
         api_key_from_config: str | None,
         provider_data_api_key_field: str,
         openai_compat_api_base: str | None = None,
+        download_images: bool = False,
+        json_schema_strict: bool = True,
     ):
         """
         Initialize the LiteLLMOpenAIMixin.
@@ -81,6 +83,8 @@ class LiteLLMOpenAIMixin(
         :param provider_data_api_key_field: The field in the provider data that contains the API key.
         :param litellm_provider_name: The name of the provider, used for model lookups.
         :param openai_compat_api_base: The base URL for OpenAI compatibility, or None if not using OpenAI compatibility.
+        :param download_images: Whether to download images and convert to base64 for message conversion.
+        :param json_schema_strict: Whether to use strict mode for JSON schema validation.
         """
         ModelRegistryHelper.__init__(self, model_entries)
 
@@ -88,6 +92,8 @@ class LiteLLMOpenAIMixin(
         self.api_key_from_config = api_key_from_config
         self.provider_data_api_key_field = provider_data_api_key_field
         self.api_base = openai_compat_api_base
+        self.download_images = download_images
+        self.json_schema_strict = json_schema_strict
 
         if openai_compat_api_base:
             self.is_openai_compat = True
@@ -206,7 +212,9 @@ class LiteLLMOpenAIMixin(
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         input_dict = {}
 
-        input_dict["messages"] = [await convert_message_to_openai_dict_new(m) for m in request.messages]
+        input_dict["messages"] = [
+            await convert_message_to_openai_dict_new(m, download_images=self.download_images) for m in request.messages
+        ]
         if fmt := request.response_format:
             if not isinstance(fmt, JsonSchemaResponseFormat):
                 raise ValueError(
@@ -226,7 +234,7 @@ class LiteLLMOpenAIMixin(
                 "json_schema": {
                     "name": name,
                     "schema": fmt,
-                    "strict": True,
+                    "strict": self.json_schema_strict,
                 },
             }
         if request.tools:

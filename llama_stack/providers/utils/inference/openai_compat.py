@@ -564,6 +564,7 @@ class UnparseableToolCall(BaseModel):
 
 async def convert_message_to_openai_dict_new(
     message: Message | dict,
+    download_images: bool = False,
 ) -> OpenAIChatCompletionMessage:
     """
     Convert a Message to an OpenAI API-compatible dictionary.
@@ -607,7 +608,9 @@ async def convert_message_to_openai_dict_new(
             elif isinstance(content_, ImageContentItem):
                 return OpenAIChatCompletionContentPartImageParam(
                     type="image_url",
-                    image_url=OpenAIImageURL(url=await convert_image_content_to_url(content_)),
+                    image_url=OpenAIImageURL(
+                        url=await convert_image_content_to_url(content_, download=download_images)
+                    ),
                 )
             elif isinstance(content_, list):
                 return [await impl(item) for item in content_]
