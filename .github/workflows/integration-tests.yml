@@ -60,6 +60,7 @@ jobs:
   run-replay-mode-tests:
     needs: discover-tests
     runs-on: ubuntu-latest
+    name: ${{ format('Integration Tests ({0}, {1}, {2}, client={3}, vision={4})', matrix.client-type, matrix.provider, matrix.python-version, matrix.client-version, matrix.run-vision-tests) }}
 
     strategy:
       fail-fast: false
@@ -70,7 +71,7 @@ jobs:
         # Use Python 3.13 only on nightly schedule (daily latest client test), otherwise use 3.12
         python-version: ${{ github.event.schedule == '0 0 * * *' && fromJSON('["3.12", "3.13"]') || fromJSON('["3.12"]') }}
         client-version: ${{ (github.event.schedule == '0 0 * * *' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
-        run-vision-tests: ['true', 'false']
+        run-vision-tests: [true, false]
 
     steps:
       - name: Checkout repository
