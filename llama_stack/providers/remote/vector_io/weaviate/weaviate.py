@@ -166,7 +166,7 @@ class WeaviateVectorIOAdapter(
         self.metadata_collection_name = "openai_vector_stores_metadata"
 
     def _get_client(self) -> weaviate.Client:
-        if self.config.weaviate_cluster_url == "localhost:8080":
+        if "localhost" in self.config.weaviate_cluster_url:
             log.info("using Weaviate locally in container")
             host, port = self.config.weaviate_cluster_url.split(":")
             key = "local_test"
