@@ -12,6 +12,7 @@ Please refer to the sqlite-vec provider documentation.
 |-------|------|----------|---------|-------------|
 | `db_path` | `<class 'str'>` | No | PydanticUndefined | Path to the SQLite database file |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend (SQLite only for now) |
+| `embedding` | `utils.vector_io.embedding_config.EmbeddingConfig \| None` | No |  | Default embedding configuration for this provider. When specified, vector databases created with this provider will use these embedding settings as defaults. |
 
 ## Sample Configuration
 

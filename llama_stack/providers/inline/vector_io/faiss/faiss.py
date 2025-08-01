@@ -35,6 +35,7 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
+    apply_provider_embedding_defaults,
 )
 
 from .config import FaissVectorIOConfig
@@ -237,6 +238,9 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
         self,
         vector_db: VectorDB,
     ) -> None:
+        # Apply provider-level embedding defaults if configured
+        vector_db = apply_provider_embedding_defaults(vector_db, self.config.embedding)
+
         assert self.kvstore is not None
 
         key = f"{VECTOR_DBS_PREFIX}{vector_db.identifier}"

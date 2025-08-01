@@ -40,6 +40,7 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 | `weaviate_api_key` | `str \| None` | No |  | The API key for the Weaviate instance |
 | `weaviate_cluster_url` | `str \| None` | No | localhost:8080 | The URL of the Weaviate cluster |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig, annotation=NoneType, required=False, default='sqlite', discriminator='type'` | No |  | Config for KV store backend (SQLite only for now) |
+| `embedding` | `utils.vector_io.embedding_config.EmbeddingConfig \| None` | No |  | Default embedding configuration for this provider. When specified, vector databases created with this provider will use these embedding settings as defaults. |
 
 ## Sample Configuration
 

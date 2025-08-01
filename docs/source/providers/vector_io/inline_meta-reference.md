@@ -9,6 +9,7 @@ Meta's reference implementation of a vector database.
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite |  |
+| `embedding` | `utils.vector_io.embedding_config.EmbeddingConfig \| None` | No |  | Default embedding configuration for this provider. When specified, vector databases created with this provider will use these embedding settings as defaults. |
 
 ## Sample Configuration
 

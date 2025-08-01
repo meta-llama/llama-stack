@@ -41,14 +41,15 @@ class VectorDBInput(BaseModel):
     """Input parameters for creating or configuring a vector database.
 
     :param vector_db_id: Unique identifier for the vector database
-    :param embedding_model: Name of the embedding model to use for vector generation
-    :param embedding_dimension: Dimension of the embedding vectors
+    :param embedding_model: Name of the embedding model to use for vector generation (optional if provider has defaults)
+    :param embedding_dimension: Dimension of the embedding vectors (optional if provider has defaults)
+    :param provider_id: Provider to use for this vector database (can inherit embedding defaults)
     :param provider_vector_db_id: (Optional) Provider-specific identifier for the vector database
     """
 
     vector_db_id: str
-    embedding_model: str
-    embedding_dimension: int
+    embedding_model: str | None = None
+    embedding_dimension: int | None = None
     provider_id: str | None = None
     provider_vector_db_id: str | None = None
 
@@ -89,8 +90,8 @@ class VectorDBs(Protocol):
     async def register_vector_db(
         self,
         vector_db_id: str,
-        embedding_model: str,
-        embedding_dimension: int | None = 384,
+        embedding_model: str | None = None,
+        embedding_dimension: int | None = None,
         provider_id: str | None = None,
         vector_db_name: str | None = None,
         provider_vector_db_id: str | None = None,
@@ -98,9 +99,9 @@ class VectorDBs(Protocol):
         """Register a vector database.
 
         :param vector_db_id: The identifier of the vector database to register.
-        :param embedding_model: The embedding model to use.
-        :param embedding_dimension: The dimension of the embedding model.
-        :param provider_id: The identifier of the provider.
+        :param embedding_model: The embedding model to use (optional if provider has defaults).
+        :param embedding_dimension: The dimension of the embedding model (optional if provider has defaults).
+        :param provider_id: The identifier of the provider (can provide embedding defaults).
         :param vector_db_name: The name of the vector database.
         :param provider_vector_db_id: The identifier of the vector database in the provider.
         :returns: A VectorDB.

@@ -29,6 +29,7 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
+    apply_provider_embedding_defaults,
 )
 from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collection_name
 
@@ -305,6 +306,9 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self,
         vector_db: VectorDB,
     ) -> None:
+        # Apply provider-level embedding defaults if configured
+        vector_db = apply_provider_embedding_defaults(vector_db, self.config.embedding)
+
         if isinstance(self.config, RemoteMilvusVectorIOConfig):
             consistency_level = self.config.consistency_level
         else:
