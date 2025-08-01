@@ -1,27 +1,27 @@
-name: Test Llama Stack Build
+name: Test Llama Stack Sync
 
-run-name: Test llama stack build
+run-name: Test llama stack Sync
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'llama_stack/cli/stack/build.py'
-      - 'llama_stack/cli/stack/_build.py'
+      - 'llama_stack/cli/stack/sync.py'
+      - 'llama_stack/cli/stack/_sync.py'
       - 'llama_stack/core/build.*'
       - 'llama_stack/core/*.sh'
-      - '.github/workflows/providers-build.yml'
+      - '.github/workflows/providers-sync.yml'
       - 'llama_stack/templates/**'
       - 'pyproject.toml'
 
   pull_request:
     paths:
-      - 'llama_stack/cli/stack/build.py'
-      - 'llama_stack/cli/stack/_build.py'
+      - 'llama_stack/cli/stack/sync.py'
+      - 'llama_stack/cli/stack/_sync.py'
       - 'llama_stack/core/build.*'
       - 'llama_stack/core/*.sh'
-      - '.github/workflows/providers-build.yml'
+      - '.github/workflows/providers-sync.yml'
       - 'llama_stack/templates/**'
       - 'pyproject.toml'
 
@@ -50,7 +50,6 @@ jobs:
     strategy:
       matrix:
         template: ${{ fromJson(needs.generate-matrix.outputs.templates) }}
-        image-type: [venv, container]
       fail-fast: false # We want to run all jobs even if some fail
 
     steps:
@@ -60,15 +59,15 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
 
-      - name: Print build dependencies
+      - name: Print dependencies
         run: |
-          uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test --print-deps-only
+          uv run llama stack sync --template ${{ matrix.template }} --env-name test --print-deps-only
 
-      - name: Run Llama Stack Build
+      - name: Run Llama Stack Sync
         run: |
           # USE_COPY_NOT_MOUNT is set to true since mounting is not supported by docker buildx, we use COPY instead
           # LLAMA_STACK_DIR is set to the current directory so we are building from the source
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack sync --template ${{ matrix.template }} --env-name test
 
       - name: Print dependencies in the image
         if: matrix.image-type == 'venv'
@@ -84,9 +83,9 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
 
-      - name: Build a single provider
+      - name: Sync a single provider
         run: |
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --image-type venv --image-name test --providers inference=remote::ollama
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack sync --env-name test --providers inference=remote::ollama
 
   build-custom-container-distribution:
     runs-on: ubuntu-latest
@@ -97,11 +96,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
 
-      - name: Build a single provider
+      - name: Sync a single provider
         run: |
           yq -i '.image_type = "container"' llama_stack/templates/ci-tests/build.yaml
           yq -i '.image_name = "test"' llama_stack/templates/ci-tests/build.yaml
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --config llama_stack/templates/ci-tests/build.yaml
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack sync --config llama_stack/templates/ci-tests/build.yaml
 
       - name: Inspect the container image entrypoint
         run: |
@@ -130,12 +129,12 @@ jobs:
             .distribution_spec.container_image = "registry.access.redhat.com/ubi9:latest"
           ' llama_stack/templates/ci-tests/build.yaml
 
-      - name: Build dev container (UBI9)
+      - name: sync dev container (UBI9)
         env:
           USE_COPY_NOT_MOUNT: "true"
           LLAMA_STACK_DIR: "."
         run: |
-          uv run llama stack build --config llama_stack/templates/ci-tests/build.yaml
+          uv run llama stack sync --config llama_stack/templates/ci-tests/build.yaml
 
       - name: Inspect UBI9 image
         run: |
