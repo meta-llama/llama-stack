@@ -83,3 +83,11 @@ class Shields(Protocol):
         :returns: A Shield.
         """
         ...
+
+    @webmethod(route="/shields/{identifier:path}", method="DELETE")
+    async def unregister_shield(self, identifier: str) -> None:
+        """Unregister a shield.
+
+        :param identifier: The identifier of the shield to unregister.
+        """
+        ...
