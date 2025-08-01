@@ -37,6 +37,14 @@ set -x
 # Delete UI deployment
 envsubst < ./ui-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 
+# Delete monitoring resources
+envsubst < ./monitoring-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
+
+# Delete Prometheus RBAC resources
+kubectl delete -f ./prometheus-rbac.yaml --ignore-not-found=true
+
+
+
 # Delete ingress
 envsubst < ./ingress-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 

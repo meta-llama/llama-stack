@@ -23,7 +23,12 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: vllm
+        app: vllm
         workload-type: inference
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8001'
+        prometheus.io/path: '/metrics'
     spec:
       # Removed nodeSelector for GPU nodes as they don't appear to exist in the cluster
       # If you have GPU nodes with a different label, you can uncomment and modify this section
@@ -45,6 +50,7 @@ spec:
               key: token
         ports:
           - containerPort: 8001
+            name: http
         resources:
           limits:
             nvidia.com/gpu: 1
@@ -69,4 +75,5 @@ spec:
   - protocol: TCP
     port: 8001
     targetPort: 8001
+    name: http
   type: ClusterIP

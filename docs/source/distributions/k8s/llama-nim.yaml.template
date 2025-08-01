@@ -17,6 +17,11 @@ spec:
     metadata:
       labels:
         app: llm-nim-code
+        nim-type: llama-nim
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8000'
+        prometheus.io/path: '/v1/metrics'
     spec:
       imagePullSecrets:
         - name: ngc-docker-registry          # docker-registry secret: nvcr.io / $oauthtoken / <NGC_DOCKER_API_KEY>
@@ -42,6 +47,12 @@ spec:
                 secretKeyRef:
                   name: ngc-api
                   key: NGC_API_KEY
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: "all"
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: "compute,utility"
+            - name: ENABLE_GPU_METRICS
+              value: "true"
           volumeMounts:
             - name: model-cache
               mountPath: /models       # default NIM cache path
