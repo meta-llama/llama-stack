@@ -21,7 +21,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.287573Z",
+          "created_at": "2025-08-01T22:45:12.273972714Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -39,7 +39,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.341788Z",
+          "created_at": "2025-08-01T22:45:12.456754858Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -57,7 +57,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.388655Z",
+          "created_at": "2025-08-01T22:45:12.638824139Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -75,7 +75,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.43929Z",
+          "created_at": "2025-08-01T22:45:12.818930245Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -93,7 +93,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.485696Z",
+          "created_at": "2025-08-01T22:45:13.001373618Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -111,7 +111,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.533286Z",
+          "created_at": "2025-08-01T22:45:13.18183742Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -129,7 +129,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.578007Z",
+          "created_at": "2025-08-01T22:45:13.362777173Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -147,7 +147,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.623059Z",
+          "created_at": "2025-08-01T22:45:13.5457314Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -165,7 +165,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.669478Z",
+          "created_at": "2025-08-01T22:45:13.725113513Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -183,7 +183,7 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.715842Z",
+          "created_at": "2025-08-01T22:45:13.908889948Z",
           "done": false,
           "done_reason": null,
           "total_duration": null,
@@ -201,15 +201,15 @@
         "__type__": "ollama._types.GenerateResponse",
         "__data__": {
           "model": "llama3.2:3b-instruct-fp16",
-          "created_at": "2025-08-01T20:56:49.760345Z",
+          "created_at": "2025-08-01T22:45:14.089517245Z",
           "done": true,
           "done_reason": "stop",
-          "total_duration": 624960709,
-          "load_duration": 59848000,
+          "total_duration": 3152167500,
+          "load_duration": 45685882,
           "prompt_eval_count": 26,
-          "prompt_eval_duration": 87000000,
+          "prompt_eval_duration": 1289671344,
           "eval_count": 11,
-          "eval_duration": 476000000,
+          "eval_duration": 1816298626,
           "response": "",
           "thinking": null,
           "context": null
