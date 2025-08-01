@@ -160,8 +160,11 @@ class FaissIndex(EmbeddingIndex):
         for d, i in zip(distances[0], indices[0], strict=False):
             if i < 0:
                 continue
+            score = 1.0 / float(d) if d != 0 else float("inf")
+            if score < score_threshold:
+                continue
             chunks.append(self.chunk_by_index[int(i)])
-            scores.append(1.0 / float(d) if d != 0 else float("inf"))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 

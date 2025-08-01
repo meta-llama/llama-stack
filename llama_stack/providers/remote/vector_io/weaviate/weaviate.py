@@ -105,8 +105,12 @@ class WeaviateIndex(EmbeddingIndex):
                 log.exception(f"Failed to parse document: {chunk_json}")
                 continue
 
+            score = 1.0 / doc.metadata.distance if doc.metadata.distance != 0 else float("inf")
+            if score < score_threshold:
+                continue
+
             chunks.append(chunk)
-            scores.append(1.0 / doc.metadata.distance if doc.metadata.distance != 0 else float("inf"))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
