@@ -85,6 +85,7 @@ runs:
           EXTRA_PARAMS=""
           EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
         fi
+        
 
         if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
           if uv run pytest -s -v tests/integration/inference/test_vision_inference.py --stack-config=${stack_config} \
