@@ -147,7 +147,18 @@ run() {
       IFS='#' read -ra parts <<<"$external_provider_deps"
       for part in "${parts[@]}"; do
         echo "$part"
-        uv pip install "$part"
+
+        # Create a temporary constraint file to exclude llama-stack
+        cat > /tmp/constraints.txt << 'EOF'
+# Exclude llama-stack to avoid circular dependencies
+llama-stack==0.0.0
+EOF
+
+        # Install the external provider with constraints to exclude llama-stack
+        uv pip install --constraint /tmp/constraints.txt "$part"
+
+        # Clean up constraint file
+        rm -f /tmp/constraints.txt
       done
     fi
   else
@@ -183,21 +194,42 @@ run() {
     if [ -n "$external_provider_deps" ]; then
       IFS='#' read -ra parts <<<"$external_provider_deps"
       for part in "${parts[@]}"; do
-        echo "Installing external provider module: $part"
-        uv pip install "$part"
-        echo "Getting provider spec for module: $part and installing dependencies"
+        echo "Installing external provider: $part"
+
+        # Create a temporary constraint file to exclude llama-stack
+        cat > /tmp/constraints.txt << 'EOF'
+# Exclude llama-stack to avoid circular dependencies
+llama-stack==0.0.0
+llama-stack-client==0.0.0
+EOF
+
+        # Install the external provider with constraints to exclude llama-stack
+        uv pip install --constraint /tmp/constraints.txt "$part"
+
+        echo "Getting provider spec for module: $part and installing additional dependencies"
         package_name=$(echo "$part" | sed 's/[<>=!].*//')
+
+        # Get additional dependencies from the provider spec (excluding llama-stack)
         python3 -c "
 import importlib
 import sys
+
 try:
     module = importlib.import_module(f'$package_name.provider')
     spec = module.get_provider_spec()
     if hasattr(spec, 'pip_packages') and spec.pip_packages:
-        print('\\n'.join(spec.pip_packages))
+        # Filter out llama-stack from pip_packages to avoid circular dependency
+        filtered_packages = [pkg for pkg in spec.pip_packages if not pkg.startswith('llama-stack')]
+        if filtered_packages:
+            print('\\n'.join(filtered_packages))
+        else:
+            print('No additional dependencies needed', file=sys.stderr)
 except Exception as e:
     print(f'Error getting provider spec for $package_name: {e}', file=sys.stderr)
-" | uv pip install -r -
+" | uv pip install --constraint /tmp/constraints.txt -r -
+
+        # Clean up constraint file
+        rm -f /tmp/constraints.txt
       done
     fi
   fi
