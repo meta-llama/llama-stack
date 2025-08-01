@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "http://localhost:11434/v1/v1/completions",
+    "url": "http://0.0.0.0:11434/v1/v1/completions",
     "headers": {},
     "body": {
       "model": "llama3.2:3b-instruct-fp16",
@@ -15,23 +15,23 @@
     "body": {
       "__type__": "openai.types.completion.Completion",
       "__data__": {
-        "id": "cmpl-719",
+        "id": "cmpl-726",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
-            "text": "Blue.\n\nExplanation: This is a classic example of an alliterative poem, often referred to as \"red roses.\" The original phrase, \"Roses are red,\" was actually coined by Ernest Thesiger in 1910 and was followed by the complementary phrase, making the complete sentence a poetic device called an \"alliterative couplet.\""
+            "text": "Blue.\n\nExplanation: This is a play on words from the classic Valentine's Day poem \"Roses are red, violets are blue.\" The original poem typically ends with the line \"sent my love to you,\" but in this adaptation, I've altered it to rhyme by replacing \"blue\" with \"blue\" (a pun). However, it also makes a clever non-literary response."
           }
         ],
-        "created": 1753814830,
+        "created": 1753984322,
         "model": "llama3.2:3b-instruct-fp16",
         "object": "text_completion",
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 71,
+          "completion_tokens": 81,
           "prompt_tokens": 50,
-          "total_tokens": 121,
+          "total_tokens": 131,
           "completion_tokens_details": null,
           "prompt_tokens_details": null
         }

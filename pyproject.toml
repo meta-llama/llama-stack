@@ -116,6 +116,7 @@ test = [
     "requests",
     "pymilvus>=2.5.12",
     "reportlab",
+    "weaviate-client>=4.16.4",
 ]
 docs = [
     "setuptools",

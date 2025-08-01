@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import hashlib
+import re
 import uuid
 
 
@@ -19,3 +20,20 @@ def generate_chunk_id(document_id: str, chunk_text: str, chunk_window: str | Non
     if chunk_window:
         hash_input += f":{chunk_window}".encode()
     return str(uuid.UUID(hashlib.md5(hash_input, usedforsecurity=False).hexdigest()))
+
+
+def proper_case(s: str) -> str:
+    """Convert a string to proper case (first letter uppercase, rest lowercase)."""
+    return s[0].upper() + s[1:].lower() if s else s
+
+
+def sanitize_collection_name(name: str, weaviate_format=False) -> str:
+    """
+    Sanitize collection name to ensure it only contains numbers, letters, and underscores.
+    Any other characters are replaced with underscores.
+    """
+    if not weaviate_format:
+        s = re.sub(r"[^a-zA-Z0-9_]", "_", name)
+    else:
+        s = proper_case(re.sub(r"[^a-zA-Z0-9]", "", name))
+    return s

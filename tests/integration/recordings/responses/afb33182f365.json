@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "http://localhost:11434/v1/v1/completions",
+    "url": "http://0.0.0.0:11434/v1/v1/completions",
     "headers": {},
     "body": {
       "model": "llama3.2:3b-instruct-fp16",
@@ -20,14 +20,14 @@
     "body": {
       "__type__": "openai.types.chat.chat_completion.ChatCompletion",
       "__data__": {
-        "id": "chatcmpl-541",
+        "id": "chatcmpl-456",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "Saturn is the planet that has rings around itself.",
+              "content": "Saturn is the planet known to have magnificent ring systems.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
@@ -37,15 +37,15 @@
             }
           }
         ],
-        "created": 1753814884,
+        "created": 1753984690,
         "model": "llama3.2:3b-instruct-fp16",
         "object": "chat.completion",
         "service_tier": null,
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 12,
+          "completion_tokens": 13,
           "prompt_tokens": 39,
-          "total_tokens": 51,
+          "total_tokens": 52,
           "completion_tokens_details": null,
           "prompt_tokens_details": null
         }

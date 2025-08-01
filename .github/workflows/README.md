@@ -8,11 +8,12 @@ Llama Stack uses GitHub Actions for Continuous Integration (CI). Below is a tabl
 | Installer CI | [install-script-ci.yml](install-script-ci.yml) | Test the installation script |
 | Integration Auth Tests | [integration-auth-tests.yml](integration-auth-tests.yml) | Run the integration test suite with Kubernetes authentication |
 | SqlStore Integration Tests | [integration-sql-store-tests.yml](integration-sql-store-tests.yml) | Run the integration test suite with SqlStore |
-| Integration Tests | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration |
+| Integration Tests (Replay) | [integration-tests.yml](integration-tests.yml) | Run the integration test suite from tests/integration in replay mode |
 | Vector IO Integration Tests | [integration-vector-io-tests.yml](integration-vector-io-tests.yml) | Run the integration test suite with various VectorIO providers |
 | Pre-commit | [pre-commit.yml](pre-commit.yml) | Run pre-commit checks |
 | Test Llama Stack Build | [providers-build.yml](providers-build.yml) | Test llama stack build |
 | Python Package Build Test | [python-build-test.yml](python-build-test.yml) | Test building the llama-stack PyPI project |
+| Integration Tests (Record) | [record-integration-tests.yml](record-integration-tests.yml) | Run the integration test suite from tests/integration |
 | Check semantic PR titles | [semantic-pr.yml](semantic-pr.yml) | Ensure that PR titles follow the conventional commit spec |
 | Close stale issues and PRs | [stale_bot.yml](stale_bot.yml) | Run the Stale Bot action |
 | Test External Providers Installed via Module | [test-external-provider-module.yml](test-external-provider-module.yml) | Test External Provider installation via Python module |

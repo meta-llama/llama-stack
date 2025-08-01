@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata
-from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
+from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
 # This test is a unit test for the chunk_utils.py helpers. This should only contain
 # tests which are specific to this file. More general (API-level) tests should be placed in

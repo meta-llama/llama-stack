@@ -1,0 +1,51 @@
+name: 'Setup Test Environment'
+description: 'Common setup steps for integration tests including dependencies, providers, and build'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: true
+  client-version:
+    description: 'Client version (latest or published)'
+    required: true
+  provider:
+    description: 'Provider to setup (ollama or vllm)'
+    required: true
+    default: 'ollama'
+  run-vision-tests:
+    description: 'Whether to setup provider for vision tests'
+    required: false
+    default: 'false'
+  inference-mode:
+    description: 'Inference mode (record or replay)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install dependencies
+      uses: ./.github/actions/setup-runner
+      with:
+        python-version: ${{ inputs.python-version }}
+        client-version: ${{ inputs.client-version }}
+
+    - name: Setup ollama
+      if: ${{ inputs.provider == 'ollama' && inputs.inference-mode == 'record' }}
+      uses: ./.github/actions/setup-ollama
+      with:
+        run-vision-tests: ${{ inputs.run-vision-tests }}
+
+    - name: Setup vllm
+      if: ${{ inputs.provider == 'vllm' && inputs.inference-mode == 'record' }}
+      uses: ./.github/actions/setup-vllm
+
+    - name: Build Llama Stack
+      shell: bash
+      run: |
+        uv run llama stack build --template ci-tests --image-type venv
+
+    - name: Configure git for commits
+      shell: bash
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"

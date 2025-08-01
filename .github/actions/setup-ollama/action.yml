@@ -1,11 +1,23 @@
 name: Setup Ollama
 description: Start Ollama
+inputs:
+  run-vision-tests:
+    description: 'Run vision tests: "true" or "false"'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
     - name: Start Ollama
       shell: bash
       run: |
-        docker run -d --name ollama -p 11434:11434 docker.io/leseb/ollama-with-models
+        if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+          image="ollama-with-vision-model"
+        else
+          image="ollama-with-models"
+        fi
+
+        echo "Starting Ollama with image: $image"
+        docker run -d --name ollama -p 11434:11434 docker.io/llamastack/$image
         echo "Verifying Ollama status..."
         timeout 30 bash -c 'while ! curl -s -L http://127.0.0.1:11434; do sleep 1 && echo "."; done'

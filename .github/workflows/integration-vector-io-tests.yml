@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector"]
+        vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector", "remote::weaviate"]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -47,6 +47,14 @@ jobs:
             -e IS_PERSISTENT=TRUE \
             -e ANONYMIZED_TELEMETRY=FALSE \
             chromadb/chroma:latest
+
+      - name: Setup Weaviate
+        if: matrix.vector-io-provider == 'remote::weaviate'
+        run: |
+          docker run --rm -d --pull always \
+          --name weaviate \
+          -p 8080:8080 -p 50051:50051 \
+          cr.weaviate.io/semitechnologies/weaviate:1.32.0
 
       - name: Start PGVector DB
         if: matrix.vector-io-provider == 'remote::pgvector'
@@ -93,6 +101,21 @@ jobs:
           docker logs chromadb
           exit 1
 
+      - name: Wait for Weaviate to be ready
+        if: matrix.vector-io-provider == 'remote::weaviate'
+        run: |
+          echo "Waiting for Weaviate to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 | grep -q "https://weaviate.io/developers/weaviate/current/"; then
+              echo "Weaviate is ready!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Weaviate failed to start"
+          docker logs weaviate
+          exit 1
+
       - name: Build Llama Stack
         run: |
           uv run llama stack build --template ci-tests --image-type venv
@@ -113,6 +136,9 @@ jobs:
           PGVECTOR_DB: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
           PGVECTOR_USER: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
           PGVECTOR_PASSWORD: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
+          ENABLE_WEAVIATE: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'true' || '' }}
+          WEAVIATE_CLUSTER_URL: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'localhost:8080' || '' }}
+
         run: |
           uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
