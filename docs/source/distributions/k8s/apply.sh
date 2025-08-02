@@ -86,18 +86,6 @@ if [ "$USE_EBS" = "true" ]; then
   envsubst < ./chroma-k8s.yaml.template | kubectl apply -f -
 
 
-  # Create monitoring namespace
-  kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-
-  # Install Prometheus Operator CRDs
-  ./install-prometheus-operator.sh
-
-  # Apply RBAC for Prometheus
-  kubectl apply -f ./prometheus-rbac.yaml
-
-  # Apply monitoring resources after CRDs are installed
-  envsubst < ./monitoring-k8s.yaml.template | kubectl apply -f -
-
   kubectl create configmap llama-stack-config --from-file=stack_run_config.yaml \
     --dry-run=client -o yaml > stack-configmap.yaml
 
@@ -115,16 +103,6 @@ else
   envsubst < ./llama-nim.yaml.template | kubectl apply -f -
   envsubst < ./postgres-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./chroma-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
-
-  # Create monitoring namespace
-  kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-
-
-  # Apply RBAC for Prometheus
-  kubectl apply -f ./prometheus-rbac.yaml
-
-  # Apply monitoring resources after CRDs are installed
-  envsubst < ./monitoring-k8s.yaml.template | kubectl apply -f -
 
   kubectl create configmap llama-stack-config --from-file=stack_run_config.yaml \
     --dry-run=client -o yaml > stack-configmap.yaml

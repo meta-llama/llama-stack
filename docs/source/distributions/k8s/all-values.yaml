@@ -1,0 +1,6 @@
+USER-SUPPLIED VALUES:
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+  service:
+    type: NodePort
