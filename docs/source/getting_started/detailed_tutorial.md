@@ -62,7 +62,7 @@ We use `starter` as template. By default all providers are disabled, this requir
 llama stack build --template starter --image-type venv --run
 ```
 :::
-:::{tab-item} Using `conda`
+:::{tab-item} Using `venv`
 You can use Python to build and run the Llama Stack server, which is useful for testing and development.
 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
@@ -70,7 +70,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-llama stack build --template starter --image-type conda --run
+llama stack build --template starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using a Container
@@ -150,10 +150,10 @@ pip install llama-stack-client
 ```
 :::
 
-:::{tab-item} Install with `conda`
+:::{tab-item} Install with `venv`
 ```bash
-yes | conda create -n stack-client python=3.12
-conda activate stack-client
+python -m venv stack-client
+source stack-client/bin/activate  # On Windows: stack-client\Scripts\activate
 pip install llama-stack-client
 ```
 :::

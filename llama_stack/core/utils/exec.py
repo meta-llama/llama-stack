@@ -15,69 +15,21 @@ from termcolor import cprint
 log = logging.getLogger(__name__)
 
 import importlib
-import json
-from pathlib import Path
-
-from llama_stack.core.utils.image_types import LlamaStackImageType
 
 
-def formulate_run_args(image_type: str, image_name: str) -> list[str]:
-    env_name = ""
+def formulate_run_args(image_type: str, image_name: str) -> list:
+    # Only venv is supported now
+    current_venv = os.environ.get("VIRTUAL_ENV")
+    env_name = image_name or current_venv
+    if not env_name:
+        cprint(
+            "No current virtual environment detected, please specify a virtual environment name with --image-name",
+            color="red",
+            file=sys.stderr,
+        )
+        return []
 
-    if image_type == LlamaStackImageType.CONDA.value:
-        current_conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-        env_name = image_name or current_conda_env
-        if not env_name:
-            cprint(
-                "No current conda environment detected, please specify a conda environment name with --image-name",
-                color="red",
-                file=sys.stderr,
-            )
-            return
-
-        def get_conda_prefix(env_name):
-            # Conda "base" environment does not end with "base" in the
-            # prefix, so should be handled separately.
-            if env_name == "base":
-                return os.environ.get("CONDA_PREFIX")
-            # Get conda environments info
-            conda_env_info = json.loads(subprocess.check_output(["conda", "info", "--envs", "--json"]).decode())
-            envs = conda_env_info["envs"]
-            for envpath in envs:
-                if os.path.basename(envpath) == env_name:
-                    return envpath
-            return None
-
-        cprint(f"Using conda environment: {env_name}", color="green", file=sys.stderr)
-        conda_prefix = get_conda_prefix(env_name)
-        if not conda_prefix:
-            cprint(
-                f"Conda environment {env_name} does not exist.",
-                color="red",
-                file=sys.stderr,
-            )
-            return
-
-        build_file = Path(conda_prefix) / "llamastack-build.yaml"
-        if not build_file.exists():
-            cprint(
-                f"Build file {build_file} does not exist.\n\nPlease run `llama stack build` or specify the correct conda environment name with --image-name",
-                color="red",
-                file=sys.stderr,
-            )
-            return
-    else:
-        # else must be venv since that is the only valid option left.
-        current_venv = os.environ.get("VIRTUAL_ENV")
-        env_name = image_name or current_venv
-        if not env_name:
-            cprint(
-                "No current virtual environment detected, please specify a virtual environment name with --image-name",
-                color="red",
-                file=sys.stderr,
-            )
-            return
-        cprint(f"Using virtual environment: {env_name}", file=sys.stderr)
+    cprint(f"Using virtual environment: {env_name}", file=sys.stderr)
 
     script = importlib.resources.files("llama_stack") / "core/start_stack.sh"
     run_args = [
@@ -93,7 +45,8 @@ def in_notebook():
     try:
         from IPython import get_ipython
 
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
+        ipython = get_ipython()
+        if ipython is None or "IPKernelApp" not in ipython.config:  # pragma: no cover
             return False
     except ImportError:
         return False

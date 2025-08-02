@@ -432,8 +432,8 @@ class BuildConfig(BaseModel):
 
     distribution_spec: DistributionSpec = Field(description="The distribution spec to build including API providers. ")
     image_type: str = Field(
-        default="conda",
-        description="Type of package to build (conda | container | venv)",
+        default="venv",
+        description="Type of package to build (container | venv)",
     )
     image_name: str | None = Field(
         default=None,
