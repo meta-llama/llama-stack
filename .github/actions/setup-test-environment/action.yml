@@ -42,7 +42,7 @@ runs:
     - name: Build Llama Stack
       shell: bash
       run: |
-        uv run llama stack build --template ci-tests --image-type venv
+        uv run llama stack sync --template ci-tests
 
     - name: Configure git for commits
       shell: bash
