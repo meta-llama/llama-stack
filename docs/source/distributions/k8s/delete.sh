@@ -50,13 +50,7 @@ if [ -f "./ui-service-k8s.yaml.template" ]; then
   envsubst < ./ui-service-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 fi
 
-# Delete monitoring resources
-echo "Deleting monitoring resources..."
-envsubst < ./monitoring-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 
-# Delete Prometheus RBAC resources
-echo "Deleting Prometheus RBAC resources..."
-kubectl delete -f ./prometheus-rbac.yaml --ignore-not-found=true
 
 # Delete ingress
 echo "Deleting ingress resources..."
@@ -107,7 +101,6 @@ for template in ./*.yaml.template; do
   if [ -f "$template" ]; then
     # Skip templates we've already processed
     if [[ "$template" != "./ui-k8s.yaml.template" &&
-          "$template" != "./monitoring-k8s.yaml.template" &&
           "$template" != "./ingress-k8s.yaml.template" &&
           "$template" != "./stack-k8s.yaml.template" &&
           "$template" != "./chroma-k8s.yaml.template" &&

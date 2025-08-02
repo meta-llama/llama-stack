@@ -34,5 +34,5 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
   --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false
 
 echo "kube-prometheus-stack has been installed successfully!"
-echo "To access Grafana UI, run: kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80"
+echo "To access Grafana UI, run: kubectl port-forward svc/kube-prometheus-stack-1754164871-grafana 31509:80 -n prometheus"
 echo "Default Grafana credentials - Username: admin, Password: prom-operator"
