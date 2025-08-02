@@ -54,6 +54,7 @@ _GLOBAL_STORAGE: dict[str, dict[str | int, Any]] = {
     "counters": {},
     "gauges": {},
     "up_down_counters": {},
+    "histograms": {},
 }
 _global_lock = threading.Lock()
 _TRACER_PROVIDER = None
@@ -190,7 +191,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
     def _log_metric(self, event: MetricEvent) -> None:
         if self.meter is None:
             return
-        if isinstance(event.value, int):
+
+        # Handle histogram metrics for duration measurements
+        if event.metric.endswith("_duration_seconds"):
+            histogram = self._get_or_create_histogram(
+                event.metric,
+                event.unit,
+                [0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 25.0, 50.0, 100.0],  # Default buckets
+            )
+            histogram.record(event.value, attributes=event.attributes)
+        elif isinstance(event.value, int):
             counter = self._get_or_create_counter(event.metric, event.unit)
             counter.add(event.value, attributes=event.attributes)
         elif isinstance(event.value, float):
@@ -206,6 +216,16 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
                 description=f"UpDownCounter for {name}",
             )
         return _GLOBAL_STORAGE["up_down_counters"][name]
+
+    def _get_or_create_histogram(self, name: str, unit: str, buckets: list[float] | None = None) -> metrics.Histogram:
+        assert self.meter is not None
+        if name not in _GLOBAL_STORAGE["histograms"]:
+            _GLOBAL_STORAGE["histograms"][name] = self.meter.create_histogram(
+                name=name,
+                unit=unit,
+                description=f"Histogram for {name}",
+            )
+        return _GLOBAL_STORAGE["histograms"][name]
 
     def _log_structured(self, event: StructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:
