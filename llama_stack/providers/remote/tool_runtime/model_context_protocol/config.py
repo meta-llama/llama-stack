@@ -17,4 +17,10 @@ class MCPProviderDataValidator(BaseModel):
 class MCPProviderConfig(BaseModel):
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
-        return {}
+        return {
+            "provider_id" : "model-context-protocol", 
+            "toolgroup_id" : "mcp::samplemcp", 
+            "mcp_endpoint" : { 
+                "uri" : "http://localhost:7766/sse"
+            }
+        }
