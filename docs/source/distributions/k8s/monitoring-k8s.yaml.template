@@ -3062,16 +3062,15 @@ spec:
             port:
               number: 9090
 ---
-# NVIDIA DCGM Exporter Deployment for GPU metrics
+# NVIDIA DCGM Exporter DaemonSet for GPU metrics
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: dcgm-exporter
   namespace: monitoring
   labels:
     app: dcgm-exporter
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: dcgm-exporter
@@ -3082,7 +3081,7 @@ spec:
     spec:
       containers:
       - name: dcgm-exporter
-        image: nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.3.0-ubuntu22.04
+        image: nvidia/dcgm-exporter:3.2.5-3.1.7-ubuntu20.04
         securityContext:
           runAsNonRoot: false
           runAsUser: 0
@@ -3093,17 +3092,19 @@ spec:
         - -f
         - /etc/dcgm-exporter/dcp-metrics-included.csv
         volumeMounts:
-        - name: device-metrics
-          mountPath: /dev/metrics
         - name: dcgm-config
           mountPath: /etc/dcgm-exporter
       volumes:
-      - name: device-metrics
-        hostPath:
-          path: /dev/metrics
       - name: dcgm-config
         configMap:
           name: dcgm-config
+      nodeSelector:
+        kubernetes.io/os: linux
+        nvidia.com/gpu.present: "true"
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
 ---
 # DCGM Exporter ConfigMap for metrics configuration
 apiVersion: v1

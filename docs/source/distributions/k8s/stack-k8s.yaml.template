@@ -26,12 +26,34 @@ spec:
         app.kubernetes.io/component: server
     spec:
       initContainers:
-      - name: wait-for-vllm-server
+      - name: wait-for-services
         image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z vllm-server.default.svc.cluster.local 8001; do echo waiting for vllm-server on port 8001; sleep 2; done;']
-      - name: wait-for-llm-nim-code
-        image: busybox:1.28
-        command: ['sh', '-c', 'until nc -z llm-nim-code.default.svc.cluster.local 8000; do echo waiting for llm-nim-code on port 8000; sleep 2; done;']
+        command: ['sh', '-c', '
+          echo "Waiting for all required services to be ready...";
+
+          echo "Checking vllm-server...";
+          until nc -z vllm-server.default.svc.cluster.local 8001; do
+            echo "waiting for vllm-server on port 8001";
+            sleep 2;
+          done;
+          echo "vllm-server is ready!";
+
+          echo "Checking llm-nim-code...";
+          until nc -z llm-nim-code.default.svc.cluster.local 8000; do
+            echo "waiting for llm-nim-code on port 8000";
+            sleep 2;
+          done;
+          echo "llm-nim-code is ready!";
+
+          echo "Checking ollama-safety...";
+          until nc -z ollama-safety.default.svc.cluster.local 11434; do
+            echo "waiting for ollama-safety on port 11434";
+            sleep 2;
+          done;
+          echo "ollama-safety is ready!";
+
+          echo "All services are ready!";
+        ']
       containers:
       - name: llama-stack
         image: llamastack/distribution-starter:0.2.15
@@ -56,7 +78,7 @@ spec:
         - name: NVIDIA_BASE_URL
           value: http://llm-nim-code.default.svc.cluster.local:8000
         - name: OLLAMA_BASE_URL
-          value: http://ollama-safety.default.svc.cluster.local:8000
+          value: http://ollama-safety.default.svc.cluster.local:11434
         - name: POSTGRES_HOST
           value: postgres-server.default.svc.cluster.local
         - name: POSTGRES_PORT
@@ -69,7 +91,7 @@ spec:
           value: "${CODE_MODEL}"
         - name: TAVILY_SEARCH_API_KEY
           value: "${TAVILY_SEARCH_API_KEY}"
-        - name: OLLAMA_MODLE
+        - name: OLLAMA_MODEL
           value: "${OLLAMA_MODEL}"
         command: ["/bin/sh"]
         args:

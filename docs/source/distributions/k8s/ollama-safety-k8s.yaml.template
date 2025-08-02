@@ -63,7 +63,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ollama-server-safety
+  name: ollama-safety
 spec:
   selector:
     app.kubernetes.io/name: ollama-safety
