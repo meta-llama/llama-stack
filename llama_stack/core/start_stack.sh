@@ -40,7 +40,6 @@ port="$1"
 shift
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
-source "$SCRIPT_DIR/common.sh"
 
 # Initialize variables
 yaml_config=""
@@ -75,9 +74,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Check if yaml_config is required based on env_type
-if [[ "$env_type" == "venv" || "$env_type" == "conda" ]] && [ -z "$yaml_config" ]; then
-  echo -e "${RED}Error: --config is required for venv and conda environments${NC}" >&2
+# Check if yaml_config is required
+if [[ "$env_type" == "venv" ]] && [ -z "$yaml_config" ]; then
+  echo -e "${RED}Error: --config is required for venv environment${NC}" >&2
   exit 1
 fi
 
@@ -101,19 +100,14 @@ case "$env_type" in
         source "$env_path_or_name/bin/activate"
     fi
     ;;
-  "conda")
-    if ! is_command_available conda; then
-        echo -e "${RED}Error: conda not found" >&2
-        exit 1
-    fi
-    eval "$(conda shell.bash hook)"
-    conda deactivate && conda activate "$env_path_or_name"
-    PYTHON_BINARY="$CONDA_PREFIX/bin/python"
-    ;;
   *)
+    # Handle unsupported env_types here
+    echo -e "${RED}Error: Unsupported environment type '$env_type'. Only 'venv' is supported.${NC}" >&2
+    exit 1
+    ;;
 esac
 
-if [[ "$env_type" == "venv" || "$env_type" == "conda" ]]; then
+if [[ "$env_type" == "venv" ]]; then
     set -x
 
     if [ -n "$yaml_config" ]; then

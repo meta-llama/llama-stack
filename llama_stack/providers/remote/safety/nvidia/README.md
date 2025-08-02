@@ -19,7 +19,7 @@ This provider enables safety checks and guardrails for LLM interactions using NV
 Build the NVIDIA environment:
 
 ```bash
-llama stack build --template nvidia --image-type conda
+llama stack build --template nvidia --image-type venv
 ```
 
 ### Basic Usage using the LlamaStack Python Client

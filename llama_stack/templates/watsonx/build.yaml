@@ -35,16 +35,11 @@ distribution_spec:
     - provider_id: braintrust
       provider_type: inline::braintrust
     tool_runtime:
-    - provider_id: brave-search
-      provider_type: remote::brave-search
-    - provider_id: tavily-search
-      provider_type: remote::tavily-search
-    - provider_id: rag-runtime
-      provider_type: inline::rag-runtime
-    - provider_id: model-context-protocol
-      provider_type: remote::model-context-protocol
-image_type: conda
-image_name: watsonx
+    - provider_type: remote::brave-search
+    - provider_type: remote::tavily-search
+    - provider_type: inline::rag-runtime
+    - provider_type: remote::model-context-protocol
+image_type: venv
 additional_pip_packages:
 - sqlalchemy[asyncio]
 - aiosqlite

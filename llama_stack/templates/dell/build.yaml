@@ -29,8 +29,7 @@ distribution_spec:
     - provider_type: remote::brave-search
     - provider_type: remote::tavily-search
     - provider_type: inline::rag-runtime
-image_type: conda
-image_name: dell
+image_type: venv
 additional_pip_packages:
 - aiosqlite
 - sqlalchemy[asyncio]

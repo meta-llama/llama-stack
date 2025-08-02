@@ -47,7 +47,8 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--image-name",
             type=str,
-            help="Name of the image to run.",
+            default=None,
+            help="Name of the image to run. Defaults to the current environment",
         )
         self.parser.add_argument(
             "--env",
@@ -58,7 +59,7 @@ class StackRun(Subcommand):
         self.parser.add_argument(
             "--image-type",
             type=str,
-            help="Image Type used during the build. This can be either conda or container or venv.",
+            help="Image Type used during the build. This can be only venv.",
             choices=[e.value for e in ImageType if e.value != ImageType.CONTAINER.value],
         )
         self.parser.add_argument(
@@ -67,20 +68,38 @@ class StackRun(Subcommand):
             help="Start the UI server",
         )
 
-    # If neither image type nor image name is provided, but at the same time
-    # the current environment has conda breadcrumbs, then assume what the user
-    # wants to use conda mode and not the usual default mode (using
-    # pre-installed system packages).
-    #
-    # Note: yes, this is hacky. It's implemented this way to keep the existing
-    # conda users unaffected by the switch of the default behavior to using
-    # system packages.
-    def _get_image_type_and_name(self, args: argparse.Namespace) -> tuple[str, str]:
-        conda_env = os.environ.get("CONDA_DEFAULT_ENV")
-        if conda_env and args.image_name == conda_env:
-            logger.warning(f"Conda detected. Using conda environment {conda_env} for the run.")
-            return ImageType.CONDA.value, args.image_name
-        return args.image_type, args.image_name
+    def _resolve_config_and_template(self, args: argparse.Namespace) -> tuple[Path | None, str | None]:
+        """Resolve config file path and template name from args.config"""
+        from llama_stack.distribution.utils.config_dirs import DISTRIBS_BASE_DIR
+
+        if not args.config:
+            return None, None
+
+        config_file = Path(args.config)
+        has_yaml_suffix = args.config.endswith(".yaml")
+        template_name = None
+
+        if not config_file.exists() and not has_yaml_suffix:
+            # check if this is a template
+            config_file = Path(REPO_ROOT) / "llama_stack" / "templates" / args.config / "run.yaml"
+            if config_file.exists():
+                template_name = args.config
+
+        if not config_file.exists() and not has_yaml_suffix:
+            # check if it's a build config saved to ~/.llama dir
+            config_file = Path(DISTRIBS_BASE_DIR / f"llamastack-{args.config}" / f"{args.config}-run.yaml")
+
+        if not config_file.exists():
+            self.parser.error(
+                f"File {str(config_file)} does not exist.\n\nPlease run `llama stack build` to generate (and optionally edit) a run.yaml file"
+            )
+
+        if not config_file.is_file():
+            self.parser.error(
+                f"Config file must be a valid file path, '{config_file}' is not a file: type={type(config_file)}"
+            )
+
+        return config_file, template_name
 
     def _run_stack_run_cmd(self, args: argparse.Namespace) -> None:
         import yaml
@@ -90,7 +109,7 @@ class StackRun(Subcommand):
 
         if args.enable_ui:
             self._start_ui_development_server(args.port)
-        image_type, image_name = self._get_image_type_and_name(args)
+        image_type, image_name = args.image_type, args.image_name
 
         if args.config:
             try:
@@ -103,8 +122,8 @@ class StackRun(Subcommand):
             config_file = None
 
         # Check if config is required based on image type
-        if (image_type in [ImageType.CONDA.value, ImageType.VENV.value]) and not config_file:
-            self.parser.error("Config file is required for venv and conda environments")
+        if image_type == ImageType.VENV.value and not config_file:
+            self.parser.error("Config file is required for venv environment")
 
         if config_file:
             logger.info(f"Using run configuration: {config_file}")

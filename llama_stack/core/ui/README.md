@@ -9,7 +9,7 @@
 1. Start up Llama Stack API server. More details [here](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html).
 
 ```
-llama stack build --template together --image-type conda
+llama stack build --template together --image-type venv
 
 llama stack run together
 ```

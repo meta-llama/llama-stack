@@ -16,7 +16,7 @@ from llama_stack.core.utils.image_types import LlamaStackImageType
 def test_container_build_passes_path(monkeypatch, tmp_path):
     called_with = {}
 
-    def spy_build_image(cfg, build_file_path, image_name, template_or_config, run_config=None):
+    def spy_build_image(build_config, image_name, template_or_config, run_config=None):
         called_with["path"] = template_or_config
         called_with["run_config"] = run_config
         return 0
