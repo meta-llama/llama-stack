@@ -153,7 +153,11 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 
         self.loop = asyncio.new_event_loop()
 
-    def initialize(self):
+        # Automatically initialize the client
+        self._auto_initialize()
+
+    def _auto_initialize(self):
+        """Internal method to handle automatic initialization during construction."""
         if in_notebook():
             import nest_asyncio
 
@@ -168,6 +172,18 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             return loop.run_until_complete(self.async_client.initialize())
         finally:
             asyncio.set_event_loop(None)
+
+    def initialize(self):
+        """
+        Deprecated method for backward compatibility.
+
+        Initialization now happens automatically in __init__.
+        This method is kept for backward compatibility and does nothing.
+
+        Returns:
+            None: Returns None to match historical behavior
+        """
+        return None
 
     def _remove_root_logger_handlers(self):
         """
@@ -237,8 +253,18 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         self.custom_provider_registry = custom_provider_registry
         self.provider_data = provider_data
         self.route_impls: RouteImpls | None = None  # Initialize to None to prevent AttributeError
+        self._is_initialized: bool = False  # Track initialization state
 
     async def initialize(self) -> bool:
+        """
+        Initialize the async client. Can be called multiple times safely.
+
+        Returns:
+            bool: True if initialization was successful
+        """
+        if self._is_initialized:
+            return True
+
         try:
             self.route_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)
@@ -288,6 +314,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             console.print(yaml.dump(safe_config, indent=2))
 
         self.route_impls = initialize_route_impls(self.impls)
+        self._is_initialized = True
         return True
 
     async def request(
@@ -298,9 +325,6 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         stream=False,
         stream_cls=None,
     ):
-        if self.route_impls is None:
-            raise ValueError("Client not initialized. Please call initialize() first.")
-
         # Create headers with provider data if available
         headers = options.headers or {}
         if self.provider_data:
