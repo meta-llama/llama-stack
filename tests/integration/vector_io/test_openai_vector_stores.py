@@ -38,6 +38,37 @@ def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
     pytest.skip("OpenAI vector stores are not supported by any provider")
 
 
+def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_models, search_mode):
+    vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
+    search_mode_support = {
+        "vector": [
+            "inline::faiss",
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "inline::chromadb",
+            "inline::qdrant",
+            "remote::pgvector",
+            "remote::chromadb",
+            "remote::weaviate",
+            "remote::qdrant",
+        ],
+        "keyword": [
+            "inline::sqlite-vec",
+        ],
+        "hybrid": [
+            "inline::sqlite-vec",
+        ],
+    }
+    supported_providers = search_mode_support.get(search_mode, [])
+    for p in vector_io_providers:
+        if p.provider_type in supported_providers:
+            return
+    pytest.skip(
+        f"Search mode '{search_mode}' is not supported by any available provider. "
+        f"Supported providers for '{search_mode}': {supported_providers}"
+    )
+
+
 @pytest.fixture
 def openai_client(client_with_models):
     base_url = f"{client_with_models.base_url}/v1/openai/v1"
@@ -865,21 +896,26 @@ def test_create_vector_store_files_duplicate_vector_store_name(compat_client_wit
     assert len(vector_stores_list_post_delete.data) == 1
 
 
-@pytest.mark.skip(reason="Client library needs to be scaffolded to support search_mode parameter")
-def test_openai_vector_store_search_modes():
-    """Test OpenAI vector store search with different search modes.
+@pytest.mark.parametrize("search_mode", ["vector", "keyword", "hybrid"])
+def test_openai_vector_store_search_modes(llama_stack_client, client_with_models, sample_chunks, search_mode):
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_models, search_mode)
 
-    This test is skipped because the client library
-    needs to be regenerated from the updated OpenAPI spec to support the
-    search_mode parameter. Once the client library is updated, this test
-    can be enabled to verify:
-    - vector search mode (default)
-    - keyword search mode
-    - hybrid search mode
-    - invalid search mode validation
-    """
-    # TODO: Enable this test once llama_stack_client is updated to support search_mode
-    # The server-side implementation is complete but the client
-    # library needs to be updated:
-    # https://github.com/meta-llama/llama-stack-client-python/blob/52c0b5d23e9ae67ceb09d755143d436f38c20547/src/llama_stack_client/resources/vector_stores/vector_stores.py#L314
-    pass
+    vector_store = llama_stack_client.vector_stores.create(
+        name=f"search_mode_test_{search_mode}",
+        metadata={"purpose": "search_mode_testing"},
+    )
+
+    client_with_models.vector_io.insert(
+        vector_db_id=vector_store.id,
+        chunks=sample_chunks,
+    )
+    query = "Python programming language"
+
+    search_response = llama_stack_client.vector_stores.search(
+        vector_store_id=vector_store.id,
+        query=query,
+        max_num_results=4,
+        search_mode=search_mode,
+    )
+    assert search_response is not None
