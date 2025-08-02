@@ -132,8 +132,11 @@ class PGVectorIndex(EmbeddingIndex):
             chunks = []
             scores = []
             for doc, dist in results:
+                score = 1.0 / float(dist) if dist != 0 else float("inf")
+                if score < score_threshold:
+                    continue
                 chunks.append(Chunk(**doc))
-                scores.append(1.0 / float(dist) if dist != 0 else float("inf"))
+                scores.append(score)
 
             return QueryChunksResponse(chunks=chunks, scores=scores)
 
