@@ -28,9 +28,6 @@ class ConsoleSpanProcessor(SpanProcessor):
         logger.info(f"[dim]{timestamp}[/dim] [bold magenta][START][/bold magenta] [dim]{span.name}[/dim]")
 
     def on_end(self, span: ReadableSpan) -> None:
-        if span.attributes and span.attributes.get("__autotraced__"):
-            return
-
         timestamp = datetime.fromtimestamp(span.end_time / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
         span_context = f"[dim]{timestamp}[/dim] [bold magenta][END][/bold magenta] [dim]{span.name}[/dim]"
         if span.status.status_code == StatusCode.ERROR:
@@ -67,7 +64,7 @@ class ConsoleSpanProcessor(SpanProcessor):
                 for key, value in event.attributes.items():
                     if key.startswith("__") or key in ["message", "severity"]:
                         continue
-                    logger.info(f"/r[dim]{key}[/dim]: {value}")
+                    logger.info(f"[dim]{key}[/dim]: {value}")
 
     def shutdown(self) -> None:
         """Shutdown the processor."""
