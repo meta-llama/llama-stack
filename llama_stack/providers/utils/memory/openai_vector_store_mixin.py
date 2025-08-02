@@ -433,10 +433,6 @@ class OpenAIVectorStoreMixin(ABC):
             # Convert response to OpenAI format
             data = []
             for chunk, score in zip(response.chunks, response.scores, strict=False):
-                # Apply score based filtering
-                if score < score_threshold:
-                    continue
-
                 # Apply filters if provided
                 if filters:
                     # Simple metadata filtering
