@@ -16,6 +16,36 @@ from llama_stack.schema_utils import json_schema_type, webmethod
 
 
 @json_schema_type
+class ModerationObjectResults(BaseModel):
+    """A moderation object.
+    :param flagged: Whether any of the below categories are flagged.
+    :param categories: A list of the categories, and whether they are flagged or not.
+    :param category_applied_input_types: A list of the categories along with the input type(s) that the score applies to.
+    :param category_scores: A list of the categories along with their scores as predicted by model.
+    """
+
+    flagged: bool
+    categories: dict[str, bool] | None = None
+    category_applied_input_types: dict[str, list[str]] | None = None
+    category_scores: dict[str, float] | None = None
+    user_message: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+@json_schema_type
+class ModerationObject(BaseModel):
+    """A moderation object.
+    :param id: The unique identifier for the moderation request.
+    :param model: The model used to generate the moderation results.
+    :param results: A list of moderation objects
+    """
+
+    id: str
+    model: str
+    results: list[ModerationObjectResults]
+
+
+@json_schema_type
 class ViolationLevel(Enum):
     """Severity level of a safety violation.
 
@@ -80,5 +110,15 @@ class Safety(Protocol):
         :param messages: The messages to run the shield on.
         :param params: The parameters of the shield.
         :returns: A RunShieldResponse.
+        """
+        ...
+
+    @webmethod(route="/openai/v1/moderations", method="POST")
+    async def create(self, input: str | list[str], model: str) -> ModerationObject:
+        """Classifies if text and/or image inputs are potentially harmful.
+        :param input: Input (or inputs) to classify.
+        Can be a single string, an array of strings, or an array of multi-modal input objects similar to other models.
+        :param model: The content moderation model you would like to use.
+        :returns: A moderation object.
         """
         ...
