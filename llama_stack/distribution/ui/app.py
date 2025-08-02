@@ -34,6 +34,12 @@ def main():
         icon="🔍",
         default=False,
     )
+    mcp_servers_page = st.Page(
+        "page/distribution/mcp_servers.py",
+        title="MCP Servers",
+        icon="🔌",
+        default=False,
+    )
 
     pg = st.navigation(
         {
@@ -44,7 +50,7 @@ def main():
                 application_evaluation_page,
                 native_evaluation_page,
             ],
-            "Inspect": [provider_page, resources_page],
+            "Inspect": [provider_page, resources_page, mcp_servers_page],
         },
         expanded=False,
     )

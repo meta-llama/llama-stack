@@ -43,7 +43,9 @@ def providers():
                 llama_stack_api.update_provider_data("tavily_search_api_key", tavily_search_api_key)
             else:
                 # Fallback implementation if method doesn't exist
-                llama_stack_api.provider_data = llama_stack_api.provider_data or {}
+                # Initialize provider_data if it doesn't exist
+                if not hasattr(llama_stack_api, "provider_data"):
+                    llama_stack_api.provider_data = {}
                 llama_stack_api.provider_data["tavily_search_api_key"] = tavily_search_api_key
                 # Reinitialize the client with updated provider data
                 llama_stack_api.client = LlamaStackClient(
