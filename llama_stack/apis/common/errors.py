@@ -40,3 +40,9 @@ class DatasetNotFoundError(ValueError):
     def __init__(self, dataset_name: str) -> None:
         message = f"Dataset '{dataset_name}' not found. Use client.datasets.list() to list available datasets."
         super().__init__(message)
+
+
+class MissingEmbeddingModelError(RuntimeError):
+    """Raised when no embedding model is provided and no global default is configured."""
+
+    pass
