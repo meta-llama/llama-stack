@@ -18,7 +18,6 @@ from openai.types.chat.chat_completion_chunk import (
 from llama_stack.apis.agents import Order
 from llama_stack.apis.agents.openai_responses import (
     ListOpenAIResponseInputItem,
-    OpenAIResponseInputMessageContentText,
     OpenAIResponseInputToolFunction,
     OpenAIResponseInputToolWebSearch,
     OpenAIResponseMessage,
@@ -39,6 +38,7 @@ from llama_stack.apis.inference import (
     OpenAIResponseFormatText,
     OpenAIUserMessageParam,
 )
+from llama_stack.apis.input import OpenAIResponseInputMessageContentText
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
 from llama_stack.core.access_control.access_control import default_policy
 from llama_stack.providers.inline.agents.meta_reference.openai_responses import (

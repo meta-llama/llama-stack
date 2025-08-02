@@ -19,6 +19,7 @@ from typing_extensions import TypedDict
 
 from llama_stack.apis.common.content_types import ContentDelta, InterleavedContent, InterleavedContentItem
 from llama_stack.apis.common.responses import Order
+from llama_stack.apis.input import OpenAIResponseInputMessageContent
 from llama_stack.apis.models import Model
 from llama_stack.apis.telemetry import MetricResponseMixin
 from llama_stack.models.llama.datatypes import (
@@ -471,6 +472,28 @@ class EmbeddingsResponse(BaseModel):
     """
 
     embeddings: list[list[float]]
+
+
+@json_schema_type
+class RerankData(BaseModel):
+    """A single rerank result from a reranking response.
+
+    :param index: The original index of the document in the input list
+    :param relevance_score: The relevance score from the model output. Values are inverted when applicable so that higher scores indicate greater relevance.
+    """
+
+    index: int
+    relevance_score: float
+
+
+@json_schema_type
+class RerankResponse(BaseModel):
+    """Response from a reranking request.
+
+    :param data: List of rerank result objects, sorted by relevance score (descending)
+    """
+
+    data: list[RerankData]
 
 
 @json_schema_type
@@ -1130,6 +1153,26 @@ class InferenceProvider(Protocol):
         :returns: An array of embeddings, one for each content. Each embedding is a list of floats. The dimensionality of the embedding is model-specific; you can check model metadata using /models/{model_id}.
         """
         ...
+
+    @webmethod(route="/inference/rerank", method="POST", experimental=True)
+    async def rerank(
+        self,
+        model: str,
+        query: str | OpenAIResponseInputMessageContent,
+        items: list[str | OpenAIResponseInputMessageContent],
+        max_num_results: int | None = None,
+        text_truncation: TextTruncation | None = TextTruncation.none,
+    ) -> RerankResponse:
+        """Rerank a list of documents based on their relevance to a query.
+
+        :param model: The identifier of the reranking model to use.
+        :param query: The search query to rank items against.
+        :param items: List of items to rerank.
+        :param max_num_results: (Optional) Maximum number of results to return. Default: returns all.
+        :param text_truncation: (Optional) Config for how to truncate text for when text is longer than the model's max sequence length.
+        :returns: RerankResponse with indices sorted by relevance score (descending).
+        """
+        raise NotImplementedError("Reranking is not implemented")
 
     @webmethod(route="/openai/v1/completions", method="POST")
     async def openai_completion(

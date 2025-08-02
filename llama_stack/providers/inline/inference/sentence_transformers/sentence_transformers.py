@@ -13,13 +13,16 @@ from llama_stack.apis.inference import (
     InterleavedContent,
     LogProbConfig,
     Message,
+    RerankResponse,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
     ToolDefinition,
     ToolPromptFormat,
 )
+from llama_stack.apis.input import OpenAIResponseInputMessageContent
 from llama_stack.apis.models import ModelType
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
@@ -122,3 +125,13 @@ class SentenceTransformersInferenceImpl(
         logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for Sentence Transformers")
+
+    async def rerank(
+        self,
+        model: str,
+        query: str | OpenAIResponseInputMessageContent,
+        items: list[str | OpenAIResponseInputMessageContent],
+        max_num_results: int | None = None,
+        text_truncation: TextTruncation | None = TextTruncation.none,
+    ) -> RerankResponse:
+        raise NotImplementedError("Reranking is not supported for Sentence Transformers")

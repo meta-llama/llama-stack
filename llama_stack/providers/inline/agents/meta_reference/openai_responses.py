@@ -22,9 +22,6 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIDeleteResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
-    OpenAIResponseInputMessageContent,
-    OpenAIResponseInputMessageContentImage,
-    OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
     OpenAIResponseInputToolFileSearch,
     OpenAIResponseInputToolMCP,
@@ -67,6 +64,11 @@ from llama_stack.apis.inference import (
     OpenAISystemMessageParam,
     OpenAIToolMessageParam,
     OpenAIUserMessageParam,
+)
+from llama_stack.apis.input import (
+    OpenAIResponseInputMessageContent,
+    OpenAIResponseInputMessageContentImage,
+    OpenAIResponseInputMessageContentText,
 )
 from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO

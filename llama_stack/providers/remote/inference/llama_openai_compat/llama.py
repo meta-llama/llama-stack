@@ -5,6 +5,8 @@
 # the root directory of this source tree.
 import logging
 
+from llama_stack.apis.inference import RerankResponse, TextTruncation
+from llama_stack.apis.input import OpenAIResponseInputMessageContent
 from llama_stack.providers.remote.inference.llama_openai_compat.config import LlamaCompatConfig
 from llama_stack.providers.utils.inference.litellm_openai_mixin import LiteLLMOpenAIMixin
 from llama_stack.providers.utils.inference.openai_mixin import OpenAIMixin
@@ -55,3 +57,13 @@ class LlamaCompatInferenceAdapter(OpenAIMixin, LiteLLMOpenAIMixin):
 
     async def shutdown(self):
         await super().shutdown()
+
+    async def rerank(
+        self,
+        model: str,
+        query: str | OpenAIResponseInputMessageContent,
+        items: list[str | OpenAIResponseInputMessageContent],
+        max_num_results: int | None = None,
+        text_truncation: TextTruncation | None = TextTruncation.none,
+    ) -> RerankResponse:
+        raise NotImplementedError("Reranking is not supported for Llama OpenAI Compat")
