@@ -80,9 +80,14 @@ def tool_chat_page():
         total_tools = 0
 
         for toolgroup_id in toolgroup_selection:
-            tools = client.tools.list(toolgroup_id=toolgroup_id)
-            grouped_tools[toolgroup_id] = [tool.identifier for tool in tools]
-            total_tools += len(tools)
+            try:
+                # Add a timeout of 5 seconds to prevent UI freezing
+                tools = client.tools.list(toolgroup_id=toolgroup_id, timeout=5.0)
+                grouped_tools[toolgroup_id] = [tool.identifier for tool in tools]
+                total_tools += len(tools)
+            except Exception as e:
+                st.warning(f"Failed to list tools for {toolgroup_id}: {str(e)}")
+                grouped_tools[toolgroup_id] = []
 
         st.markdown(f"Active Tools: 🛠 {total_tools}")
 
@@ -126,25 +131,56 @@ def tool_chat_page():
 
     @st.cache_resource
     def create_agent():
-        if "agent_type" in st.session_state and st.session_state.agent_type == AgentType.REACT:
-            return ReActAgent(
-                client=client,
-                model=model,
-                tools=toolgroup_selection,
-                response_format={
-                    "type": "json_schema",
-                    "json_schema": ReActOutput.model_json_schema(),
-                },
-                sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
+        try:
+            if "agent_type" in st.session_state and st.session_state.agent_type == AgentType.REACT:
+                return ReActAgent(
+                    client=client,
+                    model=model,
+                    tools=toolgroup_selection,
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": ReActOutput.model_json_schema(),
+                    },
+                    sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
+                )
+            else:
+                return Agent(
+                    client,
+                    model=model,
+                    instructions="You are a helpful assistant. When you use a tool always respond with a summary of the result.",
+                    tools=toolgroup_selection,
+                    sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
+                )
+        except Exception as e:
+            # Log the error
+            st.error(f"Failed to create agent: {str(e)}")
+            
+            # Create a fallback agent without tools
+            st.warning(
+                "Creating a fallback agent without tools due to an error. "
+                "Some functionality may be limited. Try refreshing the page or selecting different tools."
             )
-        else:
-            return Agent(
-                client,
-                model=model,
-                instructions="You are a helpful assistant. When you use a tool always respond with a summary of the result.",
-                tools=toolgroup_selection,
-                sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
-            )
+            
+            # Return a basic agent without tools
+            if "agent_type" in st.session_state and st.session_state.agent_type == AgentType.REACT:
+                return ReActAgent(
+                    client=client,
+                    model=model,
+                    tools=[],  # No tools
+                    response_format={
+                        "type": "json_schema",
+                        "json_schema": ReActOutput.model_json_schema(),
+                    },
+                    sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
+                )
+            else:
+                return Agent(
+                    client,
+                    model=model,
+                    instructions="You are a helpful assistant. When you use a tool always respond with a summary of the result.",
+                    tools=[],  # No tools
+                    sampling_params={"strategy": {"type": "greedy"}, "max_tokens": max_tokens},
+                )
 
     st.session_state.agent_type = agent_type
 
