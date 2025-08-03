@@ -44,6 +44,7 @@ from llama_stack.apis.common.content_types import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
+from llama_stack.apis.common.errors import SessionNotFoundError
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -214,7 +215,7 @@ class ChatAgent(ShieldRunnerMixin):
         is_resume = isinstance(request, AgentTurnResumeRequest)
         session_info = await self.storage.get_session_info(request.session_id)
         if session_info is None:
-            raise ValueError(f"Session {request.session_id} not found")
+            raise SessionNotFoundError(request.session_id)
 
         turns = await self.storage.get_session_turns(request.session_id)
         if is_resume and len(turns) == 0:
