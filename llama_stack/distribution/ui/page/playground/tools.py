@@ -269,6 +269,8 @@ def tool_chat_page():
                 if action and isinstance(action, dict):
                     tool_name = action.get("tool_name")
                     tool_params = action.get("tool_params")
+                    if tool_name.endswith("_search"):
+                        tool_name = "web_search"
                     with st.expander(f'🛠 Action: Using tool "{tool_name}"', expanded=False):
                         st.json(tool_params)
 

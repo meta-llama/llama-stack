@@ -6,11 +6,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# Check if NGC_API_KEY is provided as argument
-if [ -n "$1" ]; then
-  export NGC_API_KEY=$1
-  echo "Using NGC API key provided as argument."
-fi
+# This script is used to apply the Kubernetes resources for the Llama Stack.
 
 export POSTGRES_USER=llamastack
 export POSTGRES_DB=llamastack
