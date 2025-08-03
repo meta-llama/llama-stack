@@ -9,5 +9,4 @@ import enum
 
 class LlamaStackImageType(enum.Enum):
     CONTAINER = "container"
-    CONDA = "conda"
     VENV = "venv"

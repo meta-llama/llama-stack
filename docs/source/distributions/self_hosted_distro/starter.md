@@ -145,7 +145,7 @@ This distribution comes with a default "llama-guard" shield that can be enabled 
 
 ## Running the Distribution
 
-You can run the starter distribution via Docker, Conda, or venv.
+You can run the starter distribution via Docker or venv.
 
 ### Via Docker
 
@@ -164,12 +164,12 @@ docker run \
   --port $LLAMA_STACK_PORT
 ```
 
-### Via Conda or venv
+### Via venv
 
 Ensure you have configured the starter distribution using the environment variables explained above.
 
 ```bash
-uv run --with llama-stack llama stack build --template starter --image-type <conda|venv> --run
+uv run --with llama-stack llama stack build --template starter --image-type venv --run
 ```
 
 ## Example Usage

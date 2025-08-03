@@ -20,7 +20,7 @@ This provider enables dataset management using NVIDIA's NeMo Customizer service.
 Build the NVIDIA environment:
 
 ```bash
-llama stack build --template nvidia --image-type conda
+llama stack build --template nvidia --image-type venv
 ```
 
 ### Basic Usage using the LlamaStack Python Client

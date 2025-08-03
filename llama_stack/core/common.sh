@@ -7,12 +7,10 @@
 # the root directory of this source tree.
 
 cleanup() {
-  envname="$1"
-
-  set +x
-  echo "Cleaning up..."
-  conda deactivate
-  conda env remove --name "$envname" -y
+  # For venv environments, no special cleanup is needed
+  # This function exists to avoid "function not found" errors
+  local env_name="$1"
+  echo "Cleanup called for environment: $env_name"
 }
 
 handle_int() {
@@ -31,19 +29,7 @@ handle_exit() {
   fi
 }
 
-setup_cleanup_handlers() {
-  trap handle_int INT
-  trap handle_exit EXIT
 
-  if is_command_available conda; then
-    __conda_setup="$('conda' 'shell.bash' 'hook' 2>/dev/null)"
-    eval "$__conda_setup"
-    conda deactivate
-  else
-    echo "conda is not available"
-    exit 1
-  fi
-}
 
 # check if a command is present
 is_command_available() {

@@ -47,13 +47,13 @@ pip install -e .
 ```
 Use the CLI to build your distribution.
 The main points to consider are:
-1. **Image Type** - Do you want a Conda / venv environment or a Container (eg. Docker)
+1. **Image Type** - Do you want a venv environment or a Container (eg. Docker)
 2. **Template** - Do you want to use a template to build your distribution? or start from scratch ?
 3. **Config** - Do you want to use a pre-existing config file to build your distribution?
 
 ```
 llama stack build -h
-usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {conda,container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run]
+usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run]
 
 Build a Llama stack container
 
@@ -63,10 +63,10 @@ options:
                         be prompted to enter information interactively (default: None)
   --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates (default: None)
   --list-templates      Show the available templates for building a Llama Stack distribution (default: False)
-  --image-type {conda,container,venv}
+  --image-type {container,venv}
                         Image Type to use for the build. If not specified, will use the image type from the template config. (default: None)
   --image-name IMAGE_NAME
-                        [for image-type=conda|container|venv] Name of the conda or virtual environment to use for the build. If not specified, currently active environment will be used if
+                        [for image-type=container|venv] Name of the virtual environment to use for the build. If not specified, currently active environment will be used if
                         found. (default: None)
   --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
   --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)
@@ -159,7 +159,7 @@ It would be best to start with a template and understand the structure of the co
 llama stack build
 
 > Enter a name for your Llama Stack (e.g. my-local-stack): my-stack
-> Enter the image type you want your Llama Stack to be built as (container or conda or venv): conda
+> Enter the image type you want your Llama Stack to be built as (container or venv): venv
 
 Llama Stack is composed of several APIs working together. Let's select
 the provider types (implementations) you want to use for these APIs.
@@ -312,7 +312,7 @@ Now, let's start the Llama Stack Distribution Server. You will need the YAML con
 ```
 llama stack run -h
 usage: llama stack run [-h] [--port PORT] [--image-name IMAGE_NAME] [--env KEY=VALUE]
-                       [--image-type {conda,venv}] [--enable-ui]
+                       [--image-type {venv}] [--enable-ui]
                        [config | template]
 
 Start the server for a Llama Stack Distribution. You should have already built (or downloaded) and configured the distribution.
@@ -326,8 +326,8 @@ options:
   --image-name IMAGE_NAME
                         Name of the image to run. Defaults to the current environment (default: None)
   --env KEY=VALUE       Environment variables to pass to the server in KEY=VALUE format. Can be specified multiple times. (default: None)
-  --image-type {conda,venv}
-                        Image Type used during the build. This can be either conda or venv. (default: None)
+  --image-type {venv}
+                        Image Type used during the build. This should be venv. (default: None)
   --enable-ui           Start the UI server (default: False)
 ```
 
@@ -342,9 +342,6 @@ llama stack run ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-
 
 # Start using a venv
 llama stack run --image-type venv ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-run.yaml
-
-# Start using a conda environment
-llama stack run --image-type conda ~/.llama/distributions/llamastack-my-local-stack/my-local-stack-run.yaml
 ```
 
 ```

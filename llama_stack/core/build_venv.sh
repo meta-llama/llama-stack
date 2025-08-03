@@ -6,9 +6,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-# TODO: combine this with build_conda_env.sh since it is almost identical
-# the only difference is that we don't do any conda-specific setup
-
 LLAMA_STACK_DIR=${LLAMA_STACK_DIR:-}
 LLAMA_STACK_CLIENT_DIR=${LLAMA_STACK_CLIENT_DIR:-}
 TEST_PYPI_VERSION=${TEST_PYPI_VERSION:-}
@@ -94,6 +91,8 @@ fi
 if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
   echo "Using llama-stack-client-dir=$LLAMA_STACK_CLIENT_DIR"
 fi
+
+ENVNAME=""
 
 # pre-run checks to make sure we can proceed with the installation
 pre_run_checks() {
