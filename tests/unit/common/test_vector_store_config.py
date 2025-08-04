@@ -8,19 +8,19 @@ from llama_stack.apis.common.vector_store_config import VectorStoreConfig
 
 
 def test_defaults():
-    cfg = VectorStoreConfig()
-    assert cfg.default_embedding_model is None
-    assert cfg.default_embedding_dimension is None
+    config = VectorStoreConfig()
+    assert config.default_embedding_model is None
+    assert config.default_embedding_dimension is None
 
 
 def test_env_loading(monkeypatch):
     monkeypatch.setenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", "test-model")
     monkeypatch.setenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", "123")
 
-    cfg = VectorStoreConfig()
-    assert cfg.default_embedding_model == "test-model"
-    assert cfg.default_embedding_dimension == 123
+    config = VectorStoreConfig()
+    assert config.default_embedding_model == "test-model"
+    assert config.default_embedding_dimension == 123
 
-    # Clean up
+    # cleanup
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", raising=False)
