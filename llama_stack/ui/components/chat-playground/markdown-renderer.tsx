@@ -1,4 +1,4 @@
-import React, { Suspense } from "react"
+import React, { Suspense, useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -25,28 +25,66 @@ interface HighlightedPre extends React.HTMLAttributes<HTMLPreElement> {
 }
 
 const HighlightedPre = React.memo(
-  async ({ children, language, ...props }: HighlightedPre) => {
-    const { codeToTokens, bundledLanguages } = await import("shiki")
+  ({ children, language, ...props }: HighlightedPre) => {
+    const [tokens, setTokens] = useState<any[] | null>(null)
+    const [isSupported, setIsSupported] = useState(false)
 
-    if (!(language in bundledLanguages)) {
+    useEffect(() => {
+      let mounted = true
+
+      const loadAndHighlight = async () => {
+        try {
+          const { codeToTokens, bundledLanguages } = await import("shiki")
+
+          if (!mounted) return
+
+          if (!(language in bundledLanguages)) {
+            setIsSupported(false)
+            return
+          }
+
+          setIsSupported(true)
+
+          const { tokens: highlightedTokens } = await codeToTokens(children, {
+            lang: language as keyof typeof bundledLanguages,
+            defaultColor: false,
+            themes: {
+              light: "github-light",
+              dark: "github-dark",
+            },
+          })
+
+          if (mounted) {
+            setTokens(highlightedTokens)
+          }
+        } catch (error) {
+          if (mounted) {
+            setIsSupported(false)
+          }
+        }
+      }
+
+      loadAndHighlight()
+
+      return () => {
+        mounted = false
+      }
+    }, [children, language])
+
+    if (!isSupported) {
       return <pre {...props}>{children}</pre>
     }
 
-    const { tokens } = await codeToTokens(children, {
-      lang: language as keyof typeof bundledLanguages,
-      defaultColor: false,
-      themes: {
-        light: "github-light",
-        dark: "github-dark",
-      },
-    })
+    if (!tokens) {
+      return <pre {...props}>{children}</pre>
+    }
 
     return (
       <pre {...props}>
         <code>
           {tokens.map((line, lineIndex) => (
-            <>
-              <span key={lineIndex}>
+            <React.Fragment key={lineIndex}>
+              <span>
                 {line.map((token, tokenIndex) => {
                   const style =
                     typeof token.htmlStyle === "string"
@@ -65,7 +103,7 @@ const HighlightedPre = React.memo(
                 })}
               </span>
               {lineIndex !== tokens.length - 1 && "\n"}
-            </>
+            </React.Fragment>
           ))}
         </code>
       </pre>
