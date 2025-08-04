@@ -50,3 +50,11 @@ class ToolGroupNotFoundError(ValueError):
             f"Tool group '{toolgroup_name}' not found. Use client.toolgroups.list() to list available tool groups."
         )
         super().__init__(message)
+
+
+class SessionNotFoundError(ValueError):
+    """raised when Llama Stack cannot find a referenced session or access is denied"""
+
+    def __init__(self, session_name: str) -> None:
+        message = f"Session '{session_name}' not found or access denied."
+        super().__init__(message)

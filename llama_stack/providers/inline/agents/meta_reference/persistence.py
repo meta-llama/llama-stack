@@ -10,6 +10,7 @@ import uuid
 from datetime import UTC, datetime
 
 from llama_stack.apis.agents import AgentConfig, Session, ToolExecutionStep, Turn
+from llama_stack.apis.common.errors import SessionNotFoundError
 from llama_stack.core.access_control.access_control import AccessDeniedError, is_action_allowed
 from llama_stack.core.access_control.datatypes import AccessRule
 from llama_stack.core.datatypes import User
@@ -61,12 +62,12 @@ class AgentPersistence:
         )
         return session_id
 
-    async def get_session_info(self, session_id: str) -> AgentSessionInfo | None:
+    async def get_session_info(self, session_id: str) -> AgentSessionInfo:
         value = await self.kvstore.get(
             key=f"session:{self.agent_id}:{session_id}",
         )
         if not value:
-            return None
+            raise SessionNotFoundError(session_id)
 
         session_info = AgentSessionInfo(**json.loads(value))
 
@@ -95,7 +96,7 @@ class AgentPersistence:
     async def add_vector_db_to_session(self, session_id: str, vector_db_id: str):
         session_info = await self.get_session_if_accessible(session_id)
         if session_info is None:
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         session_info.vector_db_id = vector_db_id
         await self.kvstore.set(
@@ -105,7 +106,7 @@ class AgentPersistence:
 
     async def add_turn_to_session(self, session_id: str, turn: Turn):
         if not await self.get_session_if_accessible(session_id):
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         await self.kvstore.set(
             key=f"session:{self.agent_id}:{session_id}:{turn.turn_id}",
@@ -114,7 +115,7 @@ class AgentPersistence:
 
     async def get_session_turns(self, session_id: str) -> list[Turn]:
         if not await self.get_session_if_accessible(session_id):
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         values = await self.kvstore.values_in_range(
             start_key=f"session:{self.agent_id}:{session_id}:",
@@ -137,7 +138,7 @@ class AgentPersistence:
 
     async def get_session_turn(self, session_id: str, turn_id: str) -> Turn | None:
         if not await self.get_session_if_accessible(session_id):
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         value = await self.kvstore.get(
             key=f"session:{self.agent_id}:{session_id}:{turn_id}",
@@ -148,7 +149,7 @@ class AgentPersistence:
 
     async def set_in_progress_tool_call_step(self, session_id: str, turn_id: str, step: ToolExecutionStep):
         if not await self.get_session_if_accessible(session_id):
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         await self.kvstore.set(
             key=f"in_progress_tool_call_step:{self.agent_id}:{session_id}:{turn_id}",
@@ -166,7 +167,7 @@ class AgentPersistence:
 
     async def set_num_infer_iters_in_turn(self, session_id: str, turn_id: str, num_infer_iters: int):
         if not await self.get_session_if_accessible(session_id):
-            raise ValueError(f"Session {session_id} not found or access denied")
+            raise SessionNotFoundError(session_id)
 
         await self.kvstore.set(
             key=f"num_infer_iters_in_turn:{self.agent_id}:{session_id}:{turn_id}",
@@ -218,6 +219,6 @@ class AgentPersistence:
         """
         session_info = await self.get_session_info(session_id)
         if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
+            raise SessionNotFoundError(session_id)
 
         await self.kvstore.delete(key=f"session:{self.agent_id}:{session_id}")
