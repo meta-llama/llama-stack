@@ -5,9 +5,6 @@
 # the root directory of this source tree.
 
 
-import pytest
-
-from llama_stack.apis.common.errors import MissingEmbeddingModelError
 from llama_stack.apis.models import ModelType
 from llama_stack.core.routers.vector_io import VectorIORouter
 
@@ -72,10 +69,11 @@ async def test_explicit_override(monkeypatch):
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
 
 
-async def test_error_when_no_default():
-    """Router should raise when neither explicit nor global default is available."""
+async def test_fallback_to_system_default():
+    """Router should use system default when neither explicit nor global default is available."""
 
     router = VectorIORouter(routing_table=_DummyRoutingTable())
 
-    with pytest.raises(MissingEmbeddingModelError):
-        await router._resolve_embedding_model(None)
+    model, dimension = await router._resolve_embedding_model(None)
+    assert model == "ibm-granite/granite-embedding-125m-english"
+    assert dimension == 384

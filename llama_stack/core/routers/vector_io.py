@@ -11,7 +11,6 @@ from typing import Any
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
 )
-from llama_stack.apis.common.errors import MissingEmbeddingModelError
 from llama_stack.apis.common.vector_store_config import VectorStoreConfig
 from llama_stack.apis.models import ModelType
 from llama_stack.apis.vector_io import (
@@ -83,7 +82,7 @@ class VectorIORouter(VectorIO):
 
         1. If *explicit_model* is provided, verify dimension (if possible) and use it.
         2. Else use the global default in ``vector_store_config``.
-        3. Else raise ``MissingEmbeddingModelError``.
+        3. Else fallback to system default (ibm-granite/granite-embedding-125m-english).
         """
 
         # 1. explicit override
@@ -106,10 +105,10 @@ class VectorIORouter(VectorIO):
         if cfg.default_embedding_model is not None:
             return cfg.default_embedding_model, cfg.default_embedding_dimension or 384
 
-        # 3. error - no default
-        raise MissingEmbeddingModelError(
-            "Failed to create vector store: No embedding model provided. Set vector_store_config.default_embedding_model or supply one in the API call."
-        )
+        # 3. fallback to system default
+        # Use IBM Granite embedding model as default for commercial compatibility
+        # See: https://github.com/meta-llama/llama-stack/issues/2418
+        return "ibm-granite/granite-embedding-125m-english", 384
 
     async def register_vector_db(
         self,
