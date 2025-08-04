@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llama-stack-provider-post-training-torchtune"
+version = "0.1.0"
+description = "TorchTune-based post-training provider for fine-tuning and optimizing models using Meta's TorchTune framework"
+authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
+requires-python = ">=3.12"
+license = { "text" = "MIT" }
+dependencies = [
+    "torch",
+    "torchtune==0.5.0",
+    "torchao==0.8.0",
+    "numpy",
+]
+
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["llama_stack*"]

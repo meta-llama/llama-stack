@@ -13,7 +13,6 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.post_training,
             provider_type="inline::torchtune",
-            pip_packages=["torch", "torchtune==0.5.0", "torchao==0.8.0", "numpy"],
             module="llama_stack.providers.inline.post_training.torchtune",
             config_class="llama_stack.providers.inline.post_training.torchtune.TorchtunePostTrainingConfig",
             api_dependencies=[
@@ -25,7 +24,6 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.post_training,
             provider_type="inline::huggingface",
-            pip_packages=["torch", "trl", "transformers", "peft", "datasets"],
             module="llama_stack.providers.inline.post_training.huggingface",
             config_class="llama_stack.providers.inline.post_training.huggingface.HuggingFacePostTrainingConfig",
             api_dependencies=[
@@ -38,7 +36,6 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.post_training,
             adapter=AdapterSpec(
                 adapter_type="nvidia",
-                pip_packages=["requests", "aiohttp"],
                 module="llama_stack.providers.remote.post_training.nvidia",
                 config_class="llama_stack.providers.remote.post_training.nvidia.NvidiaPostTrainingConfig",
                 description="NVIDIA's post-training provider for fine-tuning models on NVIDIA's platform.",
