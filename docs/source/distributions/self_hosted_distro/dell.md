@@ -153,7 +153,7 @@ docker run \
   --pull always \
   -p $LLAMA_STACK_PORT:$LLAMA_STACK_PORT \
   -v $HOME/.llama:/root/.llama \
-  -v ./llama_stack/templates/tgi/run-with-safety.yaml:/root/my-run.yaml \
+  -v ./llama_stack/distributions/tgi/run-with-safety.yaml:/root/my-run.yaml \
   llamastack/distribution-dell \
   --config /root/my-run.yaml \
   --port $LLAMA_STACK_PORT \
@@ -169,7 +169,7 @@ docker run \
 Make sure you have done `pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-llama stack build --template dell --image-type venv
+llama stack build --distro dell --image-type venv
 llama stack run dell
   --port $LLAMA_STACK_PORT \
   --env INFERENCE_MODEL=$INFERENCE_MODEL \

@@ -32,7 +32,7 @@ from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
 from llama_stack.apis.common.responses import PaginatedResponse
-from llama_stack.cli.utils import add_config_template_args, get_config_from_args
+from llama_stack.cli.utils import add_config_distro_args, get_config_from_args
 from llama_stack.core.access_control.access_control import AccessDeniedError
 from llama_stack.core.datatypes import (
     AuthenticationRequiredError,
@@ -60,7 +60,7 @@ from llama_stack.core.stack import (
     validate_env_pair,
 )
 from llama_stack.core.utils.config import redact_sensitive_fields
-from llama_stack.core.utils.config_resolution import Mode, resolve_config_or_template
+from llama_stack.core.utils.config_resolution import Mode, resolve_config_or_distro
 from llama_stack.core.utils.context import preserve_contexts_async_generator
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api
@@ -377,7 +377,7 @@ def main(args: argparse.Namespace | None = None):
     """Start the LlamaStack server."""
     parser = argparse.ArgumentParser(description="Start the LlamaStack server.")
 
-    add_config_template_args(parser)
+    add_config_distro_args(parser)
     parser.add_argument(
         "--port",
         type=int,
@@ -396,8 +396,8 @@ def main(args: argparse.Namespace | None = None):
     if args is None:
         args = parser.parse_args()
 
-    config_or_template = get_config_from_args(args)
-    config_file = resolve_config_or_template(config_or_template, Mode.RUN)
+    config_or_distro = get_config_from_args(args)
+    config_file = resolve_config_or_distro(config_or_distro, Mode.RUN)
 
     logger_config = None
     with open(config_file) as fp:

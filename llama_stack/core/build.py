@@ -16,8 +16,8 @@ from llama_stack.core.distribution import get_provider_registry
 from llama_stack.core.external import load_external_apis
 from llama_stack.core.utils.exec import run_command
 from llama_stack.core.utils.image_types import LlamaStackImageType
+from llama_stack.distributions.template import DistributionTemplate
 from llama_stack.providers.datatypes import Api
-from llama_stack.templates.template import DistributionTemplate
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ def print_pip_install_help(config: BuildConfig):
 def build_image(
     build_config: BuildConfig,
     image_name: str,
-    template_or_config: str,
+    distro_or_config: str,
     run_config: str | None = None,
 ):
     container_base = build_config.distribution_spec.container_image or "python:3.12-slim"
@@ -123,8 +123,8 @@ def build_image(
         script = str(importlib.resources.files("llama_stack") / "core/build_container.sh")
         args = [
             script,
-            "--template-or-config",
-            template_or_config,
+            "--distro-or-config",
+            distro_or_config,
             "--image-name",
             image_name,
             "--container-base",

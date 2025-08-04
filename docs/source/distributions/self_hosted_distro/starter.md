@@ -169,7 +169,7 @@ docker run \
 Ensure you have configured the starter distribution using the environment variables explained above.
 
 ```bash
-uv run --with llama-stack llama stack build --template starter --image-type venv --run
+uv run --with llama-stack llama stack build --distro starter --image-type venv --run
 ```
 
 ## Example Usage

@@ -34,14 +34,24 @@ class StackBuild(Subcommand):
             "--template",
             type=str,
             default=None,
-            help="Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates",
+            help="""(deprecated) Name of the example template config to use for build. You may use `llama stack build --list-distros` to check out the available distributions""",
+        )
+        self.parser.add_argument(
+            "--distro",
+            "--distribution",
+            dest="distribution",
+            type=str,
+            default=None,
+            help="""Name of the distribution to use for build. You may use `llama stack build --list-distros` to check out the available distributions""",
         )
 
         self.parser.add_argument(
-            "--list-templates",
+            "--list-distros",
+            "--list-distributions",
             action="store_true",
+            dest="list_distros",
             default=False,
-            help="Show the available templates for building a Llama Stack distribution",
+            help="Show the available distributions for building a Llama Stack distribution",
         )
 
         self.parser.add_argument(

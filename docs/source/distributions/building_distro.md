@@ -141,7 +141,7 @@ You may then pick a template to build your distribution with providers fitted to
 
 For example, to build a distribution with TGI as the inference provider, you can run:
 ```
-$ llama stack build --template starter
+$ llama stack build --distro starter
 ...
 You can now edit ~/.llama/distributions/llamastack-starter/starter-run.yaml and run `llama stack run ~/.llama/distributions/llamastack-starter/starter-run.yaml`
 ```
@@ -184,10 +184,10 @@ You can now edit ~/.llama/distributions/llamastack-my-local-stack/my-local-stack
 :::{tab-item} Building from a pre-existing build config file
 - In addition to templates, you may customize the build to your liking through editing config files and build from config files with the following command.
 
-- The config file will be of contents like the ones in `llama_stack/templates/*build.yaml`.
+- The config file will be of contents like the ones in `llama_stack/distributions/*build.yaml`.
 
 ```
-llama stack build --config llama_stack/templates/starter/build.yaml
+llama stack build --config llama_stack/distributions/starter/build.yaml
 ```
 :::
 
@@ -253,11 +253,11 @@ Podman is supported as an alternative to Docker. Set `CONTAINER_BINARY` to `podm
 To build a container image, you may start off from a template and use the `--image-type container` flag to specify `container` as the build image type.
 
 ```
-llama stack build --template starter --image-type container
+llama stack build --distro starter --image-type container
 ```
 
 ```
-$ llama stack build --template starter --image-type container
+$ llama stack build --distro starter --image-type container
 ...
 Containerfile created successfully in /tmp/tmp.viA3a3Rdsg/ContainerfileFROM python:3.10-slim
 ...

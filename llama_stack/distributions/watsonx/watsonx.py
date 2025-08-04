@@ -8,12 +8,12 @@ from pathlib import Path
 
 from llama_stack.apis.models import ModelType
 from llama_stack.core.datatypes import BuildProvider, ModelInput, Provider, ToolGroupInput
+from llama_stack.distributions.template import DistributionTemplate, RunConfigSettings, get_model_registry
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
 from llama_stack.providers.remote.inference.watsonx import WatsonXConfig
 from llama_stack.providers.remote.inference.watsonx.models import MODEL_ENTRIES
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings, get_model_registry
 
 
 def get_distribution_template() -> DistributionTemplate:

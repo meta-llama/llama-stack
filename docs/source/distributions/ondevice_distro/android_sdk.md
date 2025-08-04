@@ -59,7 +59,7 @@ Start a Llama Stack server on localhost. Here is an example of how you can do th
 python -m venv stack-fireworks
 source stack-fireworks/bin/activate  # On Windows: stack-fireworks\Scripts\activate
 pip install --no-cache llama-stack==0.2.2
-llama stack build --template fireworks --image-type venv
+llama stack build --distro fireworks --image-type venv
 export FIREWORKS_API_KEY=<SOME_KEY>
 llama stack run fireworks --port 5050
 ```

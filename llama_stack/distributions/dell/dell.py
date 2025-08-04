@@ -12,10 +12,10 @@ from llama_stack.core.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.distributions.template import DistributionTemplate, RunConfigSettings
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
-from llama_stack.templates.template import DistributionTemplate, RunConfigSettings
 
 
 def get_distribution_template() -> DistributionTemplate:

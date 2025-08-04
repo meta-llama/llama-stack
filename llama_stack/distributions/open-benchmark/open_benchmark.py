@@ -16,6 +16,11 @@ from llama_stack.core.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.distributions.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+    get_model_registry,
+)
 from llama_stack.providers.inline.vector_io.sqlite_vec.config import (
     SQLiteVectorIOConfig,
 )
@@ -29,11 +34,6 @@ from llama_stack.providers.remote.vector_io.pgvector.config import (
     PGVectorVectorIOConfig,
 )
 from llama_stack.providers.utils.inference.model_registry import ProviderModelEntry
-from llama_stack.templates.template import (
-    DistributionTemplate,
-    RunConfigSettings,
-    get_model_registry,
-)
 
 
 def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderModelEntry]]]:

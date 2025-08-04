@@ -42,7 +42,7 @@ from llama_stack.core.resolver import ProviderRegistry
 from llama_stack.core.server.routes import RouteImpls, find_matching_route, initialize_route_impls
 from llama_stack.core.stack import (
     construct_stack,
-    get_stack_run_config_from_template,
+    get_stack_run_config_from_distro,
     replace_env_vars,
 )
 from llama_stack.core.utils.config import redact_sensitive_fields
@@ -138,14 +138,14 @@ class LibraryClientHttpxResponse:
 class LlamaStackAsLibraryClient(LlamaStackClient):
     def __init__(
         self,
-        config_path_or_template_name: str,
+        config_path_or_distro_name: str,
         skip_logger_removal: bool = False,
         custom_provider_registry: ProviderRegistry | None = None,
         provider_data: dict[str, Any] | None = None,
     ):
         super().__init__()
         self.async_client = AsyncLlamaStackAsLibraryClient(
-            config_path_or_template_name, custom_provider_registry, provider_data
+            config_path_or_distro_name, custom_provider_registry, provider_data
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
         self.skip_logger_removal = skip_logger_removal
@@ -212,7 +212,7 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
 class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
     def __init__(
         self,
-        config_path_or_template_name: str,
+        config_path_or_distro_name: str,
         custom_provider_registry: ProviderRegistry | None = None,
         provider_data: dict[str, Any] | None = None,
     ):
@@ -222,17 +222,17 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         current_sinks = os.environ.get("TELEMETRY_SINKS", "sqlite").split(",")
         os.environ["TELEMETRY_SINKS"] = ",".join(sink for sink in current_sinks if sink != "console")
 
-        if config_path_or_template_name.endswith(".yaml"):
-            config_path = Path(config_path_or_template_name)
+        if config_path_or_distro_name.endswith(".yaml"):
+            config_path = Path(config_path_or_distro_name)
             if not config_path.exists():
                 raise ValueError(f"Config file {config_path} does not exist")
             config_dict = replace_env_vars(yaml.safe_load(config_path.read_text()))
             config = parse_and_maybe_upgrade_config(config_dict)
         else:
-            # template
-            config = get_stack_run_config_from_template(config_path_or_template_name)
+            # distribution
+            config = get_stack_run_config_from_distro(config_path_or_distro_name)
 
-        self.config_path_or_template_name = config_path_or_template_name
+        self.config_path_or_distro_name = config_path_or_distro_name
         self.config = config
         self.custom_provider_registry = custom_provider_registry
         self.provider_data = provider_data
@@ -245,11 +245,11 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         except ModuleNotFoundError as _e:
             cprint(_e.msg, color="red", file=sys.stderr)
             cprint(
-                "Using llama-stack as a library requires installing dependencies depending on the template (providers) you choose.\n",
+                "Using llama-stack as a library requires installing dependencies depending on the distribution (providers) you choose.\n",
                 color="yellow",
                 file=sys.stderr,
             )
-            if self.config_path_or_template_name.endswith(".yaml"):
+            if self.config_path_or_distro_name.endswith(".yaml"):
                 providers: dict[str, list[BuildProvider]] = {}
                 for api, run_providers in self.config.providers.items():
                     for provider in run_providers:
@@ -267,7 +267,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
             else:
                 prefix = "!" if in_notebook() else ""
                 cprint(
-                    f"Please run:\n\n{prefix}llama stack build --template {self.config_path_or_template_name} --image-type venv\n\n",
+                    f"Please run:\n\n{prefix}llama stack build --distro {self.config_path_or_distro_name} --image-type venv\n\n",
                     "yellow",
                     file=sys.stderr,
                 )
@@ -283,7 +283,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
         if not os.environ.get("PYTEST_CURRENT_TEST"):
             console = Console()
-            console.print(f"Using config [blue]{self.config_path_or_template_name}[/blue]:")
+            console.print(f"Using config [blue]{self.config_path_or_distro_name}[/blue]:")
             safe_config = redact_sensitive_fields(self.config.model_dump())
             console.print(yaml.dump(safe_config, indent=2))
 
