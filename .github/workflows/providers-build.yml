@@ -68,7 +68,7 @@ jobs:
         run: |
           # USE_COPY_NOT_MOUNT is set to true since mounting is not supported by docker buildx, we use COPY instead
           # LLAMA_STACK_DIR is set to the current directory so we are building from the source
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template ${{ matrix.template }} --image-type ${{ matrix.image-type }} --image-name test
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --distro ${{ matrix.distro }} --image-type ${{ matrix.image-type }} --image-name test
 
       - name: Print dependencies in the image
         if: matrix.image-type == 'venv'
