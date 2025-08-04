@@ -78,36 +78,27 @@ class VectorIORouter(VectorIO):
             return None
 
     async def _resolve_embedding_model(self, explicit_model: str | None = None) -> tuple[str, int]:
-        """Apply precedence rules to decide which embedding model to use.
+        """Figure out which embedding model to use and what dimension it has."""
 
-        1. If *explicit_model* is provided, verify dimension (if possible) and use it.
-        2. Else use the global default in ``vector_store_config``.
-        3. Else fallback to system default (ibm-granite/granite-embedding-125m-english).
-        """
-
-        # 1. explicit override
+        # if they passed a model explicitly, use that
         if explicit_model is not None:
-            # We still need a dimension; try to look it up in routing table
-            all_models = await self.routing_table.get_all_with_type("model")
-            for m in all_models:
-                if getattr(m, "identifier", None) == explicit_model:
-                    dim = m.metadata.get("embedding_dimension")
+            # try to look up dimension from our routing table
+            models = await self.routing_table.get_all_with_type("model")
+            for model in models:
+                if getattr(model, "identifier", None) == explicit_model:
+                    dim = model.metadata.get("embedding_dimension")
                     if dim is None:
-                        raise ValueError(
-                            f"Failed to use embedding model {explicit_model}: found but has no embedding_dimension metadata"
-                        )
+                        raise ValueError(f"Model {explicit_model} found but no embedding dimension in metadata")
                     return explicit_model, dim
-            # If not found, dimension unknown - defer to caller
+            # model not in our registry, let caller deal with dimension
             return explicit_model, None  # type: ignore
 
-        # 2. global default
-        cfg = VectorStoreConfig()  # picks up env vars automatically
-        if cfg.default_embedding_model is not None:
-            return cfg.default_embedding_model, cfg.default_embedding_dimension or 384
+        # check if we have global defaults set via env vars
+        config = VectorStoreConfig()
+        if config.default_embedding_model is not None:
+            return config.default_embedding_model, config.default_embedding_dimension or 384
 
-        # 3. fallback to system default
-        # Use IBM Granite embedding model as default for commercial compatibility
-        # See: https://github.com/meta-llama/llama-stack/issues/2418
+        # fallback to granite model - see issue #2418 for context
         return "ibm-granite/granite-embedding-125m-english", 384
 
     async def register_vector_db(
