@@ -428,11 +428,11 @@ def _run_stack_build_command_from_build_config(
         raise RuntimeError(f"Failed to build image {image_name}")
 
     if distro_name:
-        # copy run.yaml from template to build_dir instead of generating it again
-        template_path = importlib.resources.files("llama_stack") / f"templates/{distro_name}/run.yaml"
+        # copy run.yaml from distribution to build_dir instead of generating it again
+        distro_path = importlib.resources.files("llama_stack") / f"distributions/{distro_name}/run.yaml"
         run_config_file = build_dir / f"{distro_name}-run.yaml"
 
-        with importlib.resources.as_file(template_path) as path:
+        with importlib.resources.as_file(distro_path) as path:
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green", file=sys.stderr)
@@ -443,7 +443,7 @@ def _run_stack_build_command_from_build_config(
             color="green",
             file=sys.stderr,
         )
-        return template_path
+        return distro_path
     else:
         return _generate_run_config(build_config, build_dir, image_name)
 
