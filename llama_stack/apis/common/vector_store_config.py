@@ -6,12 +6,10 @@
 
 from __future__ import annotations
 
-"""Global vector-store configuration shared across the stack.
+"""Vector store global config stuff.
 
-This module introduces `VectorStoreConfig`, a small Pydantic model that
-lives under `StackRunConfig.vector_store_config`.  It lets deployers set
-an explicit default embedding model (and dimension) that the Vector-IO
-router will inject whenever the caller does not specify one.
+Basically just holds default embedding model settings so we don't have to
+pass them around everywhere. Router picks these up when client doesn't specify.
 """
 
 import os
@@ -22,25 +20,14 @@ __all__ = ["VectorStoreConfig"]
 
 
 class VectorStoreConfig(BaseModel):
-    """Stack-level defaults for vector-store creation.
-
-    Attributes
-    ----------
-    default_embedding_model
-        The model *id* the stack should use when an embedding model is
-        required but not supplied by the API caller.  When *None* the
-        router will fall back to the system default (ibm-granite/granite-embedding-125m-english).
-    default_embedding_dimension
-        Optional integer hint for vector dimension.  Routers/providers
-        may validate that the chosen model emits vectors of this size.
-    """
+    """Default embedding model config that gets picked up from env vars."""
 
     default_embedding_model: str | None = Field(
         default_factory=lambda: os.getenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL")
     )
+    # dimension from env - fallback to None if not set or invalid
     default_embedding_dimension: int | None = Field(
         default_factory=lambda: int(os.getenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", 0)) or None, ge=1
     )
-    # Note: If not set, the router will fall back to 384 as the default dimension
 
     model_config = ConfigDict(frozen=True)

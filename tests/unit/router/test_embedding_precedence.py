@@ -17,29 +17,28 @@ class _DummyModel:
 
 
 class _DummyRoutingTable:
-    """Minimal stub satisfying the methods used by VectorIORouter in tests."""
+    """Just a fake routing table for testing."""
 
     def __init__(self):
-        self._models: list[_DummyModel] = [
+        self._models = [
             _DummyModel("first-model", 123),
             _DummyModel("second-model", 512),
         ]
 
     async def get_all_with_type(self, _type: str):
-        # Only embedding models requested in our tests
+        # just return embedding models for tests
         return self._models
 
-    # The following methods are required by the VectorIORouter signature but
-    # are not used in these unit tests; stub them out.
-    async def register_vector_db(self, *args, **kwargs):
+    # VectorIORouter needs these but we don't use them in tests
+    async def register_vector_db(self, *_args, **_kwargs):
         raise NotImplementedError
 
-    async def get_provider_impl(self, *args, **kwargs):
+    async def get_provider_impl(self, *_args, **_kwargs):
         raise NotImplementedError
 
 
 async def test_global_default_used(monkeypatch):
-    """Router should pick up global default when no explicit model is supplied."""
+    """Should use env var defaults when no explicit model given."""
 
     monkeypatch.setenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", "env-default-model")
     monkeypatch.setenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", "256")
@@ -50,13 +49,13 @@ async def test_global_default_used(monkeypatch):
     assert model == "env-default-model"
     assert dim == 256
 
-    # Cleanup env vars
+    # cleanup
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_DIMENSION", raising=False)
 
 
 async def test_explicit_override(monkeypatch):
-    """Explicit model parameter should override global default."""
+    """Explicit model should win over env defaults."""
 
     monkeypatch.setenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", "env-default-model")
 
@@ -69,11 +68,11 @@ async def test_explicit_override(monkeypatch):
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
 
 
-async def test_fallback_to_system_default():
-    """Router should use system default when neither explicit nor global default is available."""
+async def test_fallback_to_granite():
+    """Should fallback to granite model when no defaults set."""
 
     router = VectorIORouter(routing_table=_DummyRoutingTable())
 
-    model, dimension = await router._resolve_embedding_model(None)
+    model, dim = await router._resolve_embedding_model(None)
     assert model == "ibm-granite/granite-embedding-125m-english"
-    assert dimension == 384
+    assert dim == 384
