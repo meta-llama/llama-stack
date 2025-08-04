@@ -221,7 +221,7 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
 
         return await impl.run(messages)
 
-    async def create(
+    async def run_moderation(
         self,
         input: str | list[str],
         model: str | None = None,  # To replace with default model for llama-guard

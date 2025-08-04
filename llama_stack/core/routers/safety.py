@@ -62,7 +62,7 @@ class SafetyRouter(Safety):
             params=params,
         )
 
-    async def create(self, input: str | list[str], model: str) -> ModerationObject:
+    async def run_moderation(self, input: str | list[str], model: str) -> ModerationObject:
         async def get_shield_id(self, model: str) -> str:
             """Get Shield id from model (provider_resource_id) of shield."""
             list_shields_response = await self.routing_table.list_shields()
@@ -78,7 +78,7 @@ class SafetyRouter(Safety):
         logger.debug(f"SafetyRouter.create: {shield_id}")
         provider = await self.routing_table.get_provider_impl(shield_id)
 
-        return await provider.create(
+        return await provider.run_moderation(
             input=input,
             model=model,
         )

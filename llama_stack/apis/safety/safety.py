@@ -114,7 +114,7 @@ class Safety(Protocol):
         ...
 
     @webmethod(route="/openai/v1/moderations", method="POST")
-    async def create(self, input: str | list[str], model: str) -> ModerationObject:
+    async def run_moderation(self, input: str | list[str], model: str) -> ModerationObject:
         """Classifies if text and/or image inputs are potentially harmful.
         :param input: Input (or inputs) to classify.
         Can be a single string, an array of strings, or an array of multi-modal input objects similar to other models.
