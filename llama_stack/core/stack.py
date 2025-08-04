@@ -389,12 +389,12 @@ async def refresh_registry_task(impls: dict[Api, Any]):
         await asyncio.sleep(REGISTRY_REFRESH_INTERVAL_SECONDS)
 
 
-def get_stack_run_config_from_template(template: str) -> StackRunConfig:
-    template_path = importlib.resources.files("llama_stack") / f"templates/{template}/run.yaml"
+def get_stack_run_config_from_distro(distro: str) -> StackRunConfig:
+    distro_path = importlib.resources.files("llama_stack") / f"distributions/{distro}/run.yaml"
 
-    with importlib.resources.as_file(template_path) as path:
+    with importlib.resources.as_file(distro_path) as path:
         if not path.exists():
-            raise ValueError(f"Template '{template}' not found at {template_path}")
+            raise ValueError(f"Distribution '{distro}' not found at {distro_path}")
         run_config = yaml.safe_load(path.open())
 
     return StackRunConfig(**replace_env_vars(run_config))

@@ -15,6 +15,10 @@ from llama_stack.core.datatypes import (
     ToolGroupInput,
 )
 from llama_stack.core.utils.dynamic import instantiate_class_type
+from llama_stack.distributions.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+)
 from llama_stack.providers.datatypes import RemoteProviderSpec
 from llama_stack.providers.inline.files.localfs.config import LocalfsFilesImplConfig
 from llama_stack.providers.inline.inference.sentence_transformers import (
@@ -33,10 +37,6 @@ from llama_stack.providers.remote.vector_io.pgvector.config import (
     PGVectorVectorIOConfig,
 )
 from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig
-from llama_stack.templates.template import (
-    DistributionTemplate,
-    RunConfigSettings,
-)
 
 
 def _get_config_for_provider(provider_spec: ProviderSpec) -> dict[str, Any]:

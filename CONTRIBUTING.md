@@ -172,7 +172,7 @@ cd work/
 git clone https://github.com/meta-llama/llama-stack.git
 git clone https://github.com/meta-llama/llama-stack-client-python.git
 cd llama-stack
-LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --template <...>
+LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --distro <...>
 ```
 
 ### Updating distribution configurations

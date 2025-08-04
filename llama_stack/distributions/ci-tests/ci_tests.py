@@ -5,7 +5,7 @@
 # the root directory of this source tree.
 
 
-from llama_stack.templates.template import DistributionTemplate
+from llama_stack.distributions.template import DistributionTemplate
 
 from ..starter.starter import get_distribution_template as get_starter_distribution_template
 

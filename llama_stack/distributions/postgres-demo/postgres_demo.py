@@ -13,15 +13,15 @@ from llama_stack.core.datatypes import (
     ShieldInput,
     ToolGroupInput,
 )
+from llama_stack.distributions.template import (
+    DistributionTemplate,
+    RunConfigSettings,
+)
 from llama_stack.providers.inline.inference.sentence_transformers import SentenceTransformersInferenceConfig
 from llama_stack.providers.remote.inference.vllm import VLLMInferenceAdapterConfig
 from llama_stack.providers.remote.vector_io.chroma.config import ChromaVectorIOConfig
 from llama_stack.providers.utils.kvstore.config import PostgresKVStoreConfig
 from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig
-from llama_stack.templates.template import (
-    DistributionTemplate,
-    RunConfigSettings,
-)
 
 
 def get_distribution_template() -> DistributionTemplate:

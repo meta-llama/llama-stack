@@ -76,7 +76,7 @@ If you're looking for more specific topics, we have a [Zero to Hero Guide](#next
 1. **Build the Llama Stack**:
    Build the Llama Stack using the `starter` template:
    ```bash
-   uv run --with llama-stack llama stack build --template starter --image-type venv
+   uv run --with llama-stack llama stack build --distro starter --image-type venv
    ```
    **Expected Output:**
    ```bash

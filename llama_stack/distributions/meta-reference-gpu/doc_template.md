@@ -97,7 +97,7 @@ docker run \
 Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-llama stack build --template {{ name }} --image-type venv
+llama stack build --distro {{ name }} --image-type venv
 llama stack run distributions/{{ name }}/run.yaml \
   --port 8321 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct

@@ -13,7 +13,7 @@ from llama_stack.log import get_logger
 logger = get_logger(name=__name__, category="config_resolution")
 
 
-TEMPLATE_DIR = Path(__file__).parent.parent.parent.parent / "llama_stack" / "templates"
+DISTRO_DIR = Path(__file__).parent.parent.parent.parent / "llama_stack" / "distributions"
 
 
 class Mode(StrEnum):
@@ -21,15 +21,15 @@ class Mode(StrEnum):
     BUILD = "build"
 
 
-def resolve_config_or_template(
-    config_or_template: str,
+def resolve_config_or_distro(
+    config_or_distro: str,
     mode: Mode = Mode.RUN,
 ) -> Path:
     """
-    Resolve a config/template argument to a concrete config file path.
+    Resolve a config/distro argument to a concrete config file path.
 
     Args:
-        config_or_template: User input (file path, template name, or built distribution)
+        config_or_distro: User input (file path, distribution name, or built distribution)
         mode: Mode resolving for ("run", "build", "server")
 
     Returns:
@@ -40,86 +40,86 @@ def resolve_config_or_template(
     """
 
     # Strategy 1: Try as file path first
-    config_path = Path(config_or_template)
+    config_path = Path(config_or_distro)
     if config_path.exists() and config_path.is_file():
         logger.info(f"Using file path: {config_path}")
         return config_path.resolve()
 
-    # Strategy 2: Try as template name (if no .yaml extension)
-    if not config_or_template.endswith(".yaml"):
-        template_config = _get_template_config_path(config_or_template, mode)
-        if template_config.exists():
-            logger.info(f"Using template: {template_config}")
-            return template_config
+    # Strategy 2: Try as distribution name (if no .yaml extension)
+    if not config_or_distro.endswith(".yaml"):
+        distro_config = _get_distro_config_path(config_or_distro, mode)
+        if distro_config.exists():
+            logger.info(f"Using distribution: {distro_config}")
+            return distro_config
 
     # Strategy 3: Try as built distribution name
-    distrib_config = DISTRIBS_BASE_DIR / f"llamastack-{config_or_template}" / f"{config_or_template}-{mode}.yaml"
+    distrib_config = DISTRIBS_BASE_DIR / f"llamastack-{config_or_distro}" / f"{config_or_distro}-{mode}.yaml"
     if distrib_config.exists():
         logger.info(f"Using built distribution: {distrib_config}")
         return distrib_config
 
-    distrib_config = DISTRIBS_BASE_DIR / f"{config_or_template}" / f"{config_or_template}-{mode}.yaml"
+    distrib_config = DISTRIBS_BASE_DIR / f"{config_or_distro}" / f"{config_or_distro}-{mode}.yaml"
     if distrib_config.exists():
         logger.info(f"Using built distribution: {distrib_config}")
         return distrib_config
 
     # Strategy 4: Failed - provide helpful error
-    raise ValueError(_format_resolution_error(config_or_template, mode))
+    raise ValueError(_format_resolution_error(config_or_distro, mode))
 
 
-def _get_template_config_path(template_name: str, mode: Mode) -> Path:
-    """Get the config file path for a template."""
-    return TEMPLATE_DIR / template_name / f"{mode}.yaml"
+def _get_distro_config_path(distro_name: str, mode: Mode) -> Path:
+    """Get the config file path for a distro."""
+    return DISTRO_DIR / distro_name / f"{mode}.yaml"
 
 
-def _format_resolution_error(config_or_template: str, mode: Mode) -> str:
+def _format_resolution_error(config_or_distro: str, mode: Mode) -> str:
     """Format a helpful error message for resolution failures."""
     from llama_stack.core.utils.config_dirs import DISTRIBS_BASE_DIR
 
-    template_path = _get_template_config_path(config_or_template, mode)
-    distrib_path = DISTRIBS_BASE_DIR / f"llamastack-{config_or_template}" / f"{config_or_template}-{mode}.yaml"
-    distrib_path2 = DISTRIBS_BASE_DIR / f"{config_or_template}" / f"{config_or_template}-{mode}.yaml"
+    distro_path = _get_distro_config_path(config_or_distro, mode)
+    distrib_path = DISTRIBS_BASE_DIR / f"llamastack-{config_or_distro}" / f"{config_or_distro}-{mode}.yaml"
+    distrib_path2 = DISTRIBS_BASE_DIR / f"{config_or_distro}" / f"{config_or_distro}-{mode}.yaml"
 
-    available_templates = _get_available_templates()
-    templates_str = ", ".join(available_templates) if available_templates else "none found"
+    available_distros = _get_available_distros()
+    distros_str = ", ".join(available_distros) if available_distros else "none found"
 
-    return f"""Could not resolve config or template '{config_or_template}'.
+    return f"""Could not resolve config or distribution '{config_or_distro}'.
 
 Tried the following locations:
-  1. As file path: {Path(config_or_template).resolve()}
-  2. As template: {template_path}
+  1. As file path: {Path(config_or_distro).resolve()}
+  2. As distribution: {distro_path}
   3. As built distribution: ({distrib_path}, {distrib_path2})
 
-Available templates: {templates_str}
+Available distributions: {distros_str}
 
-Did you mean one of these templates?
-{_format_template_suggestions(available_templates, config_or_template)}
+Did you mean one of these distributions?
+{_format_distro_suggestions(available_distros, config_or_distro)}
 """
 
 
-def _get_available_templates() -> list[str]:
-    """Get list of available template names."""
-    if not TEMPLATE_DIR.exists() and not DISTRIBS_BASE_DIR.exists():
+def _get_available_distros() -> list[str]:
+    """Get list of available distro names."""
+    if not DISTRO_DIR.exists() and not DISTRIBS_BASE_DIR.exists():
         return []
 
     return list(
         set(
-            [d.name for d in TEMPLATE_DIR.iterdir() if d.is_dir() and not d.name.startswith(".")]
+            [d.name for d in DISTRO_DIR.iterdir() if d.is_dir() and not d.name.startswith(".")]
             + [d.name for d in DISTRIBS_BASE_DIR.iterdir() if d.is_dir() and not d.name.startswith(".")]
         )
     )
 
 
-def _format_template_suggestions(templates: list[str], user_input: str) -> str:
-    """Format template suggestions for error messages, showing closest matches first."""
-    if not templates:
-        return "  (no templates found)"
+def _format_distro_suggestions(distros: list[str], user_input: str) -> str:
+    """Format distro suggestions for error messages, showing closest matches first."""
+    if not distros:
+        return "  (no distros found)"
 
     import difflib
 
     # Get up to 3 closest matches with similarity threshold of 0.3 (lower = more permissive)
-    close_matches = difflib.get_close_matches(user_input, templates, n=3, cutoff=0.3)
-    display_templates = close_matches if close_matches else templates[:3]
+    close_matches = difflib.get_close_matches(user_input, distros, n=3, cutoff=0.3)
+    display_distros = close_matches if close_matches else distros[:3]
 
-    suggestions = [f"  - {t}" for t in display_templates]
+    suggestions = [f"  - {d}" for d in display_distros]
     return "\n".join(suggestions)

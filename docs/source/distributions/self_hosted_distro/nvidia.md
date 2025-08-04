@@ -158,7 +158,7 @@ If you've set up your local development environment, you can also build the imag
 
 ```bash
 INFERENCE_MODEL=meta-llama/Llama-3.1-8b-Instruct
-llama stack build --template nvidia --image-type venv
+llama stack build --distro nvidia --image-type venv
 llama stack run ./run.yaml \
   --port 8321 \
   --env NVIDIA_API_KEY=$NVIDIA_API_KEY \

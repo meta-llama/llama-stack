@@ -59,7 +59,7 @@ Now let's build and run the Llama Stack config for Ollama.
 We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 
 ```bash
-llama stack build --template starter --image-type venv --run
+llama stack build --distro starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using `venv`
@@ -70,7 +70,7 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-llama stack build --template starter --image-type venv --run
+llama stack build --distro starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using a Container

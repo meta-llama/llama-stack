@@ -46,25 +46,25 @@ from llama_stack.core.utils.exec import formulate_run_args, run_command
 from llama_stack.core.utils.image_types import LlamaStackImageType
 from llama_stack.providers.datatypes import Api
 
-TEMPLATES_PATH = Path(__file__).parent.parent.parent / "templates"
+DISTRIBS_PATH = Path(__file__).parent.parent.parent / "distributions"
 
 
 @lru_cache
-def available_templates_specs() -> dict[str, BuildConfig]:
+def available_distros_specs() -> dict[str, BuildConfig]:
     import yaml
 
-    template_specs = {}
-    for p in TEMPLATES_PATH.rglob("*build.yaml"):
-        template_name = p.parent.name
+    distro_specs = {}
+    for p in DISTRIBS_PATH.rglob("*build.yaml"):
+        distro_name = p.parent.name
         with open(p) as f:
             build_config = BuildConfig(**yaml.safe_load(f))
-            template_specs[template_name] = build_config
-    return template_specs
+            distro_specs[distro_name] = build_config
+    return distro_specs
 
 
 def run_stack_build_command(args: argparse.Namespace) -> None:
-    if args.list_templates:
-        return _run_template_list_cmd()
+    if args.list_distros:
+        return _run_distro_list_cmd()
 
     if args.image_type == ImageType.VENV.value:
         current_venv = os.environ.get("VIRTUAL_ENV")
@@ -73,20 +73,30 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
         image_name = args.image_name
 
     if args.template:
-        available_templates = available_templates_specs()
-        if args.template not in available_templates:
+        cprint(
+            "The --template argument is deprecated. Please use --distro instead.",
+            color="red",
+            file=sys.stderr,
+        )
+        distro_name = args.template
+    else:
+        distro_name = args.distribution
+
+    if distro_name:
+        available_distros = available_distros_specs()
+        if distro_name not in available_distros:
             cprint(
-                f"Could not find template {args.template}. Please run `llama stack build --list-templates` to check out the available templates",
+                f"Could not find distribution {distro_name}. Please run `llama stack build --list-distros` to check out the available distributions",
                 color="red",
                 file=sys.stderr,
             )
             sys.exit(1)
-        build_config = available_templates[args.template]
+        build_config = available_distros[distro_name]
         if args.image_type:
             build_config.image_type = args.image_type
         else:
             cprint(
-                f"Please specify a image-type ({' | '.join(e.value for e in ImageType)}) for {args.template}",
+                f"Please specify a image-type ({' | '.join(e.value for e in ImageType)}) for {distro_name}",
                 color="red",
                 file=sys.stderr,
             )
@@ -136,7 +146,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             sys.exit(1)
 
         build_config = BuildConfig(image_type=args.image_type, distribution_spec=distribution_spec)
-    elif not args.config and not args.template:
+    elif not args.config and not distro_name:
         name = prompt(
             "> Enter a name for your Llama Stack (e.g. my-local-stack): ",
             validator=Validator.from_callable(
@@ -218,7 +228,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 sys.exit(1)
 
     if args.print_deps_only:
-        print(f"# Dependencies for {args.template or args.config or image_name}")
+        print(f"# Dependencies for {distro_name or args.config or image_name}")
         normal_deps, special_deps, external_provider_dependencies = get_provider_dependencies(build_config)
         normal_deps += SERVER_DEPENDENCIES
         print(f"uv pip install {' '.join(normal_deps)}")
@@ -233,7 +243,7 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             build_config,
             image_name=image_name,
             config_path=args.config,
-            template_name=args.template,
+            distro_name=distro_name,
         )
 
     except (Exception, RuntimeError) as exc:
@@ -344,13 +354,13 @@ def _generate_run_config(
 def _run_stack_build_command_from_build_config(
     build_config: BuildConfig,
     image_name: str | None = None,
-    template_name: str | None = None,
+    distro_name: str | None = None,
     config_path: str | None = None,
 ) -> Path | Traversable:
     image_name = image_name or build_config.image_name
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
-        if template_name:
-            image_name = f"distribution-{template_name}"
+        if distro_name:
+            image_name = f"distribution-{distro_name}"
         else:
             if not image_name:
                 raise ValueError("Please specify an image name when building a container image without a template")
@@ -364,9 +374,9 @@ def _run_stack_build_command_from_build_config(
     if image_name is None:
         raise ValueError("image_name should not be None after validation")
 
-    if template_name:
-        build_dir = DISTRIBS_BASE_DIR / template_name
-        build_file_path = build_dir / f"{template_name}-build.yaml"
+    if distro_name:
+        build_dir = DISTRIBS_BASE_DIR / distro_name
+        build_file_path = build_dir / f"{distro_name}-build.yaml"
     else:
         if image_name is None:
             raise ValueError("image_name cannot be None")
@@ -377,7 +387,7 @@ def _run_stack_build_command_from_build_config(
     run_config_file = None
     # Generate the run.yaml so it can be included in the container image with the proper entrypoint
     # Only do this if we're building a container image and we're not using a template
-    if build_config.image_type == LlamaStackImageType.CONTAINER.value and not template_name and config_path:
+    if build_config.image_type == LlamaStackImageType.CONTAINER.value and not distro_name and config_path:
         cprint("Generating run.yaml file", color="yellow", file=sys.stderr)
         run_config_file = _generate_run_config(build_config, build_dir, image_name)
 
@@ -411,46 +421,45 @@ def _run_stack_build_command_from_build_config(
     return_code = build_image(
         build_config,
         image_name,
-        template_or_config=template_name or config_path or str(build_file_path),
+        distro_or_config=distro_name or config_path or str(build_file_path),
         run_config=run_config_file.as_posix() if run_config_file else None,
     )
     if return_code != 0:
         raise RuntimeError(f"Failed to build image {image_name}")
 
-    if template_name:
-        # copy run.yaml from template to build_dir instead of generating it again
-        template_path = importlib.resources.files("llama_stack") / f"templates/{template_name}/run.yaml"
-        run_config_file = build_dir / f"{template_name}-run.yaml"
+    if distro_name:
+        # copy run.yaml from distribution to build_dir instead of generating it again
+        distro_path = importlib.resources.files("llama_stack") / f"distributions/{distro_name}/run.yaml"
+        run_config_file = build_dir / f"{distro_name}-run.yaml"
 
-        with importlib.resources.as_file(template_path) as path:
+        with importlib.resources.as_file(distro_path) as path:
             shutil.copy(path, run_config_file)
 
         cprint("Build Successful!", color="green", file=sys.stderr)
-        cprint(f"You can find the newly-built template here: {run_config_file}", color="blue", file=sys.stderr)
+        cprint(f"You can find the newly-built distribution here: {run_config_file}", color="blue", file=sys.stderr)
         cprint(
             "You can run the new Llama Stack distro via: "
             + colored(f"llama stack run {run_config_file} --image-type {build_config.image_type}", "blue"),
             color="green",
             file=sys.stderr,
         )
-        return template_path
+        return distro_path
     else:
         return _generate_run_config(build_config, build_dir, image_name)
 
 
-def _run_template_list_cmd() -> None:
-    # eventually, this should query a registry at llama.meta.com/llamastack/distributions
+def _run_distro_list_cmd() -> None:
     headers = [
-        "Template Name",
+        "Distribution Name",
         # "Providers",
         "Description",
     ]
 
     rows = []
-    for template_name, spec in available_templates_specs().items():
+    for distro_name, spec in available_distros_specs().items():
         rows.append(
             [
-                template_name,
+                distro_name,
                 # json.dumps(spec.distribution_spec.providers, indent=2),
                 spec.distribution_spec.description,
             ]

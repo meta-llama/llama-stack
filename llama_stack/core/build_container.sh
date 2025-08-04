@@ -43,7 +43,7 @@ normal_deps=""
 external_provider_deps=""
 optional_deps=""
 run_config=""
-template_or_config=""
+distro_or_config=""
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -96,12 +96,12 @@ while [[ $# -gt 0 ]]; do
       run_config="$2"
       shift 2
       ;;
-    --template-or-config)
+    --distro-or-config)
       if [[ -z "$2" || "$2" == --* ]]; then
-        echo "Error: --template-or-config requires a string value" >&2
+        echo "Error: --distro-or-config requires a string value" >&2
         usage
       fi
-      template_or_config="$2"
+      distro_or_config="$2"
       shift 2
       ;;
     *)
@@ -327,12 +327,11 @@ EOF
 # If a run config is provided, we use the --config flag
 if [[ -n "$run_config" ]]; then
   add_to_container << EOF
-ENTRYPOINT ["python", "-m", "llama_stack.core.server.server", "--config", "$RUN_CONFIG_PATH"]
+ENTRYPOINT ["python", "-m", "llama_stack.core.server.server", "$RUN_CONFIG_PATH"]
 EOF
-# If a template is provided (not a yaml file), we use the --template flag
-elif [[ "$template_or_config" != *.yaml ]]; then
+elif [[ "$distro_or_config" != *.yaml ]]; then
   add_to_container << EOF
-ENTRYPOINT ["python", "-m", "llama_stack.core.server.server", "--template", "$template_or_config"]
+ENTRYPOINT ["python", "-m", "llama_stack.core.server.server", "$distro_or_config"]
 EOF
 fi
 

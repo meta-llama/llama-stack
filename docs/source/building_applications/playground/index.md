@@ -97,7 +97,7 @@ To start the Llama Stack Playground, run the following commands:
 1. Start up the Llama Stack API server
 
 ```bash
-llama stack build --template together --image-type venv
+llama stack build --distro together --image-type venv
 llama stack run together
 ```
 

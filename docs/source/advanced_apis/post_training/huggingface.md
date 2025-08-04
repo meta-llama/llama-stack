@@ -23,7 +23,7 @@ To use the HF SFTTrainer in your Llama Stack project, follow these steps:
 You can access the HuggingFace trainer via the `ollama` distribution:
 
 ```bash
-llama stack build --template starter --image-type venv
+llama stack build --distro starter --image-type venv
 llama stack run --image-type venv ~/.llama/distributions/ollama/ollama-run.yaml
 ```
 
