@@ -75,7 +75,7 @@ class SafetyRouter(Safety):
             return matches[0]
 
         shield_id = await get_shield_id(self, model)
-        logger.debug(f"SafetyRouter.create: {shield_id}")
+        logger.debug(f"SafetyRouter.run_moderation: {shield_id}")
         provider = await self.routing_table.get_provider_impl(shield_id)
 
         return await provider.run_moderation(
