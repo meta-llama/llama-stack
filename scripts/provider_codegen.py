@@ -9,8 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
-from pydantic_core import PydanticUndefined
 
+from pydantic_core import PydanticUndefined
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from llama_stack.core.distribution import get_provider_registry
