@@ -15,6 +15,7 @@ import faiss
 import numpy as np
 from numpy.typing import NDArray
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
@@ -159,8 +160,11 @@ class FaissIndex(EmbeddingIndex):
         for d, i in zip(distances[0], indices[0], strict=False):
             if i < 0:
                 continue
+            score = 1.0 / float(d) if d != 0 else float("inf")
+            if score < score_threshold:
+                continue
             chunks.append(self.chunk_by_index[int(i)])
-            scores.append(1.0 / float(d) if d != 0 else float("inf"))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
@@ -285,7 +289,7 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
     ) -> QueryChunksResponse:
         index = self.cache.get(vector_db_id)
         if index is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         return await index.query_chunks(query, params)
 

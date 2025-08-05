@@ -41,7 +41,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.distribution.datatypes import AccessRule
+from llama_stack.core.datatypes import AccessRule
 from llama_stack.providers.utils.kvstore import InmemoryKVStoreImpl, kvstore_impl
 from llama_stack.providers.utils.pagination import paginate_records
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
@@ -230,8 +230,6 @@ class MetaReferenceAgentsImpl(Agents):
         agent = await self._get_agent_impl(agent_id)
 
         session_info = await agent.storage.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
         turns = await agent.storage.get_session_turns(session_id)
         if turn_ids:
             turns = [turn for turn in turns if turn.turn_id in turn_ids]
@@ -244,9 +242,6 @@ class MetaReferenceAgentsImpl(Agents):
 
     async def delete_agents_session(self, agent_id: str, session_id: str) -> None:
         agent = await self._get_agent_impl(agent_id)
-        session_info = await agent.storage.get_session_info(session_id)
-        if session_info is None:
-            raise ValueError(f"Session {session_id} not found")
 
         # Delete turns first, then the session
         await agent.storage.delete_session_turns(session_id)

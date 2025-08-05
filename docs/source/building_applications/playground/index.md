@@ -97,11 +97,11 @@ To start the Llama Stack Playground, run the following commands:
 1. Start up the Llama Stack API server
 
 ```bash
-llama stack build --template together --image-type conda
+llama stack build --distro together --image-type venv
 llama stack run together
 ```
 
 2. Start Streamlit UI
 ```bash
-uv run --with ".[ui]" streamlit run llama_stack/distribution/ui/app.py
+uv run --with ".[ui]" streamlit run llama_stack.core/ui/app.py
 ```

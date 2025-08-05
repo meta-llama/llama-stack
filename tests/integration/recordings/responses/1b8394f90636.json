@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/api/generate",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "prompt": "<|begin_of_text|>Complete the sentence using one word: Roses are red, violets are ",
+      "raw": true,
+      "options": {
+        "temperature": 0.0,
+        "max_tokens": 50,
+        "num_predict": 50
+      },
+      "stream": false
+    },
+    "endpoint": "/api/generate",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": {
+      "__type__": "ollama._types.GenerateResponse",
+      "__data__": {
+        "model": "llama3.2:3b-instruct-fp16",
+        "created_at": "2025-08-04T22:55:05.685988Z",
+        "done": true,
+        "done_reason": "stop",
+        "total_duration": 14128980625,
+        "load_duration": 7220159208,
+        "prompt_eval_count": 18,
+        "prompt_eval_duration": 4658000000,
+        "eval_count": 43,
+        "eval_duration": 2224000000,
+        "response": " _______.\n\nThe best answer is blue. The traditional nursery rhyme goes like this:\n\nRoses are red,\nViolets are blue,\nSugar is sweet,\nAnd so are you! (Or something similar.)",
+        "thinking": null,
+        "context": null
+      }
+    },
+    "is_streaming": false
+  }
+}

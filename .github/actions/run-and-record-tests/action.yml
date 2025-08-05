@@ -1,0 +1,82 @@
+name: 'Run and Record Tests'
+description: 'Run integration tests and handle recording/artifact upload'
+
+inputs:
+  test-types:
+    description: 'JSON array of test types to run'
+    required: true
+  stack-config:
+    description: 'Stack configuration to use'
+    required: true
+  provider:
+    description: 'Provider to use for tests'
+    required: true
+  inference-mode:
+    description: 'Inference mode (record or replay)'
+    required: true
+  run-vision-tests:
+    description: 'Whether to run vision tests'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Storage and Memory Available Before Tests
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        free -h
+        df -h
+
+    - name: Run Integration Tests
+      shell: bash
+      run: |
+        ./scripts/integration-tests.sh \
+          --stack-config '${{ inputs.stack-config }}' \
+          --provider '${{ inputs.provider }}' \
+          --test-types '${{ inputs.test-types }}' \
+          --inference-mode '${{ inputs.inference-mode }}' \
+          ${{ inputs.run-vision-tests == 'true' && '--run-vision-tests' || '' }}
+
+
+    - name: Commit and push recordings
+      if: ${{ inputs.inference-mode == 'record' }}
+      shell: bash
+      run: |
+        echo "Checking for recording changes"
+        git status --porcelain tests/integration/recordings/
+
+        if [[ -n $(git status --porcelain tests/integration/recordings/) ]]; then
+          echo "New recordings detected, committing and pushing"
+          git add tests/integration/recordings/
+
+          if [ "${{ inputs.run-vision-tests }}" == "true" ]; then
+            git commit -m "Recordings update from CI (vision)"
+          else
+            git commit -m "Recordings update from CI"
+          fi
+
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git rebase origin/${{ github.event.pull_request.head.ref }}
+          echo "Rebased successfully"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          echo "Pushed successfully"
+        else
+          echo "No recording changes"
+        fi
+
+    - name: Write inference logs to file
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        sudo docker logs ollama > ollama-${{ inputs.inference-mode }}.log || true
+
+    - name: Upload logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: logs-${{ github.run_id }}-${{ github.run_attempt || '' }}-${{ strategy.job-index }}
+        path: |
+          *.log
+        retention-days: 1

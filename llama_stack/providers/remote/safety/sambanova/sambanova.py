@@ -19,7 +19,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.core.request_headers import NeedsRequestProviderData
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
 from llama_stack.providers.utils.inference.openai_compat import convert_message_to_openai_dict_new
 
@@ -67,6 +67,9 @@ class SambaNovaSafetyAdapter(Safety, ShieldsProtocolPrivate, NeedsRequestProvide
             or shield.provider_resource_id.split("sambanova/")[-1] not in self.environment_available_models
         ):
             logger.warning(f"Shield {shield.provider_resource_id} not available in {list_models_url}")
+
+    async def unregister_shield(self, identifier: str) -> None:
+        pass
 
     async def run_shield(
         self, shield_id: str, messages: list[Message], params: dict[str, Any] | None = None

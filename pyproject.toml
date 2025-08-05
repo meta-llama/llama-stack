@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llama_stack"
-version = "0.2.15"
+version = "0.2.17"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -28,7 +28,7 @@ dependencies = [
     "huggingface-hub>=0.34.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.15",
+    "llama-stack-client>=0.2.17",
     "llama-api-client>=0.1.2",
     "openai>=1.66",
     "prompt-toolkit",
@@ -53,7 +53,7 @@ dependencies = [
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.15",
+    "llama-stack-client>=0.2.17",
     "streamlit-option-menu",
 ]
 
@@ -77,6 +77,7 @@ dev = [
 # These are the dependencies required for running unit tests.
 unit = [
     "sqlite-vec",
+    "ollama",
     "openai",
     "aiosqlite",
     "aiohttp",
@@ -114,6 +115,7 @@ test = [
     "sqlalchemy[asyncio]>=2.0.41",
     "requests",
     "pymilvus>=2.5.12",
+    "weaviate-client>=4.16.4",
 ]
 docs = [
     "setuptools",
@@ -233,17 +235,17 @@ follow_imports = "silent"
 exclude = [
     # As we fix more and more of these, we should remove them from the list
     "^llama_stack/cli/download\\.py$",
-    "^llama_stack/distribution/build\\.py$",
-    "^llama_stack/distribution/client\\.py$",
-    "^llama_stack/distribution/request_headers\\.py$",
-    "^llama_stack/distribution/routers/",
-    "^llama_stack/distribution/routing_tables/",
-    "^llama_stack/distribution/server/endpoints\\.py$",
-    "^llama_stack/distribution/server/server\\.py$",
-    "^llama_stack/distribution/stack\\.py$",
-    "^llama_stack/distribution/store/registry\\.py$",
-    "^llama_stack/distribution/utils/exec\\.py$",
-    "^llama_stack/distribution/utils/prompt_for_config\\.py$",
+    "^llama_stack.core/build\\.py$",
+    "^llama_stack.core/client\\.py$",
+    "^llama_stack.core/request_headers\\.py$",
+    "^llama_stack.core/routers/",
+    "^llama_stack.core/routing_tables/",
+    "^llama_stack.core/server/endpoints\\.py$",
+    "^llama_stack.core/server/server\\.py$",
+    "^llama_stack.core/stack\\.py$",
+    "^llama_stack.core/store/registry\\.py$",
+    "^llama_stack.core/utils/exec\\.py$",
+    "^llama_stack.core/utils/prompt_for_config\\.py$",
     "^llama_stack/models/llama/llama3/interface\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
@@ -325,10 +327,10 @@ exclude = [
     "^llama_stack/strong_typing/inspection\\.py$",
     "^llama_stack/strong_typing/schema\\.py$",
     "^llama_stack/strong_typing/serializer\\.py$",
-    "^llama_stack/templates/groq/groq\\.py$",
-    "^llama_stack/templates/llama_api/llama_api\\.py$",
-    "^llama_stack/templates/sambanova/sambanova\\.py$",
-    "^llama_stack/templates/template\\.py$",
+    "^llama_stack/distributions/groq/groq\\.py$",
+    "^llama_stack/distributions/llama_api/llama_api\\.py$",
+    "^llama_stack/distributions/sambanova/sambanova\\.py$",
+    "^llama_stack/distributions/template\\.py$",
 ]
 
 [[tool.mypy.overrides]]

@@ -10,7 +10,7 @@ import struct
 import pytest
 from openai import OpenAI
 
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 
 def decode_base64_to_floats(base64_string: str) -> list[float]:

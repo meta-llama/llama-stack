@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector"]
+        vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector", "remote::weaviate", "remote::qdrant"]
         python-version: ["3.12", "3.13"]
       fail-fast: false # we want to run all tests regardless of failure
 
@@ -47,6 +47,14 @@ jobs:
             -e IS_PERSISTENT=TRUE \
             -e ANONYMIZED_TELEMETRY=FALSE \
             chromadb/chroma:latest
+
+      - name: Setup Weaviate
+        if: matrix.vector-io-provider == 'remote::weaviate'
+        run: |
+          docker run --rm -d --pull always \
+          --name weaviate \
+          -p 8080:8080 -p 50051:50051 \
+          cr.weaviate.io/semitechnologies/weaviate:1.32.0
 
       - name: Start PGVector DB
         if: matrix.vector-io-provider == 'remote::pgvector'
@@ -78,6 +86,29 @@ jobs:
           PGPASSWORD=llamastack psql -h localhost -U llamastack -d llamastack \
             -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
+      - name: Setup Qdrant
+        if: matrix.vector-io-provider == 'remote::qdrant'
+        run: |
+          docker run --rm -d --pull always \
+            --name qdrant \
+            -p 6333:6333 \
+            qdrant/qdrant
+
+      - name: Wait for Qdrant to be ready
+        if: matrix.vector-io-provider == 'remote::qdrant'
+        run: |
+          echo "Waiting for Qdrant to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:6333/collections | grep -q '"status":"ok"'; then
+              echo "Qdrant is ready!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Qdrant failed to start"
+          docker logs qdrant
+          exit 1
+
       - name: Wait for ChromaDB to be ready
         if: matrix.vector-io-provider == 'remote::chromadb'
         run: |
@@ -91,6 +122,21 @@ jobs:
           done
           echo "ChromaDB failed to start"
           docker logs chromadb
+          exit 1
+
+      - name: Wait for Weaviate to be ready
+        if: matrix.vector-io-provider == 'remote::weaviate'
+        run: |
+          echo "Waiting for Weaviate to be ready..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 | grep -q "https://weaviate.io/developers/weaviate/current/"; then
+              echo "Weaviate is ready!"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Weaviate failed to start"
+          docker logs weaviate
           exit 1
 
       - name: Build Llama Stack
@@ -113,6 +159,10 @@ jobs:
           PGVECTOR_DB: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
           PGVECTOR_USER: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
           PGVECTOR_PASSWORD: ${{ matrix.vector-io-provider == 'remote::pgvector' && 'llamastack' || '' }}
+          ENABLE_QDRANT: ${{ matrix.vector-io-provider == 'remote::qdrant' && 'true' || '' }}
+          QDRANT_URL: ${{ matrix.vector-io-provider == 'remote::qdrant' && 'http://localhost:6333' || '' }}
+          ENABLE_WEAVIATE: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'true' || '' }}
+          WEAVIATE_CLUSTER_URL: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'localhost:8080' || '' }}
         run: |
           uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
@@ -133,6 +183,11 @@ jobs:
         if: ${{ always() && matrix.vector-io-provider == 'remote::chromadb' }}
         run: |
           docker logs chromadb > chromadb.log
+
+      - name: Write Qdrant logs to file
+        if: ${{ always() && matrix.vector-io-provider == 'remote::qdrant' }}
+        run: |
+          docker logs qdrant > qdrant.log
 
       - name: Upload all logs to artifacts
         if: ${{ always() }}

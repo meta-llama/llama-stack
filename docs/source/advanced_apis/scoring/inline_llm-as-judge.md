@@ -1,3 +1,7 @@
+---
+orphan: true
+---
+
 # inline::llm-as-judge
 
 ## Description

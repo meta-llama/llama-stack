@@ -15,6 +15,7 @@ import numpy as np
 import sqlite_vec
 from numpy.typing import NDArray
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference
 from llama_stack.apis.vector_dbs import VectorDB
@@ -508,11 +509,11 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
             return self.cache[vector_db_id]
 
         if self.vector_db_store is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         vector_db = self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         index = VectorDBWithIndex(
             vector_db=vector_db,
@@ -537,7 +538,7 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
     async def insert_chunks(self, vector_db_id: str, chunks: list[Chunk], ttl_seconds: int | None = None) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
         # The VectorDBWithIndex helper is expected to compute embeddings via the inference_api
         # and then call our index's add_chunks.
         await index.insert_chunks(chunks)
@@ -547,14 +548,14 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
         return await index.query_chunks(query, params)
 
     async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
         """Delete a chunk from a sqlite_vec index."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
-            raise ValueError(f"Vector DB {store_id} not found")
+            raise VectorStoreNotFoundError(store_id)
 
         for chunk_id in chunk_ids:
             # Use the index's delete_chunk method

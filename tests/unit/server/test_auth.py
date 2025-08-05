@@ -11,7 +11,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from llama_stack.distribution.datatypes import (
+from llama_stack.core.datatypes import (
     AuthenticationConfig,
     AuthProviderType,
     CustomAuthConfig,
@@ -19,9 +19,9 @@ from llama_stack.distribution.datatypes import (
     OAuth2JWKSConfig,
     OAuth2TokenAuthConfig,
 )
-from llama_stack.distribution.request_headers import User
-from llama_stack.distribution.server.auth import AuthenticationMiddleware, _has_required_scope
-from llama_stack.distribution.server.auth_providers import (
+from llama_stack.core.request_headers import User
+from llama_stack.core.server.auth import AuthenticationMiddleware, _has_required_scope
+from llama_stack.core.server.auth_providers import (
     get_attributes_from_claims,
 )
 
@@ -150,10 +150,10 @@ def scope_middleware_with_mocks(mock_auth_endpoint):
         else:
             raise ValueError("No matching route")
 
-    import llama_stack.distribution.server.auth
+    import llama_stack.core.server.auth
 
-    llama_stack.distribution.server.auth.find_matching_route = mock_find_matching_route
-    llama_stack.distribution.server.auth.initialize_route_impls = lambda impls: {}
+    llama_stack.core.server.auth.find_matching_route = mock_find_matching_route
+    llama_stack.core.server.auth.initialize_route_impls = lambda impls: {}
 
     return middleware, mock_app
 

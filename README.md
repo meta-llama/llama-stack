@@ -6,7 +6,6 @@
 [![Discord](https://img.shields.io/discord/1257833999603335178?color=6A7EC2&logo=discord&logoColor=ffffff)](https://discord.gg/llama-stack)
 [![Unit Tests](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/unit-tests.yml?query=branch%3Amain)
 [![Integration Tests](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/meta-llama/llama-stack/actions/workflows/integration-tests.yml?query=branch%3Amain)
-![coverage badge](./coverage.svg)
 
 [**Quick Start**](https://llama-stack.readthedocs.io/en/latest/getting_started/index.html) | [**Documentation**](https://llama-stack.readthedocs.io/en/latest/index.html) | [**Colab Notebook**](./docs/getting_started.ipynb) | [**Discord**](https://discord.gg/llama-stack)
 
@@ -112,29 +111,33 @@ Here is a list of the various API providers and available distributions that can
 Please checkout for [full list](https://llama-stack.readthedocs.io/en/latest/providers/index.html)
 
 | API Provider Builder | Environments | Agents | Inference | VectorIO | Safety | Telemetry | Post Training | Eval | DatasetIO |
-|:-------------------:|:------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:--------:|
-| Meta Reference | Single Node | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SambaNova | Hosted | | ✅ | | ✅ | | | | |
-| Cerebras | Hosted | | ✅ | | | | | | |
-| Fireworks | Hosted | ✅ | ✅ | ✅ | | | | | |
-| AWS Bedrock | Hosted | | ✅ | | ✅ | | | | |
-| Together | Hosted | ✅ | ✅ | | ✅ | | | | |
-| Groq | Hosted | | ✅ | | | | | | |
-| Ollama | Single Node | | ✅ | | | | | | |
-| TGI | Hosted/Single Node | | ✅ | | | | | | |
-| NVIDIA NIM | Hosted/Single Node | | ✅ | | ✅ | | | | |
-| ChromaDB | Hosted/Single Node | | | ✅ | | | | | |
-| PG Vector | Single Node | | | ✅ | | | | | |
-| PyTorch ExecuTorch | On-device iOS | ✅ | ✅ | | | | | | |
-| vLLM | Single Node | | ✅ | | | | | | |
-| OpenAI | Hosted | | ✅ | | | | | | |
-| Anthropic | Hosted | | ✅ | | | | | | |
-| Gemini | Hosted | | ✅ | | | | | | |
-| WatsonX | Hosted | | ✅ | | | | | | |
-| HuggingFace | Single Node | | | | | | ✅ | | ✅ |
-| TorchTune | Single Node | | | | | | ✅ | | |
-| NVIDIA NEMO | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
-| NVIDIA | Hosted | | | | | | ✅ | ✅ | ✅ |
+|:--------------------:|:------------:|:------:|:---------:|:--------:|:------:|:---------:|:-------------:|:----:|:--------:|
+|    Meta Reference    | Single Node | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+|      SambaNova       | Hosted | | ✅ | | ✅ | | | | |
+|       Cerebras       | Hosted | | ✅ | | | | | | |
+|      Fireworks       | Hosted | ✅ | ✅ | ✅ | | | | | |
+|     AWS Bedrock      | Hosted | | ✅ | | ✅ | | | | |
+|       Together       | Hosted | ✅ | ✅ | | ✅ | | | | |
+|         Groq         | Hosted | | ✅ | | | | | | |
+|        Ollama        | Single Node | | ✅ | | | | | | |
+|         TGI          | Hosted/Single Node | | ✅ | | | | | | |
+|      NVIDIA NIM      | Hosted/Single Node | | ✅ | | ✅ | | | | |
+|       ChromaDB       | Hosted/Single Node | | | ✅ | | | | | |
+|        Milvus        | Hosted/Single Node | | | ✅ | | | | | |
+|        Qdrant        | Hosted/Single Node | | | ✅ | | | | | |
+|       Weaviate       | Hosted/Single Node | | | ✅ | | | | | |
+|      SQLite-vec      | Single Node | | | ✅ | | | | | |
+|      PG Vector       | Single Node | | | ✅ | | | | | |
+|  PyTorch ExecuTorch  | On-device iOS | ✅ | ✅ | | | | | | |
+|         vLLM         | Single Node | | ✅ | | | | | | |
+|        OpenAI        | Hosted | | ✅ | | | | | | |
+|      Anthropic       | Hosted | | ✅ | | | | | | |
+|        Gemini        | Hosted | | ✅ | | | | | | |
+|       WatsonX        | Hosted | | ✅ | | | | | | |
+|     HuggingFace      | Single Node | | | | | | ✅ | | ✅ |
+|      TorchTune       | Single Node | | | | | | ✅ | | |
+|     NVIDIA NEMO      | Hosted | | ✅ | ✅ | | | ✅ | ✅ | ✅ |
+|        NVIDIA        | Hosted | | | | | | ✅ | ✅ | ✅ |
 
 > **Note**: Additional providers are available through external packages. See [External Providers](https://llama-stack.readthedocs.io/en/latest/providers/external.html) documentation.
 
