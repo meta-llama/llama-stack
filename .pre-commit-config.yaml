@@ -155,14 +155,6 @@ repos:
         require_serial: true
         files: ^.github/workflows/.*$
 
-- repo: local
-  hooks:
-    - id: check-uv-upload-time
-      name: Check upload-time in uv.lock
-      entry: python3 ./scripts/check_uv_upload_time.py
-      language: system
-      files: ^uv\.lock$
-
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
     autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
