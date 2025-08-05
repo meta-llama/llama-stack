@@ -6,8 +6,8 @@
 
 
 from llama_stack.apis.models import ModelType
-from llama_stack.distribution.datatypes import ModelWithOwner, User
-from llama_stack.distribution.store.registry import CachedDiskDistributionRegistry
+from llama_stack.core.datatypes import ModelWithOwner, User
+from llama_stack.core.store.registry import CachedDiskDistributionRegistry
 
 
 async def test_registry_cache_with_acl(cached_disk_dist_registry):

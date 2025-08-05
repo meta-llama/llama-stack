@@ -10,7 +10,7 @@ from contextvars import ContextVar
 
 import pytest
 
-from llama_stack.distribution.utils.context import preserve_contexts_async_generator
+from llama_stack.core.utils.context import preserve_contexts_async_generator
 
 
 async def test_preserve_contexts_with_exception():

@@ -9,6 +9,7 @@ This section provides an overview of the distributions available in Llama Stack.
 list_of_distributions
 building_distro
 customizing_run_yaml
+starting_llama_stack_server
 importing_as_library
 configuration
 ```

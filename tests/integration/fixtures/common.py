@@ -6,6 +6,7 @@
 
 import inspect
 import os
+import shlex
 import signal
 import socket
 import subprocess
@@ -20,7 +21,7 @@ from llama_stack_client import LlamaStackClient
 from openai import OpenAI
 
 from llama_stack import LlamaStackAsLibraryClient
-from llama_stack.distribution.stack import run_config_from_adhoc_config_spec
+from llama_stack.core.stack import run_config_from_adhoc_config_spec
 from llama_stack.env import get_env_or_fail
 
 DEFAULT_PORT = 8321
@@ -38,10 +39,10 @@ def is_port_available(port: int, host: str = "localhost") -> bool:
 
 def start_llama_stack_server(config_name: str) -> subprocess.Popen:
     """Start a llama stack server with the given config."""
-    cmd = ["llama", "stack", "run", config_name]
+    cmd = f"uv run --with llama-stack llama stack build --distro {config_name} --image-type venv --run"
     devnull = open(os.devnull, "w")
     process = subprocess.Popen(
-        cmd,
+        shlex.split(cmd),
         stdout=devnull,  # redirect stdout to devnull to prevent deadlock
         stderr=subprocess.PIPE,  # keep stderr to see errors
         text=True,

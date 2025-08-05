@@ -12,7 +12,7 @@ from typing import TextIO
 from typing import Any, List, Optional, Union, get_type_hints, get_origin, get_args
 
 from llama_stack.strong_typing.schema import object_to_json, StrictJsonType
-from llama_stack.distribution.resolver import api_protocol_map
+from llama_stack.core.resolver import api_protocol_map
 
 from .generator import Generator
 from .options import Options

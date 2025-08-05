@@ -73,7 +73,7 @@ The API is defined in the [YAML](_static/llama-stack-spec.yaml) and [HTML](_stat
 
 To prove out the API, we implemented a handful of use cases to make things more concrete. The [llama-stack-apps](https://github.com/meta-llama/llama-stack-apps) repository contains [6 different examples](https://github.com/meta-llama/llama-stack-apps/tree/main/examples) ranging from very basic to a multi turn agent.
 
-There is also a sample inference endpoint implementation in the [llama-stack](https://github.com/meta-llama/llama-stack/blob/main/llama_stack/distribution/server/server.py) repository.
+There is also a sample inference endpoint implementation in the [llama-stack](https://github.com/meta-llama/llama-stack/blob/main/llama_stack.core/server/server.py) repository.
 
 ## Limitations
 

@@ -21,7 +21,7 @@ from llama_stack.apis.safety import (
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
-from llama_stack.distribution.datatypes import Api
+from llama_stack.core.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
 from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
@@ -149,6 +149,11 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         model_id = shield.provider_resource_id
         if not model_id:
             raise ValueError("Llama Guard shield must have a model id")
+
+    async def unregister_shield(self, identifier: str) -> None:
+        # LlamaGuard doesn't need to do anything special for unregistration
+        # The routing table handles the removal from the registry
+        pass
 
     async def run_shield(
         self,

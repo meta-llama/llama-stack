@@ -36,7 +36,7 @@ from llama_stack.apis.telemetry import (
     Trace,
     UnstructuredLogEvent,
 )
-from llama_stack.distribution.datatypes import Api
+from llama_stack.core.datatypes import Api
 from llama_stack.providers.inline.telemetry.meta_reference.console_span_processor import (
     ConsoleSpanProcessor,
 )

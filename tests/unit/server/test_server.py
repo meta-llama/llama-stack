@@ -10,9 +10,9 @@ from fastapi import HTTPException
 from openai import BadRequestError
 from pydantic import ValidationError
 
-from llama_stack.distribution.access_control.access_control import AccessDeniedError
-from llama_stack.distribution.datatypes import AuthenticationRequiredError
-from llama_stack.distribution.server.server import translate_exception
+from llama_stack.core.access_control.access_control import AccessDeniedError
+from llama_stack.core.datatypes import AuthenticationRequiredError
+from llama_stack.core.server.server import translate_exception
 
 
 class TestTranslateException:
@@ -29,7 +29,7 @@ class TestTranslateException:
 
     def test_translate_access_denied_error_with_context(self):
         """Test that AccessDeniedError with context includes detailed information."""
-        from llama_stack.distribution.datatypes import User
+        from llama_stack.core.datatypes import User
 
         # Create mock user and resource
         user = User("test-user", {"roles": ["user"], "teams": ["dev"]})

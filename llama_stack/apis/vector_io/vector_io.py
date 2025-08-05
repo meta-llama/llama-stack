@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from llama_stack.apis.inference import InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
-from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
+from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 from llama_stack.schema_utils import json_schema_type, webmethod
 from llama_stack.strong_typing.schema import register_schema
 
@@ -94,12 +94,27 @@ class Chunk(BaseModel):
 
 @json_schema_type
 class QueryChunksResponse(BaseModel):
+    """Response from querying chunks in a vector database.
+
+    :param chunks: List of content chunks returned from the query
+    :param scores: Relevance scores corresponding to each returned chunk
+    """
+
     chunks: list[Chunk]
     scores: list[float]
 
 
 @json_schema_type
 class VectorStoreFileCounts(BaseModel):
+    """File processing status counts for a vector store.
+
+    :param completed: Number of files that have been successfully processed
+    :param cancelled: Number of files that had their processing cancelled
+    :param failed: Number of files that failed to process
+    :param in_progress: Number of files currently being processed
+    :param total: Total number of files in the vector store
+    """
+
     completed: int
     cancelled: int
     failed: int
@@ -109,7 +124,20 @@ class VectorStoreFileCounts(BaseModel):
 
 @json_schema_type
 class VectorStoreObject(BaseModel):
-    """OpenAI Vector Store object."""
+    """OpenAI Vector Store object.
+
+    :param id: Unique identifier for the vector store
+    :param object: Object type identifier, always "vector_store"
+    :param created_at: Timestamp when the vector store was created
+    :param name: (Optional) Name of the vector store
+    :param usage_bytes: Storage space used by the vector store in bytes
+    :param file_counts: File processing status counts for the vector store
+    :param status: Current status of the vector store
+    :param expires_after: (Optional) Expiration policy for the vector store
+    :param expires_at: (Optional) Timestamp when the vector store will expire
+    :param last_active_at: (Optional) Timestamp of last activity on the vector store
+    :param metadata: Set of key-value pairs that can be attached to the vector store
+    """
 
     id: str
     object: str = "vector_store"
@@ -126,7 +154,14 @@ class VectorStoreObject(BaseModel):
 
 @json_schema_type
 class VectorStoreCreateRequest(BaseModel):
-    """Request to create a vector store."""
+    """Request to create a vector store.
+
+    :param name: (Optional) Name for the vector store
+    :param file_ids: List of file IDs to include in the vector store
+    :param expires_after: (Optional) Expiration policy for the vector store
+    :param chunking_strategy: (Optional) Strategy for splitting files into chunks
+    :param metadata: Set of key-value pairs that can be attached to the vector store
+    """
 
     name: str | None = None
     file_ids: list[str] = Field(default_factory=list)
@@ -137,7 +172,12 @@ class VectorStoreCreateRequest(BaseModel):
 
 @json_schema_type
 class VectorStoreModifyRequest(BaseModel):
-    """Request to modify a vector store."""
+    """Request to modify a vector store.
+
+    :param name: (Optional) Updated name for the vector store
+    :param expires_after: (Optional) Updated expiration policy for the vector store
+    :param metadata: (Optional) Updated set of key-value pairs for the vector store
+    """
 
     name: str | None = None
     expires_after: dict[str, Any] | None = None
@@ -146,7 +186,14 @@ class VectorStoreModifyRequest(BaseModel):
 
 @json_schema_type
 class VectorStoreListResponse(BaseModel):
-    """Response from listing vector stores."""
+    """Response from listing vector stores.
+
+    :param object: Object type identifier, always "list"
+    :param data: List of vector store objects
+    :param first_id: (Optional) ID of the first vector store in the list for pagination
+    :param last_id: (Optional) ID of the last vector store in the list for pagination
+    :param has_more: Whether there are more vector stores available beyond this page
+    """
 
     object: str = "list"
     data: list[VectorStoreObject]
@@ -157,7 +204,14 @@ class VectorStoreListResponse(BaseModel):
 
 @json_schema_type
 class VectorStoreSearchRequest(BaseModel):
-    """Request to search a vector store."""
+    """Request to search a vector store.
+
+    :param query: Search query as a string or list of strings
+    :param filters: (Optional) Filters based on file attributes to narrow search results
+    :param max_num_results: Maximum number of results to return, defaults to 10
+    :param ranking_options: (Optional) Options for ranking and filtering search results
+    :param rewrite_query: Whether to rewrite the query for better vector search performance
+    """
 
     query: str | list[str]
     filters: dict[str, Any] | None = None
@@ -168,13 +222,26 @@ class VectorStoreSearchRequest(BaseModel):
 
 @json_schema_type
 class VectorStoreContent(BaseModel):
+    """Content item from a vector store file or search result.
+
+    :param type: Content type, currently only "text" is supported
+    :param text: The actual text content
+    """
+
     type: Literal["text"]
     text: str
 
 
 @json_schema_type
 class VectorStoreSearchResponse(BaseModel):
-    """Response from searching a vector store."""
+    """Response from searching a vector store.
+
+    :param file_id: Unique identifier of the file containing the result
+    :param filename: Name of the file containing the result
+    :param score: Relevance score for this search result
+    :param attributes: (Optional) Key-value attributes associated with the file
+    :param content: List of content items matching the search query
+    """
 
     file_id: str
     filename: str
@@ -185,7 +252,14 @@ class VectorStoreSearchResponse(BaseModel):
 
 @json_schema_type
 class VectorStoreSearchResponsePage(BaseModel):
-    """Response from searching a vector store."""
+    """Paginated response from searching a vector store.
+
+    :param object: Object type identifier for the search results page
+    :param search_query: The original search query that was executed
+    :param data: List of search result objects
+    :param has_more: Whether there are more results available beyond this page
+    :param next_page: (Optional) Token for retrieving the next page of results
+    """
 
     object: str = "vector_store.search_results.page"
     search_query: str
@@ -196,7 +270,12 @@ class VectorStoreSearchResponsePage(BaseModel):
 
 @json_schema_type
 class VectorStoreDeleteResponse(BaseModel):
-    """Response from deleting a vector store."""
+    """Response from deleting a vector store.
+
+    :param id: Unique identifier of the deleted vector store
+    :param object: Object type identifier for the deletion response
+    :param deleted: Whether the deletion operation was successful
+    """
 
     id: str
     object: str = "vector_store.deleted"
@@ -205,17 +284,34 @@ class VectorStoreDeleteResponse(BaseModel):
 
 @json_schema_type
 class VectorStoreChunkingStrategyAuto(BaseModel):
+    """Automatic chunking strategy for vector store files.
+
+    :param type: Strategy type, always "auto" for automatic chunking
+    """
+
     type: Literal["auto"] = "auto"
 
 
 @json_schema_type
 class VectorStoreChunkingStrategyStaticConfig(BaseModel):
+    """Configuration for static chunking strategy.
+
+    :param chunk_overlap_tokens: Number of tokens to overlap between adjacent chunks
+    :param max_chunk_size_tokens: Maximum number of tokens per chunk, must be between 100 and 4096
+    """
+
     chunk_overlap_tokens: int = 400
     max_chunk_size_tokens: int = Field(800, ge=100, le=4096)
 
 
 @json_schema_type
 class VectorStoreChunkingStrategyStatic(BaseModel):
+    """Static chunking strategy with configurable parameters.
+
+    :param type: Strategy type, always "static" for static chunking
+    :param static: Configuration parameters for the static chunking strategy
+    """
+
     type: Literal["static"] = "static"
     static: VectorStoreChunkingStrategyStaticConfig
 
@@ -227,6 +323,12 @@ register_schema(VectorStoreChunkingStrategy, name="VectorStoreChunkingStrategy")
 
 
 class SearchRankingOptions(BaseModel):
+    """Options for ranking and filtering search results.
+
+    :param ranker: (Optional) Name of the ranking algorithm to use
+    :param score_threshold: (Optional) Minimum relevance score threshold for results
+    """
+
     ranker: str | None = None
     # NOTE: OpenAI File Search Tool requires threshold to be between 0 and 1, however
     # we don't guarantee that the score is between 0 and 1, so will leave this unconstrained
@@ -236,6 +338,12 @@ class SearchRankingOptions(BaseModel):
 
 @json_schema_type
 class VectorStoreFileLastError(BaseModel):
+    """Error information for failed vector store file processing.
+
+    :param code: Error code indicating the type of failure
+    :param message: Human-readable error message describing the failure
+    """
+
     code: Literal["server_error"] | Literal["rate_limit_exceeded"]
     message: str
 
@@ -246,7 +354,18 @@ register_schema(VectorStoreFileStatus, name="VectorStoreFileStatus")
 
 @json_schema_type
 class VectorStoreFileObject(BaseModel):
-    """OpenAI Vector Store File object."""
+    """OpenAI Vector Store File object.
+
+    :param id: Unique identifier for the file
+    :param object: Object type identifier, always "vector_store.file"
+    :param attributes: Key-value attributes associated with the file
+    :param chunking_strategy: Strategy used for splitting the file into chunks
+    :param created_at: Timestamp when the file was added to the vector store
+    :param last_error: (Optional) Error information if file processing failed
+    :param status: Current processing status of the file
+    :param usage_bytes: Storage space used by this file in bytes
+    :param vector_store_id: ID of the vector store containing this file
+    """
 
     id: str
     object: str = "vector_store.file"
@@ -261,7 +380,14 @@ class VectorStoreFileObject(BaseModel):
 
 @json_schema_type
 class VectorStoreListFilesResponse(BaseModel):
-    """Response from listing vector stores."""
+    """Response from listing files in a vector store.
+
+    :param object: Object type identifier, always "list"
+    :param data: List of vector store file objects
+    :param first_id: (Optional) ID of the first file in the list for pagination
+    :param last_id: (Optional) ID of the last file in the list for pagination
+    :param has_more: Whether there are more files available beyond this page
+    """
 
     object: str = "list"
     data: list[VectorStoreFileObject]
@@ -272,7 +398,13 @@ class VectorStoreListFilesResponse(BaseModel):
 
 @json_schema_type
 class VectorStoreFileContentsResponse(BaseModel):
-    """Response from retrieving the contents of a vector store file."""
+    """Response from retrieving the contents of a vector store file.
+
+    :param file_id: Unique identifier for the file
+    :param filename: Name of the file
+    :param attributes: Key-value attributes associated with the file
+    :param content: List of content items from the file
+    """
 
     file_id: str
     filename: str
@@ -282,7 +414,12 @@ class VectorStoreFileContentsResponse(BaseModel):
 
 @json_schema_type
 class VectorStoreFileDeleteResponse(BaseModel):
-    """Response from deleting a vector store file."""
+    """Response from deleting a vector store file.
+
+    :param id: Unique identifier of the deleted file
+    :param object: Object type identifier for the deletion response
+    :param deleted: Whether the deletion operation was successful
+    """
 
     id: str
     object: str = "vector_store.file.deleted"
@@ -478,6 +615,11 @@ class VectorIO(Protocol):
         """List files in a vector store.
 
         :param vector_store_id: The ID of the vector store to list files from.
+        :param limit: (Optional) A limit on the number of objects to be returned. Limit can range between 1 and 100, and the default is 20.
+        :param order: (Optional) Sort order by the `created_at` timestamp of the objects. `asc` for ascending order and `desc` for descending order.
+        :param after: (Optional) A cursor for use in pagination. `after` is an object ID that defines your place in the list.
+        :param before: (Optional) A cursor for use in pagination. `before` is an object ID that defines your place in the list.
+        :param filter: (Optional) Filter by file status to only return files with the specified status.
         :returns: A VectorStoreListFilesResponse containing the list of files.
         """
         ...

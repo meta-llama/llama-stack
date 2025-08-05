@@ -1,0 +1,42 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://0.0.0.0:11434/v1/v1/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "prompt": "Respond to this question and explain your answer. Complete the sentence using one word: Roses are red, violets are ",
+      "stream": false
+    },
+    "endpoint": "/v1/completions",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.completion.Completion",
+      "__data__": {
+        "id": "cmpl-43",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "text": "Blue.\n\nMy response is based on the traditional English rhyme that pairs the colors of roses (red) with violets in a poetic and somewhat whimsical way. This specific version of the rhyme goes like this:\n\n\"Roses are red,\nViolets are blue,\nSugar is sweet,\nAnd so are you.\"\n\nIn modern times, variations of this rhyme can deviate from the original \"blue\" for violets, but in my complete sentence as requested, sticking with a widely recognized completion adds an air of timelessness and familiarity to the phrase."
+          }
+        ],
+        "created": 1754348148,
+        "model": "llama3.2:3b-instruct-fp16",
+        "object": "text_completion",
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 113,
+          "prompt_tokens": 50,
+          "total_tokens": 163,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        }
+      }
+    },
+    "is_streaming": false
+  }
+}
