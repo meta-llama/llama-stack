@@ -11,10 +11,8 @@ from io import BytesIO
 import pytest
 from llama_stack_client import BadRequestError, LlamaStackClient
 from openai import BadRequestError as OpenAIBadRequestError
-from openai import OpenAI
 
 from llama_stack.apis.vector_io import Chunk
-from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 logger = logging.getLogger(__name__)
 
@@ -67,19 +65,6 @@ def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_mode
         f"Search mode '{search_mode}' is not supported by any available provider. "
         f"Supported providers for '{search_mode}': {supported_providers}"
     )
-
-
-@pytest.fixture
-def openai_client(client_with_models):
-    base_url = f"{client_with_models.base_url}/v1/openai/v1"
-    return OpenAI(base_url=base_url, api_key="fake")
-
-
-@pytest.fixture(params=["openai_client", "llama_stack_client"])
-def compat_client(request, client_with_models):
-    if request.param == "openai_client" and isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI client tests not supported with library client")
-    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture(scope="session")

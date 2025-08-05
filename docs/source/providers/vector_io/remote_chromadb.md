@@ -40,7 +40,7 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `url` | `str \| None` | No | PydanticUndefined |  |
+| `url` | `str \| None` | No |  |  |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend |
 
 ## Sample Configuration
