@@ -52,6 +52,9 @@ class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):
                 f"Shield {shield.provider_resource_id} with version {shield.params['guardrailVersion']} not found in Bedrock"
             )
 
+    async def unregister_shield(self, identifier: str) -> None:
+        pass
+
     async def run_shield(
         self, shield_id: str, messages: list[Message], params: dict[str, Any] = None
     ) -> RunShieldResponse:
