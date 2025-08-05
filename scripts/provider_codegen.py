@@ -255,7 +255,7 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
             change_tracker.add_paths(doc_output_dir)
 
             index_content = []
-            index_content.append(f"# {api_name.title()} \n")
+            index_content.append(f"# {api_name.title()}\n")
             index_content.append("## Overview\n")
 
             index_content.append(

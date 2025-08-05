@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import pytest
-from openai import BadRequestError
+from openai import BadRequestError, OpenAI
 
 from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
@@ -36,6 +36,9 @@ from llama_stack.core.library_client import LlamaStackAsLibraryClient
     ],
 )
 def test_responses_store(compat_client, text_model_id, stream, tools):
+    if not isinstance(compat_client, OpenAI):
+        pytest.skip("OpenAI client is required until responses.delete() exists in llama-stack-client")
+
     message = "What's the weather in Tokyo?" + (
         " YOU MUST USE THE get_weather function to get the weather." if tools else ""
     )
