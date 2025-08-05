@@ -59,12 +59,12 @@ spec:
         image: llamastack/distribution-starter:0.2.15
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "2Gi"
+            cpu: "8000m"
             ephemeral-storage: "6Gi"
           limits:
-            memory: "1Gi"
-            cpu: "1000m"
+            memory: "2Gi"
+            cpu: "8000m"
             ephemeral-storage: "6Gi"
         env:
         - name: ENABLE_CHROMADB
@@ -74,7 +74,7 @@ spec:
         - name: VLLM_URL
           value: http://vllm-server.default.svc.cluster.local:8001/v1
         - name: VLLM_MAX_TOKENS
-          value: "3072"
+          value: "80000"
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: http://jaeger-dev-collector.observability:4318
         - name: OTEL_SERVICE_NAME
