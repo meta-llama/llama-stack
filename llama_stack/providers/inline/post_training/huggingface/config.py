@@ -6,7 +6,8 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+import tempfile
 
 
 class HuggingFacePostTrainingConfig(BaseModel):
@@ -71,7 +72,7 @@ class HuggingFacePostTrainingConfig(BaseModel):
     dpo_beta: float = 0.1
     use_reference_model: bool = True
     dpo_loss_type: Literal["sigmoid", "hinge", "ipo", "kto_pair"] = "sigmoid"
-    dpo_output_dir: str = "./checkpoints/dpo"
+    dpo_output_dir: str = Field(default_factory=lambda: tempfile.mkdtemp(prefix="dpo_output_"))
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:

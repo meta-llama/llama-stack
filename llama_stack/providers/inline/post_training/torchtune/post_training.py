@@ -23,9 +23,6 @@ from llama_stack.apis.post_training import (
 from llama_stack.providers.inline.post_training.torchtune.config import (
     TorchtunePostTrainingConfig,
 )
-from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetuning_single_device import (
-    LoraFinetuningSingleDevice,
-)
 from llama_stack.providers.utils.scheduler import JobArtifact, Scheduler
 from llama_stack.providers.utils.scheduler import JobStatus as SchedulerJobStatus
 from llama_stack.schema_utils import webmethod
@@ -84,6 +81,10 @@ class TorchtunePostTrainingImpl:
         if isinstance(algorithm_config, LoraFinetuningConfig):
 
             async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
+                from llama_stack.providers.inline.post_training.torchtune.recipes.lora_finetuning_single_device import (
+                    LoraFinetuningSingleDevice,
+                )
+
                 on_log_message_cb("Starting Lora finetuning")
 
                 recipe = LoraFinetuningSingleDevice(
