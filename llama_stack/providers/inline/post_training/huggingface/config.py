@@ -4,10 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import tempfile
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class HuggingFacePostTrainingConfig(BaseModel):
@@ -72,8 +71,13 @@ class HuggingFacePostTrainingConfig(BaseModel):
     dpo_beta: float = 0.1
     use_reference_model: bool = True
     dpo_loss_type: Literal["sigmoid", "hinge", "ipo", "kto_pair"] = "sigmoid"
-    dpo_output_dir: str = Field(default_factory=lambda: tempfile.mkdtemp(prefix="dpo_output_"))
+    dpo_output_dir: str
 
     @classmethod
     def sample_run_config(cls, __distro_dir__: str, **kwargs: Any) -> dict[str, Any]:
-        return {"checkpoint_format": "huggingface", "distributed_backend": None, "device": "cpu"}
+        return {
+            "checkpoint_format": "huggingface",
+            "distributed_backend": None,
+            "device": "cpu",
+            "dpo_output_dir": __distro_dir__ + "/dpo_output",
+        }

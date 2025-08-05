@@ -9,6 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from pydantic_core import PydanticUndefined
 
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -59,6 +60,8 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
         if hasattr(config_class, "model_fields"):
             for field_name, field in config_class.model_fields.items():
                 field_type = str(field.annotation) if field.annotation else "Any"
+
+                # this string replace is ridiculous
                 field_type = field_type.replace("typing.", "").replace("Optional[", "").replace("]", "")
                 field_type = field_type.replace("Annotated[", "").replace("FieldInfo(", "").replace(")", "")
                 field_type = field_type.replace("llama_stack.apis.inference.inference.", "")
@@ -77,7 +80,7 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
                                 default_value = f"~/.llama/{path_part}"
                     except Exception:
                         default_value = ""
-                elif field.default is None:
+                elif field.default is None or field.default is PydanticUndefined:
                     default_value = ""
 
                 field_info = {
