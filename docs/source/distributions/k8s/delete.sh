@@ -89,6 +89,10 @@ envsubst < ./ollama-safety-k8s.yaml.template | kubectl delete -f - --ignore-not-
 echo "Deleting vllm deployment..."
 envsubst < ./vllm-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
 
+# Delete jaeger deployment
+echo "Deleting jaeger deployment..."
+envsubst < ./jaeger-k8s.yaml.template | kubectl delete -f - --ignore-not-found=true
+
 # Delete the HF token secret if it exists
 if [ -n "${HF_TOKEN:-}" ]; then
   echo "Deleting HF token secret..."
@@ -109,6 +113,7 @@ for template in ./*.yaml.template; do
           "$template" != "./vllm-safety-k8s.yaml.template" &&
           "$template" != "./ollama-safety-k8s.yaml.template" &&
           "$template" != "./vllm-k8s.yaml.template" &&
+          "$template" != "./jaeger-k8s.yaml.template" &&
           "$template" != "./set-secret.yaml.template" &&
           "$template" != "./ui-service-k8s.yaml.template" ]]; then
       echo "Deleting resources from $template..."
@@ -133,6 +138,7 @@ kubectl delete service -l app=postgres --ignore-not-found=true
 kubectl delete service -l app=vllm --ignore-not-found=true
 kubectl delete service -l app=llama-nim --ignore-not-found=true
 kubectl delete service -l app.kubernetes.io/name=ollama-safety --ignore-not-found=true
+kubectl delete service -l app=jaeger --ignore-not-found=true
 
 # Delete any remaining secrets
 echo "Deleting any remaining secrets..."

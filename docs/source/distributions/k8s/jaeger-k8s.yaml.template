@@ -1,0 +1,10 @@
+# jaeger-dev.yaml
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: jaeger-dev
+  namespace: observability
+spec:
+  strategy: allInOne           # single pod with agent, collector & query
+  ingress:
+    enabled: false             # set true + host rules if you use Ingress

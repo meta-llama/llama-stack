@@ -12,7 +12,7 @@ export POSTGRES_USER=llamastack
 export POSTGRES_DB=llamastack
 export POSTGRES_PASSWORD=llamastack
 
-export INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct
+export INFERENCE_MODEL=meta-llama/Llama-3.3-70B-Instruct
 export CODE_MODEL=bigcode/starcoder2-7b
 export OLLAMA_MODEL=llama-guard3:1b
 # Set USE_EBS to false if you don't have permission to use EKS EBS
@@ -80,6 +80,7 @@ if [ "$USE_EBS" = "true" ]; then
   envsubst < ./llama-nim.yaml.template | kubectl apply -f -
   envsubst < ./postgres-k8s.yaml.template | kubectl apply -f -
   envsubst < ./chroma-k8s.yaml.template | kubectl apply -f -
+  envsubst < ./jaeger-k8s.yaml.template | kubectl apply -f -
 
 
   kubectl create configmap llama-stack-config --from-file=stack_run_config.yaml \
@@ -99,6 +100,7 @@ else
   envsubst < ./llama-nim.yaml.template | kubectl apply -f -
   envsubst < ./postgres-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
   envsubst < ./chroma-k8s.yaml.template | sed 's/persistentVolumeClaim:/emptyDir: {}/g' | sed '/claimName:/d' | kubectl apply -f -
+  envsubst < ./jaeger-k8s.yaml.template | kubectl apply -f -
 
   kubectl create configmap llama-stack-config --from-file=stack_run_config.yaml \
     --dry-run=client -o yaml > stack-configmap.yaml

@@ -36,3 +36,17 @@ helm install prometheus prometheus-community/kube-prometheus-stack \
 echo "kube-prometheus-stack has been installed successfully!"
 echo "To access Grafana UI, run: kubectl port-forward svc/kube-prometheus-stack-1754164871-grafana 31509:80 -n prometheus"
 echo "Default Grafana credentials - Username: admin, Password: prom-operator"
+# 1. Add the official chart repo and update your cache
+helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
+helm repo update
+
+# 2. (Optional) Create a namespace for observability tools
+kubectl create namespace observability
+
+# 3. Install Cert-Manager once per cluster (operator webhooks need it)
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+
+# 4. Install the operator
+helm install jaeger-operator jaegertracing/jaeger-operator \
+  --namespace observability \
+  --set rbac.clusterRole=true        # watch the whole cluster

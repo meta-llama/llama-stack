@@ -61,8 +61,10 @@ providers:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
     config:
-      service_name: "${env.OTEL_SERVICE_NAME:=\u200B}"
-      sinks: ${env.TELEMETRY_SINKS:=console}
+      service_name: "${env.OTEL_SERVICE_NAME:=llama-stack}"
+      sinks: ['console', 'otel_trace', 'otel_metric']
+      otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=http://jaeger-dev-collector.observability:4318}
+      otel_exporter_otlp_protocol: "http/protobuf"
   tool_runtime:
   - provider_id: brave-search
     provider_type: remote::brave-search

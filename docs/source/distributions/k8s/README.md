@@ -59,6 +59,7 @@ The deployment process:
    - Llama NIM (code model)
    - PostgreSQL database
    - Chroma vector database
+   - Jaeger (distributed tracing)
    - Llama Stack server
    - UI service
    - Ingress configuration
@@ -124,7 +125,9 @@ The stack configuration is defined in `stack_run_config.yaml`. This file configu
 
 If you need to modify this configuration, edit the file before running `apply.sh`.
 
-## Monitoring
+## Monitoring and Telemetry
+
+### Prometheus Monitoring
 
 The deployment includes Prometheus monitoring capabilities:
 
@@ -132,6 +135,28 @@ The deployment includes Prometheus monitoring capabilities:
 # Install Prometheus monitoring
 ./install-prometheus.sh
 ```
+
+### Jaeger Tracing
+
+The deployment includes Jaeger for distributed tracing:
+
+1. **Access the Jaeger UI**:
+   ```bash
+   kubectl port-forward svc/jaeger 16686:16686
+   ```
+   Then open http://localhost:16686 in your browser.
+
+2. **Trace Configuration**:
+   - Traces are automatically sent from llama-stack to Jaeger
+   - The service name is set to "llama-stack" by default
+   - Traces include spans for API calls, model inference, and other operations
+
+3. **Troubleshooting Traces**:
+   - If traces are not appearing in Jaeger:
+     - Verify Jaeger is running: `kubectl get pods | grep jaeger`
+     - Check llama-stack logs: `kubectl logs -f deployment/llama-stack-server`
+     - Ensure the OTLP endpoint is correctly configured in the stack configuration
+     - Verify network connectivity between llama-stack and Jaeger
 
 ## Cleanup
 
@@ -176,6 +201,12 @@ This will:
      kubectl get endpoints
      ```
 
+5. **Traces not appearing in Jaeger**:
+   - Check if the Jaeger pod is running: `kubectl get pods | grep jaeger`
+   - Verify the llama-stack server is waiting for Jaeger to be ready before starting
+   - Check the telemetry configuration in `stack_run_config.yaml`
+   - Ensure the OTLP endpoint is correctly set to `http://jaeger.default.svc.cluster.local:4318`
+
 ### Viewing Logs
 
 ```bash
@@ -183,6 +214,7 @@ This will:
 kubectl logs -f deployment/llama-stack-server
 kubectl logs -f deployment/vllm-server
 kubectl logs -f deployment/llama-stack-ui
+kubectl logs -f deployment/jaeger
 ```
 
 ## Advanced Configuration
@@ -194,13 +226,11 @@ You can modify the resource limits in the YAML template files before deployment:
 - `vllm-k8s.yaml.template`: vLLM server resources
 - `stack-k8s.yaml.template`: Llama Stack server resources
 - `llama-nim.yaml.template`: NIM server resources
-
-
-
-
+- `jaeger-k8s.yaml.template`: Jaeger server resources
 
 ## Additional Resources
 
 - [Llama Stack Documentation](https://github.com/meta-llama/llama-stack)
 - [vLLM Documentation](https://docs.vllm.ai/)
 - [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [Jaeger Tracing Documentation](https://www.jaegertracing.io/docs/)

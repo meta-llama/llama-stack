@@ -75,6 +75,10 @@ spec:
           value: http://vllm-server.default.svc.cluster.local:8001/v1
         - name: VLLM_MAX_TOKENS
           value: "3072"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://jaeger-dev-collector.observability:4318
+        - name: OTEL_SERVICE_NAME
+          value: llama-stack
         - name: NVIDIA_BASE_URL
           value: http://llm-nim-code.default.svc.cluster.local:8000
         - name: OLLAMA_BASE_URL
