@@ -176,7 +176,6 @@ class ChatAgent(ShieldRunnerMixin):
     def _emit_metric(
         self, metric_name: str, value: int | float, unit: str, attributes: dict[str, str] | None = None
     ) -> None:
-        """Emit a single metric event"""
         if not self.telemetry_api:
             return
 
@@ -185,6 +184,8 @@ class ChatAgent(ShieldRunnerMixin):
             return
 
         context = span.get_span_context()
+        if context.trace_id == 0:
+            return
         metric = MetricEvent(
             trace_id=format(context.trace_id, "x"),
             span_id=format(context.span_id, "x"),
@@ -195,9 +196,14 @@ class ChatAgent(ShieldRunnerMixin):
             attributes={"agent_id": self.agent_id, **(attributes or {})},
         )
 
-        # Create task with name for better debugging and potential cleanup
         task_name = f"metric-{metric_name}-{self.agent_id}"
-        asyncio.create_task(self.telemetry_api.log_event(metric), name=task_name)
+        task = asyncio.create_task(self.telemetry_api.log_event(metric), name=task_name)
+
+        def _handle_metric_task_done(task):
+            if task.exception():
+                logger.warning(f"Metric emission task '{task_name}' failed: {task.exception()}")
+
+        task.add_done_callback(_handle_metric_task_done)
 
     def _log_step_execution(self):
         self._emit_metric("llama_stack_agent_steps_total", 1, "1")
@@ -769,7 +775,6 @@ class ChatAgent(ShieldRunnerMixin):
                             )
                         )
 
-                        # Log step execution metric
                         self._log_step_execution()
 
                         # Add the result message to input_messages for the next iteration

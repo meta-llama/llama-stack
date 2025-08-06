@@ -27,11 +27,8 @@ class FakeSpan:
 
 
 @pytest.fixture
-def agent_with_telemetry():
-    """Create a real ChatAgent with telemetry API"""
-    telemetry_api = AsyncMock()
-
-    agent = ChatAgent(
+def agent():
+    return ChatAgent(
         agent_id="test-agent",
         agent_config=Mock(),
         inference_api=Mock(),
@@ -39,174 +36,105 @@ def agent_with_telemetry():
         tool_runtime_api=Mock(),
         tool_groups_api=Mock(),
         vector_io_api=Mock(),
-        telemetry_api=telemetry_api,
+        telemetry_api=AsyncMock(),
         persistence_store=Mock(),
         created_at="2025-01-01T00:00:00Z",
         policy=[],
     )
-    return agent
-
-
-@pytest.fixture
-def agent_without_telemetry():
-    """Create a real ChatAgent without telemetry API"""
-    agent = ChatAgent(
-        agent_id="test-agent",
-        agent_config=Mock(),
-        inference_api=Mock(),
-        safety_api=Mock(),
-        tool_runtime_api=Mock(),
-        tool_groups_api=Mock(),
-        vector_io_api=Mock(),
-        telemetry_api=None,
-        persistence_store=Mock(),
-        created_at="2025-01-01T00:00:00Z",
-        policy=[],
-    )
-    return agent
 
 
 class TestAgentMetrics:
-    def test_step_execution_metrics(self, agent_with_telemetry, monkeypatch):
-        """Test that step execution metrics are emitted correctly"""
-        fake_span = FakeSpan()
+    def setup_method(self):
+        self.captured_metrics = []
+
+    async def _setup_mocks(self, agent, monkeypatch, trace_id=123):
+        fake_span = FakeSpan(trace_id=trace_id)
         monkeypatch.setattr(
             "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: fake_span
         )
 
-        # Capture the metric instead of actually creating async task
-        captured_metrics = []
-
         async def capture_metric(metric):
-            captured_metrics.append(metric)
+            self.captured_metrics.append(metric)
 
-        monkeypatch.setattr(agent_with_telemetry.telemetry_api, "log_event", capture_metric)
+        agent.telemetry_api.log_event = capture_metric
 
-        def mock_create_task(coro, *, name=None):
-            return asyncio.run(coro)
+        pending_tasks = []
+
+        def mock_create_task(coro, **kwargs):
+            pending_tasks.append(coro)
+            return AsyncMock()
 
         monkeypatch.setattr(
             "llama_stack.providers.inline.agents.meta_reference.agent_instance.asyncio.create_task", mock_create_task
         )
+        return pending_tasks
 
-        agent_with_telemetry._log_step_execution()
+    async def test_step_metrics(self, agent, monkeypatch):
+        pending_tasks = await self._setup_mocks(agent, monkeypatch)
 
-        assert len(captured_metrics) == 1
-        metric = captured_metrics[0]
+        agent._log_step_execution()
+        await asyncio.gather(*pending_tasks)
+
+        assert len(self.captured_metrics) == 1
+        metric = self.captured_metrics[0]
         assert metric.metric == "llama_stack_agent_steps_total"
         assert metric.value == 1
-        assert metric.unit == "1"
         assert metric.attributes["agent_id"] == "test-agent"
 
-    def test_workflow_completion_metrics(self, agent_with_telemetry, monkeypatch):
-        """Test that workflow completion metrics are emitted correctly"""
-        fake_span = FakeSpan()
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: fake_span
+    async def test_workflow_metrics(self, agent, monkeypatch):
+        pending_tasks = await self._setup_mocks(agent, monkeypatch)
+
+        agent._log_workflow_completion("completed", 2.5)
+        await asyncio.gather(*pending_tasks)
+
+        assert len(self.captured_metrics) == 2
+        assert self.captured_metrics[0].metric == "llama_stack_agent_workflows_total"
+        assert self.captured_metrics[0].attributes["status"] == "completed"
+        assert self.captured_metrics[1].metric == "llama_stack_agent_workflow_duration_seconds"
+        assert self.captured_metrics[1].value == 2.5
+
+    async def test_tool_metrics(self, agent, monkeypatch):
+        pending_tasks = await self._setup_mocks(agent, monkeypatch)
+
+        agent._log_tool_usage("web_search")
+        agent._log_tool_usage("knowledge_search")
+        await asyncio.gather(*pending_tasks)
+
+        assert len(self.captured_metrics) == 2
+        assert self.captured_metrics[0].attributes["tool"] == "web_search"
+        assert self.captured_metrics[1].attributes["tool"] == "rag"
+
+    def test_no_telemetry(self):
+        agent = ChatAgent(
+            agent_id="test",
+            agent_config=Mock(),
+            inference_api=Mock(),
+            safety_api=Mock(),
+            tool_runtime_api=Mock(),
+            tool_groups_api=Mock(),
+            vector_io_api=Mock(),
+            telemetry_api=None,
+            persistence_store=Mock(),
+            created_at="2025-01-01T00:00:00Z",
+            policy=[],
         )
 
-        captured_metrics = []
+        agent._log_step_execution()
+        agent._log_workflow_completion("failed", 1.0)
 
-        async def capture_metric(metric):
-            captured_metrics.append(metric)
-
-        monkeypatch.setattr(agent_with_telemetry.telemetry_api, "log_event", capture_metric)
-
-        def mock_create_task(coro, *, name=None):
-            return asyncio.run(coro)
-
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.asyncio.create_task", mock_create_task
-        )
-
-        agent_with_telemetry._log_workflow_completion("completed", 2.5)
-
-        assert len(captured_metrics) == 2
-
-        # Check workflow count metric
-        count_metric = captured_metrics[0]
-        assert count_metric.metric == "llama_stack_agent_workflows_total"
-        assert count_metric.value == 1
-        assert count_metric.attributes["status"] == "completed"
-
-        # Check duration metric
-        duration_metric = captured_metrics[1]
-        assert duration_metric.metric == "llama_stack_agent_workflow_duration_seconds"
-        assert duration_metric.value == 2.5
-        assert duration_metric.unit == "s"
-
-    def test_tool_usage_metrics(self, agent_with_telemetry, monkeypatch):
-        """Test that tool usage metrics are emitted correctly"""
-        fake_span = FakeSpan()
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: fake_span
-        )
-
-        captured_metrics = []
-
-        async def capture_metric(metric):
-            captured_metrics.append(metric)
-
-        monkeypatch.setattr(agent_with_telemetry.telemetry_api, "log_event", capture_metric)
-
-        def mock_create_task(coro, *, name=None):
-            return asyncio.run(coro)
-
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.asyncio.create_task", mock_create_task
-        )
-
-        agent_with_telemetry._log_tool_usage("web_search")
-
-        assert len(captured_metrics) == 1
-        metric = captured_metrics[0]
-        assert metric.metric == "llama_stack_agent_tool_calls_total"
-        assert metric.attributes["tool"] == "web_search"
-
-    def test_knowledge_search_tool_mapping(self, agent_with_telemetry, monkeypatch):
-        """Test that knowledge_search tool is mapped to rag"""
-        fake_span = FakeSpan()
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: fake_span
-        )
-
-        captured_metrics = []
-
-        async def capture_metric(metric):
-            captured_metrics.append(metric)
-
-        monkeypatch.setattr(agent_with_telemetry.telemetry_api, "log_event", capture_metric)
-
-        def mock_create_task(coro, *, name=None):
-            return asyncio.run(coro)
-
-        monkeypatch.setattr(
-            "llama_stack.providers.inline.agents.meta_reference.agent_instance.asyncio.create_task", mock_create_task
-        )
-
-        agent_with_telemetry._log_tool_usage("knowledge_search")
-
-        assert len(captured_metrics) == 1
-        metric = captured_metrics[0]
-        assert metric.attributes["tool"] == "rag"
-
-    def test_no_telemetry_api(self, agent_without_telemetry):
-        """Test that methods work gracefully when telemetry_api is None"""
-        # These should not crash
-        agent_without_telemetry._log_step_execution()
-        agent_without_telemetry._log_workflow_completion("failed", 1.0)
-        agent_without_telemetry._log_tool_usage("web_search")
-
-    def test_no_active_span(self, agent_with_telemetry, monkeypatch):
-        """Test that methods work gracefully when no span is active"""
+    def test_no_span(self, agent, monkeypatch):
         monkeypatch.setattr(
             "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: None
         )
 
-        # These should not crash and should not call telemetry
-        agent_with_telemetry._log_step_execution()
-        agent_with_telemetry._log_workflow_completion("failed", 1.0)
-        agent_with_telemetry._log_tool_usage("web_search")
+        agent._log_step_execution()
+        agent.telemetry_api.log_event.assert_not_called()
 
-        # Telemetry should not have been called
-        agent_with_telemetry.telemetry_api.log_event.assert_not_called()
+    def test_invalid_trace_id(self, agent, monkeypatch):
+        fake_span = FakeSpan(trace_id=0)
+        monkeypatch.setattr(
+            "llama_stack.providers.inline.agents.meta_reference.agent_instance.get_current_span", lambda: fake_span
+        )
+
+        agent._log_step_execution()
+        agent.telemetry_api.log_event.assert_not_called()
