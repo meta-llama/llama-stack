@@ -41,6 +41,12 @@ def pytest_sessionstart(session):
         hasattr(session.config, "skip_llama_stack_client_instantiation")
         and session.config.skip_llama_stack_client_instantiation
     )
+    print(f"config: {session.config}")
+    print(
+        "hasattr(session.config, 'skip_llama_stack_client_instantiation'):",
+        hasattr(session.config, "skip_llama_stack_client_instantiation"),
+    )
+    print(f"should_skip: {should_skip}")
     if not should_skip:
         print("instantiating llama_stack_client")
         start_time = time.time()
