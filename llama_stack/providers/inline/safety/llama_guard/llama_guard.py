@@ -22,7 +22,7 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
-from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults
+from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults, OpenAICategories
 from llama_stack.apis.shields import Shield
 from llama_stack.core.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
@@ -73,19 +73,19 @@ SAFETY_CATEGORIES_TO_CODE_MAP = {
 SAFETY_CODE_TO_CATEGORIES_MAP = {v: k for k, v in SAFETY_CATEGORIES_TO_CODE_MAP.items()}
 
 OPENAI_TO_LLAMA_CATEGORIES_MAP = {
-    "violence": [CAT_VIOLENT_CRIMES],
-    "violence/graphic": [CAT_VIOLENT_CRIMES],
-    "harassment": [CAT_CHILD_EXPLOITATION],
-    "harassment/threatening": [CAT_VIOLENT_CRIMES, CAT_CHILD_EXPLOITATION],
-    "hate": [CAT_HATE],
-    "hate/threatening": [CAT_HATE, CAT_VIOLENT_CRIMES],
-    "illicit": [CAT_NON_VIOLENT_CRIMES],
-    "illicit/violent": [CAT_VIOLENT_CRIMES, CAT_INDISCRIMINATE_WEAPONS],
-    "sexual": [CAT_SEX_CRIMES, CAT_SEXUAL_CONTENT],
-    "sexual/minors": [CAT_CHILD_EXPLOITATION],
-    "self-harm": [CAT_SELF_HARM],
-    "self-harm/intent": [CAT_SELF_HARM],
-    "self-harm/instructions": [CAT_SELF_HARM, CAT_SPECIALIZED_ADVICE],
+    OpenAICategories.VIOLENCE: [CAT_VIOLENT_CRIMES],
+    OpenAICategories.VIOLENCE_GRAPHIC: [CAT_VIOLENT_CRIMES],
+    OpenAICategories.HARRASMENT: [CAT_CHILD_EXPLOITATION],
+    OpenAICategories.HARRASMENT_THREATENING: [CAT_VIOLENT_CRIMES, CAT_CHILD_EXPLOITATION],
+    OpenAICategories.HATE: [CAT_HATE],
+    OpenAICategories.HATE_THREATENING: [CAT_HATE, CAT_VIOLENT_CRIMES],
+    OpenAICategories.ILLICIT: [CAT_NON_VIOLENT_CRIMES],
+    OpenAICategories.ILLICIT_VIOLENT: [CAT_VIOLENT_CRIMES, CAT_INDISCRIMINATE_WEAPONS],
+    OpenAICategories.SEXUAL: [CAT_SEX_CRIMES, CAT_SEXUAL_CONTENT],
+    OpenAICategories.SEXUAL_MINORS: [CAT_CHILD_EXPLOITATION],
+    OpenAICategories.SELF_HARM: [CAT_SELF_HARM],
+    OpenAICategories.SELF_HARM_INTENT: [CAT_SELF_HARM],
+    OpenAICategories.SELF_HARM_INSTRUCTIONS: [CAT_SELF_HARM, CAT_SPECIALIZED_ADVICE],
     # These are custom categories that are not in the OpenAI moderation categories
     "custom/defamation": [CAT_DEFAMATION],
     "custom/specialized_advice": [CAT_SPECIALIZED_ADVICE],

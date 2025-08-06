@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
@@ -13,6 +13,27 @@ from llama_stack.apis.inference import Message
 from llama_stack.apis.shields import Shield
 from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, webmethod
+
+
+# OpenAI Categories to return in the response
+class OpenAICategories(StrEnum):
+    """
+    Required set of categories in moderations api response
+    """
+
+    VIOLENCE = "violence"
+    VIOLENCE_GRAPHIC = "violence/graphic"
+    HARRASMENT = "harassment"
+    HARRASMENT_THREATENING = "harassment/threatening"
+    HATE = "hate"
+    HATE_THREATENING = "hate/threatening"
+    ILLICIT = "illicit"
+    ILLICIT_VIOLENT = "illicit/violent"
+    SEXUAL = "sexual"
+    SEXUAL_MINORS = "sexual/minors"
+    SELF_HARM = "self-harm"
+    SELF_HARM_INTENT = "self-harm/intent"
+    SELF_HARM_INSTRUCTIONS = "self-harm/instructions"
 
 
 @json_schema_type
