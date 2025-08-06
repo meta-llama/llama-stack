@@ -36,12 +36,15 @@ def pytest_sessionstart(session):
 
     # pull client instantiation to session start so all the complex logs during initialization
     # don't clobber the test one-liner outputs
-    print("instantiating llama_stack_client")
-    start_time = time.time()
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        session._llama_stack_client = instantiate_llama_stack_client(session)
-    print(f"llama_stack_client instantiated in {time.time() - start_time:.3f}s")
+
+    if not getattr(session.config, "skip_llama_stack_client_instantiation", False):
+        print("instantiating llama_stack_client")
+        start_time = time.time()
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+            session._llama_stack_client = instantiate_llama_stack_client(session)
+        print(f"llama_stack_client instantiated in {time.time() - start_time:.3f}s")
 
 
 def pytest_runtest_teardown(item):
