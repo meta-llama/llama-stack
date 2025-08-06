@@ -231,8 +231,6 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         # convert to user messages format with role
         messages = [UserMessage(content=m) for m in messages]
 
-        # Use the inference API's model resolution instead of hardcoded mappings
-        # This allows the shield to work with any registered model
         # Determine safety categories based on the model type
         # For known Llama Guard models, use specific categories
         if model in LLAMA_GUARD_MODEL_IDS:
@@ -406,12 +404,12 @@ class LlamaGuardShield:
         # TODO: Add Image based support for OpenAI Moderations
         shield_input_message = self.build_text_shield_input(messages)
 
-        response = await self.inference_api.chat_completion(
-            model_id=self.model,
+        response = await self.inference_api.openai_chat_completion(
+            model=self.model,
             messages=[shield_input_message],
             stream=False,
         )
-        content = response.completion_message.content
+        content = response.choices[0].message.content
         content = content.strip()
         return self.get_moderation_object(content)
 
