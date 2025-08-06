@@ -22,6 +22,20 @@ class ModerationObjectResults(BaseModel):
     :param categories: A list of the categories, and whether they are flagged or not.
     :param category_applied_input_types: A list of the categories along with the input type(s) that the score applies to.
     :param category_scores: A list of the categories along with their scores as predicted by model.
+    Required set of categories that need to be in response
+    - violence
+    - violence/graphic
+    - harassment
+    - harassment/threatening
+    - hate
+    - hate/threatening
+    - illicit
+    - illicit/violent
+    - sexual
+    - sexual/minors
+    - self-harm
+    - self-harm/intent
+    - self-harm/instructions
     """
 
     flagged: bool
