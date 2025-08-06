@@ -10,6 +10,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import chromadb
+from chromadb.api.models.AsyncCollection import AsyncCollection
 from numpy.typing import NDArray
 
 from llama_stack.apis.files import Files
@@ -116,7 +117,10 @@ class ChromaIndex(EmbeddingIndex):
         raise NotImplementedError("Keyword search is not supported in Chroma")
 
     async def delete_chunk(self, chunk_id: str) -> None:
-        raise NotImplementedError("delete_chunk is not supported in Chroma")
+        if isinstance(self.collection, AsyncCollection):
+            await self.collection.delete([chunk_id])
+        else:
+            self.collection.delete([chunk_id])
 
     async def query_hybrid(
         self,
