@@ -205,7 +205,7 @@ See [sqlite-vec's GitHub repo](https://github.com/asg017/sqlite-vec/tree/main) f
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `db_path` | `<class 'str'>` | No | PydanticUndefined | Path to the SQLite database file |
+| `db_path` | `<class 'str'>` | No |  | Path to the SQLite database file |
 | `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend (SQLite only for now) |
 
 ## Sample Configuration
