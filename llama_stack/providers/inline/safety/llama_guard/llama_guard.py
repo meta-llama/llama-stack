@@ -4,7 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import logging
 import re
+import uuid
 from string import Template
 from typing import Any
 
@@ -20,6 +22,7 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
+from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults, OpenAICategories
 from llama_stack.apis.shields import Shield
 from llama_stack.core.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
@@ -66,6 +69,31 @@ SAFETY_CATEGORIES_TO_CODE_MAP = {
     CAT_SEXUAL_CONTENT: "S12",
     CAT_ELECTIONS: "S13",
     CAT_CODE_INTERPRETER_ABUSE: "S14",
+}
+SAFETY_CODE_TO_CATEGORIES_MAP = {v: k for k, v in SAFETY_CATEGORIES_TO_CODE_MAP.items()}
+
+OPENAI_TO_LLAMA_CATEGORIES_MAP = {
+    OpenAICategories.VIOLENCE: [CAT_VIOLENT_CRIMES],
+    OpenAICategories.VIOLENCE_GRAPHIC: [CAT_VIOLENT_CRIMES],
+    OpenAICategories.HARRASMENT: [CAT_CHILD_EXPLOITATION],
+    OpenAICategories.HARRASMENT_THREATENING: [CAT_VIOLENT_CRIMES, CAT_CHILD_EXPLOITATION],
+    OpenAICategories.HATE: [CAT_HATE],
+    OpenAICategories.HATE_THREATENING: [CAT_HATE, CAT_VIOLENT_CRIMES],
+    OpenAICategories.ILLICIT: [CAT_NON_VIOLENT_CRIMES],
+    OpenAICategories.ILLICIT_VIOLENT: [CAT_VIOLENT_CRIMES, CAT_INDISCRIMINATE_WEAPONS],
+    OpenAICategories.SEXUAL: [CAT_SEX_CRIMES, CAT_SEXUAL_CONTENT],
+    OpenAICategories.SEXUAL_MINORS: [CAT_CHILD_EXPLOITATION],
+    OpenAICategories.SELF_HARM: [CAT_SELF_HARM],
+    OpenAICategories.SELF_HARM_INTENT: [CAT_SELF_HARM],
+    OpenAICategories.SELF_HARM_INSTRUCTIONS: [CAT_SELF_HARM, CAT_SPECIALIZED_ADVICE],
+    # These are custom categories that are not in the OpenAI moderation categories
+    "custom/defamation": [CAT_DEFAMATION],
+    "custom/specialized_advice": [CAT_SPECIALIZED_ADVICE],
+    "custom/privacy_violation": [CAT_PRIVACY],
+    "custom/intellectual_property": [CAT_INTELLECTUAL_PROPERTY],
+    "custom/weapons": [CAT_INDISCRIMINATE_WEAPONS],
+    "custom/elections": [CAT_ELECTIONS],
+    "custom/code_interpreter_abuse": [CAT_CODE_INTERPRETER_ABUSE],
 }
 
 
@@ -193,6 +221,34 @@ class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         )
 
         return await impl.run(messages)
+
+    async def run_moderation(self, input: str | list[str], model: str) -> ModerationObject:
+        if isinstance(input, list):
+            messages = input.copy()
+        else:
+            messages = [input]
+
+        # convert to user messages format with role
+        messages = [UserMessage(content=m) for m in messages]
+
+        # Determine safety categories based on the model type
+        # For known Llama Guard models, use specific categories
+        if model in LLAMA_GUARD_MODEL_IDS:
+            # Use the mapped model for categories but the original model_id for inference
+            mapped_model = LLAMA_GUARD_MODEL_IDS[model]
+            safety_categories = MODEL_TO_SAFETY_CATEGORIES_MAP.get(mapped_model, DEFAULT_LG_V3_SAFETY_CATEGORIES)
+        else:
+            # For unknown models, use default Llama Guard 3 8B categories
+            safety_categories = DEFAULT_LG_V3_SAFETY_CATEGORIES + [CAT_CODE_INTERPRETER_ABUSE]
+
+        impl = LlamaGuardShield(
+            model=model,
+            inference_api=self.inference_api,
+            excluded_categories=self.config.excluded_categories,
+            safety_categories=safety_categories,
+        )
+
+        return await impl.run_moderation(messages)
 
 
 class LlamaGuardShield:
@@ -340,3 +396,117 @@ class LlamaGuardShield:
             )
 
         raise ValueError(f"Unexpected response: {response}")
+
+    async def run_moderation(self, messages: list[Message]) -> ModerationObject:
+        if not messages:
+            return self.create_moderation_object(self.model)
+
+        # TODO: Add Image based support for OpenAI Moderations
+        shield_input_message = self.build_text_shield_input(messages)
+
+        response = await self.inference_api.openai_chat_completion(
+            model=self.model,
+            messages=[shield_input_message],
+            stream=False,
+        )
+        content = response.choices[0].message.content
+        content = content.strip()
+        return self.get_moderation_object(content)
+
+    def create_moderation_object(self, model: str, unsafe_code: str | None = None) -> ModerationObject:
+        """Create a ModerationObject for either safe or unsafe content.
+
+        Args:
+            model: The model name
+            unsafe_code: Optional comma-separated list of safety codes. If None, creates safe object.
+
+        Returns:
+            ModerationObject with appropriate configuration
+        """
+        # Set default values for safe case
+        categories = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), False)
+        category_scores = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), 1.0)
+        category_applied_input_types = {key: [] for key in OPENAI_TO_LLAMA_CATEGORIES_MAP.keys()}
+        flagged = False
+        user_message = None
+        metadata = {}
+
+        # Handle unsafe case
+        if unsafe_code:
+            unsafe_code_list = [code.strip() for code in unsafe_code.split(",")]
+            invalid_codes = [code for code in unsafe_code_list if code not in SAFETY_CODE_TO_CATEGORIES_MAP]
+            if invalid_codes:
+                logging.warning(f"Invalid safety codes returned: {invalid_codes}")
+                # just returning safe object, as we don't know what the invalid codes can map to
+                return ModerationObject(
+                    id=f"modr-{uuid.uuid4()}",
+                    model=model,
+                    results=[
+                        ModerationObjectResults(
+                            flagged=flagged,
+                            categories=categories,
+                            category_applied_input_types=category_applied_input_types,
+                            category_scores=category_scores,
+                            user_message=user_message,
+                            metadata=metadata,
+                        )
+                    ],
+                )
+
+            # Get OpenAI categories for the unsafe codes
+            openai_categories = []
+            for code in unsafe_code_list:
+                llama_guard_category = SAFETY_CODE_TO_CATEGORIES_MAP[code]
+                openai_categories.extend(
+                    k for k, v_l in OPENAI_TO_LLAMA_CATEGORIES_MAP.items() if llama_guard_category in v_l
+                )
+
+            # Update categories for unsafe content
+            categories = {k: k in openai_categories for k in OPENAI_TO_LLAMA_CATEGORIES_MAP}
+            category_scores = {k: 1.0 if k in openai_categories else 0.0 for k in OPENAI_TO_LLAMA_CATEGORIES_MAP}
+            category_applied_input_types = {
+                k: ["text"] if k in openai_categories else [] for k in OPENAI_TO_LLAMA_CATEGORIES_MAP
+            }
+            flagged = True
+            user_message = CANNED_RESPONSE_TEXT
+            metadata = {"violation_type": unsafe_code_list}
+
+        return ModerationObject(
+            id=f"modr-{uuid.uuid4()}",
+            model=model,
+            results=[
+                ModerationObjectResults(
+                    flagged=flagged,
+                    categories=categories,
+                    category_applied_input_types=category_applied_input_types,
+                    category_scores=category_scores,
+                    user_message=user_message,
+                    metadata=metadata,
+                )
+            ],
+        )
+
+    def is_content_safe(self, response: str, unsafe_code: str | None = None) -> bool:
+        """Check if content is safe based on response and unsafe code."""
+        if response.strip() == SAFE_RESPONSE:
+            return True
+
+        if unsafe_code:
+            unsafe_code_list = unsafe_code.split(",")
+            if set(unsafe_code_list).issubset(set(self.excluded_categories)):
+                return True
+
+        return False
+
+    def get_moderation_object(self, response: str) -> ModerationObject:
+        response = response.strip()
+        if self.is_content_safe(response):
+            return self.create_moderation_object(self.model)
+        unsafe_code = self.check_unsafe_response(response)
+        if not unsafe_code:
+            raise ValueError(f"Unexpected response: {response}")
+
+        if self.is_content_safe(response, unsafe_code):
+            return self.create_moderation_object(self.model)
+        else:
+            return self.create_moderation_object(self.model, unsafe_code)
