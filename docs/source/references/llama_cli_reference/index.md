@@ -19,7 +19,7 @@ You have two ways to install Llama Stack:
     cd ~/local
     git clone git@github.com:meta-llama/llama-stack.git
 
-    python -m venv myenv
+    uv venv myenv --python 3.12
     source myenv/bin/activate  # On Windows: myenv\Scripts\activate
 
     cd llama-stack

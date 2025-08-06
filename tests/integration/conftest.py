@@ -27,6 +27,11 @@ def pytest_runtest_makereport(item, call):
         item.was_xfail = getattr(report, "wasxfail", False)
 
 
+def pytest_sessionstart(session):
+    # stop macOS from complaining about duplicate OpenMP libraries
+    os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+
 def pytest_runtest_teardown(item):
     # Check if the test actually ran and passed or failed, but was not skipped or an expected failure (xfail)
     outcome = getattr(item, "execution_outcome", None)

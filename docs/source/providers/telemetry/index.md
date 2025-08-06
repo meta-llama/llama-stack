@@ -1,4 +1,4 @@
-# Telemetry 
+# Telemetry
 
 ## Overview
 

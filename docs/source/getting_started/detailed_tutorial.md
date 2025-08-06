@@ -150,13 +150,7 @@ pip install llama-stack-client
 ```
 :::
 
-:::{tab-item} Install with `venv`
-```bash
-python -m venv stack-client
-source stack-client/bin/activate  # On Windows: stack-client\Scripts\activate
-pip install llama-stack-client
-```
-:::
+
 ::::
 
 Now let's use the `llama-stack-client` [CLI](../references/llama_stack_client_cli_reference.md) to check the

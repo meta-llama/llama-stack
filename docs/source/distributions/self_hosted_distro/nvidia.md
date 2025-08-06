@@ -157,7 +157,7 @@ docker run \
 If you've set up your local development environment, you can also build the image using your local virtual environment.
 
 ```bash
-INFERENCE_MODEL=meta-llama/Llama-3.1-8b-Instruct
+INFERENCE_MODEL=meta-llama/Llama-3.1-8B-Instruct
 llama stack build --distro nvidia --image-type venv
 llama stack run ./run.yaml \
   --port 8321 \

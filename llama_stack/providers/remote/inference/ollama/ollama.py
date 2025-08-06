@@ -112,7 +112,8 @@ class OllamaInferenceAdapter(
     @property
     def openai_client(self) -> AsyncOpenAI:
         if self._openai_client is None:
-            self._openai_client = AsyncOpenAI(base_url=f"{self.config.url}/v1", api_key="ollama")
+            url = self.config.url.rstrip("/")
+            self._openai_client = AsyncOpenAI(base_url=f"{url}/v1", api_key="ollama")
         return self._openai_client
 
     async def initialize(self) -> None:

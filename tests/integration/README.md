@@ -108,9 +108,7 @@ pytest -s -v tests/integration/inference/ \
 Running Vector IO tests for a number of embedding models:
 
 ```bash
-EMBEDDING_MODELS=all-MiniLM-L6-v2
-
-pytest -s -v tests/integration/vector_io/ \
-   --stack-config=inference=sentence-transformers,vector_io=sqlite-vec \
-   --embedding-model=$EMBEDDING_MODELS
+uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=inline::sqlite-vec,files=localfs" \
+tests/integration/vector_io --embedding-model \
+sentence-transformers/all-MiniLM-L6-v2
 ```

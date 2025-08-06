@@ -22,15 +22,8 @@ from llama_stack.apis.post_training import (
 from llama_stack.providers.inline.post_training.huggingface.config import (
     HuggingFacePostTrainingConfig,
 )
-from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device import (
-    HFFinetuningSingleDevice,
-)
-from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device_dpo import (
-    HFDPOAlignmentSingleDevice,
-)
 from llama_stack.providers.utils.scheduler import JobArtifact, Scheduler
 from llama_stack.providers.utils.scheduler import JobStatus as SchedulerJobStatus
-from llama_stack.schema_utils import webmethod
 
 
 class TrainingArtifactType(Enum):
@@ -85,6 +78,10 @@ class HuggingFacePostTrainingImpl:
         algorithm_config: AlgorithmConfig | None = None,
     ) -> PostTrainingJob:
         async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
+            from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device import (
+                HFFinetuningSingleDevice,
+            )
+
             on_log_message_cb("Starting HF finetuning")
 
             recipe = HFFinetuningSingleDevice(
@@ -124,6 +121,10 @@ class HuggingFacePostTrainingImpl:
         logger_config: dict[str, Any],
     ) -> PostTrainingJob:
         async def handler(on_log_message_cb, on_status_change_cb, on_artifact_collected_cb):
+            from llama_stack.providers.inline.post_training.huggingface.recipes.finetune_single_device_dpo import (
+                HFDPOAlignmentSingleDevice,
+            )
+
             on_log_message_cb("Starting HF DPO alignment")
 
             recipe = HFDPOAlignmentSingleDevice(
@@ -168,7 +169,6 @@ class HuggingFacePostTrainingImpl:
         data = cls._get_artifacts_metadata_by_type(job, TrainingArtifactType.RESOURCES_STATS.value)
         return data[0] if data else None
 
-    @webmethod(route="/post-training/job/status")
     async def get_training_job_status(self, job_uuid: str) -> PostTrainingJobStatusResponse | None:
         job = self._scheduler.get_job(job_uuid)
 
@@ -195,16 +195,13 @@ class HuggingFacePostTrainingImpl:
             resources_allocated=self._get_resources_allocated(job),
         )
 
-    @webmethod(route="/post-training/job/cancel")
     async def cancel_training_job(self, job_uuid: str) -> None:
         self._scheduler.cancel(job_uuid)
 
-    @webmethod(route="/post-training/job/artifacts")
     async def get_training_job_artifacts(self, job_uuid: str) -> PostTrainingJobArtifactsResponse | None:
         job = self._scheduler.get_job(job_uuid)
         return PostTrainingJobArtifactsResponse(job_uuid=job_uuid, checkpoints=self._get_checkpoints(job))
 
-    @webmethod(route="/post-training/jobs", method="GET")
     async def get_training_jobs(self) -> ListPostTrainingJobsResponse:
         return ListPostTrainingJobsResponse(
             data=[PostTrainingJob(job_uuid=job.id) for job in self._scheduler.get_jobs()]

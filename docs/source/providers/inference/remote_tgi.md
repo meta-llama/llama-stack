@@ -8,7 +8,7 @@ Text Generation Inference (TGI) provider for HuggingFace model serving.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `url` | `<class 'str'>` | No | PydanticUndefined | The URL for the TGI serving endpoint |
+| `url` | `<class 'str'>` | No |  | The URL for the TGI serving endpoint |
 
 ## Sample Configuration
 

@@ -10,6 +10,7 @@ from llama_stack.apis.inference import (
     Message,
 )
 from llama_stack.apis.safety import RunShieldResponse, Safety
+from llama_stack.apis.safety.safety import ModerationObject, OpenAICategories
 from llama_stack.apis.shields import Shield
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
@@ -60,3 +61,41 @@ class SafetyRouter(Safety):
             messages=messages,
             params=params,
         )
+
+    async def run_moderation(self, input: str | list[str], model: str) -> ModerationObject:
+        async def get_shield_id(self, model: str) -> str:
+            """Get Shield id from model (provider_resource_id) of shield."""
+            list_shields_response = await self.routing_table.list_shields()
+
+            matches = [s.identifier for s in list_shields_response.data if model == s.provider_resource_id]
+            if not matches:
+                raise ValueError(f"No shield associated with provider_resource id {model}")
+            if len(matches) > 1:
+                raise ValueError(f"Multiple shields associated with provider_resource id {model}")
+            return matches[0]
+
+        shield_id = await get_shield_id(self, model)
+        logger.debug(f"SafetyRouter.run_moderation: {shield_id}")
+        provider = await self.routing_table.get_provider_impl(shield_id)
+
+        response = await provider.run_moderation(
+            input=input,
+            model=model,
+        )
+        self._validate_required_categories_exist(response)
+
+        return response
+
+    def _validate_required_categories_exist(self, response: ModerationObject) -> None:
+        """Validate the ProviderImpl response contains the required Open AI moderations categories."""
+        required_categories = list(map(str, OpenAICategories))
+
+        categories = response.results[0].categories
+        category_applied_input_types = response.results[0].category_applied_input_types
+        category_scores = response.results[0].category_scores
+
+        for i in [categories, category_applied_input_types, category_scores]:
+            if not set(required_categories).issubset(set(i.keys())):
+                raise ValueError(
+                    f"ProviderImpl response is missing required categories: {set(required_categories) - set(i.keys())}"
+                )

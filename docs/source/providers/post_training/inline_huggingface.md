@@ -27,7 +27,7 @@ HuggingFace-based post-training provider for fine-tuning models using the Huggin
 | `dpo_beta` | `<class 'float'>` | No | 0.1 |  |
 | `use_reference_model` | `<class 'bool'>` | No | True |  |
 | `dpo_loss_type` | `Literal['sigmoid', 'hinge', 'ipo', 'kto_pair'` | No | sigmoid |  |
-| `dpo_output_dir` | `<class 'str'>` | No | ./checkpoints/dpo |  |
+| `dpo_output_dir` | `<class 'str'>` | No |  |  |
 
 ## Sample Configuration
 
@@ -35,6 +35,7 @@ HuggingFace-based post-training provider for fine-tuning models using the Huggin
 checkpoint_format: huggingface
 distributed_backend: null
 device: cpu
+dpo_output_dir: ~/.llama/dummy/dpo_output
 
 ```
 

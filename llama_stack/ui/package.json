@@ -23,7 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
-    "llama-stack-client": ""0.2.17",
+    "llama-stack-client": "^0.2.17",
     "lucide-react": "^0.510.0",
     "next": "15.3.3",
     "next-auth": "^4.24.11",

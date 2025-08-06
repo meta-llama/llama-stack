@@ -6,9 +6,6 @@
 
 
 import pytest
-from openai import OpenAI
-
-from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 from ..test_cases.test_case import TestCase
 
@@ -59,9 +56,6 @@ def skip_if_model_doesnt_support_suffix(client_with_models, model_id):
 
 
 def skip_if_model_doesnt_support_openai_chat_completion(client_with_models, model_id):
-    if isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI chat completions are not supported when testing with library client yet.")
-
     provider = provider_from_model(client_with_models, model_id)
     if provider.provider_type in (
         "inline::meta-reference",
@@ -88,17 +82,6 @@ def skip_if_provider_isnt_openai(client_with_models, model_id):
         pytest.skip(
             f"Model {model_id} hosted by {provider.provider_type} doesn't support chat completion calls with base64 encoded files."
         )
-
-
-@pytest.fixture
-def openai_client(client_with_models):
-    base_url = f"{client_with_models.base_url}/v1/openai/v1"
-    return OpenAI(base_url=base_url, api_key="bar")
-
-
-@pytest.fixture(params=["openai_client", "llama_stack_client"])
-def compat_client(request):
-    return request.getfixturevalue(request.param)
 
 
 @pytest.mark.parametrize(
