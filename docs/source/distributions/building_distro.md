@@ -53,24 +53,31 @@ The main points to consider are:
 
 ```
 llama stack build -h
-usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--list-templates] [--image-type {container,venv}] [--image-name IMAGE_NAME] [--print-deps-only] [--run]
+usage: llama stack build [-h] [--config CONFIG] [--template TEMPLATE] [--distro DISTRIBUTION] [--list-distros] [--image-type {container,venv}] [--image-name IMAGE_NAME] [--print-deps-only]
+                         [--run] [--providers PROVIDERS]
 
 Build a Llama stack container
 
 options:
   -h, --help            show this help message and exit
-  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack.cores/**/build.yaml. If this argument is not provided, you will
-                        be prompted to enter information interactively (default: None)
-  --template TEMPLATE   Name of the example template config to use for build. You may use `llama stack build --list-templates` to check out the available templates (default: None)
-  --list-templates      Show the available templates for building a Llama Stack distribution (default: False)
+  --config CONFIG       Path to a config file to use for the build. You can find example configs in llama_stack.cores/**/build.yaml. If this argument is not provided, you will be prompted to
+                        enter information interactively (default: None)
+  --template TEMPLATE   (deprecated) Name of the example template config to use for build. You may use `llama stack build --list-distros` to check out the available distributions (default:
+                        None)
+  --distro DISTRIBUTION, --distribution DISTRIBUTION
+                        Name of the distribution to use for build. You may use `llama stack build --list-distros` to check out the available distributions (default: None)
+  --list-distros, --list-distributions
+                        Show the available distributions for building a Llama Stack distribution (default: False)
   --image-type {container,venv}
                         Image Type to use for the build. If not specified, will use the image type from the template config. (default: None)
   --image-name IMAGE_NAME
-                        [for image-type=container|venv] Name of the virtual environment to use for the build. If not specified, currently active environment will be used if
-                        found. (default: None)
+                        [for image-type=container|venv] Name of the virtual environment to use for the build. If not specified, currently active environment will be used if found. (default:
+                        None)
   --print-deps-only     Print the dependencies for the stack only, without building the stack (default: False)
   --run                 Run the stack after building using the same image type, name, and other applicable arguments (default: False)
-
+  --providers PROVIDERS
+                        Build a config for a list of providers and only those providers. This list is formatted like: api1=provider1,api2=provider2. Where there can be multiple providers per
+                        API. (default: None)
 ```
 
 After this step is complete, a file named `<name>-build.yaml` and template file `<name>-run.yaml` will be generated and saved at the output file path specified at the end of the command.
