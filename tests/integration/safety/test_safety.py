@@ -70,7 +70,7 @@ def test_safe_examples_with_run_moderation(client_with_models, shield_id):
     shield = [shield for shield in client_with_models.shields.list() if shield.identifier == shield_id][0]
     model_id = shield.provider_resource_id
     for example in examples:
-        moderation_object = client_with_models.safety.create(
+        moderation_object = client_with_models.moderations.create(
             input=[example],
             model=model_id,
         )
@@ -90,7 +90,7 @@ def test_unsafe_examples_with_run_moderation(client_with_models, shield_id):
     shield = [shield for shield in client_with_models.shields.list() if shield.identifier == shield_id][0]
     model_id = shield.provider_resource_id
     for example in examples:
-        moderation_object = client_with_models.safety.create(
+        moderation_object = client_with_models.moderations.create(
             input=[example],
             model=model_id,
         )
