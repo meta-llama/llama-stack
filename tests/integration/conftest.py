@@ -37,7 +37,11 @@ def pytest_sessionstart(session):
     # pull client instantiation to session start so all the complex logs during initialization
     # don't clobber the test one-liner outputs
 
-    if not getattr(session.config, "skip_llama_stack_client_instantiation", True):
+    should_skip = (
+        hasattr(session.config, "skip_llama_stack_client_instantiation")
+        and session.config.skip_llama_stack_client_instantiation
+    )
+    if not should_skip:
         print("instantiating llama_stack_client")
         start_time = time.time()
         with warnings.catch_warnings():
