@@ -40,7 +40,12 @@ def pytest_sessionstart(session):
     start_time = time.time()
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
-        session._llama_stack_client = instantiate_llama_stack_client(session)
+
+        try:
+            session._llama_stack_client = instantiate_llama_stack_client(session)
+        except Exception as e:
+            logger.error(f"Error instantiating llama_stack_client: {e}")
+            session._llama_stack_client = None
     print(f"llama_stack_client instantiated in {time.time() - start_time:.3f}s")
 
 
