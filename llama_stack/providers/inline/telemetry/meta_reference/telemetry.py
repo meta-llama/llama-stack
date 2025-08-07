@@ -240,9 +240,14 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         elif event.metric_type == MetricType.UP_DOWN_COUNTER:
             up_down_counter = self._get_or_create_up_down_counter(event.metric, event.unit)
             up_down_counter.add(event.value, attributes=event.attributes)
-        else:
+        elif event.metric_type == MetricType.COUNTER:
             counter = self._get_or_create_counter(event.metric, event.unit)
             counter.add(event.value, attributes=event.attributes)
+        elif event.metric_type == MetricType.GAUGE:
+            gauge = self._get_or_create_gauge(event.metric, event.unit)
+            gauge.set(event.value, attributes=event.attributes)
+        else:
+            raise ValueError(f"Unknown MetricType: {event.metric_type}")
 
     def _get_or_create_up_down_counter(self, name: str, unit: str) -> metrics.UpDownCounter:
         assert self.meter is not None
