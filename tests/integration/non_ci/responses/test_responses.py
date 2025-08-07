@@ -15,12 +15,9 @@ import pytest
 from llama_stack import LlamaStackAsLibraryClient
 from llama_stack.core.datatypes import AuthenticationRequiredError
 from tests.common.mcp import dependency_tools, make_mcp_server
-from tests.verifications.openai_api.fixtures.fixtures import (
-    case_id_generator,
-    get_base_test_name,
-    should_skip_test,
-)
-from tests.verifications.openai_api.fixtures.load import load_test_cases
+
+from .fixtures.fixtures import case_id_generator
+from .fixtures.load import load_test_cases
 
 responses_test_cases = load_test_cases("responses")
 
@@ -55,13 +52,9 @@ def _upload_file(openai_client, name, file_path):
     responses_test_cases["test_response_basic"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_basic(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    response = openai_client.responses.create(
-        model=model,
+def test_response_non_streaming_basic(request, compat_client, text_model_id, case):
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         stream=False,
     )
@@ -69,11 +62,13 @@ def test_response_non_streaming_basic(request, openai_client, model, provider, v
     assert len(output_text) > 0
     assert case["output"].lower() in output_text
 
-    retrieved_response = openai_client.responses.retrieve(response_id=response.id)
+    retrieved_response = compat_client.responses.retrieve(response_id=response.id)
     assert retrieved_response.output_text == response.output_text
 
-    next_response = openai_client.responses.create(
-        model=model, input="Repeat your previous response in all caps.", previous_response_id=response.id
+    next_response = compat_client.responses.create(
+        model=text_model_id,
+        input="Repeat your previous response in all caps.",
+        previous_response_id=response.id,
     )
     next_output_text = next_response.output_text.strip()
     assert case["output"].upper() in next_output_text
@@ -84,15 +79,11 @@ def test_response_non_streaming_basic(request, openai_client, model, provider, v
     responses_test_cases["test_response_basic"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_streaming_basic(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
+def test_response_streaming_basic(request, compat_client, text_model_id, case):
     import time
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         stream=True,
     )
@@ -138,7 +129,7 @@ def test_response_streaming_basic(request, openai_client, model, provider, verif
     assert created_index < completed_index, "response.created should come before response.completed"
 
     # Verify stored response matches streamed response
-    retrieved_response = openai_client.responses.retrieve(response_id=response_id)
+    retrieved_response = compat_client.responses.retrieve(response_id=response_id)
     final_event = events[-1]
     assert retrieved_response.output_text == final_event.response.output_text
 
@@ -148,16 +139,12 @@ def test_response_streaming_basic(request, openai_client, model, provider, verif
     responses_test_cases["test_response_basic"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_streaming_incremental_content(request, openai_client, model, provider, verification_config, case):
+def test_response_streaming_incremental_content(request, compat_client, text_model_id, case):
     """Test that streaming actually delivers content incrementally, not just at the end."""
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
     import time
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         stream=True,
     )
@@ -241,15 +228,11 @@ def test_response_streaming_incremental_content(request, openai_client, model, p
     responses_test_cases["test_response_multi_turn"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_multi_turn(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
+def test_response_non_streaming_multi_turn(request, compat_client, text_model_id, case):
     previous_response_id = None
     for turn in case["turns"]:
-        response = openai_client.responses.create(
-            model=model,
+        response = compat_client.responses.create(
+            model=text_model_id,
             input=turn["input"],
             previous_response_id=previous_response_id,
             tools=turn["tools"] if "tools" in turn else None,
@@ -264,13 +247,9 @@ def test_response_non_streaming_multi_turn(request, openai_client, model, provid
     responses_test_cases["test_response_web_search"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_web_search(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    response = openai_client.responses.create(
-        model=model,
+def test_response_non_streaming_web_search(request, compat_client, text_model_id, case):
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         tools=case["tools"],
         stream=False,
@@ -290,17 +269,11 @@ def test_response_non_streaming_web_search(request, openai_client, model, provid
     responses_test_cases["test_response_file_search"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_file_search(
-    request, openai_client, model, provider, verification_config, tmp_path, case
-):
-    if isinstance(openai_client, LlamaStackAsLibraryClient):
+def test_response_non_streaming_file_search(request, compat_client, text_model_id, tmp_path, case):
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
 
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    vector_store = _new_vector_store(openai_client, "test_vector_store")
+    vector_store = _new_vector_store(compat_client, "test_vector_store")
 
     if "file_content" in case:
         file_name = "test_response_non_streaming_file_search.txt"
@@ -312,10 +285,10 @@ def test_response_non_streaming_file_search(
     else:
         raise ValueError(f"No file content or path provided for case {case['case_id']}")
 
-    file_response = _upload_file(openai_client, file_name, file_path)
+    file_response = _upload_file(compat_client, file_name, file_path)
 
     # Attach our file to the vector store
-    file_attach_response = openai_client.vector_stores.files.create(
+    file_attach_response = compat_client.vector_stores.files.create(
         vector_store_id=vector_store.id,
         file_id=file_response.id,
     )
@@ -323,7 +296,7 @@ def test_response_non_streaming_file_search(
     # Wait for the file to be attached
     while file_attach_response.status == "in_progress":
         time.sleep(0.1)
-        file_attach_response = openai_client.vector_stores.files.retrieve(
+        file_attach_response = compat_client.vector_stores.files.retrieve(
             vector_store_id=vector_store.id,
             file_id=file_response.id,
         )
@@ -337,8 +310,8 @@ def test_response_non_streaming_file_search(
             tool["vector_store_ids"] = [vector_store.id]
 
     # Create the response request, which should query our vector store
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         tools=tools,
         stream=False,
@@ -358,21 +331,15 @@ def test_response_non_streaming_file_search(
     assert case["output"].lower() in response.output_text.lower().strip()
 
 
-def test_response_non_streaming_file_search_empty_vector_store(
-    request, openai_client, model, provider, verification_config
-):
-    if isinstance(openai_client, LlamaStackAsLibraryClient):
+def test_response_non_streaming_file_search_empty_vector_store(request, compat_client, text_model_id):
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
 
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    vector_store = _new_vector_store(openai_client, "test_vector_store")
+    vector_store = _new_vector_store(compat_client, "test_vector_store")
 
     # Create the response request, which should query our vector store
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="How many experts does the Llama 4 Maverick model have?",
         tools=[{"type": "file_search", "vector_store_ids": [vector_store.id]}],
         stream=False,
@@ -395,19 +362,15 @@ def test_response_non_streaming_file_search_empty_vector_store(
     responses_test_cases["test_response_mcp_tool"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_mcp_tool(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
+def test_response_non_streaming_mcp_tool(request, compat_client, text_model_id, case):
     with make_mcp_server() as mcp_server_info:
         tools = case["tools"]
         for tool in tools:
             if tool["type"] == "mcp":
                 tool["server_url"] = mcp_server_info["server_url"]
 
-        response = openai_client.responses.create(
-            model=model,
+        response = compat_client.responses.create(
+            model=text_model_id,
             input=case["input"],
             tools=tools,
             stream=False,
@@ -418,7 +381,7 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
         assert list_tools.type == "mcp_list_tools"
         assert list_tools.server_label == "localmcp"
         assert len(list_tools.tools) == 2
-        assert {t["name"] for t in list_tools.tools} == {"get_boiling_point", "greet_everyone"}
+        assert {t.name for t in list_tools.tools} == {"get_boiling_point", "greet_everyone"}
 
         call = response.output[1]
         assert call.type == "mcp_call"
@@ -440,12 +403,12 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
 
         exc_type = (
             AuthenticationRequiredError
-            if isinstance(openai_client, LlamaStackAsLibraryClient)
+            if isinstance(compat_client, LlamaStackAsLibraryClient)
             else (httpx.HTTPStatusError, openai.AuthenticationError)
         )
         with pytest.raises(exc_type):
-            openai_client.responses.create(
-                model=model,
+            compat_client.responses.create(
+                model=text_model_id,
                 input=case["input"],
                 tools=tools,
                 stream=False,
@@ -456,8 +419,8 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
                 tool["server_url"] = mcp_server_info["server_url"]
                 tool["headers"] = {"Authorization": "Bearer test-token"}
 
-        response = openai_client.responses.create(
-            model=model,
+        response = compat_client.responses.create(
+            model=text_model_id,
             input=case["input"],
             tools=tools,
             stream=False,
@@ -470,13 +433,9 @@ def test_response_non_streaming_mcp_tool(request, openai_client, model, provider
     responses_test_cases["test_response_custom_tool"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_custom_tool(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    response = openai_client.responses.create(
-        model=model,
+def test_response_non_streaming_custom_tool(request, compat_client, text_model_id, case):
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         tools=case["tools"],
         stream=False,
@@ -492,13 +451,9 @@ def test_response_non_streaming_custom_tool(request, openai_client, model, provi
     responses_test_cases["test_response_image"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_image(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    response = openai_client.responses.create(
-        model=model,
+def test_response_non_streaming_image(request, compat_client, text_model_id, case):
+    response = compat_client.responses.create(
+        model=text_model_id,
         input=case["input"],
         stream=False,
     )
@@ -511,15 +466,11 @@ def test_response_non_streaming_image(request, openai_client, model, provider, v
     responses_test_cases["test_response_multi_turn_image"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_multi_turn_image(request, openai_client, model, provider, verification_config, case):
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
+def test_response_non_streaming_multi_turn_image(request, compat_client, text_model_id, case):
     previous_response_id = None
     for turn in case["turns"]:
-        response = openai_client.responses.create(
-            model=model,
+        response = compat_client.responses.create(
+            model=text_model_id,
             input=turn["input"],
             previous_response_id=previous_response_id,
             tools=turn["tools"] if "tools" in turn else None,
@@ -534,14 +485,8 @@ def test_response_non_streaming_multi_turn_image(request, openai_client, model, 
     responses_test_cases["test_response_multi_turn_tool_execution"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_multi_turn_tool_execution(
-    request, openai_client, model, provider, verification_config, case
-):
+def test_response_non_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
     """Test multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -549,14 +494,15 @@ def test_response_non_streaming_multi_turn_tool_execution(
             if tool["type"] == "mcp" and tool["server_url"] == "<FILLED_BY_TEST_RUNNER>":
                 tool["server_url"] = mcp_server_info["server_url"]
 
-        response = openai_client.responses.create(
+        response = compat_client.responses.create(
             input=case["input"],
-            model=model,
+            model=text_model_id,
             tools=tools,
         )
 
         # Verify we have MCP tool calls in the output
         mcp_list_tools = [output for output in response.output if output.type == "mcp_list_tools"]
+
         mcp_calls = [output for output in response.output if output.type == "mcp_call"]
         message_outputs = [output for output in response.output if output.type == "message"]
 
@@ -571,7 +517,7 @@ def test_response_non_streaming_multi_turn_tool_execution(
             "get_experiment_id",
             "get_experiment_results",
         }
-        assert {t["name"] for t in mcp_list_tools[0].tools} == expected_tool_names
+        assert {t.name for t in mcp_list_tools[0].tools} == expected_tool_names
 
         assert len(mcp_calls) >= 1, f"Expected at least 1 mcp_call, got {len(mcp_calls)}"
         for mcp_call in mcp_calls:
@@ -595,14 +541,8 @@ def test_response_non_streaming_multi_turn_tool_execution(
     responses_test_cases["test_response_multi_turn_tool_execution_streaming"]["test_params"]["case"],
     ids=case_id_generator,
 )
-async def test_response_streaming_multi_turn_tool_execution(
-    request, openai_client, model, provider, verification_config, case
-):
+async def test_response_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
     """Test streaming multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -610,15 +550,15 @@ async def test_response_streaming_multi_turn_tool_execution(
             if tool["type"] == "mcp" and tool["server_url"] == "<FILLED_BY_TEST_RUNNER>":
                 tool["server_url"] = mcp_server_info["server_url"]
 
-        stream = openai_client.responses.create(
+        stream = compat_client.responses.create(
             input=case["input"],
-            model=model,
+            model=text_model_id,
             tools=tools,
             stream=True,
         )
 
         chunks = []
-        async for chunk in stream:
+        for chunk in stream:
             chunks.append(chunk)
 
         # Should have at least response.created and response.completed
@@ -653,7 +593,7 @@ async def test_response_streaming_multi_turn_tool_execution(
                 "get_experiment_id",
                 "get_experiment_results",
             }
-            assert {t["name"] for t in mcp_list_tools[0].tools} == expected_tool_names
+            assert {t.name for t in mcp_list_tools[0].tools} == expected_tool_names
 
             # Should have at least 1 MCP call (the model should call at least one tool)
             assert len(mcp_calls) >= 1, f"Expected at least 1 mcp_call, got {len(mcp_calls)}"
@@ -694,17 +634,13 @@ async def test_response_streaming_multi_turn_tool_execution(
         },
     ],
 )
-def test_response_text_format(request, openai_client, model, provider, verification_config, text_format):
-    if isinstance(openai_client, LlamaStackAsLibraryClient):
+def test_response_text_format(request, compat_client, text_model_id, text_format):
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API text format is not yet supported in library client.")
 
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
     stream = False
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="What is the capital of France?",
         stream=stream,
         text={"format": text_format},
@@ -717,16 +653,12 @@ def test_response_text_format(request, openai_client, model, provider, verificat
 
 
 @pytest.fixture
-def vector_store_with_filtered_files(request, openai_client, model, provider, verification_config, tmp_path_factory):
+def vector_store_with_filtered_files(request, compat_client, text_model_id, tmp_path_factory):
     """Create a vector store with multiple files that have different attributes for filtering tests."""
-    if isinstance(openai_client, LlamaStackAsLibraryClient):
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
 
-    test_name_base = get_base_test_name(request)
-    if should_skip_test(verification_config, provider, model, test_name_base):
-        pytest.skip(f"Skipping {test_name_base} for model {model} on provider {provider} based on config.")
-
-    vector_store = _new_vector_store(openai_client, "test_vector_store_with_filters")
+    vector_store = _new_vector_store(compat_client, "test_vector_store_with_filters")
     tmp_path = tmp_path_factory.mktemp("filter_test_files")
 
     # Create multiple files with different attributes
@@ -776,18 +708,18 @@ def vector_store_with_filtered_files(request, openai_client, model, provider, ve
         file_path.write_text(file_data["content"])
 
         # Upload file
-        file_response = _upload_file(openai_client, file_data["name"], str(file_path))
+        file_response = _upload_file(compat_client, file_data["name"], str(file_path))
         file_ids.append(file_response.id)
 
         # Attach file to vector store with attributes
-        file_attach_response = openai_client.vector_stores.files.create(
+        file_attach_response = compat_client.vector_stores.files.create(
             vector_store_id=vector_store.id, file_id=file_response.id, attributes=file_data["attributes"]
         )
 
         # Wait for attachment
         while file_attach_response.status == "in_progress":
             time.sleep(0.1)
-            file_attach_response = openai_client.vector_stores.files.retrieve(
+            file_attach_response = compat_client.vector_stores.files.retrieve(
                 vector_store_id=vector_store.id,
                 file_id=file_response.id,
             )
@@ -797,17 +729,17 @@ def vector_store_with_filtered_files(request, openai_client, model, provider, ve
 
     # Cleanup: delete vector store and files
     try:
-        openai_client.vector_stores.delete(vector_store_id=vector_store.id)
+        compat_client.vector_stores.delete(vector_store_id=vector_store.id)
         for file_id in file_ids:
             try:
-                openai_client.files.delete(file_id=file_id)
+                compat_client.files.delete(file_id=file_id)
             except Exception:
                 pass  # File might already be deleted
     except Exception:
         pass  # Best effort cleanup
 
 
-def test_response_file_search_filter_by_region(openai_client, model, vector_store_with_filtered_files):
+def test_response_file_search_filter_by_region(compat_client, text_model_id, vector_store_with_filtered_files):
     """Test file search with region equality filter."""
     tools = [
         {
@@ -817,8 +749,8 @@ def test_response_file_search_filter_by_region(openai_client, model, vector_stor
         }
     ]
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="What are the updates from the US region?",
         tools=tools,
         stream=False,
@@ -838,7 +770,7 @@ def test_response_file_search_filter_by_region(openai_client, model, vector_stor
         assert "asia" not in result.text.lower()
 
 
-def test_response_file_search_filter_by_category(openai_client, model, vector_store_with_filtered_files):
+def test_response_file_search_filter_by_category(compat_client, text_model_id, vector_store_with_filtered_files):
     """Test file search with category equality filter."""
     tools = [
         {
@@ -848,8 +780,8 @@ def test_response_file_search_filter_by_category(openai_client, model, vector_st
         }
     ]
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="Show me all marketing reports",
         tools=tools,
         stream=False,
@@ -868,7 +800,7 @@ def test_response_file_search_filter_by_category(openai_client, model, vector_st
         assert "revenue figures" not in result.text.lower()
 
 
-def test_response_file_search_filter_by_date_range(openai_client, model, vector_store_with_filtered_files):
+def test_response_file_search_filter_by_date_range(compat_client, text_model_id, vector_store_with_filtered_files):
     """Test file search with date range filter using compound AND."""
     tools = [
         {
@@ -892,8 +824,8 @@ def test_response_file_search_filter_by_date_range(openai_client, model, vector_
         }
     ]
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="What happened in Q1 2023?",
         tools=tools,
         stream=False,
@@ -911,7 +843,7 @@ def test_response_file_search_filter_by_date_range(openai_client, model, vector_
         assert "q3" not in result.text.lower()
 
 
-def test_response_file_search_filter_compound_and(openai_client, model, vector_store_with_filtered_files):
+def test_response_file_search_filter_compound_and(compat_client, text_model_id, vector_store_with_filtered_files):
     """Test file search with compound AND filter (region AND category)."""
     tools = [
         {
@@ -927,8 +859,8 @@ def test_response_file_search_filter_compound_and(openai_client, model, vector_s
         }
     ]
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="What are the engineering updates from the US?",
         tools=tools,
         stream=False,
@@ -947,7 +879,7 @@ def test_response_file_search_filter_compound_and(openai_client, model, vector_s
         assert "promotional" not in result.text.lower() and "revenue" not in result.text.lower()
 
 
-def test_response_file_search_filter_compound_or(openai_client, model, vector_store_with_filtered_files):
+def test_response_file_search_filter_compound_or(compat_client, text_model_id, vector_store_with_filtered_files):
     """Test file search with compound OR filter (marketing OR sales)."""
     tools = [
         {
@@ -963,8 +895,8 @@ def test_response_file_search_filter_compound_or(openai_client, model, vector_st
         }
     ]
 
-    response = openai_client.responses.create(
-        model=model,
+    response = compat_client.responses.create(
+        model=text_model_id,
         input="Show me marketing and sales documents",
         tools=tools,
         stream=False,
