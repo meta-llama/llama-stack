@@ -17,7 +17,7 @@ from llama_stack.providers.utils.inference import (
     ALL_HUGGINGFACE_REPOS_TO_MODEL_DESCRIPTOR,
 )
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class RemoteInferenceProviderConfig(BaseModel):

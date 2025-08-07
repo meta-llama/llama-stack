@@ -19,7 +19,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="core::routing_tables")
 
 
 class ScoringFunctionsRoutingTable(CommonRoutingTableImpl, ScoringFunctions):
