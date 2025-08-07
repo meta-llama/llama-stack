@@ -157,6 +157,7 @@ uv sync
   that describes the configuration. These descriptions will be used to generate the provider
   documentation.
 * When possible, use keyword arguments only when calling functions.
+* Llama Stack utilizes [custom Exception classes](llama_stack/apis/common/errors.py) for certain Resources that should be used where applicable.
 
 ## Common Tasks
 

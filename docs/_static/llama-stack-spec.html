@@ -4734,6 +4734,49 @@
                 }
             }
         },
+        "/v1/openai/v1/moderations": {
+            "post": {
+                "responses": {
+                    "200": {
+                        "description": "A moderation object.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModerationObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest400"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/TooManyRequests429"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError500"
+                    },
+                    "default": {
+                        "$ref": "#/components/responses/DefaultError"
+                    }
+                },
+                "tags": [
+                    "Safety"
+                ],
+                "description": "Classifies if text and/or image inputs are potentially harmful.",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RunModerationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                }
+            }
+        },
         "/v1/safety/run-shield": {
             "post": {
                 "responses": {
@@ -16400,6 +16443,131 @@
                     "benchmark_config"
                 ],
                 "title": "RunEvalRequest"
+            },
+            "RunModerationRequest": {
+                "type": "object",
+                "properties": {
+                    "input": {
+                        "oneOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        ],
+                        "description": "Input (or inputs) to classify. Can be a single string, an array of strings, or an array of multi-modal input objects similar to other models."
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The content moderation model you would like to use."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "input",
+                    "model"
+                ],
+                "title": "RunModerationRequest"
+            },
+            "ModerationObject": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The unique identifier for the moderation request."
+                    },
+                    "model": {
+                        "type": "string",
+                        "description": "The model used to generate the moderation results."
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ModerationObjectResults"
+                        },
+                        "description": "A list of moderation objects"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "model",
+                    "results"
+                ],
+                "title": "ModerationObject",
+                "description": "A moderation object."
+            },
+            "ModerationObjectResults": {
+                "type": "object",
+                "properties": {
+                    "flagged": {
+                        "type": "boolean",
+                        "description": "Whether any of the below categories are flagged."
+                    },
+                    "categories": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "boolean"
+                        },
+                        "description": "A list of the categories, and whether they are flagged or not."
+                    },
+                    "category_applied_input_types": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "description": "A list of the categories along with the input type(s) that the score applies to."
+                    },
+                    "category_scores": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number"
+                        },
+                        "description": "A list of the categories along with their scores as predicted by model. Required set of categories that need to be in response - violence - violence/graphic - harassment - harassment/threatening - hate - hate/threatening - illicit - illicit/violent - sexual - sexual/minors - self-harm - self-harm/intent - self-harm/instructions"
+                    },
+                    "user_message": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "oneOf": [
+                                {
+                                    "type": "null"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array"
+                                },
+                                {
+                                    "type": "object"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "flagged",
+                    "metadata"
+                ],
+                "title": "ModerationObjectResults",
+                "description": "A moderation object."
             },
             "RunShieldRequest": {
                 "type": "object",
