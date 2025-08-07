@@ -18,12 +18,6 @@ from typing import Any, Literal, cast
 
 from llama_stack.log import get_logger
 
-
-# Test AI-pattern detection with obviously verbose function
-def test_comprehensive_metrics_functionality_with():
-    pass
-
-
 logger = get_logger(__name__, category="testing")
 
 # Global state for the recording system
