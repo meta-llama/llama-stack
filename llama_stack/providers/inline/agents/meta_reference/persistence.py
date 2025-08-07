@@ -191,7 +191,11 @@ class AgentPersistence:
         sessions = []
         for value in values:
             try:
-                session_info = Session(**json.loads(value))
+                session_data = json.loads(value)
+                session_info = await self.get_session_info(session_data["session_id"])
+                session_data["session_name"] = session_info.session_name
+                session_data["turns"] = session_info.turns
+                session_info = Session(**session_data)
                 sessions.append(session_info)
             except Exception as e:
                 log.error(f"Error parsing session info: {e}")
