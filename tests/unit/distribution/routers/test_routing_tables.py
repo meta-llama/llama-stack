@@ -8,6 +8,8 @@
 
 from unittest.mock import AsyncMock
 
+import pytest
+
 from llama_stack.apis.common.type_system import NumberType
 from llama_stack.apis.datasets.datasets import Dataset, DatasetPurpose, URIDataSource
 from llama_stack.apis.datatypes import Api
@@ -15,14 +17,14 @@ from llama_stack.apis.models import Model, ModelType
 from llama_stack.apis.shields.shields import Shield
 from llama_stack.apis.tools import ListToolDefsResponse, ToolDef, ToolGroup, ToolParameter
 from llama_stack.apis.vector_dbs import VectorDB
-from llama_stack.distribution.datatypes import RegistryEntrySource
-from llama_stack.distribution.routing_tables.benchmarks import BenchmarksRoutingTable
-from llama_stack.distribution.routing_tables.datasets import DatasetsRoutingTable
-from llama_stack.distribution.routing_tables.models import ModelsRoutingTable
-from llama_stack.distribution.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
-from llama_stack.distribution.routing_tables.shields import ShieldsRoutingTable
-from llama_stack.distribution.routing_tables.toolgroups import ToolGroupsRoutingTable
-from llama_stack.distribution.routing_tables.vector_dbs import VectorDBsRoutingTable
+from llama_stack.core.datatypes import RegistryEntrySource
+from llama_stack.core.routing_tables.benchmarks import BenchmarksRoutingTable
+from llama_stack.core.routing_tables.datasets import DatasetsRoutingTable
+from llama_stack.core.routing_tables.models import ModelsRoutingTable
+from llama_stack.core.routing_tables.scoring_functions import ScoringFunctionsRoutingTable
+from llama_stack.core.routing_tables.shields import ShieldsRoutingTable
+from llama_stack.core.routing_tables.toolgroups import ToolGroupsRoutingTable
+from llama_stack.core.routing_tables.vector_dbs import VectorDBsRoutingTable
 
 
 class Impl:
@@ -77,6 +79,9 @@ class SafetyImpl(Impl):
 
     async def register_shield(self, shield: Shield):
         return shield
+
+    async def unregister_shield(self, shield_id: str):
+        return shield_id
 
 
 class DatasetsImpl(Impl):
@@ -191,11 +196,41 @@ async def test_shields_routing_table(cached_disk_dist_registry):
     await table.register_shield(shield_id="test-shield", provider_id="test_provider")
     await table.register_shield(shield_id="test-shield-2", provider_id="test_provider")
     shields = await table.list_shields()
-
     assert len(shields.data) == 2
+
     shield_ids = {s.identifier for s in shields.data}
     assert "test-shield" in shield_ids
     assert "test-shield-2" in shield_ids
+
+    # Test get specific shield
+    test_shield = await table.get_shield(identifier="test-shield")
+    assert test_shield is not None
+    assert test_shield.identifier == "test-shield"
+    assert test_shield.provider_id == "test_provider"
+    assert test_shield.provider_resource_id == "test-shield"
+    assert test_shield.params == {}
+
+    # Test get non-existent shield - should raise ValueError with specific message
+    with pytest.raises(ValueError, match="Shield 'non-existent' not found"):
+        await table.get_shield(identifier="non-existent")
+
+    # Test unregistering shields
+    await table.unregister_shield(identifier="test-shield")
+    shields = await table.list_shields()
+
+    assert len(shields.data) == 1
+    shield_ids = {s.identifier for s in shields.data}
+    assert "test-shield" not in shield_ids
+    assert "test-shield-2" in shield_ids
+
+    # Unregister the remaining shield
+    await table.unregister_shield(identifier="test-shield-2")
+    shields = await table.list_shields()
+    assert len(shields.data) == 0
+
+    # Test unregistering non-existent shield - should raise ValueError with specific message
+    with pytest.raises(ValueError, match="Shield 'non-existent' not found"):
+        await table.unregister_shield(identifier="non-existent")
 
 
 async def test_vectordbs_routing_table(cached_disk_dist_registry):

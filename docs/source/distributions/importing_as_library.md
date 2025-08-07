@@ -6,11 +6,11 @@ This avoids the overhead of setting up a server.
 ```bash
 # setup
 uv pip install llama-stack
-llama stack build --template starter --image-type venv
+llama stack build --distro starter --image-type venv
 ```
 
 ```python
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 client = LlamaStackAsLibraryClient(
     "starter",

@@ -7,12 +7,12 @@
 import asyncio
 import logging
 import os
-import re
 from typing import Any
 
 from numpy.typing import NDArray
-from pymilvus import DataType, Function, FunctionType, MilvusClient
+from pymilvus import AnnSearchRequest, DataType, Function, FunctionType, MilvusClient, RRFRanker, WeightedRanker
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
@@ -27,9 +27,11 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    RERANKER_TYPE_WEIGHTED,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collection_name
 
 from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
@@ -41,14 +43,6 @@ VECTOR_INDEX_PREFIX = f"vector_index:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_PREFIX = f"openai_vector_stores:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_PREFIX = f"openai_vector_stores_files:milvus:{VERSION}::"
 OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX = f"openai_vector_stores_files_contents:milvus:{VERSION}::"
-
-
-def sanitize_collection_name(name: str) -> str:
-    """
-    Sanitize collection name to ensure it only contains numbers, letters, and underscores.
-    Any other characters are replaced with underscores.
-    """
-    return re.sub(r"[^a-zA-Z0-9_]", "_", name)
 
 
 class MilvusIndex(EmbeddingIndex):
@@ -245,7 +239,53 @@ class MilvusIndex(EmbeddingIndex):
         reranker_type: str,
         reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Hybrid search is not supported in Milvus")
+        """
+        Hybrid search using Milvus's native hybrid search capabilities.
+
+        This implementation uses Milvus's hybrid_search method which combines
+        vector search and BM25 search with configurable reranking strategies.
+        """
+        search_requests = []
+
+        # nprobe: Controls search accuracy vs performance trade-off
+        # 10 balances these trade-offs for  RAG applications
+        search_requests.append(
+            AnnSearchRequest(data=[embedding.tolist()], anns_field="vector", param={"nprobe": 10}, limit=k)
+        )
+
+        # drop_ratio_search: Filters low-importance terms to improve search performance
+        # 0.2 balances noise reduction with recall
+        search_requests.append(
+            AnnSearchRequest(data=[query_string], anns_field="sparse", param={"drop_ratio_search": 0.2}, limit=k)
+        )
+
+        if reranker_type == RERANKER_TYPE_WEIGHTED:
+            alpha = (reranker_params or {}).get("alpha", 0.5)
+            rerank = WeightedRanker(alpha, 1 - alpha)
+        else:
+            impact_factor = (reranker_params or {}).get("impact_factor", 60.0)
+            rerank = RRFRanker(impact_factor)
+
+        search_res = await asyncio.to_thread(
+            self.client.hybrid_search,
+            collection_name=self.collection_name,
+            reqs=search_requests,
+            ranker=rerank,
+            limit=k,
+            output_fields=["chunk_content"],
+        )
+
+        chunks = []
+        scores = []
+        for res in search_res[0]:
+            chunk = Chunk(**res["entity"]["chunk_content"])
+            chunks.append(chunk)
+            scores.append(res["distance"])
+
+        filtered_chunks = [chunk for chunk, score in zip(chunks, scores, strict=False) if score >= score_threshold]
+        filtered_scores = [score for score in scores if score >= score_threshold]
+
+        return QueryChunksResponse(chunks=filtered_chunks, scores=filtered_scores)
 
     async def delete_chunk(self, chunk_id: str) -> None:
         """Remove a chunk from the Milvus collection."""
@@ -329,11 +369,11 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
             return self.cache[vector_db_id]
 
         if self.vector_db_store is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         vector_db = await self.vector_db_store.get_vector_db(vector_db_id)
         if not vector_db:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         index = VectorDBWithIndex(
             vector_db=vector_db,
@@ -356,7 +396,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> None:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         await index.insert_chunks(chunks)
 
@@ -368,7 +408,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> QueryChunksResponse:
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         if params and params.get("mode") == "keyword":
             # Check if this is inline Milvus (Milvus-Lite)
@@ -384,7 +424,7 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         """Delete a chunk from a milvus vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
-            raise ValueError(f"Vector DB {store_id} not found")
+            raise VectorStoreNotFoundError(store_id)
 
         for chunk_id in chunk_ids:
             # Use the index's delete_chunk method

@@ -22,7 +22,7 @@ class RRFRanker(BaseModel):
 
     :param type: The type of ranker, always "rrf"
     :param impact_factor: The impact factor for RRF scoring. Higher values give more weight to higher-ranked results.
-                         Must be greater than 0. Default of 60 is from the original RRF paper (Cormack et al., 2009).
+                         Must be greater than 0
     """
 
     type: Literal["rrf"] = "rrf"
@@ -76,12 +76,25 @@ class RAGDocument(BaseModel):
 
 @json_schema_type
 class RAGQueryResult(BaseModel):
+    """Result of a RAG query containing retrieved content and metadata.
+
+    :param content: (Optional) The retrieved content from the query
+    :param metadata: Additional metadata about the query result
+    """
+
     content: InterleavedContent | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RAGQueryGenerator(Enum):
+    """Types of query generators for RAG systems.
+
+    :cvar default: Default query generator using simple text processing
+    :cvar llm: LLM-based query generator for enhanced query understanding
+    :cvar custom: Custom query generator implementation
+    """
+
     default = "default"
     llm = "llm"
     custom = "custom"
@@ -103,12 +116,25 @@ class RAGSearchMode(StrEnum):
 
 @json_schema_type
 class DefaultRAGQueryGeneratorConfig(BaseModel):
+    """Configuration for the default RAG query generator.
+
+    :param type: Type of query generator, always 'default'
+    :param separator: String separator used to join query terms
+    """
+
     type: Literal["default"] = "default"
     separator: str = " "
 
 
 @json_schema_type
 class LLMRAGQueryGeneratorConfig(BaseModel):
+    """Configuration for the LLM-based RAG query generator.
+
+    :param type: Type of query generator, always 'llm'
+    :param model: Name of the language model to use for query generation
+    :param template: Template string for formatting the query generation prompt
+    """
+
     type: Literal["llm"] = "llm"
     model: str
     template: str
@@ -166,7 +192,12 @@ class RAGToolRuntime(Protocol):
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
-        """Index documents so they can be used by the RAG system"""
+        """Index documents so they can be used by the RAG system.
+
+        :param documents: List of documents to index in the RAG system
+        :param vector_db_id: ID of the vector database to store the document embeddings
+        :param chunk_size_in_tokens: (Optional) Size in tokens for document chunking during indexing
+        """
         ...
 
     @webmethod(route="/tool-runtime/rag-tool/query", method="POST")
@@ -176,5 +207,11 @@ class RAGToolRuntime(Protocol):
         vector_db_ids: list[str],
         query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
-        """Query the RAG system for context; typically invoked by the agent"""
+        """Query the RAG system for context; typically invoked by the agent.
+
+        :param content: The query content to search for in the indexed documents
+        :param vector_db_ids: List of vector database IDs to search within
+        :param query_config: (Optional) Configuration parameters for the query operation
+        :returns: RAGQueryResult containing the retrieved content and metadata
+        """
         ...

@@ -5,16 +5,7 @@
 # the root directory of this source tree.
 
 
-import base64
-import os
-import tempfile
-
 import pytest
-from openai import OpenAI
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
 from ..test_cases.test_case import TestCase
 
@@ -65,9 +56,6 @@ def skip_if_model_doesnt_support_suffix(client_with_models, model_id):
 
 
 def skip_if_model_doesnt_support_openai_chat_completion(client_with_models, model_id):
-    if isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI chat completions are not supported when testing with library client yet.")
-
     provider = provider_from_model(client_with_models, model_id)
     if provider.provider_type in (
         "inline::meta-reference",
@@ -94,17 +82,6 @@ def skip_if_provider_isnt_openai(client_with_models, model_id):
         pytest.skip(
             f"Model {model_id} hosted by {provider.provider_type} doesn't support chat completion calls with base64 encoded files."
         )
-
-
-@pytest.fixture
-def openai_client(client_with_models):
-    base_url = f"{client_with_models.base_url}/v1/openai/v1"
-    return OpenAI(base_url=base_url, api_key="bar")
-
-
-@pytest.fixture(params=["openai_client", "llama_stack_client"])
-def compat_client(request):
-    return request.getfixturevalue(request.param)
 
 
 @pytest.mark.parametrize(
@@ -345,7 +322,7 @@ def test_inference_store(compat_client, client_with_models, text_model_id, strea
         response_id = response.id
         content = response.choices[0].message.content
 
-    responses = client.chat.completions.list()
+    responses = client.chat.completions.list(limit=1000)
     assert response_id in [r.id for r in responses.data]
 
     retrieved_response = client.chat.completions.retrieve(response_id)
@@ -410,7 +387,7 @@ def test_inference_store_tool_calls(compat_client, client_with_models, text_mode
         response_id = response.id
         content = response.choices[0].message.content
 
-    responses = client.chat.completions.list()
+    responses = client.chat.completions.list(limit=1000)
     assert response_id in [r.id for r in responses.data]
 
     retrieved_response = client.chat.completions.retrieve(response_id)
@@ -437,18 +414,8 @@ def test_inference_store_tool_calls(compat_client, client_with_models, text_mode
 def test_openai_chat_completion_non_streaming_with_file(openai_client, client_with_models, text_model_id):
     skip_if_provider_isnt_openai(client_with_models, text_model_id)
 
-    # Generate temporary PDF with "Hello World" text
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as temp_pdf:
-        c = canvas.Canvas(temp_pdf.name, pagesize=letter)
-        c.drawString(100, 750, "Hello World")
-        c.save()
-
-        # Read the PDF and sencode to base64
-        with open(temp_pdf.name, "rb") as pdf_file:
-            pdf_base64 = base64.b64encode(pdf_file.read()).decode("utf-8")
-
-        # Clean up temporary file
-        os.unlink(temp_pdf.name)
+    # Hardcoded base64-encoded PDF with "Hello World" text
+    pdf_base64 = "JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKPD4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgovTWVkaWFCb3ggWzAgMCA2MTIgNzkyXQovQ29udGVudHMgNCAwIFIKL1Jlc291cmNlcyA8PAovRm9udCA8PAovRjEgPDwKL1R5cGUgL0ZvbnQKL1N1YnR5cGUgL1R5cGUxCi9CYXNlRm9udCAvSGVsdmV0aWNhCj4+Cj4+Cj4+Cj4+CmVuZG9iago0IDAgb2JqCjw8Ci9MZW5ndGggNDQKPj4Kc3RyZWFtCkJUCi9GMSAxMiBUZgoxMDAgNzUwIFRkCihIZWxsbyBXb3JsZCkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNQowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAzMTUgMDAwMDAgbiAKdHJhaWxlcgo8PAovU2l6ZSA1Ci9Sb290IDEgMCBSCj4+CnN0YXJ0eHJlZgo0MDkKJSVFT0Y="
 
     response = openai_client.chat.completions.create(
         model=text_model_id,

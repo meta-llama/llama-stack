@@ -157,6 +157,7 @@ uv sync
   that describes the configuration. These descriptions will be used to generate the provider
   documentation.
 * When possible, use keyword arguments only when calling functions.
+* Llama Stack utilizes [custom Exception classes](llama_stack/apis/common/errors.py) for certain Resources that should be used where applicable.
 
 ## Common Tasks
 
@@ -164,7 +165,7 @@ Some tips about common tasks you work on while contributing to Llama Stack:
 
 ### Using `llama stack build`
 
-Building a stack image (conda / docker) will use the production version of the `llama-stack` and `llama-stack-client` packages. If you are developing with a llama-stack repository checked out and need your code to be reflected in the stack image, set `LLAMA_STACK_DIR` and `LLAMA_STACK_CLIENT_DIR` to the appropriate checked out directories when running any of the `llama` CLI commands.
+Building a stack image will use the production version of the `llama-stack` and `llama-stack-client` packages. If you are developing with a llama-stack repository checked out and need your code to be reflected in the stack image, set `LLAMA_STACK_DIR` and `LLAMA_STACK_CLIENT_DIR` to the appropriate checked out directories when running any of the `llama` CLI commands.
 
 Example:
 ```bash
@@ -172,7 +173,7 @@ cd work/
 git clone https://github.com/meta-llama/llama-stack.git
 git clone https://github.com/meta-llama/llama-stack-client-python.git
 cd llama-stack
-LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --template <...>
+LLAMA_STACK_DIR=$(pwd) LLAMA_STACK_CLIENT_DIR=../llama-stack-client-python llama stack build --distro <...>
 ```
 
 ### Updating distribution configurations

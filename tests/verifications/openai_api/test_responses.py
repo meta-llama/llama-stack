@@ -13,7 +13,7 @@ import openai
 import pytest
 
 from llama_stack import LlamaStackAsLibraryClient
-from llama_stack.distribution.datatypes import AuthenticationRequiredError
+from llama_stack.core.datatypes import AuthenticationRequiredError
 from tests.common.mcp import dependency_tools, make_mcp_server
 from tests.verifications.openai_api.fixtures.fixtures import (
     case_id_generator,

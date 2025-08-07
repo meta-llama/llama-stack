@@ -6,6 +6,7 @@
 
 import inspect
 import os
+import shlex
 import signal
 import socket
 import subprocess
@@ -20,7 +21,7 @@ from llama_stack_client import LlamaStackClient
 from openai import OpenAI
 
 from llama_stack import LlamaStackAsLibraryClient
-from llama_stack.distribution.stack import run_config_from_adhoc_config_spec
+from llama_stack.core.stack import run_config_from_adhoc_config_spec
 from llama_stack.env import get_env_or_fail
 
 DEFAULT_PORT = 8321
@@ -38,10 +39,10 @@ def is_port_available(port: int, host: str = "localhost") -> bool:
 
 def start_llama_stack_server(config_name: str) -> subprocess.Popen:
     """Start a llama stack server with the given config."""
-    cmd = ["llama", "stack", "run", config_name]
+    cmd = f"uv run --with llama-stack llama stack build --distro {config_name} --image-type venv --run"
     devnull = open(os.devnull, "w")
     process = subprocess.Popen(
-        cmd,
+        shlex.split(cmd),
         stdout=devnull,  # redirect stdout to devnull to prevent deadlock
         stderr=subprocess.PIPE,  # keep stderr to see errors
         text=True,
@@ -81,8 +82,7 @@ def wait_for_server_ready(base_url: str, timeout: int = 30, process: subprocess.
     return False
 
 
-@pytest.fixture(scope="session")
-def provider_data():
+def get_provider_data():
     # TODO: this needs to be generalized so each provider can have a sample provider data just
     # like sample run config on which we can do replace_env_vars()
     keymap = {
@@ -177,8 +177,14 @@ def skip_if_no_model(request):
 
 
 @pytest.fixture(scope="session")
-def llama_stack_client(request, provider_data):
-    config = request.config.getoption("--stack-config")
+def llama_stack_client(request):
+    client = request.session._llama_stack_client
+    assert client is not None, "llama_stack_client not found in session cache"
+    return client
+
+
+def instantiate_llama_stack_client(session):
+    config = session.config.getoption("--stack-config")
     if not config:
         config = get_env_or_fail("LLAMA_STACK_CONFIG")
 
@@ -211,13 +217,13 @@ def llama_stack_client(request, provider_data):
             print(f"Server is ready at {base_url}")
 
             # Store process for potential cleanup (pytest will handle termination at session end)
-            request.session._llama_stack_server_process = server_process
+            session._llama_stack_server_process = server_process
         else:
             print(f"Port {port} is already in use, assuming server is already running...")
 
         return LlamaStackClient(
             base_url=base_url,
-            provider_data=provider_data,
+            provider_data=get_provider_data(),
             timeout=int(os.environ.get("LLAMA_STACK_CLIENT_TIMEOUT", "30")),
         )
 
@@ -227,7 +233,7 @@ def llama_stack_client(request, provider_data):
         if parsed_url.scheme and parsed_url.netloc:
             return LlamaStackClient(
                 base_url=config,
-                provider_data=provider_data,
+                provider_data=get_provider_data(),
             )
     except Exception:
         # If URL parsing fails, treat as non-URL config
@@ -242,7 +248,7 @@ def llama_stack_client(request, provider_data):
 
     client = LlamaStackAsLibraryClient(
         config,
-        provider_data=provider_data,
+        provider_data=get_provider_data(),
         skip_logger_removal=True,
     )
     if not client.initialize():
@@ -257,8 +263,17 @@ def openai_client(client_with_models):
     return OpenAI(base_url=base_url, api_key="fake")
 
 
-@pytest.fixture(params=["openai_client", "llama_stack_client"])
-def compat_client(request):
+@pytest.fixture(params=["openai_client", "client_with_models"])
+def compat_client(request, client_with_models):
+    if isinstance(client_with_models, LlamaStackAsLibraryClient):
+        # OpenAI client expects a server, so unless we also rewrite OpenAI client's requests
+        # to go via the Stack library client (which itself rewrites requests to be served inline),
+        # we cannot do this.
+        #
+        # This means when we are using Stack as a library, we will test only via the Llama Stack client.
+        # When we are using a server setup, we can exercise both OpenAI and Llama Stack clients.
+        pytest.skip("(OpenAI) Compat client cannot be used with Stack library client")
+
     return request.getfixturevalue(request.param)
 
 

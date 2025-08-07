@@ -1,20 +1,22 @@
-name: Integration Tests
+name: Integration Tests (Replay)
 
-run-name: Run the integration test suite with Ollama
+run-name: Run the integration test suite from tests/integration in replay mode
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    types: [opened, synchronize, reopened]
     paths:
       - 'llama_stack/**'
       - 'tests/**'
       - 'uv.lock'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-test-environment/action.yml'
+      - '.github/actions/run-and-record-tests/action.yml'
   schedule:
     # If changing the cron schedule, update the provider in the test-matrix job
     - cron: '0 0 * * *'  # (test latest client) Daily at 12 AM UTC
@@ -31,129 +33,64 @@ on:
         default: 'ollama'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Skip concurrency for pushes to main - each commit should be tested independently
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
   discover-tests:
     runs-on: ubuntu-latest
     outputs:
-      test-type: ${{ steps.generate-matrix.outputs.test-type }}
+      test-types: ${{ steps.generate-test-types.outputs.test-types }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Generate test matrix
-        id: generate-matrix
+      - name: Generate test types
+        id: generate-test-types
         run: |
           # Get test directories dynamically, excluding non-test directories
+          # NOTE: we are excluding post_training since the tests take too long
           TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
-            grep -Ev "^(__pycache__|fixtures|test_cases)$" |
+            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|post_training)$" |
             sort | jq -R -s -c 'split("\n")[:-1]')
-          echo "test-type=$TEST_TYPES" >> $GITHUB_OUTPUT
+          echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
 
-  test-matrix:
+  run-replay-mode-tests:
     needs: discover-tests
     runs-on: ubuntu-latest
+    name: ${{ format('Integration Tests ({0}, {1}, {2}, client={3}, vision={4})', matrix.client-type, matrix.provider, matrix.python-version, matrix.client-version, matrix.run-vision-tests) }}
 
     strategy:
       fail-fast: false
       matrix:
-        test-type: ${{ fromJson(needs.discover-tests.outputs.test-type) }}
         client-type: [library, server]
         # Use vllm on weekly schedule, otherwise use test-provider input (defaults to ollama)
         provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
-        python-version: ["3.12", "3.13"]
-        client-version: ${{ (github.event.schedule == '0 0 * * 0' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
-        exclude: # TODO: look into why these tests are failing and fix them
-          - provider: vllm
-            test-type: safety
-          - provider: vllm
-            test-type: post_training
-          - provider: vllm
-            test-type: tool_runtime
+        # Use Python 3.13 only on nightly schedule (daily latest client test), otherwise use 3.12
+        python-version: ${{ github.event.schedule == '0 0 * * *' && fromJSON('["3.12", "3.13"]') || fromJSON('["3.12"]') }}
+        client-version: ${{ (github.event.schedule == '0 0 * * *' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
+        run-vision-tests: [true, false]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Install dependencies
-        uses: ./.github/actions/setup-runner
+      - name: Setup test environment
+        uses: ./.github/actions/setup-test-environment
         with:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
+          provider: ${{ matrix.provider }}
+          run-vision-tests: ${{ matrix.run-vision-tests }}
+          inference-mode: 'replay'
 
-      - name: Setup ollama
-        if: ${{ matrix.provider == 'ollama' }}
-        uses: ./.github/actions/setup-ollama
-
-      - name: Setup vllm
-        if: ${{ matrix.provider == 'vllm' }}
-        uses: ./.github/actions/setup-vllm
-
-      - name: Build Llama Stack
-        run: |
-          uv run llama stack build --template ci-tests --image-type venv
-
-      - name: Check Storage and Memory Available Before Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Run Integration Tests
-        env:
-          LLAMA_STACK_CLIENT_TIMEOUT: "300" # Increased timeout for eval operations
-        # Use 'shell' to get pipefail behavior
-        # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
-        # TODO: write a precommit hook to detect if a test contains a pipe but does not use 'shell: bash'
-        shell: bash
-        run: |
-          if [ "${{ matrix.client-type }}" == "library" ]; then
-            stack_config="ci-tests"
-          else
-            stack_config="server:ci-tests"
-          fi
-
-          EXCLUDE_TESTS="builtin_tool or safety_with_image or code_interpreter or test_rag"
-          if [ "${{ matrix.provider }}" == "ollama" ]; then
-            export OLLAMA_URL="http://0.0.0.0:11434"
-            export TEXT_MODEL=ollama/llama3.2:3b-instruct-fp16
-            export SAFETY_MODEL="ollama/llama-guard3:1b"
-            EXTRA_PARAMS="--safety-shield=llama-guard"
-          else
-            export VLLM_URL="http://localhost:8000/v1"
-            export TEXT_MODEL=vllm/meta-llama/Llama-3.2-1B-Instruct
-            # TODO: remove the not(test_inference_store_tool_calls) once we can get the tool called consistently
-            EXTRA_PARAMS=
-            EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
-          fi
-
-
-          uv run pytest -s -v tests/integration/${{ matrix.test-type }} --stack-config=${stack_config} \
-            -k "not( ${EXCLUDE_TESTS} )" \
-            --text-model=$TEXT_MODEL \
-            --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
-            --color=yes ${EXTRA_PARAMS} \
-            --capture=tee-sys | tee pytest-${{ matrix.test-type }}.log
-
-      - name: Check Storage and Memory Available After Tests
-        if: ${{ always() }}
-        run: |
-          free -h
-          df -h
-
-      - name: Write inference logs to file
-        if: ${{ always() }}
-        run: |
-          sudo docker logs ollama > ollama.log || true
-          sudo docker logs vllm > vllm.log || true
-
-      - name: Upload all logs to artifacts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Run tests
+        uses: ./.github/actions/run-and-record-tests
         with:
-          name: logs-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-${{ matrix.client-type }}-${{ matrix.test-type }}-${{ matrix.python-version }}-${{ matrix.client-version }}
-          path: |
-            *.log
-          retention-days: 1
+          test-types: ${{ needs.discover-tests.outputs.test-types }}
+          stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
+          provider: ${{ matrix.provider }}
+          inference-mode: 'replay'
+          run-vision-tests: ${{ matrix.run-vision-tests }}

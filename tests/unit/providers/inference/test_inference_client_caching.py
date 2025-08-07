@@ -7,7 +7,7 @@
 import json
 from unittest.mock import MagicMock
 
-from llama_stack.distribution.request_headers import request_provider_data_context
+from llama_stack.core.request_headers import request_provider_data_context
 from llama_stack.providers.remote.inference.groq.config import GroqConfig
 from llama_stack.providers.remote.inference.groq.groq import GroqInferenceAdapter
 from llama_stack.providers.remote.inference.llama_openai_compat.config import LlamaCompatConfig

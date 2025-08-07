@@ -70,7 +70,7 @@ $ llama model list --downloaded
 
 ## Running the Distribution
 
-You can do this via Conda (build code) or Docker which has a pre-built image.
+You can do this via venv or Docker which has a pre-built image.
 
 ### Via Docker
 
@@ -104,12 +104,12 @@ docker run \
   --env SAFETY_MODEL=meta-llama/Llama-Guard-3-1B
 ```
 
-### Via Conda
+### Via venv
 
 Make sure you have done `uv pip install llama-stack` and have the Llama Stack CLI available.
 
 ```bash
-llama stack build --template meta-reference-gpu --image-type conda
+llama stack build --distro meta-reference-gpu --image-type venv
 llama stack run distributions/meta-reference-gpu/run.yaml \
   --port 8321 \
   --env INFERENCE_MODEL=meta-llama/Llama-3.2-3B-Instruct

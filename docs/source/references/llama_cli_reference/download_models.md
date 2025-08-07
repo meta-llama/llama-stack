@@ -19,11 +19,11 @@ You have two ways to install Llama Stack:
     cd ~/local
     git clone git@github.com:meta-llama/llama-stack.git
 
-    conda create -n myenv python=3.10
-    conda activate myenv
+    uv venv myenv --python 3.12
+    source myenv/bin/activate  # On Windows: myenv\Scripts\activate
 
     cd llama-stack
-    $CONDA_PREFIX/bin/pip install -e .
+    pip install -e .
 
 ## Downloading models via CLI
 

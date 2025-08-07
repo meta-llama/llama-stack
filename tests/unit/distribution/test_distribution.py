@@ -11,8 +11,8 @@ import pytest
 import yaml
 from pydantic import BaseModel, Field, ValidationError
 
-from llama_stack.distribution.datatypes import Api, Provider, StackRunConfig
-from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.core.datatypes import Api, Provider, StackRunConfig
+from llama_stack.core.distribution import get_provider_registry
 from llama_stack.providers.datatypes import ProviderSpec
 
 
@@ -260,7 +260,7 @@ pip_packages:
         """Test loading an external provider from a module (success path)."""
         from types import SimpleNamespace
 
-        from llama_stack.distribution.datatypes import Provider, StackRunConfig
+        from llama_stack.core.datatypes import Provider, StackRunConfig
         from llama_stack.providers.datatypes import Api, ProviderSpec
 
         # Simulate a provider module with get_provider_spec
@@ -299,7 +299,7 @@ pip_packages:
 
     def test_external_provider_from_module_not_found(self, mock_providers):
         """Test handling ModuleNotFoundError for missing provider module."""
-        from llama_stack.distribution.datatypes import Provider, StackRunConfig
+        from llama_stack.core.datatypes import Provider, StackRunConfig
 
         import_module_side_effect = make_import_module_side_effect(raise_for_external=True)
 
@@ -323,7 +323,7 @@ pip_packages:
 
     def test_external_provider_from_module_missing_get_provider_spec(self, mock_providers):
         """Test handling missing get_provider_spec in provider module (should raise ValueError)."""
-        from llama_stack.distribution.datatypes import Provider, StackRunConfig
+        from llama_stack.core.datatypes import Provider, StackRunConfig
 
         import_module_side_effect = make_import_module_side_effect(missing_get_provider_spec=True)
 
@@ -346,7 +346,7 @@ pip_packages:
 
     def test_external_provider_from_module_building(self, mock_providers):
         """Test loading an external provider from a module during build (building=True, partial spec)."""
-        from llama_stack.distribution.datatypes import BuildConfig, BuildProvider, DistributionSpec
+        from llama_stack.core.datatypes import BuildConfig, BuildProvider, DistributionSpec
         from llama_stack.providers.datatypes import Api
 
         # No importlib patch needed, should not import module when type of `config` is BuildConfig or DistributionSpec

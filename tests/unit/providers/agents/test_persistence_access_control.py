@@ -12,7 +12,7 @@ import pytest
 
 from llama_stack.apis.agents import Turn
 from llama_stack.apis.inference import CompletionMessage, StopReason
-from llama_stack.distribution.datatypes import User
+from llama_stack.core.datatypes import User
 from llama_stack.providers.inline.agents.meta_reference.persistence import AgentPersistence, AgentSessionInfo
 
 
