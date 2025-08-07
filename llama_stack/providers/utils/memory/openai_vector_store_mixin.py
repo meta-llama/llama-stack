@@ -6,7 +6,6 @@
 
 import asyncio
 import json
-import logging
 import mimetypes
 import time
 import uuid
@@ -37,10 +36,11 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponse,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="memory")
 
 # Constants for OpenAI vector stores
 CHUNK_MULTIPLIER = 5
