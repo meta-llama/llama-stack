@@ -56,11 +56,13 @@ def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_mode
         "keyword": [
             "inline::sqlite-vec",
             "remote::milvus",
+            "remote::pgvector",
         ],
         "hybrid": [
             "inline::sqlite-vec",
             "inline::milvus",
             "remote::milvus",
+            "remote::pgvector",
         ],
     }
     supported_providers = search_mode_support.get(search_mode, [])
