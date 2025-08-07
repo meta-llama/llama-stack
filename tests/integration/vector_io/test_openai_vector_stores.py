@@ -52,6 +52,7 @@ def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_mode
         ],
         "keyword": [
             "inline::sqlite-vec",
+            "remote::chromadb",
         ],
         "hybrid": [
             "inline::sqlite-vec",

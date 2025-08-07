@@ -108,10 +108,10 @@ class ChromaIndex(EmbeddingIndex):
         await maybe_await(self.client.delete_collection(self.collection.name))
 
     async def query_keyword(
-            self,
-            query_string: str,
-            k: int,
-            score_threshold: float,
+        self,
+        query_string: str,
+        k: int,
+        score_threshold: float,
     ) -> QueryChunksResponse:
         results = await maybe_await(
             self.collection.query(
