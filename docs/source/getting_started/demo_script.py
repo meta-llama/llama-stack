@@ -52,11 +52,16 @@ agent = Agent(
 prompt = "How do you do great work?"
 print("prompt>", prompt)
 
+use_stream = True
 response = agent.create_turn(
     messages=[{"role": "user", "content": prompt}],
     session_id=agent.create_session("rag_session"),
-    stream=True,
+    stream=use_stream,
 )
 
-for log in AgentEventLogger().log(response):
-    log.print()
+# Only call `AgentEventLogger().log(response)` for streaming responses.
+if use_stream:
+    for log in AgentEventLogger().log(response):
+        log.print()
+else:
+    print(response)
