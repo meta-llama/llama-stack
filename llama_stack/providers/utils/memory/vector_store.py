@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import base64
 import io
-import logging
 import re
 import time
 from abc import ABC, abstractmethod
@@ -25,6 +24,7 @@ from llama_stack.apis.common.content_types import (
 from llama_stack.apis.tools import RAGDocument
 from llama_stack.apis.vector_dbs import VectorDB
 from llama_stack.apis.vector_io import Chunk, ChunkMetadata, QueryChunksResponse
+from llama_stack.log import get_logger
 from llama_stack.models.llama.llama3.tokenizer import Tokenizer
 from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -32,7 +32,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="memory")
 
 # Constants for reranker types
 RERANKER_TYPE_RRF = "rrf"

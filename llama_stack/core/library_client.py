@@ -48,6 +48,7 @@ from llama_stack.core.stack import (
 from llama_stack.core.utils.config import redact_sensitive_fields
 from llama_stack.core.utils.context import preserve_contexts_async_generator
 from llama_stack.core.utils.exec import in_notebook
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.telemetry.tracing import (
     CURRENT_TRACE_CONTEXT,
     end_trace,
@@ -55,7 +56,7 @@ from llama_stack.providers.utils.telemetry.tracing import (
     start_trace,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="core")
 
 T = TypeVar("T")
 
