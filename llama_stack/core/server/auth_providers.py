@@ -23,7 +23,7 @@ from llama_stack.core.datatypes import (
 )
 from llama_stack.log import get_logger
 
-logger = get_logger(name=__name__, category="auth")
+logger = get_logger(name=__name__, category="core::auth")
 
 
 class AuthResponse(BaseModel):

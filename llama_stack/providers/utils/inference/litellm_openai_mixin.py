@@ -54,7 +54,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class LiteLLMOpenAIMixin(

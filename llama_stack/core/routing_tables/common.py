@@ -23,7 +23,7 @@ from llama_stack.core.store import DistributionRegistry
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, RoutingTable
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="core::routing_tables")
 
 
 def get_impl_api(p: Any) -> Api:

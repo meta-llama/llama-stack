@@ -25,7 +25,7 @@ from llama_stack.apis.inference import (
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.openai_compat import prepare_openai_completion_params
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class OpenAIMixin(ABC):

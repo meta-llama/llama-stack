@@ -65,7 +65,7 @@ from llama_stack.providers.datatypes import HealthResponse, HealthStatus, Routin
 from llama_stack.providers.utils.inference.inference_store import InferenceStore
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="core::routers")
 
 
 class InferenceRouter(Inference):
