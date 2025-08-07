@@ -178,8 +178,13 @@ def skip_if_no_model(request):
 
 @pytest.fixture(scope="session")
 def llama_stack_client(request):
-    client = request.session._llama_stack_client
-    assert client is not None, "llama_stack_client not found in session cache"
+    # ideally, we could do this in session start given all the complex logs during initialization
+    # don't clobber the test one-liner outputs. however, this also means all tests in a sub-directory
+    # would be forced to use llama_stack_client, which is not what we want.
+    print("\ninstantiating llama_stack_client")
+    start_time = time.time()
+    client = instantiate_llama_stack_client(request.session)
+    print(f"llama_stack_client instantiated in {time.time() - start_time:.3f}s")
     return client
 
 
