@@ -10,7 +10,7 @@ import os
 from typing import Any
 
 from numpy.typing import NDArray
-from pymilvus import DataType, Function, FunctionType, MilvusClient
+from pymilvus import AnnSearchRequest, DataType, Function, FunctionType, MilvusClient, RRFRanker, WeightedRanker
 
 from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files.files import Files
@@ -27,6 +27,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    RERANKER_TYPE_WEIGHTED,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -238,7 +239,53 @@ class MilvusIndex(EmbeddingIndex):
         reranker_type: str,
         reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Hybrid search is not supported in Milvus")
+        """
+        Hybrid search using Milvus's native hybrid search capabilities.
+
+        This implementation uses Milvus's hybrid_search method which combines
+        vector search and BM25 search with configurable reranking strategies.
+        """
+        search_requests = []
+
+        # nprobe: Controls search accuracy vs performance trade-off
+        # 10 balances these trade-offs for  RAG applications
+        search_requests.append(
+            AnnSearchRequest(data=[embedding.tolist()], anns_field="vector", param={"nprobe": 10}, limit=k)
+        )
+
+        # drop_ratio_search: Filters low-importance terms to improve search performance
+        # 0.2 balances noise reduction with recall
+        search_requests.append(
+            AnnSearchRequest(data=[query_string], anns_field="sparse", param={"drop_ratio_search": 0.2}, limit=k)
+        )
+
+        if reranker_type == RERANKER_TYPE_WEIGHTED:
+            alpha = (reranker_params or {}).get("alpha", 0.5)
+            rerank = WeightedRanker(alpha, 1 - alpha)
+        else:
+            impact_factor = (reranker_params or {}).get("impact_factor", 60.0)
+            rerank = RRFRanker(impact_factor)
+
+        search_res = await asyncio.to_thread(
+            self.client.hybrid_search,
+            collection_name=self.collection_name,
+            reqs=search_requests,
+            ranker=rerank,
+            limit=k,
+            output_fields=["chunk_content"],
+        )
+
+        chunks = []
+        scores = []
+        for res in search_res[0]:
+            chunk = Chunk(**res["entity"]["chunk_content"])
+            chunks.append(chunk)
+            scores.append(res["distance"])
+
+        filtered_chunks = [chunk for chunk, score in zip(chunks, scores, strict=False) if score >= score_threshold]
+        filtered_scores = [score for score in scores if score >= score_threshold]
+
+        return QueryChunksResponse(chunks=filtered_chunks, scores=filtered_scores)
 
     async def delete_chunk(self, chunk_id: str) -> None:
         """Remove a chunk from the Milvus collection."""
