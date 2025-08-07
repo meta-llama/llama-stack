@@ -81,7 +81,7 @@ BACKGROUND_LOGGER = None
 
 
 class BackgroundLogger:
-    def __init__(self, api: Telemetry, capacity: int = 1000):
+    def __init__(self, api: Telemetry, capacity: int = 100000):
         self.api = api
         self.log_queue = queue.Queue(maxsize=capacity)
         self.worker_thread = threading.Thread(target=self._process_logs, daemon=True)

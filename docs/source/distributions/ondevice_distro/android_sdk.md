@@ -56,12 +56,12 @@ Breaking down the demo app, this section will show the core pieces that are used
 ### Setup Remote Inferencing
 Start a Llama Stack server on localhost. Here is an example of how you can do this using the firework.ai distribution:
 ```
-python -m venv stack-fireworks
-source stack-fireworks/bin/activate  # On Windows: stack-fireworks\Scripts\activate
+uv venv starter --python 3.12
+source starter/bin/activate  # On Windows: starter\Scripts\activate
 pip install --no-cache llama-stack==0.2.2
-llama stack build --distro fireworks --image-type venv
+llama stack build --distro starter --image-type venv
 export FIREWORKS_API_KEY=<SOME_KEY>
-llama stack run fireworks --port 5050
+llama stack run starter --port 5050
 ```
 
 Ensure the Llama Stack server version is the same as the Kotlin SDK Library for maximum compatibility.

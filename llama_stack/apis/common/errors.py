@@ -10,6 +10,16 @@
 #   3. All classes should propogate the inherited __init__ function otherwise via 'super().__init__(message)'
 
 
+class ResourceNotFoundError(ValueError):
+    """generic exception for a missing Llama Stack resource"""
+
+    def __init__(self, resource_name: str, resource_type: str, client_list: str) -> None:
+        message = (
+            f"{resource_type} '{resource_name}' not found. Use '{client_list}' to list available {resource_type}s."
+        )
+        super().__init__(message)
+
+
 class UnsupportedModelError(ValueError):
     """raised when model is not present in the list of supported models"""
 
@@ -18,38 +28,32 @@ class UnsupportedModelError(ValueError):
         super().__init__(message)
 
 
-class ModelNotFoundError(ValueError):
+class ModelNotFoundError(ResourceNotFoundError):
     """raised when Llama Stack cannot find a referenced model"""
 
     def __init__(self, model_name: str) -> None:
-        message = f"Model '{model_name}' not found. Use client.models.list() to list available models."
-        super().__init__(message)
+        super().__init__(model_name, "Model", "client.models.list()")
 
 
-class VectorStoreNotFoundError(ValueError):
+class VectorStoreNotFoundError(ResourceNotFoundError):
     """raised when Llama Stack cannot find a referenced vector store"""
 
     def __init__(self, vector_store_name: str) -> None:
-        message = f"Vector store '{vector_store_name}' not found. Use client.vector_dbs.list() to list available vector stores."
-        super().__init__(message)
+        super().__init__(vector_store_name, "Vector Store", "client.vector_dbs.list()")
 
 
-class DatasetNotFoundError(ValueError):
+class DatasetNotFoundError(ResourceNotFoundError):
     """raised when Llama Stack cannot find a referenced dataset"""
 
     def __init__(self, dataset_name: str) -> None:
-        message = f"Dataset '{dataset_name}' not found. Use client.datasets.list() to list available datasets."
-        super().__init__(message)
+        super().__init__(dataset_name, "Dataset", "client.datasets.list()")
 
 
-class ToolGroupNotFoundError(ValueError):
+class ToolGroupNotFoundError(ResourceNotFoundError):
     """raised when Llama Stack cannot find a referenced tool group"""
 
     def __init__(self, toolgroup_name: str) -> None:
-        message = (
-            f"Tool group '{toolgroup_name}' not found. Use client.toolgroups.list() to list available tool groups."
-        )
-        super().__init__(message)
+        super().__init__(toolgroup_name, "Tool Group", "client.toolgroups.list()")
 
 
 class SessionNotFoundError(ValueError):
