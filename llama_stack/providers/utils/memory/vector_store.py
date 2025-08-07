@@ -302,23 +302,25 @@ class VectorDBWithIndex:
         mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
 
-        # Get ranker configuration
         ranker = params.get("ranker")
         if ranker is None:
-            # Default to RRF with impact_factor=60.0
             reranker_type = RERANKER_TYPE_RRF
             reranker_params = {"impact_factor": 60.0}
         else:
-            reranker_type = ranker.type
-            reranker_params = (
-                {"impact_factor": ranker.impact_factor} if ranker.type == RERANKER_TYPE_RRF else {"alpha": ranker.alpha}
-            )
+            strategy = ranker.get("strategy", "rrf")
+            if strategy == "weighted":
+                weights = ranker.get("params", {}).get("weights", [0.5, 0.5])
+                reranker_type = RERANKER_TYPE_WEIGHTED
+                reranker_params = {"alpha": weights[0] if len(weights) > 0 else 0.5}
+            else:
+                reranker_type = RERANKER_TYPE_RRF
+                k_value = ranker.get("params", {}).get("k", 60.0)
+                reranker_params = {"impact_factor": k_value}
 
         query_string = interleaved_content_as_str(query)
         if mode == "keyword":
             return await self.index.query_keyword(query_string, k, score_threshold)
 
-        # Calculate embeddings for both vector and hybrid modes
         embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         if mode == "hybrid":
