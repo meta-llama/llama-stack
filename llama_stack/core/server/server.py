@@ -9,7 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
-import logging
+import logging  # allow-direct-logging
 import os
 import ssl
 import sys
