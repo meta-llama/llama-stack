@@ -194,7 +194,7 @@ class AgentPersistence:
                 session_data = json.loads(value)
                 session_info = await self.get_session_info(session_data["session_id"])
                 session_data["session_name"] = session_info.session_name
-                session_data["turns"] = session_info.turns
+                session_data["turns"] = [t.dict() for t in session_info.turns]
                 session_info = Session(**session_data)
                 sessions.append(session_info)
             except Exception as e:
