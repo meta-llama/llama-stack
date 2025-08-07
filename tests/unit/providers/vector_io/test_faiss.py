@@ -176,3 +176,91 @@ async def test_health_failure():
         assert isinstance(response, dict)
         assert response["status"] == HealthStatus.ERROR
         assert response["message"] == "Health check failed: Test error"
+
+
+# Keyword Search Tests
+@pytest.fixture
+def keyword_search_chunks():
+    return [
+        Chunk(
+            content="Python is a high-level programming language that emphasizes code readability.",
+            metadata={"document_id": "doc1", "topic": "programming"},
+        ),
+        Chunk(
+            content="Machine learning is a subset of artificial intelligence that enables systems to learn automatically.",
+            metadata={"document_id": "doc2", "topic": "ai"},
+        ),
+        Chunk(
+            content="Data structures are fundamental to computer science and enable efficient data processing.",
+            metadata={"document_id": "doc3", "topic": "computer_science"},
+        ),
+        Chunk(
+            content="Neural networks are inspired by biological neural networks and use interconnected nodes.",
+            metadata={"document_id": "doc4", "topic": "ai"},
+        ),
+    ]
+
+
+@pytest.fixture
+def keyword_search_embeddings(embedding_dimension):
+    return np.random.rand(4, embedding_dimension).astype(np.float32)
+
+
+async def test_faiss_keyword_search_basic(faiss_index, keyword_search_chunks, keyword_search_embeddings):
+    """Test basic keyword search functionality."""
+    await faiss_index.add_chunks(keyword_search_chunks, keyword_search_embeddings)
+
+    response = await faiss_index.query_keyword("Python", k=2, score_threshold=0.0)
+    assert len(response.chunks) > 0
+    assert "Python" in response.chunks[0].content
+
+    response = await faiss_index.query_keyword("machine learning", k=2, score_threshold=0.0)
+    assert len(response.chunks) > 0
+    assert "machine learning" in response.chunks[0].content.lower()
+
+
+async def test_faiss_keyword_search_no_matches(faiss_index, keyword_search_chunks, keyword_search_embeddings):
+    """Test keyword search when no matches are found."""
+    await faiss_index.add_chunks(keyword_search_chunks, keyword_search_embeddings)
+
+    # Test with a term that doesn't exist
+    response = await faiss_index.query_keyword("nonexistent", k=2, score_threshold=0.0)
+    assert len(response.chunks) == 0
+    assert len(response.scores) == 0
+
+
+async def test_faiss_keyword_search_score_threshold(faiss_index, keyword_search_chunks, keyword_search_embeddings):
+    """Test that score threshold filtering works correctly."""
+    await faiss_index.add_chunks(keyword_search_chunks, keyword_search_embeddings)
+
+    response = await faiss_index.query_keyword("Python", k=2, score_threshold=100.0)
+    assert len(response.chunks) == 0
+
+
+async def test_faiss_keyword_search_empty_index(faiss_index):
+    """Test keyword search on empty index."""
+    response = await faiss_index.query_keyword("Python", k=2, score_threshold=0.0)
+    assert len(response.chunks) == 0
+    assert len(response.scores) == 0
+
+
+async def test_faiss_keyword_search_empty_query(faiss_index, keyword_search_chunks, keyword_search_embeddings):
+    """Test keyword search with empty query."""
+    await faiss_index.add_chunks(keyword_search_chunks, keyword_search_embeddings)
+
+    response = await faiss_index.query_keyword("", k=2, score_threshold=0.0)
+    assert len(response.chunks) == 0
+    assert len(response.scores) == 0
+
+
+async def test_faiss_keyword_search_case_insensitive(faiss_index, keyword_search_chunks, keyword_search_embeddings):
+    """Test that keyword search is case insensitive."""
+    await faiss_index.add_chunks(keyword_search_chunks, keyword_search_embeddings)
+
+    # Test with different cases
+    response1 = await faiss_index.query_keyword("python", k=2, score_threshold=0.0)
+    response2 = await faiss_index.query_keyword("PYTHON", k=2, score_threshold=0.0)
+    response3 = await faiss_index.query_keyword("Python", k=2, score_threshold=0.0)
+
+    # All should return the same results
+    assert len(response1.chunks) == len(response2.chunks) == len(response3.chunks)
