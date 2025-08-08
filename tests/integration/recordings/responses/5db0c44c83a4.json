@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/chat/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b",
+      "messages": [
+        {
+          "role": "user",
+          "content": "OpenAI test 1"
+        }
+      ],
+      "stream": false
+    },
+    "endpoint": "/v1/chat/completions",
+    "model": "llama3.2:3b"
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
+      "__data__": {
+        "id": "chatcmpl-224",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "I'm happy to help with your OpenAI prompt. What kind of task would you like me to assist with? Would you like to:\n\n1. Provide a text prompt and have me generate a response?\n2. Test my understanding of a specific topic or concept?\n3. Engage in a conversation or role-playing scenario?\n4. Something else?\n\nPlease go ahead and let me know, and I'll do my best to assist you!",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": null
+            }
+          }
+        ],
+        "created": 1754673007,
+        "model": "llama3.2:3b",
+        "object": "chat.completion",
+        "service_tier": null,
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 89,
+          "prompt_tokens": 30,
+          "total_tokens": 119,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        }
+      }
+    },
+    "is_streaming": false
+  }
+}

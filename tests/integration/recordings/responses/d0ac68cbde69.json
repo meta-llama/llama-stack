@@ -16,7 +16,7 @@
             "model": "llama3.2:3b",
             "name": "llama3.2:3b",
             "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
-            "expires_at": "2025-08-06T15:57:21.573326-04:00",
+            "expires_at": "2025-08-08T13:13:41.164547-04:00",
             "size": 4030033920,
             "size_vram": 4030033920,
             "details": {
