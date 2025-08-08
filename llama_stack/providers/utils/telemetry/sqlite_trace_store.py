@@ -5,12 +5,23 @@
 # the root directory of this source tree.
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Protocol
 
 import aiosqlite
 
-from llama_stack.apis.telemetry import QueryCondition, Span, SpanWithStatus, Trace
+from llama_stack.apis.telemetry import (
+    MetricDataPoint,
+    MetricLabel,
+    MetricLabelMatcher,
+    MetricQueryType,
+    MetricSeries,
+    QueryCondition,
+    QueryMetricsResponse,
+    Span,
+    SpanWithStatus,
+    Trace,
+)
 
 
 class TraceStore(Protocol):
@@ -29,10 +40,202 @@ class TraceStore(Protocol):
         max_depth: int | None = None,
     ) -> dict[str, SpanWithStatus]: ...
 
+    async def query_metrics(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: datetime | None = None,
+        granularity: str | None = "1d",
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: list[MetricLabelMatcher] | None = None,
+    ) -> QueryMetricsResponse: ...
+
 
 class SQLiteTraceStore(TraceStore):
     def __init__(self, conn_string: str):
         self.conn_string = conn_string
+
+    async def query_metrics(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: datetime | None = None,
+        granularity: str | None = None,
+        query_type: MetricQueryType = MetricQueryType.RANGE,
+        label_matchers: list[MetricLabelMatcher] | None = None,
+    ) -> QueryMetricsResponse:
+        """Query metrics from span events stored in SQLite.
+        Args:
+            metric_name: The name of the metric to query (e.g., "prompt_tokens")
+            start_time: Start time for the query range
+            end_time: End time for the query range (defaults to now if None)
+            granularity: Time granularity for aggregation (e.g., "1m", "5m", "1h", "1d")
+            query_type: Type of query (RANGE or INSTANT)
+            label_matchers: Label filters to apply
+        Returns:
+            QueryMetricsResponse with metric time series data
+        """
+        if end_time is None:
+            end_time = datetime.now(UTC)
+
+        # Build the base query with aggregation
+        if query_type == MetricQueryType.INSTANT:
+            # For instant queries, aggregate all data into a single point
+            query = """
+                SELECT
+                    se.name,
+                    SUM(CAST(json_extract(se.attributes, '$.value') AS REAL)) as value,
+                    json_extract(se.attributes, '$.unit') as unit,
+                    se.attributes
+                FROM span_events se
+                WHERE se.name = ?
+                  AND se.timestamp BETWEEN ? AND ?
+            """
+        else:
+            # For range queries, aggregate by time buckets based on granularity
+            if granularity:
+                time_format = self._get_time_format_for_granularity(granularity)
+
+                query = f"""
+                    SELECT
+                        se.name,
+                        SUM(CAST(json_extract(se.attributes, '$.value') AS REAL)) as value,
+                        json_extract(se.attributes, '$.unit') as unit,
+                        se.attributes,
+                        strftime({time_format}, se.timestamp) as bucket_start
+                    FROM span_events se
+                    WHERE se.name = ?
+                      AND se.timestamp BETWEEN ? AND ?
+                """
+            else:
+                # For no granularity (None), return individual data points
+                query = """
+                    SELECT
+                        se.name,
+                        json_extract(se.attributes, '$.value') as value,
+                        json_extract(se.attributes, '$.unit') as unit,
+                        se.attributes,
+                        se.timestamp
+                    FROM span_events se
+                    WHERE se.name = ?
+                      AND se.timestamp BETWEEN ? AND ?
+                """
+
+        params = [f"metric.{metric_name}", start_time.isoformat(), end_time.isoformat()]
+
+        # Add label matchers if provided
+        if label_matchers:
+            for matcher in label_matchers:
+                if matcher.operator == "=":
+                    query += f" AND json_extract(se.attributes, '$.{matcher.name}') = ?"
+                    params.append(matcher.value)
+                elif matcher.operator == "!=":
+                    query += f" AND json_extract(se.attributes, '$.{matcher.name}') != ?"
+                    params.append(matcher.value)
+                elif matcher.operator == "=~":
+                    query += f" AND json_extract(se.attributes, '$.{matcher.name}') LIKE ?"
+                    params.append(f"%{matcher.value}%")
+                elif matcher.operator == "!~":
+                    query += f" AND json_extract(se.attributes, '$.{matcher.name}') NOT LIKE ?"
+                    params.append(f"%{matcher.value}%")
+
+        if query_type == MetricQueryType.RANGE and granularity:
+            group_time_format = self._get_time_format_for_granularity(granularity)
+            query += f" GROUP BY strftime({group_time_format}, se.timestamp), json_extract(se.attributes, '$.unit')"
+            query += " ORDER BY bucket_start"
+        elif query_type == MetricQueryType.INSTANT:
+            query += " GROUP BY json_extract(se.attributes, '$.unit')"
+        else:
+            # For range queries without granularity (no aggregation)
+            query += " ORDER BY se.timestamp"
+
+        # Execute query
+        async with aiosqlite.connect(self.conn_string) as conn:
+            conn.row_factory = aiosqlite.Row
+            async with conn.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+
+                if not rows:
+                    return QueryMetricsResponse(data=[])
+
+                # Parse metric data
+                data_points = []
+                labels: list[MetricLabel] = []
+
+                for row in rows:
+                    # Parse JSON attributes
+                    attributes = json.loads(row["attributes"])
+
+                    # Extract metric value and unit
+                    value = row["value"]
+                    unit = row["unit"] or ""
+
+                    # Extract labels from attributes
+                    metric_labels = []
+                    for key, val in attributes.items():
+                        if key not in ["value", "unit"]:
+                            metric_labels.append(MetricLabel(name=key, value=str(val)))
+
+                    # Create data point
+                    if query_type == MetricQueryType.RANGE and granularity:
+                        # Parse bucket start time for aggregated range queries
+                        try:
+                            bucket_start_raw = row["bucket_start"]
+                            if bucket_start_raw is not None:
+                                bucket_start = datetime.fromisoformat(bucket_start_raw)
+                            else:
+                                # Error out if bucket_start is None
+                                raise ValueError("bucket_start is None - this indicates a query configuration error")
+                        except KeyError as e:
+                            # Error out if bucket_start column doesn't exist in the result
+                            raise ValueError(
+                                "bucket_start column not found in query result when trying to use granularity. Timestamps in the database might be mis-formatted"
+                            ) from e
+                        timestamp = int(bucket_start.timestamp())
+                    elif query_type == MetricQueryType.INSTANT:
+                        # Use current time for instant queries
+                        timestamp = int(datetime.now(UTC).timestamp())
+                    else:
+                        # Use original timestamp for non-aggregated queries
+                        # Parse timestamp from database
+                        timestamp_raw = row["timestamp"]
+                        if timestamp_raw is not None:
+                            timestamp_iso = datetime.fromisoformat(timestamp_raw)
+                        else:
+                            raise ValueError("timestamp is None - this indicates a data integrity issue")
+                        timestamp = int(timestamp_iso.timestamp())
+
+                    data_points.append(
+                        MetricDataPoint(
+                            timestamp=timestamp,
+                            value=value,
+                            unit=unit,
+                        )
+                    )
+
+                # Create metric series
+                metric_series = [MetricSeries(metric=metric_name, labels=labels, values=data_points)]
+
+                return QueryMetricsResponse(data=metric_series)
+
+    def _get_time_format_for_granularity(self, granularity: str | None) -> str:
+        """Get the SQLite strftime format string for a given granularity.
+        Args:
+            granularity: Granularity string (e.g., "1m", "5m", "1h", "1d")
+        Returns:
+            SQLite strftime format string for the granularity
+        """
+        if granularity is None:
+            raise ValueError("granularity cannot be None for this method - use separate logic for no aggregation")
+
+        if granularity.endswith("d"):
+            return "'%Y-%m-%d 00:00:00'"
+        elif granularity.endswith("h"):
+            return "'%Y-%m-%d %H:00:00'"
+        elif granularity.endswith("m"):
+            return "'%Y-%m-%d %H:%M:00'"
+        else:
+            return "'%Y-%m-%d %H:00:00'"  # Default to hour-level
 
     async def query_traces(
         self,

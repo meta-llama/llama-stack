@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import datetime
 import logging
 import threading
 from typing import Any
@@ -149,7 +150,36 @@ class TelemetryAdapter(TelemetryDatasetMixin, Telemetry):
         query_type: MetricQueryType = MetricQueryType.RANGE,
         label_matchers: list[MetricLabelMatcher] | None = None,
     ) -> QueryMetricsResponse:
-        raise NotImplementedError("Querying metrics is not implemented")
+        """Query metrics from the telemetry store.
+
+        Args:
+            metric_name: The name of the metric to query (e.g., "prompt_tokens")
+            start_time: Start time as Unix timestamp
+            end_time: End time as Unix timestamp (defaults to now if None)
+            granularity: Time granularity for aggregation
+            query_type: Type of query (RANGE or INSTANT)
+            label_matchers: Label filters to apply
+
+        Returns:
+            QueryMetricsResponse with metric time series data
+        """
+        # Convert timestamps to datetime objects
+        start_dt = datetime.datetime.fromtimestamp(start_time, datetime.UTC)
+        end_dt = datetime.datetime.fromtimestamp(end_time, datetime.UTC) if end_time else None
+
+        # Use SQLite trace store if available
+        if hasattr(self, "trace_store") and self.trace_store:
+            return await self.trace_store.query_metrics(
+                metric_name=metric_name,
+                start_time=start_dt,
+                end_time=end_dt,
+                granularity=granularity,
+                query_type=query_type,
+                label_matchers=label_matchers,
+            )
+
+        # Fallback to empty response if no trace store
+        return QueryMetricsResponse(data=[])
 
     def _log_unstructured(self, event: UnstructuredLogEvent, ttl_seconds: int) -> None:
         with self._lock:

@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/chat/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b",
+      "messages": [
+        {
+          "role": "user",
+          "content": "OpenAI test 0"
+        }
+      ],
+      "stream": false
+    },
+    "endpoint": "/v1/chat/completions",
+    "model": "llama3.2:3b"
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
+      "__data__": {
+        "id": "chatcmpl-619",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "I'm happy to chat with you. What's on your mind? Want to talk about a particular topic, ask for recommendations, or just have a conversation? I'm here to help and learn!",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": null
+            }
+          }
+        ],
+        "created": 1754673005,
+        "model": "llama3.2:3b",
+        "object": "chat.completion",
+        "service_tier": null,
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 41,
+          "prompt_tokens": 30,
+          "total_tokens": 71,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        }
+      }
+    },
+    "is_streaming": false
+  }
+}
