@@ -23,6 +23,9 @@ providers:
     provider_type: remote::chromadb
     config:
       url: ${env.CHROMA_URL}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter/}/chroma_remote_registry.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
