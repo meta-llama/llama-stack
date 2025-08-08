@@ -11,6 +11,7 @@ That means you're not limited to storing vectors in memory or in a separate serv
 
 - Easy to use
 - Fully integrated with Llama Stack
+- Supports all search modes: vector, keyword, and hybrid search (both inline and remote configurations)
 
 ## Usage
 
@@ -100,6 +101,92 @@ vector_io:
 - **`ca_pem_path`**: Path to the **Certificate Authority (CA) certificate** for validating the server certificate (required in mTLS).
 - **`client_pem_path`**: Path to the **client certificate** file (required for mTLS).
 - **`client_key_path`**: Path to the **client private key** file (required for mTLS).
+
+## Search Modes
+
+Milvus supports three different search modes for both inline and remote configurations:
+
+### Vector Search
+Vector search uses semantic similarity to find the most relevant chunks based on embedding vectors. This is the default search mode and works well for finding conceptually similar content.
+
+```python
+# Vector search example
+search_response = client.vector_stores.search(
+    vector_store_id=vector_store.id,
+    query="What is machine learning?",
+    search_mode="vector",
+    max_num_results=5,
+)
+```
+
+### Keyword Search
+Keyword search uses traditional text-based matching to find chunks containing specific terms or phrases. This is useful when you need exact term matches.
+
+```python
+# Keyword search example
+search_response = client.vector_stores.search(
+    vector_store_id=vector_store.id,
+    query="Python programming language",
+    search_mode="keyword",
+    max_num_results=5,
+)
+```
+
+### Hybrid Search
+Hybrid search combines both vector and keyword search methods to provide more comprehensive results. It leverages the strengths of both semantic similarity and exact term matching.
+
+#### Basic Hybrid Search
+```python
+# Basic hybrid search example (uses RRF ranker with default impact_factor=60.0)
+search_response = client.vector_stores.search(
+    vector_store_id=vector_store.id,
+    query="neural networks in Python",
+    search_mode="hybrid",
+    max_num_results=5,
+)
+```
+
+**Note**: The default `impact_factor` value of 60.0 was empirically determined to be optimal in the original RRF research paper: ["Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods"](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf) (Cormack et al., 2009).
+
+#### Hybrid Search with RRF (Reciprocal Rank Fusion) Ranker
+RRF combines rankings from vector and keyword search by using reciprocal ranks. The impact factor controls how much weight is given to higher-ranked results.
+
+```python
+# Hybrid search with custom RRF parameters
+search_response = client.vector_stores.search(
+    vector_store_id=vector_store.id,
+    query="neural networks in Python",
+    search_mode="hybrid",
+    max_num_results=5,
+    ranking_options={
+        "ranker": {
+            "type": "rrf",
+            "impact_factor": 100.0,  # Higher values give more weight to top-ranked results
+        }
+    },
+)
+```
+
+#### Hybrid Search with Weighted Ranker
+Weighted ranker linearly combines normalized scores from vector and keyword search. The alpha parameter controls the balance between the two search methods.
+
+```python
+# Hybrid search with weighted ranker
+search_response = client.vector_stores.search(
+    vector_store_id=vector_store.id,
+    query="neural networks in Python",
+    search_mode="hybrid",
+    max_num_results=5,
+    ranking_options={
+        "ranker": {
+            "type": "weighted",
+            "alpha": 0.7,  # 70% vector search, 30% keyword search
+        }
+    },
+)
+```
+
+For detailed documentation on RRF and Weighted rankers, please refer to the [Milvus Reranking Guide](https://milvus.io/docs/reranking.md).
 
 ## Documentation
 See the [Milvus documentation](https://milvus.io/docs/install-overview.md) for more details about Milvus in general.
