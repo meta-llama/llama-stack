@@ -56,16 +56,6 @@ def case_id_generator(case):
     return None
 
 
-def should_skip_test(verification_config, provider, model, test_name_base):
-    """Check if a test should be skipped based on config exclusions."""
-    provider_config = verification_config.get("providers", {}).get(provider)
-    if not provider_config:
-        return False  # No config for provider, don't skip
-
-    exclusions = provider_config.get("test_exclusions", {}).get(model, [])
-    return test_name_base in exclusions
-
-
 # Helper to get the base test name from the request object
 def get_base_test_name(request):
     return request.node.originalname
