@@ -75,7 +75,7 @@ from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefiniti
 from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
-logger = get_logger(name=__name__, category="openai_responses")
+logger = get_logger(name=__name__, category="agents")
 
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
 
