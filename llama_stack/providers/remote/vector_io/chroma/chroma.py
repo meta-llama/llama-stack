@@ -113,10 +113,41 @@ class ChromaIndex(EmbeddingIndex):
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Keyword search is not supported in Chroma")
+        results = await maybe_await(
+            self.collection.query(
+                query_texts=[query_string],
+                where_document={"$contains": query_string},
+                n_results=k,
+                include=["documents", "distances"],
+            )
+        )
+
+        distances = results["distances"][0] if results["distances"] else []
+        documents = results["documents"][0] if results["documents"] else []
+
+        chunks = []
+        scores = []
+
+        for dist, doc in zip(distances, documents, strict=False):
+            try:
+                doc_data = json.loads(doc)
+                chunk = Chunk(**doc_data)
+            except Exception:
+                log.exception(f"Failed to parse document: {doc}")
+                continue
+
+            score = 1.0 / (1.0 + float(dist)) if dist is not None else 1.0
+
+            if score < score_threshold:
+                continue
+
+            chunks.append(chunk)
+            scores.append(score)
+
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
     async def delete_chunk(self, chunk_id: str) -> None:
-        raise NotImplementedError("delete_chunk is not supported in Chroma")
+        await maybe_await(self.collection.delete([chunk_id]))
 
     async def query_hybrid(
         self,
