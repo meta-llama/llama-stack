@@ -62,3 +62,11 @@ class SessionNotFoundError(ValueError):
     def __init__(self, session_name: str) -> None:
         message = f"Session '{session_name}' not found or access denied."
         super().__init__(message)
+
+
+class MissingTrainingConfigError(ValueError):
+    """raise when Llama Stack is missing configuration for training"""
+
+    def __init__(self, config_name: str, provider_name: str) -> None:
+        message = f"'{config_name}' is required for training with provider '{provider_name}'"
+        super().__init__(message)
