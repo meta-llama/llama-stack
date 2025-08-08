@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import hashlib
 import itertools
 import json
 import time
@@ -136,27 +137,44 @@ class ReferenceBatchesImpl(Batches):
         endpoint: str,
         completion_window: Literal["24h"],
         metadata: dict[str, str] | None = None,
+        idem_tok: str | None = None,
     ) -> BatchObject:
         """
         Create a new batch for processing multiple API requests.
 
-        Error handling by levels -
-         0. Input param handling, results in 40x errors before processing, e.g.
-           - Wrong completion_window
-           - Invalid metadata types
-           - Unknown endpoint
-          -> no batch created
-         1. Errors preventing processing, result in BatchErrors aggregated in process_batch, e.g.
-           - input_file_id missing
-           - invalid json in file
-           - missing custom_id, method, url, body
-           - invalid model
-           - streaming
-          -> batch created, validation sends to failed status
-         2. Processing errors, result in error_file_id entries, e.g.
-           - Any error returned from inference endpoint
-          -> batch created, goes to completed status
+        This implementation provides optional idempotency: when an idempotency token
+        (idem_tok) is provided, a deterministic ID is generated based on the input
+        parameters. If a batch with the same parameters already exists, it will be
+        returned instead of creating a duplicate. Without an idempotency token,
+        each request creates a new batch with a unique ID.
+
+        Args:
+            input_file_id: The ID of an uploaded file containing requests for the batch.
+            endpoint: The endpoint to be used for all requests in the batch.
+            completion_window: The time window within which the batch should be processed.
+            metadata: Optional metadata for the batch.
+            idem_tok: Optional idempotency token for enabling idempotent behavior.
+
+        Returns:
+            The created or existing batch object.
         """
+
+        # Error handling by levels -
+        #  0. Input param handling, results in 40x errors before processing, e.g.
+        #    - Wrong completion_window
+        #    - Invalid metadata types
+        #    - Unknown endpoint
+        #   -> no batch created
+        #  1. Errors preventing processing, result in BatchErrors aggregated in process_batch, e.g.
+        #    - input_file_id missing
+        #    - invalid json in file
+        #    - missing custom_id, method, url, body
+        #    - invalid model
+        #    - streaming
+        #   -> batch created, validation sends to failed status
+        #  2. Processing errors, result in error_file_id entries, e.g.
+        #    - Any error returned from inference endpoint
+        #   -> batch created, goes to completed status
 
         # TODO: set expiration time for garbage collection
 
@@ -171,6 +189,35 @@ class ReferenceBatchesImpl(Batches):
             )
 
         batch_id = f"batch_{uuid.uuid4().hex[:16]}"
+
+        # For idempotent requests, use the idempotency token for the batch ID
+        # This ensures the same token always maps to the same batch ID,
+        # allowing us to detect parameter conflicts
+        if idem_tok is not None:
+            hash_input = idem_tok.encode("utf-8")
+            hash_digest = hashlib.sha256(hash_input).hexdigest()[:24]
+            batch_id = f"batch_{hash_digest}"
+
+            try:
+                existing_batch = await self.retrieve_batch(batch_id)
+
+                if (
+                    existing_batch.input_file_id != input_file_id
+                    or existing_batch.endpoint != endpoint
+                    or existing_batch.completion_window != completion_window
+                    or existing_batch.metadata != metadata
+                ):
+                    raise ConflictError(
+                        f"Idempotency token '{idem_tok}' was previously used with different parameters. "
+                        "Either use a new idempotency token or ensure all parameters match the original request."
+                    )
+
+                logger.info(f"Returning existing batch with ID: {batch_id}")
+                return existing_batch
+            except ResourceNotFoundError:
+                # Batch doesn't exist, continue with creation
+                pass
+
         current_time = int(time.time())
 
         batch = BatchObject(
@@ -185,6 +232,7 @@ class ReferenceBatchesImpl(Batches):
         )
 
         await self.kvstore.set(f"batch:{batch_id}", batch.to_json())
+        logger.info(f"Created new batch with ID: {batch_id}")
 
         if self.process_batches:
             task = asyncio.create_task(self._process_batch(batch_id))
