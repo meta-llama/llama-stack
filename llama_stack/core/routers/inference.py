@@ -18,7 +18,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.common.errors import ModelNotFoundError
+from llama_stack.apis.common.errors import ModelNotFoundError, ModelTypeError
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
     BatchCompletionResponse,
@@ -177,6 +177,11 @@ class InferenceRouter(Inference):
             encoded = self.formatter.encode_content(messages)
         return len(encoded.tokens) if encoded and encoded.tokens else 0
 
+    async def _check_model_type(self, model_id: str, model_type: str, expected_model_type: str) -> None:
+        """raises ModelTypeError if model_type does not match expected_model_type"""
+        if model_type != expected_model_type:
+            raise ModelTypeError(model_id, model_type, expected_model_type)
+
     async def chat_completion(
         self,
         model_id: str,
@@ -198,8 +203,7 @@ class InferenceRouter(Inference):
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
+        await self._check_model_type(model_id, model.model_type, ModelType.llm)
         if tool_config:
             if tool_choice and tool_choice != tool_config.tool_choice:
                 raise ValueError("tool_choice and tool_config.tool_choice must match")
@@ -304,8 +308,7 @@ class InferenceRouter(Inference):
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
+        await self._check_model_type(model_id, model.model_type, ModelType.llm)
         provider = await self.routing_table.get_provider_impl(model_id)
         params = dict(
             model_id=model_id,
@@ -358,8 +361,7 @@ class InferenceRouter(Inference):
         model = await self.routing_table.get_model(model_id)
         if model is None:
             raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.llm:
-            raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
+        await self._check_model_type(model_id, model.model_type, ModelType.embedding)
         provider = await self.routing_table.get_provider_impl(model_id)
         return await provider.embeddings(
             model_id=model_id,
@@ -398,8 +400,7 @@ class InferenceRouter(Inference):
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
             raise ModelNotFoundError(model)
-        if model_obj.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model}' is an embedding model and does not support completions")
+        await self._check_model_type(model, model_obj.model_type, ModelType.llm)
 
         params = dict(
             model=model_obj.identifier,
@@ -479,8 +480,7 @@ class InferenceRouter(Inference):
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
             raise ModelNotFoundError(model)
-        if model_obj.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
+        await self._check_model_type(model, model.model_type, ModelType.llm)
 
         # Use the OpenAI client for a bit of extra input validation without
         # exposing the OpenAI client itself as part of our API surface
@@ -570,8 +570,7 @@ class InferenceRouter(Inference):
         model_obj = await self.routing_table.get_model(model)
         if model_obj is None:
             raise ModelNotFoundError(model)
-        if model_obj.model_type != ModelType.embedding:
-            raise ValueError(f"Model '{model}' is not an embedding model")
+        await self._check_model_type(model, model_obj.model_type, ModelType.embedding)
 
         params = dict(
             model=model_obj.identifier,
