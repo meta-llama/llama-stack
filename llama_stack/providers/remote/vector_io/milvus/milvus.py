@@ -409,15 +409,6 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         index = await self._get_and_cache_vector_db_index(vector_db_id)
         if not index:
             raise VectorStoreNotFoundError(vector_db_id)
-
-        if params and params.get("mode") == "keyword":
-            # Check if this is inline Milvus (Milvus-Lite)
-            if hasattr(self.config, "db_path"):
-                raise NotImplementedError(
-                    "Keyword search is not supported in Milvus-Lite. "
-                    "Please use a remote Milvus server for keyword search functionality."
-                )
-
         return await index.query_chunks(query, params)
 
     async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
