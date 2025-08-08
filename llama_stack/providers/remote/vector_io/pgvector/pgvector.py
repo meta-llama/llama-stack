@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import heapq
 import logging
 from typing import Any
 
@@ -23,9 +24,13 @@ from llama_stack.apis.vector_io import (
     VectorIO,
 )
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
+from llama_stack.providers.utils.inference.prompt_adapter import (
+    interleaved_content_as_str,
+)
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
+from llama_stack.providers.utils.memory.reranker import Reranker
 from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
@@ -70,8 +75,77 @@ def load_models(cur, cls):
     return [TypeAdapter(cls).validate_python(row["data"]) for row in rows]
 
 
+"""
+Three implementations of search for PGVectoIndex:
+
+1. Vector Search:
+- How it works:
+  - Uses PostgreSQL's vector extension (pgvector) to perform similarity search
+  - Compares query embeddings against stored embeddings using L2 (Euclidean) distance or other distance metrics
+  - Eg. SQL query: SELECT document, embedding <-> %s::vector AS distance FROM table ORDER BY distance
+
+-Characteristics:
+  - Semantic understanding - finds documents similar in meaning even if they don't share keywords
+  - Works with high-dimensional vector embeddings (typically 768, 1024, or higher dimensions)
+  - Best for: Finding conceptually related content, handling synonyms, cross-language search
+
+2. Keyword Search
+- How it works:
+  - Uses PostgreSQL's full-text search capabilities with tsvector and ts_rank
+  - Converts text to searchable tokens using to_tsvector('english', text)
+  - Eg. SQL query: SELECT document, ts_rank(content_tsvector, plainto_tsquery('english', %s)) AS score
+
+- Characteristics:
+  - Lexical matching - finds exact keyword matches and variations
+  - Uses GIN (Generalized Inverted Index) for fast text search performance
+  - Scoring: Uses PostgreSQL's ts_rank function for relevance scoring
+  - Best for: Exact term matching, proper names, technical terms, Boolean-style queries
+
+3. Hybrid Search
+- How it works:
+  - Combines both vector and keyword search results
+  - Runs both searches independently, then merges results using configurable reranking
+
+- Two reranking strategies available:
+    - Reciprocal Rank Fusion (RRF) - (default: 60.0)
+    - Weighted Average - (default: 0.5)
+
+- Characteristics:
+  - Best of both worlds: semantic understanding + exact matching
+  - Documents appearing in both searches get boosted scores
+  - Configurable balance between semantic and lexical matching
+  - Best for: General-purpose search where you want both precision and recall
+
+4. Database Schema
+The PGVector implementation stores data optimized for all three search types:
+CREATE TABLE vector_store_xxx (
+    id TEXT PRIMARY KEY,
+    document JSONB,                    -- Original document
+    embedding vector(dimension),        -- For vector search
+    content_text TEXT,                 -- Raw text content
+    content_tsvector TSVECTOR          -- For keyword search
+);
+
+-- Indexes for performance
+CREATE INDEX content_gin_idx ON table USING GIN(content_tsvector);  -- Keyword search
+-- Vector index created automatically by pgvector
+"""
+
+
 class PGVectorIndex(EmbeddingIndex):
-    def __init__(self, vector_db: VectorDB, dimension: int, conn, kvstore: KVStore | None = None):
+    # reference: https://github.com/pgvector/pgvector?tab=readme-ov-file#querying
+    PGVECTOR_DISTANCE_METRIC_TO_SEARCH_OPERATOR: dict[str, str] = {
+        "L2": "<->",  # Euclidean distance
+        "L1": "<+>",  # Manhattan distance
+        "COSINE": "<=>",  # Cosine distance
+        "INNER_PRODUCT": "<#>",  # Inner product distance
+        "HAMMING": "<~>",  # Hamming distance
+        "JACCARD": "<%>",  # Jaccard distance
+    }
+
+    def __init__(
+        self, vector_db: VectorDB, dimension: int, conn, kvstore: KVStore | None = None, distance_metric: str = "L2"
+    ):
         self.conn = conn
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             # Sanitize the table name by replacing hyphens with underscores
@@ -86,8 +160,18 @@ class PGVectorIndex(EmbeddingIndex):
                 CREATE TABLE IF NOT EXISTS {self.table_name} (
                     id TEXT PRIMARY KEY,
                     document JSONB,
-                    embedding vector({dimension})
+                    embedding vector({dimension}),
+                    content_text TEXT,
+                    content_tsvector TSVECTOR
                 )
+            """
+            )
+
+            # Create GIN index for full-text search performance
+            cur.execute(
+                f"""
+                CREATE INDEX IF NOT EXISTS {self.table_name}_content_gin_idx
+                ON {self.table_name} USING GIN(content_tsvector)
             """
             )
 
@@ -98,29 +182,55 @@ class PGVectorIndex(EmbeddingIndex):
 
         values = []
         for i, chunk in enumerate(chunks):
+            content_text = interleaved_content_as_str(chunk.content)
             values.append(
                 (
                     f"{chunk.chunk_id}",
                     Json(chunk.model_dump()),
                     embeddings[i].tolist(),
+                    content_text,
+                    content_text,  # Pass content_text twice - once for content_text column, once for to_tsvector function
                 )
             )
 
         query = sql.SQL(
             f"""
-        INSERT INTO {self.table_name} (id, document, embedding)
+        INSERT INTO {self.table_name} (id, document, embedding, content_text, content_tsvector)
         VALUES %s
-        ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding, document = EXCLUDED.document
+        ON CONFLICT (id) DO UPDATE SET
+            embedding = EXCLUDED.embedding,
+            document = EXCLUDED.document,
+            content_text = EXCLUDED.content_text,
+            content_tsvector = EXCLUDED.content_tsvector
     """
         )
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            execute_values(cur, query, values, template="(%s, %s, %s::vector)")
+            execute_values(cur, query, values, template="(%s, %s, %s::vector, %s, to_tsvector('english', %s))")
 
-    async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
+    async def query_vector(
+        self, embedding: NDArray, k: int, score_threshold: float, distance_metric: str | None = None
+    ) -> QueryChunksResponse:
+        """
+        Performs vector similarity search using PostgreSQL's operators.
+
+        Args:
+            embedding: The query embedding vector
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+            distance_metric: Distance metric to use for vector search
+
+        Returns:
+            QueryChunksResponse with combined results
+        """
+        # Default to L2 distance metric if not specified
+        # Fastest performance
+        # Best for Normalized embeddings, general use case
+        pgvector_search_operator = self.PGVECTOR_DISTANCE_METRIC_TO_SEARCH_OPERATOR.get(distance_metric, "<->")
+
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute(
                 f"""
-            SELECT document, embedding <-> %s::vector AS distance
+            SELECT document, embedding {pgvector_search_operator} %s::vector AS distance
             FROM {self.table_name}
             ORDER BY distance
             LIMIT %s
@@ -146,7 +256,40 @@ class PGVectorIndex(EmbeddingIndex):
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Keyword search is not supported in PGVector")
+        """
+        Performs keyword-based search using PostgreSQL's full-text search with ts_rank scoring.
+
+        Args:
+            query_string: The text query for keyword search
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+
+        Returns:
+            QueryChunksResponse with combined results
+        """
+        with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            # Use plainto_tsquery to handle user input safely and ts_rank for relevance scoring
+            cur.execute(
+                f"""
+            SELECT document, ts_rank(content_tsvector, plainto_tsquery('english', %s)) AS score
+            FROM {self.table_name}
+            WHERE content_tsvector @@ plainto_tsquery('english', %s)
+            ORDER BY score DESC
+            LIMIT %s
+        """,
+                (query_string, query_string, k),
+            )
+            results = cur.fetchall()
+
+            chunks = []
+            scores = []
+            for doc, score in results:
+                if score < score_threshold:
+                    continue
+                chunks.append(Chunk(**doc))
+                scores.append(float(score))
+
+            return QueryChunksResponse(chunks=chunks, scores=scores)
 
     async def query_hybrid(
         self,
@@ -157,7 +300,57 @@ class PGVectorIndex(EmbeddingIndex):
         reranker_type: str,
         reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Hybrid search is not supported in PGVector")
+        """
+        Hybrid search combining vector similarity and keyword search using configurable reranking.
+
+        Args:
+            embedding: The query embedding vector
+            query_string: The text query for keyword search
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+            reranker_type: Type of reranker to use ("rrf" or "weighted")
+            reranker_params: Parameters for the reranker
+
+        Returns:
+            QueryChunksResponse with combined results
+        """
+        if reranker_params is None:
+            reranker_params = {}
+
+        # Get results from both search methods
+        vector_response = await self.query_vector(embedding, k, score_threshold)
+        keyword_response = await self.query_keyword(query_string, k, score_threshold)
+
+        # Convert responses to score dictionaries using chunk_id
+        vector_scores = {
+            chunk.chunk_id: score for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
+        }
+        keyword_scores = {
+            chunk.chunk_id: score
+            for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
+        }
+
+        # Combine scores using the reranking utility
+        combined_scores = Reranker.combine_search_results(vector_scores, keyword_scores, reranker_type, reranker_params)
+
+        # Efficient top-k selection because it only tracks the k best candidates it's seen so far
+        top_k_items = heapq.nlargest(k, combined_scores.items(), key=lambda x: x[1])
+
+        # Filter by score threshold
+        filtered_items = [(doc_id, score) for doc_id, score in top_k_items if score >= score_threshold]
+
+        # Create a map of chunk_id to chunk for both responses
+        chunk_map = {c.chunk_id: c for c in vector_response.chunks + keyword_response.chunks}
+
+        # Use the map to look up chunks by their IDs
+        chunks = []
+        scores = []
+        for doc_id, score in filtered_items:
+            if doc_id in chunk_map:
+                chunks.append(chunk_map[doc_id])
+                scores.append(score)
+
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
     async def delete(self):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
