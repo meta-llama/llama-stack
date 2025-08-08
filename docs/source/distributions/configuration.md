@@ -705,7 +705,7 @@ Precedence rules at runtime:
 
 1. If `embedding_model` is explicitly passed in an API call, that value is used.
 2. Otherwise the value in `vector_store_config.default_embedding_model` is used.
-3. If neither is available the server will fall back to the system default (ibm-granite/granite-embedding-125m-english).
+3. If neither is available the server will fall back to the system default (all-MiniLM-L6-v2).
 
 #### Environment variables
 
@@ -721,4 +721,4 @@ export LLAMA_STACK_DEFAULT_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-
 llama stack run --config run.yaml
 ```
 
-> Tip: If you omit `vector_store_config` entirely and don't set `LLAMA_STACK_DEFAULT_EMBEDDING_MODEL`, the system will fall back to the default `ibm-granite/granite-embedding-125m-english` model with 384 dimensions for vector store creation.
+> Tip: If you omit `vector_store_config` entirely and don't set `LLAMA_STACK_DEFAULT_EMBEDDING_MODEL`, the system will fall back to the default `all-MiniLM-L6-v2` model with 384 dimensions for vector store creation.
