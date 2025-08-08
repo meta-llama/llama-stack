@@ -199,10 +199,11 @@ if [ -n "$external_provider_deps" ]; then
     read -ra pip_args <<< "$part"
     quoted_deps=$(printf " %q" "${pip_args[@]}")
     add_to_container <<EOF
-RUN uv pip install --no-cache $quoted_deps
-EOF
-    add_to_container <<EOF
-RUN python3 - <<PYTHON | uv pip install --no-cache -r -
+# Create constraint file to exclude llama-stack
+RUN echo "# Exclude llama-stack to avoid circular dependencies" > /tmp/constraints.txt && \\
+    echo "llama-stack==0.0.0" >> /tmp/constraints.txt && \\
+
+RUN python3 - <<PYTHON | uv pip install --no-cache --constraint /tmp/constraints.txt -r -
 import importlib
 import sys
 
@@ -212,10 +213,17 @@ try:
     spec = module.get_provider_spec()
     if hasattr(spec, 'pip_packages') and spec.pip_packages:
         if isinstance(spec.pip_packages, (list, tuple)):
-            print('\n'.join(spec.pip_packages))
+            # Filter out llama-stack from pip_packages to avoid circular dependency
+            filtered_packages = [pkg for pkg in spec.pip_packages if not pkg.startswith('llama-stack')]
+            if filtered_packages:
+                print('\n'.join(filtered_packages))
+            else:
+                print('No additional dependencies needed', file=sys.stderr)
 except Exception as e:
     print(f'Error getting provider spec for {package_name}: {e}', file=sys.stderr)
 PYTHON
+
+RUN rm -f /tmp/constraints.txt
 EOF
   done
 fi
