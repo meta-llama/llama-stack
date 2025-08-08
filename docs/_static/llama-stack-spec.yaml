@@ -3264,6 +3264,37 @@ paths:
             schema:
               $ref: '#/components/schemas/QueryTracesRequest'
         required: true
+  /v1/inference/rerank:
+    post:
+      responses:
+        '200':
+          description: >-
+            RerankResponse with indices sorted by relevance score (descending).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RerankResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          $ref: >-
+            #/components/responses/TooManyRequests429
+        '500':
+          $ref: >-
+            #/components/responses/InternalServerError500
+        default:
+          $ref: '#/components/responses/DefaultError'
+      tags:
+        - Inference
+      description: >-
+        Rerank a list of documents based on their relevance to a query.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RerankRequest'
+        required: true
   /v1/agents/{agent_id}/session/{session_id}/turn/{turn_id}/resume:
     post:
       responses:
@@ -12188,6 +12219,83 @@ components:
         - vector_db_id
         - embedding_model
       title: RegisterVectorDbRequest
+    RerankRequest:
+      type: object
+      properties:
+        model:
+          type: string
+          description: >-
+            The identifier of the reranking model to use.
+        query:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+            - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+          description: >-
+            The search query to rank items against. Can be a string, text content
+            part, or image content part.
+        items:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/OpenAIChatCompletionContentPartTextParam'
+              - $ref: '#/components/schemas/OpenAIChatCompletionContentPartImageParam'
+          description: >-
+            List of items to rerank. Each item can be a string, text content part,
+            or image content part.
+        max_num_results:
+          type: integer
+          description: >-
+            (Optional) Maximum number of results to return. Default: returns all.
+        text_truncation:
+          type: string
+          enum:
+            - none
+            - start
+            - end
+          description: >-
+            (Optional) Config for how to truncate text for when text is longer than
+            the model's max sequence length.
+      additionalProperties: false
+      required:
+        - model
+        - query
+        - items
+      title: RerankRequest
+    RerankData:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: >-
+            The original index of the document in the input list
+        relevance_score:
+          type: number
+          description: >-
+            The relevance score from the model output. Values are inverted when applicable
+            so that higher scores indicate greater relevance.
+      additionalProperties: false
+      required:
+        - index
+        - relevance_score
+      title: RerankData
+      description: >-
+        A single rerank result from a reranking response.
+    RerankResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RerankData'
+          description: >-
+            List of rerank result objects, sorted by relevance score (descending)
+      additionalProperties: false
+      required:
+        - data
+      title: RerankResponse
+      description: Response from a reranking request.
     ResumeAgentTurnRequest:
       type: object
       properties:

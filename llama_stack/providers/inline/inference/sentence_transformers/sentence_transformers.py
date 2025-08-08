@@ -13,8 +13,12 @@ from llama_stack.apis.inference import (
     InterleavedContent,
     LogProbConfig,
     Message,
+    OpenAIChatCompletionContentPartImageParam,
+    OpenAIChatCompletionContentPartTextParam,
+    RerankResponse,
     ResponseFormat,
     SamplingParams,
+    TextTruncation,
     ToolChoice,
     ToolConfig,
     ToolDefinition,
@@ -122,3 +126,13 @@ class SentenceTransformersInferenceImpl(
         logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for Sentence Transformers")
+
+    async def rerank(
+        self,
+        model: str,
+        query: str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam,
+        items: list[str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam],
+        max_num_results: int | None = None,
+        text_truncation: TextTruncation | None = TextTruncation.none,
+    ) -> RerankResponse:
+        raise NotImplementedError("Reranking is not supported for Sentence Transformers")
