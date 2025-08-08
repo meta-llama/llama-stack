@@ -1,0 +1,13 @@
+# Batches
+
+## Overview
+
+This section contains documentation for all available providers for the **batches** API.
+
+## Providers
+
+```{toctree}
+:maxdepth: 1
+
+inline_reference
+```

@@ -62,3 +62,10 @@ class SessionNotFoundError(ValueError):
     def __init__(self, session_name: str) -> None:
         message = f"Session '{session_name}' not found or access denied."
         super().__init__(message)
+
+
+class ConflictError(ValueError):
+    """raised when an operation cannot be performed due to a conflict with the current state"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

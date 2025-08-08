@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
+from llama_stack.apis.common.errors import ConflictError, ResourceNotFoundError
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.cli.utils import add_config_distro_args, get_config_from_args
 from llama_stack.core.access_control.access_control import AccessDeniedError
@@ -127,6 +128,10 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
                 ]
             },
         )
+    elif isinstance(exc, ConflictError):
+        return HTTPException(status_code=409, detail=str(exc))
+    elif isinstance(exc, ResourceNotFoundError):
+        return HTTPException(status_code=404, detail=str(exc))
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
