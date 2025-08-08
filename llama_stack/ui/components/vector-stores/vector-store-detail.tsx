@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { VectorStore } from "llama-stack-client/resources/vector-stores/vector-stores";
 import type { VectorStoreFile } from "llama-stack-client/resources/vector-stores/files";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   DetailLoadingView,
   DetailErrorView,
@@ -42,6 +44,11 @@ export function VectorStoreDetailView({
   id,
 }: VectorStoreDetailViewProps) {
   const title = "Vector Store Details";
+  const router = useRouter();
+
+  const handleFileClick = (fileId: string) => {
+    router.push(`/logs/vector-stores/${id}/files/${fileId}`);
+  };
 
   if (errorStore) {
     return <DetailErrorView title={title} id={id} error={errorStore} />;
@@ -80,7 +87,15 @@ export function VectorStoreDetailView({
               <TableBody>
                 {files.map((file) => (
                   <TableRow key={file.id}>
-                    <TableCell>{file.id}</TableCell>
+                      <TableCell>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto font-mono text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        onClick={() => handleFileClick(file.id)}
+                      >
+                        {file.id}
+                      </Button>
+                    </TableCell>
                     <TableCell>{file.status}</TableCell>
                     <TableCell>
                       {new Date(file.created_at * 1000).toLocaleString()}
