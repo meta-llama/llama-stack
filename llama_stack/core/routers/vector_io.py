@@ -98,8 +98,8 @@ class VectorIORouter(VectorIO):
         if config.default_embedding_model is not None:
             return config.default_embedding_model, config.default_embedding_dimension or 384
 
-        # fallback to granite model - see issue #2418 for context
-        return "ibm-granite/granite-embedding-125m-english", 384
+        # fallback to existing default model for compatibility
+        return "all-MiniLM-L6-v2", 384
 
     async def register_vector_db(
         self,
@@ -158,10 +158,6 @@ class VectorIORouter(VectorIO):
 
         # Determine which embedding model to use based on new precedence
         embedding_model, embedding_dimension = await self._resolve_embedding_model(embedding_model)
-        if embedding_dimension is None:
-            # try to fetch dimension from model metadata as fallback
-            embedding_model_info = await self._get_first_embedding_model()  # may still help
-            embedding_dimension = embedding_model_info[1] if embedding_model_info else 384
 
         vector_db_id = f"vs_{uuid.uuid4()}"
         registered_vector_db = await self.routing_table.register_vector_db(
