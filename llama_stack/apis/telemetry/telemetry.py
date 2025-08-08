@@ -386,6 +386,7 @@ class MetricDataPoint(BaseModel):
 
     timestamp: int
     value: float
+    unit: str
 
 
 @json_schema_type
