@@ -10,6 +10,7 @@ import re
 import secrets
 import string
 import uuid
+import warnings
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
 
@@ -43,6 +44,7 @@ from llama_stack.apis.common.content_types import (
     ToolCallDelta,
     ToolCallParseStatus,
 )
+from llama_stack.apis.common.errors import SessionNotFoundError
 from llama_stack.apis.inference import (
     ChatCompletionResponseEventType,
     CompletionMessage,
@@ -60,7 +62,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.safety import Safety
 from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
-from llama_stack.distribution.datatypes import AccessRule
+from llama_stack.core.datatypes import AccessRule
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
@@ -213,7 +215,7 @@ class ChatAgent(ShieldRunnerMixin):
         is_resume = isinstance(request, AgentTurnResumeRequest)
         session_info = await self.storage.get_session_info(request.session_id)
         if session_info is None:
-            raise ValueError(f"Session {request.session_id} not found")
+            raise SessionNotFoundError(request.session_id)
 
         turns = await self.storage.get_session_turns(request.session_id)
         if is_resume and len(turns) == 0:
@@ -911,8 +913,16 @@ async def load_data_from_url(url: str) -> str:
 
 
 async def get_raw_document_text(document: Document) -> str:
-    if not document.mime_type.startswith("text/"):
+    # Handle deprecated text/yaml mime type with warning
+    if document.mime_type == "text/yaml":
+        warnings.warn(
+            "The 'text/yaml' MIME type is deprecated. Please use 'application/yaml' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    elif not (document.mime_type.startswith("text/") or document.mime_type == "application/yaml"):
         raise ValueError(f"Unexpected document mime type: {document.mime_type}")
+
     if isinstance(document.content, URL):
         return await load_data_from_url(document.content.uri)
     elif isinstance(document.content, str):

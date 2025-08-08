@@ -1,17 +1,17 @@
-# Vector_Io Providers
+## Providers
 
-This section contains documentation for all available providers for the **vector_io** API.
+```{toctree}
+:maxdepth: 1
 
-- [inline::chromadb](inline_chromadb.md)
-- [inline::faiss](inline_faiss.md)
-- [inline::meta-reference](inline_meta-reference.md)
-- [inline::milvus](inline_milvus.md)
-- [inline::qdrant](inline_qdrant.md)
-- [inline::sqlite-vec](inline_sqlite-vec.md)
-- [inline::sqlite_vec](inline_sqlite_vec.md)
-- [remote::chromadb](remote_chromadb.md)
-- [remote::milvus](remote_milvus.md)
-- [remote::opengauss](remote_opengauss.md)
-- [remote::pgvector](remote_pgvector.md)
-- [remote::qdrant](remote_qdrant.md)
-- [remote::weaviate](remote_weaviate.md)
+inline_chromadb
+inline_faiss
+inline_meta-reference
+inline_milvus
+inline_qdrant
+inline_sqlite-vec
+remote_chromadb
+remote_milvus
+remote_opengauss
+remote_pgvector
+remote_qdrant
+remote_weaviate

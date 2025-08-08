@@ -7,7 +7,7 @@ import { extractTextFromContentPart } from "@/lib/format-message-content";
 import {
   MessageBlock,
   ToolCallBlock,
-} from "@/components/ui/message-components";
+} from "@/components/chat-playground/message-components";
 
 interface ChatMessageItemProps {
   message: ChatMessage;

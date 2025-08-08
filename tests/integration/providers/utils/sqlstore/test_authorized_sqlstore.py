@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import pytest
 
-from llama_stack.distribution.access_control.access_control import default_policy
-from llama_stack.distribution.datatypes import User
+from llama_stack.core.access_control.access_control import default_policy
+from llama_stack.core.datatypes import User
 from llama_stack.providers.utils.sqlstore.api import ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from llama_stack.providers.utils.sqlstore.sqlstore import PostgresSqlStoreConfig, SqliteSqlStoreConfig, sqlstore_impl
@@ -88,7 +88,6 @@ async def cleanup_records(sql_store, table_name, record_ids):
             pass
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_authorized_store_attributes(mock_get_authenticated_user, authorized_store, request):
@@ -183,12 +182,11 @@ async def test_authorized_store_attributes(mock_get_authenticated_user, authoriz
         await cleanup_records(authorized_store.sql_store, table_name, ["1", "2", "3", "4", "5", "6"])
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("backend_config", BACKEND_CONFIGS)
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 async def test_user_ownership_policy(mock_get_authenticated_user, authorized_store, request):
     """Test that 'user is owner' policies work correctly with record ownership"""
-    from llama_stack.distribution.access_control.datatypes import AccessRule, Action, Scope
+    from llama_stack.core.access_control.datatypes import AccessRule, Action, Scope
 
     backend_name = request.node.callspec.id
 

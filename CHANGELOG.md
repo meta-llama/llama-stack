@@ -1,5 +1,34 @@
 # Changelog
 
+# v0.2.15
+Published on: 2025-07-16T03:30:01Z
+
+
+
+---
+
+# v0.2.14
+Published on: 2025-07-04T16:06:48Z
+
+## Highlights
+
+* Support for Llama Guard 4
+* Added Milvus  support to vector-stores API
+* Documentation and zero-to-hero updates for latest APIs
+
+
+---
+
+# v0.2.13
+Published on: 2025-06-28T04:28:11Z
+
+## Highlights
+* search_mode support in OpenAI vector store API
+* Security fixes
+
+
+---
+
 # v0.2.12
 Published on: 2025-06-20T22:52:12Z
 
@@ -422,7 +451,7 @@ GenAI application developers need more than just an LLM - they need to integrate
 
 Llama Stack was created to provide developers with a comprehensive and coherent interface that simplifies AI application development and codifies best practices across the Llama ecosystem. Since our launch in September 2024, we have seen a huge uptick in interest in Llama Stack APIs by both AI developers and from partners building AI services with Llama models. Partners like Nvidia, Fireworks, and Ollama have collaborated with us to develop implementations across various APIs, including inference, memory, and safety.
 
-With Llama Stack, you can easily build a RAG agent which can also search the web, do complex math, and custom tool calling. You can use telemetry to inspect those traces, and convert telemetry into evals datasets. And with Llama Stack’s plugin architecture and prepackage distributions, you choose to run your agent anywhere - in the cloud with our partners, deploy your own environment using virtualenv, conda, or Docker, operate locally with Ollama, or even run on mobile devices with our SDKs. Llama Stack offers unprecedented flexibility while also simplifying the developer experience.
+With Llama Stack, you can easily build a RAG agent which can also search the web, do complex math, and custom tool calling. You can use telemetry to inspect those traces, and convert telemetry into evals datasets. And with Llama Stack’s plugin architecture and prepackage distributions, you choose to run your agent anywhere - in the cloud with our partners, deploy your own environment using virtualenv or Docker, operate locally with Ollama, or even run on mobile devices with our SDKs. Llama Stack offers unprecedented flexibility while also simplifying the developer experience.
 
 ## Release
 After iterating on the APIs for the last 3 months, today we’re launching a stable release (V1) of the Llama Stack APIs and the corresponding llama-stack server and client packages(v0.1.0). We now have automated tests for providers. These tests make sure that all provider implementations are verified. Developers can now easily and reliably select distributions or providers based on their specific requirements.
@@ -485,23 +514,3 @@ A small but important bug-fix release to update the URL datatype for the client-
 
 ---
 
-# v0.0.62
-Published on: 2024-12-18T02:39:43Z
-
-
-
----
-
-# v0.0.61
-Published on: 2024-12-10T20:50:33Z
-
-
-
----
-
-# v0.0.55
-Published on: 2024-11-23T17:14:07Z
-
-
-
----

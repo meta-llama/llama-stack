@@ -10,9 +10,10 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from pydantic_core import PydanticUndefined
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from llama_stack.distribution.distribution import get_provider_registry
+from llama_stack.core.distribution import get_provider_registry
 
 REPO_ROOT = Path(__file__).parent.parent
 
@@ -59,6 +60,8 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
         if hasattr(config_class, "model_fields"):
             for field_name, field in config_class.model_fields.items():
                 field_type = str(field.annotation) if field.annotation else "Any"
+
+                # this string replace is ridiculous
                 field_type = field_type.replace("typing.", "").replace("Optional[", "").replace("]", "")
                 field_type = field_type.replace("Annotated[", "").replace("FieldInfo(", "").replace(")", "")
                 field_type = field_type.replace("llama_stack.apis.inference.inference.", "")
@@ -77,7 +80,7 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
                                 default_value = f"~/.llama/{path_part}"
                     except Exception:
                         default_value = ""
-                elif field.default is None:
+                elif field.default is None or field.default is PydanticUndefined:
                     default_value = ""
 
                 field_info = {
@@ -255,22 +258,28 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
             change_tracker.add_paths(doc_output_dir)
 
             index_content = []
-            index_content.append(f"# {api_name.title()} Providers")
-            index_content.append("")
+            index_content.append(f"# {api_name.title()}\n")
+            index_content.append("## Overview\n")
+
             index_content.append(
-                f"This section contains documentation for all available providers for the **{api_name}** API."
+                f"This section contains documentation for all available providers for the **{api_name}** API.\n"
             )
-            index_content.append("")
+
+            index_content.append("## Providers\n")
+
+            toctree_entries = []
 
             for provider_type, provider in sorted(providers.items()):
-                provider_doc_file = doc_output_dir / f"{provider_type.replace('::', '_').replace(':', '_')}.md"
+                filename = provider_type.replace("::", "_").replace(":", "_")
+                provider_doc_file = doc_output_dir / f"{filename}.md"
 
                 provider_docs = generate_provider_docs(provider, api_name)
 
                 provider_doc_file.write_text(provider_docs)
                 change_tracker.add_paths(provider_doc_file)
+                toctree_entries.append(f"{filename}")
 
-                index_content.append(f"- [{provider_type}]({provider_doc_file.name})")
+            index_content.append(f"```{{toctree}}\n:maxdepth: 1\n\n{'\n'.join(toctree_entries)}\n```\n")
 
             index_file = doc_output_dir / "index.md"
             index_file.write_text("\n".join(index_content))

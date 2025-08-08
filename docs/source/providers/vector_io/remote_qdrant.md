@@ -20,11 +20,15 @@ Please refer to the inline provider documentation.
 | `prefix` | `str \| None` | No |  |  |
 | `timeout` | `int \| None` | No |  |  |
 | `host` | `str \| None` | No |  |  |
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite |  |
 
 ## Sample Configuration
 
 ```yaml
-api_key: ${env.QDRANT_API_KEY}
+api_key: ${env.QDRANT_API_KEY:=}
+kvstore:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/qdrant_registry.db
 
 ```
 

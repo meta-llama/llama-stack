@@ -1,4 +1,4 @@
-# Providers Overview
+# API Providers
 
 The goal of Llama Stack is to build an ecosystem where users can easily swap out different implementations for the same API. Examples for these include:
 - LLM inference providers (e.g., Meta Reference, Ollama, Fireworks, Together, AWS Bedrock, Groq, Cerebras, SambaNova, vLLM, OpenAI, Anthropic, Gemini, WatsonX, etc.),
@@ -12,105 +12,17 @@ Providers come in two flavors:
 
 Importantly, Llama Stack always strives to provide at least one fully inline provider for each API so you can iterate on a fully featured environment locally.
 
-## External Providers
-
-Llama Stack supports external providers that live outside of the main codebase. This allows you to create and maintain your own providers independently.
-
 ```{toctree}
 :maxdepth: 1
 
-external
-```
-
-## Agents
-Run multi-step agentic workflows with LLMs with tool usage, memory (RAG), etc.
-
-```{toctree}
-:maxdepth: 1
-
-agents/index
-```
-
-## DatasetIO
-Interfaces with datasets and data loaders.
-
-```{toctree}
-:maxdepth: 1
-
-datasetio/index
-```
-
-## Eval
-Generates outputs (via Inference or Agents) and perform scoring.
-
-```{toctree}
-:maxdepth: 1
-
-eval/index
-```
-
-## Inference
-Runs inference with an LLM.
-
-```{toctree}
-:maxdepth: 1
-
+external/index
+openai
 inference/index
-```
-
-## Post Training
-Fine-tunes a model.
-
-```{toctree}
-:maxdepth: 1
-
-post_training/index
-```
-
-## Safety
-Applies safety policies to the output at a Systems (not only model) level.
-
-```{toctree}
-:maxdepth: 1
-
+agents/index
+datasetio/index
 safety/index
-```
-
-## Scoring
-Evaluates the outputs of the system.
-
-```{toctree}
-:maxdepth: 1
-
-scoring/index
-```
-
-## Telemetry
-Collects telemetry data from the system.
-
-```{toctree}
-:maxdepth: 1
-
 telemetry/index
-```
-
-## Tool Runtime
-Is associated with the ToolGroup resouces.
-
-```{toctree}
-:maxdepth: 1
-
-tool_runtime/index
-```
-
-## Vector IO
-
-Vector IO refers to operations on vector databases, such as adding documents, searching, and deleting documents.
-Vector IO plays a crucial role in [Retreival Augmented Generation (RAG)](../..//building_applications/rag), where the vector
-io and database are used to store and retrieve documents for retrieval.
-
-```{toctree}
-:maxdepth: 1
-
 vector_io/index
+tool_runtime/index
+files/index
 ```

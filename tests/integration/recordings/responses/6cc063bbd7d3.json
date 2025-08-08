@@ -1,0 +1,383 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/api/generate",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "raw": true,
+      "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nWhat is the name of the US captial?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+      "options": {
+        "temperature": 0.0
+      },
+      "stream": true
+    },
+    "endpoint": "/api/generate",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": [
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:55.9885Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": "The",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.054143Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " capital",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.117658Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " of",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.179422Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " the",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.240328Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " United",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.295992Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " States",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.355683Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " is",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.412176Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " Washington",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.466952Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": ",",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.517222Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " D",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.570491Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": ".C",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.623189Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": ".",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.679221Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " (",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.731373Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": "short",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.781364Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " for",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.831951Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " District",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.888381Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " of",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.943539Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": " Columbia",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:56.997422Z",
+          "done": false,
+          "done_reason": null,
+          "total_duration": null,
+          "load_duration": null,
+          "prompt_eval_count": null,
+          "prompt_eval_duration": null,
+          "eval_count": null,
+          "eval_duration": null,
+          "response": ").",
+          "thinking": null,
+          "context": null
+        }
+      },
+      {
+        "__type__": "ollama._types.GenerateResponse",
+        "__data__": {
+          "model": "llama3.2:3b-instruct-fp16",
+          "created_at": "2025-08-04T22:55:57.056259Z",
+          "done": true,
+          "done_reason": "stop",
+          "total_duration": 1289815458,
+          "load_duration": 119745583,
+          "prompt_eval_count": 26,
+          "prompt_eval_duration": 98000000,
+          "eval_count": 20,
+          "eval_duration": 1071000000,
+          "response": "",
+          "thinking": null,
+          "context": null
+        }
+      }
+    ],
+    "is_streaming": true
+  }
+}

@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, Field, field_validator
@@ -22,7 +22,7 @@ class RRFRanker(BaseModel):
 
     :param type: The type of ranker, always "rrf"
     :param impact_factor: The impact factor for RRF scoring. Higher values give more weight to higher-ranked results.
-                         Must be greater than 0. Default of 60 is from the original RRF paper (Cormack et al., 2009).
+                         Must be greater than 0
     """
 
     type: Literal["rrf"] = "rrf"
@@ -76,25 +76,65 @@ class RAGDocument(BaseModel):
 
 @json_schema_type
 class RAGQueryResult(BaseModel):
+    """Result of a RAG query containing retrieved content and metadata.
+
+    :param content: (Optional) The retrieved content from the query
+    :param metadata: Additional metadata about the query result
+    """
+
     content: InterleavedContent | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 @json_schema_type
 class RAGQueryGenerator(Enum):
+    """Types of query generators for RAG systems.
+
+    :cvar default: Default query generator using simple text processing
+    :cvar llm: LLM-based query generator for enhanced query understanding
+    :cvar custom: Custom query generator implementation
+    """
+
     default = "default"
     llm = "llm"
     custom = "custom"
 
 
 @json_schema_type
+class RAGSearchMode(StrEnum):
+    """
+    Search modes for RAG query retrieval:
+    - VECTOR: Uses vector similarity search for semantic matching
+    - KEYWORD: Uses keyword-based search for exact matching
+    - HYBRID: Combines both vector and keyword search for better results
+    """
+
+    VECTOR = "vector"
+    KEYWORD = "keyword"
+    HYBRID = "hybrid"
+
+
+@json_schema_type
 class DefaultRAGQueryGeneratorConfig(BaseModel):
+    """Configuration for the default RAG query generator.
+
+    :param type: Type of query generator, always 'default'
+    :param separator: String separator used to join query terms
+    """
+
     type: Literal["default"] = "default"
     separator: str = " "
 
 
 @json_schema_type
 class LLMRAGQueryGeneratorConfig(BaseModel):
+    """Configuration for the LLM-based RAG query generator.
+
+    :param type: Type of query generator, always 'llm'
+    :param model: Name of the language model to use for query generation
+    :param template: Template string for formatting the query generation prompt
+    """
+
     type: Literal["llm"] = "llm"
     model: str
     template: str
@@ -128,7 +168,7 @@ class RAGQueryConfig(BaseModel):
     max_tokens_in_context: int = 4096
     max_chunks: int = 5
     chunk_template: str = "Result {index}\nContent: {chunk.content}\nMetadata: {metadata}\n"
-    mode: str | None = None
+    mode: RAGSearchMode | None = RAGSearchMode.VECTOR
     ranker: Ranker | None = Field(default=None)  # Only used for hybrid mode
 
     @field_validator("chunk_template")
@@ -152,7 +192,12 @@ class RAGToolRuntime(Protocol):
         vector_db_id: str,
         chunk_size_in_tokens: int = 512,
     ) -> None:
-        """Index documents so they can be used by the RAG system"""
+        """Index documents so they can be used by the RAG system.
+
+        :param documents: List of documents to index in the RAG system
+        :param vector_db_id: ID of the vector database to store the document embeddings
+        :param chunk_size_in_tokens: (Optional) Size in tokens for document chunking during indexing
+        """
         ...
 
     @webmethod(route="/tool-runtime/rag-tool/query", method="POST")
@@ -162,5 +207,11 @@ class RAGToolRuntime(Protocol):
         vector_db_ids: list[str],
         query_config: RAGQueryConfig | None = None,
     ) -> RAGQueryResult:
-        """Query the RAG system for context; typically invoked by the agent"""
+        """Query the RAG system for context; typically invoked by the agent.
+
+        :param content: The query content to search for in the indexed documents
+        :param vector_db_ids: List of vector database IDs to search within
+        :param query_config: (Optional) Configuration parameters for the query operation
+        :returns: RAGQueryResult containing the retrieved content and metadata
+        """
         ...

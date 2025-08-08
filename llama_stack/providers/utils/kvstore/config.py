@@ -10,7 +10,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from llama_stack.distribution.utils.config_dirs import RUNTIME_BASE_DIR
+from llama_stack.core.utils.config_dirs import RUNTIME_BASE_DIR
 
 
 class KVStoreType(Enum):

@@ -1,0 +1,58 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:11434/v1/v1/chat/completions",
+    "headers": {},
+    "body": {
+      "model": "llama3.2:3b-instruct-fp16",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Test trace openai with temperature 0"
+        }
+      ],
+      "max_tokens": 100,
+      "stream": false,
+      "temperature": 0.7
+    },
+    "endpoint": "/v1/chat/completions",
+    "model": "llama3.2:3b-instruct-fp16"
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
+      "__data__": {
+        "id": "chatcmpl-339",
+        "choices": [
+          {
+            "finish_reason": "length",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "I can guide you through the process, but please note that this is not an official OpenAI API call. OpenAI's API terms and conditions prohibit using their models for malicious purposes.\n\nTo test a model like \"text-temperature\" with a temperature of 0 (i.e., no noise or randomness), we'll need to use a third-party library that connects to the OpenAI API. One such library is `transformers`.\n\nFirst, you need to install the `transformers` and `",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": null
+            }
+          }
+        ],
+        "created": 1754510065,
+        "model": "llama3.2:3b-instruct-fp16",
+        "object": "chat.completion",
+        "service_tier": null,
+        "system_fingerprint": "fp_ollama",
+        "usage": {
+          "completion_tokens": 100,
+          "prompt_tokens": 33,
+          "total_tokens": 133,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        }
+      }
+    },
+    "is_streaming": false
+  }
+}

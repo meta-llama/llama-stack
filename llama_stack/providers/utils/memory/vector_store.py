@@ -30,7 +30,7 @@ from llama_stack.providers.datatypes import Api
 from llama_stack.providers.utils.inference.prompt_adapter import (
     interleaved_content_as_str,
 )
-from llama_stack.providers.utils.vector_io.chunk_utils import generate_chunk_id
+from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
 log = logging.getLogger(__name__)
 
@@ -232,6 +232,10 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    async def delete_chunk(self, chunk_id: str):
+        raise NotImplementedError()
+
+    @abstractmethod
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         raise NotImplementedError()
 
@@ -298,23 +302,25 @@ class VectorDBWithIndex:
         mode = params.get("mode")
         score_threshold = params.get("score_threshold", 0.0)
 
-        # Get ranker configuration
         ranker = params.get("ranker")
         if ranker is None:
-            # Default to RRF with impact_factor=60.0
             reranker_type = RERANKER_TYPE_RRF
             reranker_params = {"impact_factor": 60.0}
         else:
-            reranker_type = ranker.type
-            reranker_params = (
-                {"impact_factor": ranker.impact_factor} if ranker.type == RERANKER_TYPE_RRF else {"alpha": ranker.alpha}
-            )
+            strategy = ranker.get("strategy", "rrf")
+            if strategy == "weighted":
+                weights = ranker.get("params", {}).get("weights", [0.5, 0.5])
+                reranker_type = RERANKER_TYPE_WEIGHTED
+                reranker_params = {"alpha": weights[0] if len(weights) > 0 else 0.5}
+            else:
+                reranker_type = RERANKER_TYPE_RRF
+                k_value = ranker.get("params", {}).get("k", 60.0)
+                reranker_params = {"impact_factor": k_value}
 
         query_string = interleaved_content_as_str(query)
         if mode == "keyword":
             return await self.index.query_keyword(query_string, k, score_threshold)
 
-        # Calculate embeddings for both vector and hybrid modes
         embeddings_response = await self.inference_api.embeddings(self.vector_db.embedding_model, [query_string])
         query_vector = np.array(embeddings_response.embeddings[0], dtype=np.float32)
         if mode == "hybrid":

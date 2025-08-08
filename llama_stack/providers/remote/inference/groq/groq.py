@@ -34,28 +34,23 @@ class GroqInferenceAdapter(LiteLLMOpenAIMixin):
         LiteLLMOpenAIMixin.__init__(
             self,
             model_entries=MODEL_ENTRIES,
+            litellm_provider_name="groq",
             api_key_from_config=config.api_key,
             provider_data_api_key_field="groq_api_key",
         )
         self.config = config
-        self._openai_client = None
 
     async def initialize(self):
         await super().initialize()
 
     async def shutdown(self):
         await super().shutdown()
-        if self._openai_client:
-            await self._openai_client.close()
-            self._openai_client = None
 
     def _get_openai_client(self) -> AsyncOpenAI:
-        if not self._openai_client:
-            self._openai_client = AsyncOpenAI(
-                base_url=f"{self.config.url}/openai/v1",
-                api_key=self.config.api_key,
-            )
-        return self._openai_client
+        return AsyncOpenAI(
+            base_url=f"{self.config.url}/openai/v1",
+            api_key=self.get_api_key(),
+        )
 
     async def openai_chat_completion(
         self,
@@ -102,7 +97,7 @@ class GroqInferenceAdapter(LiteLLMOpenAIMixin):
             tool_choice = "required"
 
         params = await prepare_openai_completion_params(
-            model=model_obj.provider_resource_id.replace("groq/", ""),
+            model=model_obj.provider_resource_id,
             messages=messages,
             frequency_penalty=frequency_penalty,
             function_call=function_call,

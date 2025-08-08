@@ -2,9 +2,12 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.uv]
+required-version = ">=0.7.0"
+
 [project]
 name = "llama_stack"
-version = "0.2.14"
+version = "0.2.17"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -25,10 +28,11 @@ dependencies = [
     "fastapi>=0.115.0,<1.0",                  # server
     "fire",                                   # for MCP in LLS client
     "httpx",
-    "huggingface-hub>=0.30.0,<1.0",
+    "huggingface-hub>=0.34.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.14",
+    "llama-stack-client>=0.2.17",
+    "llama-api-client>=0.1.2",
     "openai>=1.66",
     "prompt-toolkit",
     "python-dotenv",
@@ -42,8 +46,8 @@ dependencies = [
     "h11>=0.16.0",
     "python-multipart>=0.0.20",               # For fastapi Form
     "uvicorn>=0.34.0",                        # server
-    "opentelemetry-sdk",                      # server
-    "opentelemetry-exporter-otlp-proto-http", # server
+    "opentelemetry-sdk>=1.30.0",              # server
+    "opentelemetry-exporter-otlp-proto-http>=1.30.0", # server
     "aiosqlite>=0.21.0",                      # server - for metadata store
     "asyncpg",                                # for metadata store
 ]
@@ -52,29 +56,31 @@ dependencies = [
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.14",
+    "llama-stack-client>=0.2.17",
     "streamlit-option-menu",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest",
+    "pytest>=8.4",
     "pytest-timeout",
-    "pytest-asyncio",
+    "pytest-asyncio>=1.0",
     "pytest-cov",
     "pytest-html",
     "pytest-json-report",
-    "nbval",              # For notebook testing
+    "pytest-socket", # For blocking network access in unit tests
+    "nbval", # For notebook testing
     "black",
     "ruff",
     "types-requests",
     "types-setuptools",
     "pre-commit",
-    "ruamel.yaml",        # needed for openapi generator
+    "ruamel.yaml", # needed for openapi generator
 ]
 # These are the dependencies required for running unit tests.
 unit = [
     "sqlite-vec",
+    "ollama",
     "openai",
     "aiosqlite",
     "aiohttp",
@@ -87,6 +93,10 @@ unit = [
     "blobfile",
     "faiss-cpu",
     "pymilvus>=2.5.12",
+    "litellm",
+    "together",
+    "coverage",
+    "chromadb>=1.0.15",
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
@@ -108,6 +118,7 @@ test = [
     "sqlalchemy[asyncio]>=2.0.41",
     "requests",
     "pymilvus>=2.5.12",
+    "weaviate-client>=4.16.4",
 ]
 docs = [
     "setuptools",
@@ -122,6 +133,7 @@ docs = [
     "sphinxcontrib.redoc",
     "sphinxcontrib.video",
     "sphinxcontrib.mermaid",
+    "sphinx-reredirects",
     "tomli",
     "linkify",
     "sphinxcontrib.openapi",
@@ -226,18 +238,17 @@ follow_imports = "silent"
 exclude = [
     # As we fix more and more of these, we should remove them from the list
     "^llama_stack/cli/download\\.py$",
-    "^llama_stack/distribution/build\\.py$",
-    "^llama_stack/distribution/client\\.py$",
-    "^llama_stack/distribution/request_headers\\.py$",
-    "^llama_stack/distribution/routers/",
-    "^llama_stack/distribution/routing_tables/",
-    "^llama_stack/distribution/server/endpoints\\.py$",
-    "^llama_stack/distribution/server/server\\.py$",
-    "^llama_stack/distribution/stack\\.py$",
-    "^llama_stack/distribution/store/registry\\.py$",
-    "^llama_stack/distribution/utils/exec\\.py$",
-    "^llama_stack/distribution/utils/prompt_for_config\\.py$",
-    "^llama_stack/models/llama/llama3/chat_format\\.py$",
+    "^llama_stack.core/build\\.py$",
+    "^llama_stack.core/client\\.py$",
+    "^llama_stack.core/request_headers\\.py$",
+    "^llama_stack.core/routers/",
+    "^llama_stack.core/routing_tables/",
+    "^llama_stack.core/server/endpoints\\.py$",
+    "^llama_stack.core/server/server\\.py$",
+    "^llama_stack.core/stack\\.py$",
+    "^llama_stack.core/store/registry\\.py$",
+    "^llama_stack.core/utils/exec\\.py$",
+    "^llama_stack.core/utils/prompt_for_config\\.py$",
     "^llama_stack/models/llama/llama3/interface\\.py$",
     "^llama_stack/models/llama/llama3/tokenizer\\.py$",
     "^llama_stack/models/llama/llama3/tool_utils\\.py$",
@@ -250,10 +261,8 @@ exclude = [
     "^llama_stack/models/llama/llama3/generation\\.py$",
     "^llama_stack/models/llama/llama3/multimodal/model\\.py$",
     "^llama_stack/models/llama/llama4/",
-    "^llama_stack/providers/inline/inference/meta_reference/parallel_utils\\.py$",
     "^llama_stack/providers/inline/inference/meta_reference/quantization/fp8_impls\\.py$",
     "^llama_stack/providers/inline/inference/sentence_transformers/sentence_transformers\\.py$",
-    "^llama_stack/providers/inline/inference/vllm/",
     "^llama_stack/providers/inline/post_training/common/validator\\.py$",
     "^llama_stack/providers/inline/safety/code_scanner/",
     "^llama_stack/providers/inline/safety/llama_guard/",
@@ -321,10 +330,10 @@ exclude = [
     "^llama_stack/strong_typing/inspection\\.py$",
     "^llama_stack/strong_typing/schema\\.py$",
     "^llama_stack/strong_typing/serializer\\.py$",
-    "^llama_stack/templates/groq/groq\\.py$",
-    "^llama_stack/templates/llama_api/llama_api\\.py$",
-    "^llama_stack/templates/sambanova/sambanova\\.py$",
-    "^llama_stack/templates/template\\.py$",
+    "^llama_stack/distributions/groq/groq\\.py$",
+    "^llama_stack/distributions/llama_api/llama_api\\.py$",
+    "^llama_stack/distributions/sambanova/sambanova\\.py$",
+    "^llama_stack/distributions/template\\.py$",
 ]
 
 [[tool.mypy.overrides]]
@@ -339,3 +348,9 @@ warn_required_dynamic_aliases = true
 
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["classmethod", "pydantic.field_validator"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "allow_network: Allow network access for specific unit tests",
+]

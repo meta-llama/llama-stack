@@ -6,6 +6,7 @@
 
 import logging
 import os
+import re
 import sys
 from logging.config import dictConfig
 
@@ -14,7 +15,7 @@ from rich.errors import MarkupError
 from rich.logging import RichHandler
 from termcolor import cprint
 
-from .distribution.datatypes import LoggingConfig
+from llama_stack.core.datatypes import LoggingConfig
 
 # Default log level
 DEFAULT_LOG_LEVEL = logging.INFO
@@ -30,6 +31,7 @@ CATEGORIES = [
     "eval",
     "tools",
     "client",
+    "telemetry",
 ]
 
 # Initialize category levels with default level
@@ -113,6 +115,11 @@ def parse_environment_config(env_config: str) -> dict[str, int]:
     return category_levels
 
 
+def strip_rich_markup(text):
+    """Remove Rich markup tags like [dim], [bold magenta], etc."""
+    return re.sub(r"\[/?[a-zA-Z0-9 _#=,]+\]", "", text)
+
+
 class CustomRichHandler(RichHandler):
     def __init__(self, *args, **kwargs):
         kwargs["console"] = Console(width=150)
@@ -129,6 +136,19 @@ class CustomRichHandler(RichHandler):
                 super().emit(record)
             finally:
                 self.markup = original_markup
+
+
+class CustomFileHandler(logging.FileHandler):
+    def __init__(self, filename, mode="a", encoding=None, delay=False):
+        super().__init__(filename, mode, encoding, delay)
+        # Default formatter to match console output
+        self.default_formatter = logging.Formatter("%(asctime)s %(name)s:%(lineno)d %(category)s: %(message)s")
+        self.setFormatter(self.default_formatter)
+
+    def emit(self, record):
+        if hasattr(record, "msg"):
+            record.msg = strip_rich_markup(str(record.msg))
+        super().emit(record)
 
 
 def setup_logging(category_levels: dict[str, int], log_file: str | None) -> None:
@@ -167,8 +187,7 @@ def setup_logging(category_levels: dict[str, int], log_file: str | None) -> None
     # Add a file handler if log_file is set
     if log_file:
         handlers["file"] = {
-            "class": "logging.FileHandler",
-            "formatter": "rich",
+            "()": CustomFileHandler,
             "filename": log_file,
             "mode": "a",
             "encoding": "utf-8",

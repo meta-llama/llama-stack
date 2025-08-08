@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 
+import asyncio
 import base64
 import uuid
 from collections.abc import AsyncGenerator, AsyncIterator
@@ -91,23 +92,93 @@ class OllamaInferenceAdapter(
     InferenceProvider,
     ModelsProtocolPrivate,
 ):
+    # automatically set by the resolver when instantiating the provider
+    __provider_id__: str
+
     def __init__(self, config: OllamaImplConfig) -> None:
         self.register_helper = ModelRegistryHelper(MODEL_ENTRIES)
-        self.url = config.url
+        self.config = config
+        self._clients: dict[asyncio.AbstractEventLoop, AsyncClient] = {}
+        self._openai_client = None
 
     @property
     def client(self) -> AsyncClient:
-        return AsyncClient(host=self.url)
+        # ollama client attaches itself to the current event loop (sadly?)
+        loop = asyncio.get_running_loop()
+        if loop not in self._clients:
+            self._clients[loop] = AsyncClient(host=self.config.url)
+        return self._clients[loop]
 
     @property
     def openai_client(self) -> AsyncOpenAI:
-        return AsyncOpenAI(base_url=f"{self.url}/v1", api_key="ollama")
+        if self._openai_client is None:
+            url = self.config.url.rstrip("/")
+            self._openai_client = AsyncOpenAI(base_url=f"{url}/v1", api_key="ollama")
+        return self._openai_client
 
     async def initialize(self) -> None:
-        logger.debug(f"checking connectivity to Ollama at `{self.url}`...")
+        logger.info(f"checking connectivity to Ollama at `{self.config.url}`...")
         health_response = await self.health()
         if health_response["status"] == HealthStatus.ERROR:
-            raise RuntimeError("Ollama Server is not running, start it using `ollama serve` in a separate terminal")
+            logger.warning(
+                "Ollama Server is not running, make sure to start it using `ollama serve` in a separate terminal"
+            )
+
+    async def should_refresh_models(self) -> bool:
+        return self.config.refresh_models
+
+    async def list_models(self) -> list[Model] | None:
+        provider_id = self.__provider_id__
+        response = await self.client.list()
+
+        # always add the two embedding models which can be pulled on demand
+        models = [
+            Model(
+                identifier="all-minilm:l6-v2",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            # add all-minilm alias
+            Model(
+                identifier="all-minilm",
+                provider_resource_id="all-minilm:l6-v2",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 384,
+                    "context_length": 512,
+                },
+                model_type=ModelType.embedding,
+            ),
+            Model(
+                identifier="nomic-embed-text",
+                provider_resource_id="nomic-embed-text",
+                provider_id=provider_id,
+                metadata={
+                    "embedding_dimension": 768,
+                    "context_length": 8192,
+                },
+                model_type=ModelType.embedding,
+            ),
+        ]
+        for m in response.models:
+            # kill embedding models since we don't know dimensions for them
+            if "bert" in m.details.family:
+                continue
+            models.append(
+                Model(
+                    identifier=m.model,
+                    provider_resource_id=m.model,
+                    provider_id=provider_id,
+                    metadata={},
+                    model_type=ModelType.llm,
+                )
+            )
+        return models
 
     async def health(self) -> HealthResponse:
         """
@@ -124,7 +195,7 @@ class OllamaInferenceAdapter(
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
     async def shutdown(self) -> None:
-        pass
+        self._clients.clear()
 
     async def unregister_model(self, model_id: str) -> None:
         pass
@@ -350,12 +421,7 @@ class OllamaInferenceAdapter(
         except ValueError:
             pass  # Ignore statically unknown model, will check live listing
 
-        if model.provider_resource_id is None:
-            raise ValueError("Model provider_resource_id cannot be None")
-
         if model.model_type == ModelType.embedding:
-            logger.info(f"Pulling embedding model `{model.provider_resource_id}` if necessary...")
-            # TODO: you should pull here only if the model is not found in a list
             response = await self.client.list()
             if model.provider_resource_id not in [m.model for m in response.models]:
                 await self.client.pull(model.provider_resource_id)
@@ -365,9 +431,9 @@ class OllamaInferenceAdapter(
         #  - models not currently running are run by the ollama server as needed
         response = await self.client.list()
         available_models = [m.model for m in response.models]
-        provider_resource_id = self.register_helper.get_provider_model_id(model.provider_resource_id)
-        if provider_resource_id is None:
-            provider_resource_id = model.provider_resource_id
+
+        provider_resource_id = model.provider_resource_id
+        assert provider_resource_id is not None  # mypy
         if provider_resource_id not in available_models:
             available_models_latest = [m.model.split(":latest")[0] for m in response.models]
             if provider_resource_id in available_models_latest:
@@ -375,7 +441,9 @@ class OllamaInferenceAdapter(
                     f"Imprecise provider resource id was used but 'latest' is available in Ollama - using '{model.provider_resource_id}:latest'"
                 )
                 return model
-            raise UnsupportedModelError(model.provider_resource_id, available_models)
+            raise UnsupportedModelError(provider_resource_id, available_models)
+
+        # mutating this should be considered an anti-pattern
         model.provider_resource_id = provider_resource_id
 
         return model

@@ -15,6 +15,7 @@ import faiss
 import numpy as np
 from numpy.typing import NDArray
 
+from llama_stack.apis.common.errors import VectorStoreNotFoundError
 from llama_stack.apis.files import Files
 from llama_stack.apis.inference import Inference, InterleavedContent
 from llama_stack.apis.vector_dbs import VectorDB
@@ -55,6 +56,11 @@ class FaissIndex(EmbeddingIndex):
         self.kvstore = kvstore
         self.bank_id = bank_id
 
+        # A list of chunk id's in the same order as they are in the index,
+        # must be updated when chunks are added or removed
+        self.chunk_id_lock = asyncio.Lock()
+        self.chunk_ids: list[Any] = []
+
     @classmethod
     async def create(cls, dimension: int, kvstore: KVStore | None = None, bank_id: str | None = None):
         instance = cls(dimension, kvstore, bank_id)
@@ -75,6 +81,7 @@ class FaissIndex(EmbeddingIndex):
             buffer = io.BytesIO(base64.b64decode(data["faiss_index"]))
             try:
                 self.index = faiss.deserialize_index(np.load(buffer, allow_pickle=False))
+                self.chunk_ids = [chunk.chunk_id for chunk in self.chunk_by_index.values()]
             except Exception as e:
                 logger.debug(e, exc_info=True)
                 raise ValueError(
@@ -114,9 +121,31 @@ class FaissIndex(EmbeddingIndex):
         for i, chunk in enumerate(chunks):
             self.chunk_by_index[indexlen + i] = chunk
 
-        self.index.add(np.array(embeddings).astype(np.float32))
+        async with self.chunk_id_lock:
+            self.index.add(np.array(embeddings).astype(np.float32))
+            self.chunk_ids.extend([chunk.chunk_id for chunk in chunks])
 
         # Save updated index
+        await self._save_index()
+
+    async def delete_chunk(self, chunk_id: str) -> None:
+        if chunk_id not in self.chunk_ids:
+            return
+
+        async with self.chunk_id_lock:
+            index = self.chunk_ids.index(chunk_id)
+            self.index.remove_ids(np.array([index]))
+
+            new_chunk_by_index = {}
+            for idx, chunk in self.chunk_by_index.items():
+                # Shift all chunks after the removed chunk to the left
+                if idx > index:
+                    new_chunk_by_index[idx - 1] = chunk
+                else:
+                    new_chunk_by_index[idx] = chunk
+            self.chunk_by_index = new_chunk_by_index
+            self.chunk_ids.pop(index)
+
         await self._save_index()
 
     async def query_vector(
@@ -131,8 +160,11 @@ class FaissIndex(EmbeddingIndex):
         for d, i in zip(distances[0], indices[0], strict=False):
             if i < 0:
                 continue
+            score = 1.0 / float(d) if d != 0 else float("inf")
+            if score < score_threshold:
+                continue
             chunks.append(self.chunk_by_index[int(i)])
-            scores.append(1.0 / float(d) if d != 0 else float("inf"))
+            scores.append(score)
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
@@ -181,8 +213,8 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
             )
             self.cache[vector_db.identifier] = index
 
-        # Load existing OpenAI vector stores using the mixin method
-        self.openai_vector_stores = await self._load_openai_vector_stores()
+        # Load existing OpenAI vector stores into the in-memory cache
+        await self.initialize_openai_vector_stores()
 
     async def shutdown(self) -> None:
         # Cleanup if needed
@@ -257,74 +289,12 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
     ) -> QueryChunksResponse:
         index = self.cache.get(vector_db_id)
         if index is None:
-            raise ValueError(f"Vector DB {vector_db_id} not found")
+            raise VectorStoreNotFoundError(vector_db_id)
 
         return await index.query_chunks(query, params)
 
-    # OpenAI Vector Store Mixin abstract method implementations
-    async def _save_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Save vector store metadata to kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.set(key=key, value=json.dumps(store_info))
-
-    async def _load_openai_vector_stores(self) -> dict[str, dict[str, Any]]:
-        """Load all vector store metadata from kvstore."""
-        assert self.kvstore is not None
-        start_key = OPENAI_VECTOR_STORES_PREFIX
-        end_key = f"{OPENAI_VECTOR_STORES_PREFIX}\xff"
-        stored_openai_stores = await self.kvstore.values_in_range(start_key, end_key)
-
-        stores = {}
-        for store_data in stored_openai_stores:
-            store_info = json.loads(store_data)
-            stores[store_info["id"]] = store_info
-        return stores
-
-    async def _update_openai_vector_store(self, store_id: str, store_info: dict[str, Any]) -> None:
-        """Update vector store metadata in kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.set(key=key, value=json.dumps(store_info))
-
-    async def _delete_openai_vector_store_from_storage(self, store_id: str) -> None:
-        """Delete vector store metadata from kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_PREFIX}{store_id}"
-        await self.kvstore.delete(key)
-
-    async def _save_openai_vector_store_file(
-        self, store_id: str, file_id: str, file_info: dict[str, Any], file_contents: list[dict[str, Any]]
-    ) -> None:
-        """Save vector store file metadata to kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.set(key=key, value=json.dumps(file_info))
-        content_key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.set(key=content_key, value=json.dumps(file_contents))
-
-    async def _load_openai_vector_store_file(self, store_id: str, file_id: str) -> dict[str, Any]:
-        """Load vector store file metadata from kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
-        stored_data = await self.kvstore.get(key)
-        return json.loads(stored_data) if stored_data else {}
-
-    async def _load_openai_vector_store_file_contents(self, store_id: str, file_id: str) -> list[dict[str, Any]]:
-        """Load vector store file contents from kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_CONTENTS_PREFIX}{store_id}:{file_id}"
-        stored_data = await self.kvstore.get(key)
-        return json.loads(stored_data) if stored_data else []
-
-    async def _update_openai_vector_store_file(self, store_id: str, file_id: str, file_info: dict[str, Any]) -> None:
-        """Update vector store file metadata in kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.set(key=key, value=json.dumps(file_info))
-
-    async def _delete_openai_vector_store_file_from_storage(self, store_id: str, file_id: str) -> None:
-        """Delete vector store file metadata from kvstore."""
-        assert self.kvstore is not None
-        key = f"{OPENAI_VECTOR_STORES_FILES_PREFIX}{store_id}:{file_id}"
-        await self.kvstore.delete(key)
+    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+        """Delete a chunk from a faiss index"""
+        faiss_index = self.cache[store_id].index
+        for chunk_id in chunk_ids:
+            await faiss_index.delete_chunk(chunk_id)

@@ -1,6 +1,12 @@
 "use client";
 
-import { MessageSquareText, MessagesSquare, MoveUpRight } from "lucide-react";
+import {
+  MessageSquareText,
+  MessagesSquare,
+  MoveUpRight,
+  Database,
+  MessageCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -16,7 +22,14 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+// Extracted Chat Playground item
+const chatPlaygroundItem = {
+  title: "Chat Playground",
+  url: "/chat-playground",
+  icon: MessageCircle,
+};
 
+// Removed Chat Playground from log items
 const logItems = [
   {
     title: "Chat Completions",
@@ -27,6 +40,11 @@ const logItems = [
     title: "Responses",
     url: "/logs/responses",
     icon: MessagesSquare,
+  },
+  {
+    title: "Vector Stores",
+    url: "/logs/vector-stores",
+    icon: Database,
   },
   {
     title: "Documentation",
@@ -44,6 +62,35 @@ export function AppSidebar() {
         <Link href="/">Llama Stack</Link>
       </SidebarHeader>
       <SidebarContent>
+        {/* Chat Playground as its own section */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className={cn(
+                    "justify-start",
+                    pathname.startsWith(chatPlaygroundItem.url) &&
+                      "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
+                  )}
+                >
+                  <Link href={chatPlaygroundItem.url}>
+                    <chatPlaygroundItem.icon
+                      className={cn(
+                        pathname.startsWith(chatPlaygroundItem.url) && "text-gray-900 dark:text-gray-100",
+                        "mr-2 h-4 w-4",
+                      )}
+                    />
+                    <span>{chatPlaygroundItem.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Logs section */}
         <SidebarGroup>
           <SidebarGroupLabel>Logs</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -57,13 +104,13 @@ export function AppSidebar() {
                       className={cn(
                         "justify-start",
                         isActive &&
-                          "bg-gray-200 hover:bg-gray-200 text-primary hover:text-primary",
+                          "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
                       )}
                     >
                       <Link href={item.url}>
                         <item.icon
                           className={cn(
-                            isActive && "text-primary",
+                            isActive && "text-gray-900 dark:text-gray-100",
                             "mr-2 h-4 w-4",
                           )}
                         />

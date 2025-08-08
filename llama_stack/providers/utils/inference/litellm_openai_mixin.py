@@ -13,7 +13,6 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.common.errors import UnsupportedModelError
 from llama_stack.apis.inference import (
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -39,8 +38,7 @@ from llama_stack.apis.inference import (
     ToolDefinition,
     ToolPromptFormat,
 )
-from llama_stack.apis.models import Model
-from llama_stack.distribution.request_headers import NeedsRequestProviderData
+from llama_stack.core.request_headers import NeedsRequestProviderData
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.inference.model_registry import ModelRegistryHelper
 from llama_stack.providers.utils.inference.openai_compat import (
@@ -70,14 +68,32 @@ class LiteLLMOpenAIMixin(
     def __init__(
         self,
         model_entries,
+        litellm_provider_name: str,
         api_key_from_config: str | None,
         provider_data_api_key_field: str,
         openai_compat_api_base: str | None = None,
+        download_images: bool = False,
+        json_schema_strict: bool = True,
     ):
+        """
+        Initialize the LiteLLMOpenAIMixin.
+
+        :param model_entries: The model entries to register.
+        :param api_key_from_config: The API key to use from the config.
+        :param provider_data_api_key_field: The field in the provider data that contains the API key.
+        :param litellm_provider_name: The name of the provider, used for model lookups.
+        :param openai_compat_api_base: The base URL for OpenAI compatibility, or None if not using OpenAI compatibility.
+        :param download_images: Whether to download images and convert to base64 for message conversion.
+        :param json_schema_strict: Whether to use strict mode for JSON schema validation.
+        """
         ModelRegistryHelper.__init__(self, model_entries)
+
+        self.litellm_provider_name = litellm_provider_name
         self.api_key_from_config = api_key_from_config
         self.provider_data_api_key_field = provider_data_api_key_field
         self.api_base = openai_compat_api_base
+        self.download_images = download_images
+        self.json_schema_strict = json_schema_strict
 
         if openai_compat_api_base:
             self.is_openai_compat = True
@@ -90,16 +106,14 @@ class LiteLLMOpenAIMixin(
     async def shutdown(self):
         pass
 
-    async def register_model(self, model: Model) -> Model:
-        model_id = self.get_provider_model_id(model.provider_resource_id)
-        if model_id is None:
-            raise UnsupportedModelError(model.provider_resource_id, self.alias_to_provider_id_map.keys())
-        return model
-
     def get_litellm_model_name(self, model_id: str) -> str:
         # users may be using openai/ prefix in their model names. the openai/models.py did this by default.
         # model_id.startswith("openai/") is for backwards compatibility.
-        return "openai/" + model_id if self.is_openai_compat and not model_id.startswith("openai/") else model_id
+        return (
+            f"{self.litellm_provider_name}/{model_id}"
+            if self.is_openai_compat and not model_id.startswith(self.litellm_provider_name)
+            else model_id
+        )
 
     async def completion(
         self,
@@ -144,9 +158,8 @@ class LiteLLMOpenAIMixin(
         params["model"] = self.get_litellm_model_name(params["model"])
 
         logger.debug(f"params to litellm (openai compat): {params}")
-        # unfortunately, we need to use synchronous litellm.completion here because litellm
-        # caches various httpx.client objects in a non-eventloop aware manner
-        response = litellm.completion(**params)
+        # see https://docs.litellm.ai/docs/completion/stream#async-completion
+        response = await litellm.acompletion(**params)
         if stream:
             return self._stream_chat_completion(response)
         else:
@@ -156,7 +169,7 @@ class LiteLLMOpenAIMixin(
         self, response: litellm.ModelResponse
     ) -> AsyncIterator[ChatCompletionResponseStreamChunk]:
         async def _stream_generator():
-            for chunk in response:
+            async for chunk in response:
                 yield chunk
 
         async for chunk in convert_openai_chat_completion_stream(
@@ -198,7 +211,9 @@ class LiteLLMOpenAIMixin(
     async def _get_params(self, request: ChatCompletionRequest) -> dict:
         input_dict = {}
 
-        input_dict["messages"] = [await convert_message_to_openai_dict_new(m) for m in request.messages]
+        input_dict["messages"] = [
+            await convert_message_to_openai_dict_new(m, download_images=self.download_images) for m in request.messages
+        ]
         if fmt := request.response_format:
             if not isinstance(fmt, JsonSchemaResponseFormat):
                 raise ValueError(
@@ -218,7 +233,7 @@ class LiteLLMOpenAIMixin(
                 "json_schema": {
                     "name": name,
                     "schema": fmt,
-                    "strict": True,
+                    "strict": self.json_schema_strict,
                 },
             }
         if request.tools:
@@ -246,6 +261,12 @@ class LiteLLMOpenAIMixin(
             api_key = getattr(provider_data, key_field)
         else:
             api_key = self.api_key_from_config
+        if not api_key:
+            raise ValueError(
+                "API key is not set. Please provide a valid API key in the "
+                "provider data header, e.g. x-llamastack-provider-data: "
+                f'{{"{key_field}": "<API_KEY>"}}, or in the provider config.'
+            )
         return api_key
 
     async def embeddings(
@@ -429,3 +450,17 @@ class LiteLLMOpenAIMixin(
         logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for OpenAI Compat")
+
+    async def check_model_availability(self, model: str) -> bool:
+        """
+        Check if a specific model is available via LiteLLM for the current
+        provider (self.litellm_provider_name).
+
+        :param model: The model identifier to check.
+        :return: True if the model is available dynamically, False otherwise.
+        """
+        if self.litellm_provider_name not in litellm.models_by_provider:
+            logger.error(f"Provider {self.litellm_provider_name} is not registered in litellm.")
+            return False
+
+        return model in litellm.models_by_provider[self.litellm_provider_name]

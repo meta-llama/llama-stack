@@ -11,10 +11,8 @@ from io import BytesIO
 import pytest
 from llama_stack_client import BadRequestError, LlamaStackClient
 from openai import BadRequestError as OpenAIBadRequestError
-from openai import OpenAI
 
 from llama_stack.apis.vector_io import Chunk
-from llama_stack.distribution.library_client import LlamaStackAsLibraryClient
 
 logger = logging.getLogger(__name__)
 
@@ -22,32 +20,56 @@ logger = logging.getLogger(__name__)
 def skip_if_provider_doesnt_support_openai_vector_stores(client_with_models):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
     for p in vector_io_providers:
-        if p.provider_type in ["inline::faiss", "inline::sqlite-vec", "inline::milvus"]:
+        if p.provider_type in [
+            "inline::faiss",
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "inline::chromadb",
+            "remote::pgvector",
+            "remote::chromadb",
+            "remote::qdrant",
+            "inline::qdrant",
+            "remote::weaviate",
+            "remote::milvus",
+        ]:
             return
 
     pytest.skip("OpenAI vector stores are not supported by any provider")
 
 
-def skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models):
+def skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_models, search_mode):
     vector_io_providers = [p for p in client_with_models.providers.list() if p.api == "vector_io"]
+    search_mode_support = {
+        "vector": [
+            "inline::faiss",
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "inline::chromadb",
+            "inline::qdrant",
+            "remote::pgvector",
+            "remote::chromadb",
+            "remote::weaviate",
+            "remote::qdrant",
+            "remote::milvus",
+        ],
+        "keyword": [
+            "inline::sqlite-vec",
+            "remote::milvus",
+        ],
+        "hybrid": [
+            "inline::sqlite-vec",
+            "inline::milvus",
+            "remote::milvus",
+        ],
+    }
+    supported_providers = search_mode_support.get(search_mode, [])
     for p in vector_io_providers:
-        if p.provider_type in ["inline::faiss", "inline::sqlite-vec", "inline::milvus"]:
+        if p.provider_type in supported_providers:
             return
-
-    pytest.skip("OpenAI vector stores are not supported by any provider")
-
-
-@pytest.fixture
-def openai_client(client_with_models):
-    base_url = f"{client_with_models.base_url}/v1/openai/v1"
-    return OpenAI(base_url=base_url, api_key="fake")
-
-
-@pytest.fixture(params=["openai_client", "llama_stack_client"])
-def compat_client(request, client_with_models):
-    if request.param == "openai_client" and isinstance(client_with_models, LlamaStackAsLibraryClient):
-        pytest.skip("OpenAI client tests not supported with library client")
-    return request.getfixturevalue(request.param)
+    pytest.skip(
+        f"Search mode '{search_mode}' is not supported by any available provider. "
+        f"Supported providers for '{search_mode}': {supported_providers}"
+    )
 
 
 @pytest.fixture(scope="session")
@@ -111,11 +133,11 @@ def test_openai_create_vector_store(compat_client_with_empty_stores, client_with
 
     # Create a vector store
     vector_store = client.vector_stores.create(
-        name="test_vector_store", metadata={"purpose": "testing", "environment": "integration"}
+        name="Vs_test_vector_store", metadata={"purpose": "testing", "environment": "integration"}
     )
 
     assert vector_store is not None
-    assert vector_store.name == "test_vector_store"
+    assert vector_store.name == "Vs_test_vector_store"
     assert vector_store.object == "vector_store"
     assert vector_store.status in ["completed", "in_progress"]
     assert vector_store.metadata["purpose"] == "testing"
@@ -452,7 +474,6 @@ def test_openai_vector_store_search_with_max_num_results(
 def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -504,7 +525,6 @@ def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client
 def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach files on creation."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -561,7 +581,6 @@ def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_s
 def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store list files."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
@@ -635,7 +654,6 @@ def test_openai_vector_store_list_files_invalid_vector_store(compat_client_with_
 def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store retrieve file contents."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files retrieve contents is not yet supported with LlamaStackClient")
@@ -677,7 +695,6 @@ def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_sto
 def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
@@ -730,12 +747,9 @@ def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client
     assert updated_vector_store.file_counts.in_progress == 0
 
 
-# TODO: Remove this xfail once we have a way to remove embeddings from vector store
-@pytest.mark.xfail(reason="Vector Store Files delete doesn't remove embeddings from vector store", strict=True)
 def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file removes from vector store."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
@@ -777,7 +791,6 @@ def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client
 def test_openai_vector_store_update_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store update file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-    skip_if_provider_doesnt_support_openai_vector_store_files_api(client_with_models)
 
     if isinstance(compat_client_with_empty_stores, LlamaStackClient):
         pytest.skip("Vector Store Files update is not yet supported with LlamaStackClient")
@@ -821,21 +834,78 @@ def test_openai_vector_store_update_file(compat_client_with_empty_stores, client
     assert retrieved_file.attributes["foo"] == "baz"
 
 
-@pytest.mark.skip(reason="Client library needs to be scaffolded to support search_mode parameter")
-def test_openai_vector_store_search_modes():
-    """Test OpenAI vector store search with different search modes.
-
-    This test is skipped because the client library
-    needs to be regenerated from the updated OpenAPI spec to support the
-    search_mode parameter. Once the client library is updated, this test
-    can be enabled to verify:
-    - vector search mode (default)
-    - keyword search mode
-    - hybrid search mode
-    - invalid search mode validation
+def test_create_vector_store_files_duplicate_vector_store_name(compat_client_with_empty_stores, client_with_models):
     """
-    # TODO: Enable this test once llama_stack_client is updated to support search_mode
-    # The server-side implementation is complete but the client
-    # library needs to be updated:
-    # https://github.com/meta-llama/llama-stack-client-python/blob/52c0b5d23e9ae67ceb09d755143d436f38c20547/src/llama_stack_client/resources/vector_stores/vector_stores.py#L314
-    pass
+    This test confirms that client.vector_stores.create() creates a unique ID
+    """
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+
+    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
+        pytest.skip("Vector Store Files create is not yet supported with LlamaStackClient")
+
+    compat_client = compat_client_with_empty_stores
+
+    # Create a vector store with files
+    file_ids = []
+    for i in range(3):
+        with BytesIO(f"This is a test file {i}".encode()) as file_buffer:
+            file_buffer.name = f"openai_test_{i}.txt"
+            file = compat_client.files.create(file=file_buffer, purpose="assistants")
+        file_ids.append(file.id)
+
+    vector_store = compat_client.vector_stores.create(
+        name="test_store_with_files",
+    )
+    assert vector_store.file_counts.completed == 0
+    assert vector_store.file_counts.total == 0
+    assert vector_store.file_counts.cancelled == 0
+    assert vector_store.file_counts.failed == 0
+    assert vector_store.file_counts.in_progress == 0
+
+    vector_store2 = compat_client.vector_stores.create(
+        name="test_store_with_files",
+    )
+
+    vector_stores_list = compat_client.vector_stores.list()
+    assert len(vector_stores_list.data) == 2
+
+    created_file = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_ids[0],
+    )
+    assert created_file.status == "completed"
+
+    _ = compat_client.vector_stores.delete(vector_store2.id)
+    created_file_from_non_deleted_vector_store = compat_client.vector_stores.files.create(
+        vector_store_id=vector_store.id,
+        file_id=file_ids[1],
+    )
+    assert created_file_from_non_deleted_vector_store.status == "completed"
+
+    vector_stores_list_post_delete = compat_client.vector_stores.list()
+    assert len(vector_stores_list_post_delete.data) == 1
+
+
+@pytest.mark.parametrize("search_mode", ["vector", "keyword", "hybrid"])
+def test_openai_vector_store_search_modes(llama_stack_client, client_with_models, sample_chunks, search_mode):
+    skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
+    skip_if_provider_doesnt_support_openai_vector_stores_search(client_with_models, search_mode)
+
+    vector_store = llama_stack_client.vector_stores.create(
+        name=f"search_mode_test_{search_mode}",
+        metadata={"purpose": "search_mode_testing"},
+    )
+
+    client_with_models.vector_io.insert(
+        vector_db_id=vector_store.id,
+        chunks=sample_chunks,
+    )
+    query = "Python programming language"
+
+    search_response = llama_stack_client.vector_stores.search(
+        vector_store_id=vector_store.id,
+        query=query,
+        max_num_results=4,
+        search_mode=search_mode,
+    )
+    assert search_response is not None

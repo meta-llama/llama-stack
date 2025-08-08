@@ -1,4 +1,4 @@
-# Detailed Tutorial
+## Detailed Tutorial
 
 In this guide, we'll walk through how you can use the Llama Stack (server and client SDK) to test a simple agent.
 A Llama Stack agent is a simple integrated system that can perform tasks by combining a Llama model for reasoning with
@@ -10,7 +10,7 @@ Llama Stack is a stateful service with REST APIs to support seamless transition 
 In this guide, we'll walk through how to build a RAG agent locally using Llama Stack with [Ollama](https://ollama.com/)
 as the inference [provider](../providers/index.md#inference) for a Llama Model.
 
-## Step 1: Installation and Setup
+### Step 1: Installation and Setup
 
 Install Ollama by following the instructions on the [Ollama website](https://ollama.com/download), then
 download Llama 3.2 3B model, and then start the Ollama service.
@@ -45,7 +45,7 @@ Setup your virtual environment.
 uv sync --python 3.12
 source .venv/bin/activate
 ```
-## Step 2:  Run Llama Stack
+### Step 2:  Run Llama Stack
 Llama Stack is a server that exposes multiple APIs, you connect with it using the Llama Stack client SDK.
 
 ::::{tab-set}
@@ -54,15 +54,15 @@ Llama Stack is a server that exposes multiple APIs, you connect with it using th
 You can use Python to build and run the Llama Stack server, which is useful for testing and development.
 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
-which defines the providers and their settings.
+which defines the providers and their settings. The generated configuration serves as a starting point that you can [customize for your specific needs](../distributions/customizing_run_yaml.md).
 Now let's build and run the Llama Stack config for Ollama.
 We use `starter` as template. By default all providers are disabled, this requires enable ollama by passing environment variables.
 
 ```bash
-ENABLE_OLLAMA=ollama OLLAMA_INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type venv --run
+llama stack build --distro starter --image-type venv --run
 ```
 :::
-:::{tab-item} Using `conda`
+:::{tab-item} Using `venv`
 You can use Python to build and run the Llama Stack server, which is useful for testing and development.
 
 Llama Stack uses a [YAML configuration file](../distributions/configuration.md) to specify the stack setup,
@@ -70,18 +70,16 @@ which defines the providers and their settings.
 Now let's build and run the Llama Stack config for Ollama.
 
 ```bash
-ENABLE_OLLAMA=ollama INFERENCE_MODEL="llama3.2:3b" llama stack build --template starter --image-type conda --run
+llama stack build --distro starter --image-type venv --run
 ```
 :::
 :::{tab-item} Using a Container
 You can use a container image to run the Llama Stack server. We provide several container images for the server
 component that works with different inference providers out of the box. For this guide, we will use
 `llamastack/distribution-starter` as the container image. If you'd like to build your own image or customize the
-configurations, please check out [this guide](../references/index.md).
+configurations, please check out [this guide](../distributions/building_distro.md).
 First lets setup some environment variables and create a local directory to mount into the container’s file system.
 ```bash
-export INFERENCE_MODEL="llama3.2:3b"
-export ENABLE_OLLAMA=ollama
 export LLAMA_STACK_PORT=8321
 mkdir -p ~/.llama
 ```
@@ -94,7 +92,6 @@ docker run -it \
   -v ~/.llama:/root/.llama \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://host.docker.internal:11434
 ```
 Note to start the container with Podman, you can do the same but replace `docker` at the start of the command with
@@ -116,7 +113,6 @@ docker run -it \
   --network=host \
   llamastack/distribution-starter \
   --port $LLAMA_STACK_PORT \
-  --env INFERENCE_MODEL=$INFERENCE_MODEL \
   --env OLLAMA_URL=http://localhost:11434
 ```
 :::
@@ -132,7 +128,7 @@ Now you can use the Llama Stack client to run inference and build agents!
 You can reuse the server setup or use the [Llama Stack Client](https://github.com/meta-llama/llama-stack-client-python/).
 Note that the client package is already included in the `llama-stack` package.
 
-## Step 3: Run Client CLI
+### Step 3: Run Client CLI
 
 Open a new terminal and navigate to the same directory you started the server from. Then set up a new or activate your
 existing server virtual environment.
@@ -154,13 +150,7 @@ pip install llama-stack-client
 ```
 :::
 
-:::{tab-item} Install with `conda`
-```bash
-yes | conda create -n stack-client python=3.12
-conda activate stack-client
-pip install llama-stack-client
-```
-:::
+
 ::::
 
 Now let's use the `llama-stack-client` [CLI](../references/llama_stack_client_cli_reference.md) to check the
@@ -232,7 +222,7 @@ OpenAIChatCompletion(
 )
 ```
 
-## Step 4: Run the Demos
+### Step 4: Run the Demos
 
 Note that these demos show the [Python Client SDK](../references/python_sdk_reference/index.md).
 Other SDKs are also available, please refer to the [Client SDK](../index.md#client-sdks) list for the complete options.
@@ -242,7 +232,7 @@ Other SDKs are also available, please refer to the [Client SDK](../index.md#clie
 :::{tab-item} Basic Inference
 Now you can run inference using the Llama Stack client SDK.
 
-### i. Create the Script
+#### i. Create the Script
 
 Create a file `inference.py` and add the following code:
 ```python
@@ -269,7 +259,7 @@ response = client.chat.completions.create(
 print(response)
 ```
 
-### ii. Run the Script
+#### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python inference.py
@@ -283,7 +273,7 @@ OpenAIChatCompletion(id='chatcmpl-30cd0f28-a2ad-4b6d-934b-13707fc60ebf', choices
 
 :::{tab-item} Build a Simple Agent
 Next we can move beyond simple inference and build an agent that can perform tasks using the Llama Stack server.
-### i. Create the Script
+#### i. Create the Script
 Create a file `agent.py` and add the following code:
 
 ```python
@@ -455,7 +445,7 @@ uv run python agent.py
 
 For our last demo, we can build a RAG agent that can answer questions about the Torchtune project using the documents
 in a vector database.
-### i. Create the Script
+#### i. Create the Script
 Create a file `rag_agent.py` and add the following code:
 
 ```python
@@ -533,7 +523,7 @@ for t in turns:
     for event in AgentEventLogger().log(stream):
         event.print()
 ```
-### ii. Run the Script
+#### ii. Run the Script
 Let's run the script using `uv`
 ```bash
 uv run python rag_agent.py

@@ -41,12 +41,16 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `db_path` | `<class 'str'>` | No | PydanticUndefined |  |
+| `db_path` | `<class 'str'>` | No |  |  |
+| `kvstore` | `utils.kvstore.config.RedisKVStoreConfig \| utils.kvstore.config.SqliteKVStoreConfig \| utils.kvstore.config.PostgresKVStoreConfig \| utils.kvstore.config.MongoDBKVStoreConfig` | No | sqlite | Config for KV store backend |
 
 ## Sample Configuration
 
 ```yaml
 db_path: ${env.CHROMADB_PATH}
+kvstore:
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/dummy}/chroma_inline_registry.db
 
 ```
 
