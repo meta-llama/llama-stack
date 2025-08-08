@@ -16,6 +16,29 @@ from llama_stack.log import get_logger
 logger = get_logger(name="console_span_processor", category="telemetry")
 
 
+def _mask_sensitive_value(value: str) -> str:
+    """Mask sensitive information like API keys in string values."""
+    # These should cover OpenAI, Anthropic, Google at least
+    api_key_prefixes = [
+        "sk-",  # OpenAI, Anthropic
+        "AIza",  # Google
+    ]
+
+    for prefix in api_key_prefixes:
+        if value.startswith(prefix):
+            logger.debug("Masking potentially sensitive API key value")
+            return "********"
+
+    # Also check for long alphanumeric strings that might be API keys
+    # This is best effort, as it's not always possible to determine if a string is an API key from a
+    # known prefix.
+    if len(value) >= 32 and value.isalnum():
+        logger.debug("Masking potentially sensitive long alphanumeric API key value")
+        return "********"
+
+    return value
+
+
 class ConsoleSpanProcessor(SpanProcessor):
     def __init__(self, print_attributes: bool = False):
         self.print_attributes = print_attributes
@@ -43,6 +66,7 @@ class ConsoleSpanProcessor(SpanProcessor):
                 if key.startswith("__"):
                     continue
                 str_value = str(value)
+                str_value = _mask_sensitive_value(str_value)
                 if len(str_value) > 1000:
                     str_value = str_value[:997] + "..."
                 logger.info(f"    [dim]{key}[/dim]: {str_value}")
@@ -64,7 +88,10 @@ class ConsoleSpanProcessor(SpanProcessor):
                 for key, value in event.attributes.items():
                     if key.startswith("__") or key in ["message", "severity"]:
                         continue
-                    logger.info(f"[dim]{key}[/dim]: {value}")
+
+                    str_value = str(value)
+                    str_value = _mask_sensitive_value(str_value)
+                    logger.info(f"[dim]{key}[/dim]: {str_value}")
 
     def shutdown(self) -> None:
         """Shutdown the processor."""
