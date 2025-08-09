@@ -175,7 +175,7 @@ const handleSubmitWithContent = async (content: string) => {
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Chat Playground</h1>
+        <h1 className="text-2xl font-bold">Chat Playground (Completions)</h1>
         <div className="flex gap-2">
           <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isModelsLoading || isGenerating}>
             <SelectTrigger className="w-[180px]">
