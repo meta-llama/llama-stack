@@ -99,7 +99,8 @@ def parse_environment_config(env_config: str) -> dict[str, int]:
         Dict[str, int]: A dictionary mapping categories to their log levels.
     """
     category_levels = {}
-    for pair in env_config.split(";"):
+    delimiter = ","
+    for pair in env_config.split(delimiter):
         if not pair.strip():
             continue
 
