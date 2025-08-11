@@ -195,9 +195,22 @@ class ChatAgent(ShieldRunnerMixin):
             attributes={"agent_id": self.agent_id, **(attributes or {})},
         )
 
-        # Create task with name for better debugging and potential cleanup
+        # Create task with name for better debugging and capture any async errors
         task_name = f"metric-{metric_name}-{self.agent_id}"
-        asyncio.create_task(self.telemetry_api.log_event(metric), name=task_name)
+        task = asyncio.create_task(self.telemetry_api.log_event(metric), name=task_name)
+
+        def _on_metric_task_done(t: asyncio.Task) -> None:
+            try:
+                exc = t.exception()
+            except asyncio.CancelledError:
+                logger.debug("Metric task %s was cancelled", task_name)
+                return
+            if exc is not None:
+                logger.warning("Metric task %s failed: %s", task_name, exc)
+
+        # Only add callback if task creation succeeded (not None from mocking)
+        if task is not None:
+            task.add_done_callback(_on_metric_task_done)
 
     def _track_step(self):
         self._emit_metric("llama_stack_agent_steps_total", 1, "1")
