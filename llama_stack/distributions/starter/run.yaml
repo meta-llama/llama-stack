@@ -130,10 +130,14 @@ providers:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/files_metadata.db
   safety:
-  - provider_id: CodeScanner
-    provider_type: inline::code-scanner
-    config:
+   - provider_id: llama-guard
+     provider_type: inline::llama-guard
+     config:
       excluded_categories: []
+   - provider_id: CodeScanner
+     provider_type: inline::code-scanner
+     config:
+       excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -212,6 +216,9 @@ inference_store:
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/inference_store.db
 models: []
 shields:
+- shield_id: llama-guard
+  provider_id: ${env.SAFETY_MODEL:+llama-guard}
+  provider_shield_id: ${env.SAFETY_MODEL:=}
 - shield_id: CodeScanner
   provider_id: ${env.SAFETY_MODEL:+CodeScanner}
   provider_shield_id: ${env.SAFETY_MODEL:=}
