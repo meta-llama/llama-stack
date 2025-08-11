@@ -42,8 +42,8 @@ client.initialize()
 ### Create Completion
 
 ```python
-response = client.completion(
-    model_id="meta-llama/Llama-3.1-8b-Instruct",
+response = client.inference.completion(
+    model_id="meta-llama/Llama-3.1-8B-Instruct",
     content="Complete the sentence using one word: Roses are red, violets are :",
     stream=False,
     sampling_params={
@@ -56,8 +56,8 @@ print(f"Response: {response.content}")
 ### Create Chat Completion
 
 ```python
-response = client.chat_completion(
-    model_id="meta-llama/Llama-3.1-8b-Instruct",
+response = client.inference.chat_completion(
+    model_id="meta-llama/Llama-3.1-8B-Instruct",
     messages=[
         {
             "role": "system",
@@ -78,8 +78,10 @@ print(f"Response: {response.completion_message.content}")
 
 ### Create Embeddings
 ```python
-response = client.embeddings(
-    model_id="meta-llama/Llama-3.1-8b-Instruct", contents=["foo", "bar", "baz"]
+response = client.inference.embeddings(
+    model_id="nvidia/llama-3.2-nv-embedqa-1b-v2",
+    contents=["What is the capital of France?"],
+    task_type="query",
 )
 print(f"Embeddings: {response.embeddings}")
 ```
