@@ -34,6 +34,7 @@ def skip_if_model_doesnt_support_openai_completion(client_with_models, model_id)
         "remote::runpod",
         "remote::sambanova",
         "remote::tgi",
+        "remote::vertexai",
     ):
         pytest.skip(f"Model {model_id} hosted by {provider.provider_type} doesn't support OpenAI completions.")
 
