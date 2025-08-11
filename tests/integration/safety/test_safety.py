@@ -163,6 +163,58 @@ def test_safety_with_code_scanner(client_with_models, code_scanner_shield_id, mo
     assert response.violation.user_message == "Sorry, I found security concerns in the code."
 
 
+# The code scanning shield uses Meta's Code Shield library to detect violations
+# in which an LLM generates insecure code. Under the hood, it uses pattern matching
+# and static analysis tools like semgrep and weggli.
+def test_unsafe_input_with_code_scanner_moderations(client_with_models, code_scanner_shield_id, model_providers):
+    code_safety_enabled = len(CODE_SCANNER_ENABLED_PROVIDERS & model_providers) > 0
+    if not code_safety_enabled:
+        pytest.skip(f"Testing code scanner shields is not supported for model_providers {model_providers}")
+
+    insecure_code = """
+    Here is an example of code that hashes a password using MD5:
+
+    ```
+    import hashlib
+    password = 'securepassword123'.encode()
+    hashed_password = hashlib.md5(password).hexdigest()
+    print("Insecure hashed password:", hashed_password)
+    ```
+    """
+    moderation_object = client_with_models.moderations.create(
+        input=insecure_code,
+        model=code_scanner_shield_id,
+    )
+    assert moderation_object.results[0].flagged is True, "Code scanner should have flagged the code as insecure"
+    assert all(value is True for value in moderation_object.results[0].categories.values()), (
+        "Code scanner shield should have detected code insecure category"
+    )
+
+
+def test_safe_input_with_code_scanner_moderations_api(client_with_models, code_scanner_shield_id, model_providers):
+    code_safety_enabled = len(CODE_SCANNER_ENABLED_PROVIDERS & model_providers) > 0
+    if not code_safety_enabled:
+        pytest.skip(f"Testing code scanner shields is not supported for model_providers {model_providers}")
+
+    secure_code = """
+    Extract the first 5 characters from a string:
+    ```
+        text = "Hello World"
+        first_five = text[:5]
+        print(first_five)  # Output: "Hello"
+
+        # Safe handling for strings shorter than 5 characters
+        def get_first_five(text):
+            return text[:5] if text else ""
+    ```
+    """
+    moderation_object = client_with_models.moderations.create(
+        input=secure_code,
+        model=code_scanner_shield_id,
+    )
+    assert moderation_object.results[0].flagged is False, "Code scanner should not have flagged the code as insecure"
+
+
 # We can use an instance of the LlamaGuard shield to detect attempts to misuse
 # the interpreter as this is one of the existing categories it checks for
 def test_safety_with_code_interpreter_abuse(client_with_models, shield_id):
