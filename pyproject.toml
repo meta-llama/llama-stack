@@ -140,6 +140,9 @@ docs = [
     "requests",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
+benchmark = [
+    "locust>=2.37.14",
+]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"
