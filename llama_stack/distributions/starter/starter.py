@@ -56,6 +56,7 @@ ENABLED_INFERENCE_PROVIDERS = [
     "fireworks",
     "together",
     "gemini",
+    "vertexai",
     "groq",
     "sambanova",
     "anthropic",
@@ -71,6 +72,7 @@ INFERENCE_PROVIDER_IDS = {
     "tgi": "${env.TGI_URL:+tgi}",
     "cerebras": "${env.CEREBRAS_API_KEY:+cerebras}",
     "nvidia": "${env.NVIDIA_API_KEY:+nvidia}",
+    "vertexai": "${env.VERTEX_AI_PROJECT:+vertexai}",
 }
 
 
@@ -245,6 +247,14 @@ def get_distribution_template() -> DistributionTemplate:
             "GEMINI_API_KEY": (
                 "",
                 "Gemini API Key",
+            ),
+            "VERTEX_AI_PROJECT": (
+                "",
+                "Google Cloud Project ID for Vertex AI",
+            ),
+            "VERTEX_AI_LOCATION": (
+                "us-central1",
+                "Google Cloud Location for Vertex AI",
             ),
             "SAMBANOVA_API_KEY": (
                 "",
