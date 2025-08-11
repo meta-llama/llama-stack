@@ -177,7 +177,7 @@ def test_unsafe_input_with_code_scanner_run_moderation(client_with_models, code_
     print("Insecure hashed password:", hashed_password)
     ```
     """
-    ] * 2
+    ]
     moderation_object = client_with_models.moderations.create(
         input=insecure_code,
         model=code_scanner_shield_id,
@@ -206,7 +206,7 @@ def test_safe_input_with_code_scanner_run_moderation(client_with_models, code_sc
             return text[:5] if text else ""
     ```
     """
-    ] * 2
+    ]
     moderation_object = client_with_models.moderations.create(
         input=secure_code,
         model=code_scanner_shield_id,
