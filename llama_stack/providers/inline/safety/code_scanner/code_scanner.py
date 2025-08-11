@@ -80,7 +80,6 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
         flagged = scan_result.is_insecure
         user_message = None
         metadata = {}
-        # TODO check both list of inputs and single input; add some unit tests
 
         if scan_result.is_insecure:
             pattern_ids = [issue.pattern_id for issue in scan_result.issues_found]
