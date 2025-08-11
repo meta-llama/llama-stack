@@ -1,6 +1,8 @@
-# Testing Llama Stack
+```{include} ../../../tests/README.md
+```
 
-Tests are of three different kinds:
-- Unit tests
-- Provider focused integration tests
-- Client SDK tests
+```{include} ../../../tests/unit/README.md
+```
+
+```{include} ../../../tests/integration/README.md
+```
