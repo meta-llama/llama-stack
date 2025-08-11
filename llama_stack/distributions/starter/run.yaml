@@ -130,14 +130,14 @@ providers:
         type: sqlite
         db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/files_metadata.db
   safety:
-   - provider_id: llama-guard
-     provider_type: inline::llama-guard
-     config:
+  - provider_id: llama-guard
+    provider_type: inline::llama-guard
+    config:
+     excluded_categories: []
+  - provider_id: CodeScanner
+    provider_type: inline::code-scanner
+    config:
       excluded_categories: []
-   - provider_id: CodeScanner
-     provider_type: inline::code-scanner
-     config:
-       excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
