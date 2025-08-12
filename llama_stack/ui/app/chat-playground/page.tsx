@@ -15,6 +15,8 @@ import { type Message } from "@/components/chat-playground/chat-message";
 import { useAuthClient } from "@/hooks/use-auth-client";
 import type { CompletionCreateParams } from "llama-stack-client/resources/chat/completions";
 import type { Model } from "llama-stack-client/resources/models";
+import type { VectorDBListResponse } from "llama-stack-client/resources/vector-dbs";
+import { VectorDbManager } from "@/components/vector-db/vector-db-manager";
 
 export default function ChatPlaygroundPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -25,6 +27,10 @@ export default function ChatPlaygroundPage() {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [modelsLoading, setModelsLoading] = useState(true);
   const [modelsError, setModelsError] = useState<string | null>(null);
+  const [vectorDbs, setVectorDbs] = useState<VectorDBListResponse>([]);
+  const [selectedVectorDb, setSelectedVectorDb] = useState<string>("");
+  const [vectorDbsLoading, setVectorDbsLoading] = useState(true);
+  const [vectorDbsError, setVectorDbsError] = useState<string | null>(null);
   const client = useAuthClient();
 
   const isModelsLoading = modelsLoading ?? true;
@@ -48,7 +54,22 @@ export default function ChatPlaygroundPage() {
       }
     };
 
+    const fetchVectorDbs = async () => {
+      try {
+        setVectorDbsLoading(true);
+        setVectorDbsError(null);
+        const vectorDbList = await client.vectorDBs.list();
+        setVectorDbs(vectorDbList);
+      } catch (err) {
+        console.error("Error fetching vector DBs:", err);
+        setVectorDbsError("Failed to fetch available vector databases");
+      } finally {
+        setVectorDbsLoading(false);
+      }
+    };
+
     fetchModels();
+    fetchVectorDbs();
   }, [client]);
 
   const extractTextContent = (content: unknown): string => {
@@ -110,23 +131,49 @@ export default function ChatPlaygroundPage() {
     setIsGenerating(true);
     setError(null);
 
-    try {
-      const messageParams: CompletionCreateParams["messages"] = [
-        ...messages.map(msg => {
-          const msgContent =
-            typeof msg.content === "string"
-              ? msg.content
-              : extractTextContent(msg.content);
-          if (msg.role === "user") {
-            return { role: "user" as const, content: msgContent };
-          } else if (msg.role === "assistant") {
-            return { role: "assistant" as const, content: msgContent };
-          } else {
-            return { role: "system" as const, content: msgContent };
-          }
-        }),
-        { role: "user" as const, content },
-      ];
+  try {
+    let enhancedContent = content;
+
+    // If a vector DB is selected, query for relevant context
+    if (selectedVectorDb && selectedVectorDb !== "none") {
+      try {
+        const vectorResponse = await client.vectorIo.query({
+          query: content,
+          vector_db_id: selectedVectorDb,
+        });
+
+        if (vectorResponse.chunks && vectorResponse.chunks.length > 0) {
+          const context = vectorResponse.chunks
+            .map(chunk => {
+              // Extract text content from the chunk
+              const chunkContent = typeof chunk.content === 'string'
+                ? chunk.content
+                : extractTextContent(chunk.content);
+              return chunkContent;
+            })
+            .join('\n\n');
+
+          enhancedContent = `Please answer the following query using the context below.\n\nCONTEXT:\n${context}\n\nQUERY:\n${content}`;
+        }
+      } catch (vectorErr) {
+        console.error("Error querying vector DB:", vectorErr);
+        // Continue with original content if vector query fails
+      }
+    }
+
+    const messageParams: CompletionCreateParams["messages"] = [
+      ...messages.map(msg => {
+        const msgContent = typeof msg.content === 'string' ? msg.content : extractTextContent(msg.content);
+        if (msg.role === "user") {
+          return { role: "user" as const, content: msgContent };
+        } else if (msg.role === "assistant") {
+          return { role: "assistant" as const, content: msgContent };
+        } else {
+          return { role: "system" as const, content: msgContent };
+        }
+      }),
+      { role: "user" as const, content: enhancedContent }
+    ];
 
       const response = await client.chat.completions.create({
         model: selectedModel,
@@ -190,6 +237,20 @@ export default function ChatPlaygroundPage() {
     setError(null);
   };
 
+  const refreshVectorDbs = async () => {
+    try {
+      setVectorDbsLoading(true);
+      setVectorDbsError(null);
+      const vectorDbList = await client.vectorDBs.list();
+      setVectorDbs(vectorDbList);
+    } catch (err) {
+      console.error("Error refreshing vector DBs:", err);
+      setVectorDbsError("Failed to refresh vector databases");
+    } finally {
+      setVectorDbsLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       <div className="mb-4 flex justify-between items-center">
@@ -215,6 +276,23 @@ export default function ChatPlaygroundPage() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={selectedVectorDb} onValueChange={setSelectedVectorDb} disabled={vectorDbsLoading || isGenerating}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder={vectorDbsLoading ? "Loading vector DBs..." : "Select Vector DB (Optional)"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None (No RAG)</SelectItem>
+              {vectorDbs.map((vectorDb) => (
+                <SelectItem key={vectorDb.identifier} value={vectorDb.identifier}>
+                  {vectorDb.identifier}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <VectorDbManager
+            client={client}
+            onVectorDbCreated={refreshVectorDbs}
+          />
           <Button variant="outline" onClick={clearChat} disabled={isGenerating}>
             Clear Chat
           </Button>
@@ -224,6 +302,12 @@ export default function ChatPlaygroundPage() {
       {modelsError && (
         <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
           <p className="text-destructive text-sm">{modelsError}</p>
+        </div>
+      )}
+
+      {vectorDbsError && (
+        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+          <p className="text-destructive text-sm">{vectorDbsError}</p>
         </div>
       )}
 
