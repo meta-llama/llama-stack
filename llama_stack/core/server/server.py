@@ -21,10 +21,11 @@ from importlib.metadata import version as parse_version
 from pathlib import Path
 from typing import Annotated, Any, get_origin
 
+import httpx
 import rich.pretty
 import yaml
 from aiohttp import hdrs
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -236,6 +237,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                     result = await maybe_await(value)
                     if isinstance(result, PaginatedResponse) and result.url is None:
                         result.url = route
+
+                    if method.upper() == "DELETE" and result is None:
+                        return Response(status_code=httpx.codes.NO_CONTENT)
+
                     return result
             except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
