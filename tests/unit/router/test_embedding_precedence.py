@@ -68,11 +68,11 @@ async def test_explicit_override(monkeypatch):
     monkeypatch.delenv("LLAMA_STACK_DEFAULT_EMBEDDING_MODEL", raising=False)
 
 
-async def test_fallback_to_granite():
-    """Should fallback to granite model when no defaults set."""
+async def test_fallback_to_default():
+    """Should fallback to all-MiniLM-L6-v2 when no defaults set."""
 
     router = VectorIORouter(routing_table=_DummyRoutingTable())
 
     model, dim = await router._resolve_embedding_model(None)
-    assert model == "ibm-granite/granite-embedding-125m-english"
+    assert model == "all-MiniLM-L6-v2"
     assert dim == 384
