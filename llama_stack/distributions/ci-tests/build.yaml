@@ -14,6 +14,7 @@ distribution_spec:
     - provider_type: remote::openai
     - provider_type: remote::anthropic
     - provider_type: remote::gemini
+    - provider_type: remote::vertexai
     - provider_type: remote::groq
     - provider_type: remote::sambanova
     - provider_type: inline::sentence-transformers
