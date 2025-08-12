@@ -220,7 +220,6 @@ class VectorStoreSearchRequest(BaseModel):
     rewrite_query: bool = False
 
 
-@json_schema_type
 class VectorStoreContent(BaseModel):
     """Content item from a vector store file or search result.
 

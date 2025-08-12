@@ -14849,27 +14849,6 @@
                 "type": "object",
                 "title": "Response"
             },
-            "VectorStoreContent": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "const": "text",
-                        "description": "Content type, currently only \"text\" is supported"
-                    },
-                    "text": {
-                        "type": "string",
-                        "description": "The actual text content"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "type",
-                    "text"
-                ],
-                "title": "VectorStoreContent",
-                "description": "Content item from a vector store file or search result."
-            },
             "VectorStoreFileContentsResponse": {
                 "type": "object",
                 "properties": {
@@ -14910,7 +14889,25 @@
                     "content": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/VectorStoreContent"
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "const": "text",
+                                    "description": "Content type, currently only \"text\" is supported"
+                                },
+                                "text": {
+                                    "type": "string",
+                                    "description": "The actual text content"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "type",
+                                "text"
+                            ],
+                            "title": "VectorStoreContent",
+                            "description": "Content item from a vector store file or search result."
                         },
                         "description": "List of content items from the file"
                     }
@@ -15038,7 +15035,25 @@
                     "content": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/VectorStoreContent"
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "const": "text",
+                                    "description": "Content type, currently only \"text\" is supported"
+                                },
+                                "text": {
+                                    "type": "string",
+                                    "description": "The actual text content"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "type",
+                                "text"
+                            ],
+                            "title": "VectorStoreContent",
+                            "description": "Content item from a vector store file or search result."
                         },
                         "description": "List of content items matching the search query"
                     }
