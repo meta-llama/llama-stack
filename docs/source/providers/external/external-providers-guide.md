@@ -226,7 +226,7 @@ uv init
 name = "llama-stack-provider-ollama"
 version = "0.1.0"
 description = "Ollama provider for Llama Stack"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = ["llama-stack", "pydantic", "ollama", "aiohttp"]
 ```
 

@@ -174,7 +174,9 @@ class FaissIndex(EmbeddingIndex):
         k: int,
         score_threshold: float,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Keyword search is not supported in FAISS")
+        raise NotImplementedError(
+            "Keyword search is not supported - underlying DB FAISS does not support this search mode"
+        )
 
     async def query_hybrid(
         self,
@@ -185,7 +187,9 @@ class FaissIndex(EmbeddingIndex):
         reranker_type: str,
         reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Hybrid search is not supported in FAISS")
+        raise NotImplementedError(
+            "Hybrid search is not supported - underlying DB FAISS does not support this search mode"
+        )
 
 
 class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
