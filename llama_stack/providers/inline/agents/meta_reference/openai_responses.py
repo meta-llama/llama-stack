@@ -333,6 +333,7 @@ class OpenAIResponsesImpl:
         temperature: float | None = None,
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        include: list[str] | None = None,
         max_infer_iters: int | None = 10,
     ):
         stream = bool(stream)
