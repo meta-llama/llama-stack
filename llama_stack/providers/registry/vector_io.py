@@ -466,6 +466,7 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         InlineProviderSpec(
             api=Api.vector_io,

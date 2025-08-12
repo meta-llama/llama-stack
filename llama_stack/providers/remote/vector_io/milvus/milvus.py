@@ -290,10 +290,12 @@ class MilvusIndex(EmbeddingIndex):
 
     async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Remove a chunk from the Milvus collection."""
-        chunk_ids_str = ",".join(f"'{c.chunk_id}'" for c in chunks_for_deletion)
+        chunk_ids = [c.chunk_id for c in chunks_for_deletion]
         try:
+            # Use IN clause with square brackets and single quotes for VARCHAR field
+            chunk_ids_str = ", ".join(f"'{chunk_id}'" for chunk_id in chunk_ids)
             await asyncio.to_thread(
-                self.client.delete, collection_name=self.collection_name, filter=f"chunk_id in ({chunk_ids_str})"
+                self.client.delete, collection_name=self.collection_name, filter=f"chunk_id in [{chunk_ids_str}]"
             )
         except Exception as e:
             logger.error(f"Error deleting chunks from Milvus collection {self.collection_name}: {e}")
