@@ -6,7 +6,6 @@
 
 import asyncio
 import json
-import logging
 import mimetypes
 import time
 import uuid
