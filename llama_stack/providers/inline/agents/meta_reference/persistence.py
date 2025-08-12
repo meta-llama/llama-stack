@@ -183,37 +183,36 @@ class AgentPersistence:
         )
         return int(value) if value else None
 
-    async def _get_sessions_from_keys(self, keys: list[str]) -> list[Session]:
+    async def _get_sessions_from_values(self, values: list[str]) -> list[Session]:
         """
-        Helper method to filter session keys and retrieve session objects.
+        Helper method to process values from the KV store and extract session objects.
 
         Args:
-            keys: List of keys from the KV store
+        values: List of serialized JSON values from the KV store
 
         Returns:
             List of parsed Session objects
         """
-        # filter session metadata to relevant keys (3 parts: agent_id, session_id, and turn_id)
-        session_keys = [key for key in keys if len(key.split(":")) == 3]
-
         sessions = []
-        for key in session_keys:
+        for value in values:
             try:
-                value = await self.kvstore.get(key)
-                if value:
-                    session_info = Session(**json.loads(value))
-                    sessions.append(session_info)
+                data = json.loads(value)
+                if "turn_id" in data:
+                    continue
+
+                session_info = Session(**data)
+                sessions.append(session_info)
             except Exception as e:
                 log.error(f"Error parsing session info: {e}")
                 continue
         return sessions
 
     async def list_sessions(self) -> list[Session]:
-        keys = await self.kvstore.keys_in_range(
+        values = await self.kvstore.values_in_range(
             start_key=f"session:{self.agent_id}:",
             end_key=f"session:{self.agent_id}:\xff\xff\xff\xff",
         )
-        sessions = await self._get_sessions_from_keys(keys)
+        sessions = await self._get_sessions_from_values(values)
         return sessions
 
     async def delete_session_turns(self, session_id: str) -> None:

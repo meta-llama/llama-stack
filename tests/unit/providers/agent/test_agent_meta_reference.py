@@ -111,7 +111,8 @@ class TestAgentPersistenceListSessions:
         if custom_data:
             mock_data.update(custom_data)
 
-        mock_kvstore.keys_in_range.return_value = all_keys
+        values_list = list(mock_data.values())
+        mock_kvstore.values_in_range.return_value = values_list
 
         async def mock_get(key):
             return mock_data.get(key)
@@ -237,12 +238,12 @@ class TestAgentPersistenceListSessions:
         assert mock_log.error.call_count == error_scenario["expected_error_count"]
 
     async def test_list_sessions_empty(self, agent_persistence, mock_kvstore):
-        mock_kvstore.keys_in_range.return_value = []
+        mock_kvstore.values_in_range.return_value = []
 
         result = await agent_persistence.list_sessions()
 
         assert result == []
-        mock_kvstore.keys_in_range.assert_called_once_with(
+        mock_kvstore.values_in_range.assert_called_once_with(
             start_key="session:test-agent-123:", end_key="session:test-agent-123:\xff\xff\xff\xff"
         )
 
@@ -267,7 +268,7 @@ class TestAgentPersistenceListSessions:
         assert hasattr(result[0], "started_at")
 
     async def test_list_sessions_kvstore_exception(self, agent_persistence, mock_kvstore):
-        mock_kvstore.keys_in_range.side_effect = Exception("KVStore error")
+        mock_kvstore.values_in_range.side_effect = Exception("KVStore error")
 
         with pytest.raises(Exception, match="KVStore error"):
             await agent_persistence.list_sessions()
@@ -313,11 +314,6 @@ class TestAgentPersistenceListSessions:
             "completed_at": "2025-08-05T14:31:51.305384Z",
         }
 
-        keys = [
-            "session:test-agent-123:1f08fd1c-5a9d-459d-a00b-36d4dfa49b7d",
-            "session:test-agent-123:1f08fd1c-5a9d-459d-a00b-36d4dfa49b7d:eb7e818f-41fb-49a0-bdd6-464974a2d2ad",
-        ]
-
         mock_data = {
             "session:test-agent-123:1f08fd1c-5a9d-459d-a00b-36d4dfa49b7d": json.dumps(session_data),
             "session:test-agent-123:1f08fd1c-5a9d-459d-a00b-36d4dfa49b7d:eb7e818f-41fb-49a0-bdd6-464974a2d2ad": json.dumps(
@@ -325,7 +321,7 @@ class TestAgentPersistenceListSessions:
             ),
         }
 
-        mock_kvstore.keys_in_range.return_value = keys
+        mock_kvstore.values_in_range.return_value = list(mock_data.values())
 
         async def mock_get(key):
             return mock_data.get(key)
@@ -342,10 +338,10 @@ class TestAgentPersistenceListSessions:
         mock_log.error.assert_not_called()
 
     async def test_list_sessions_key_range_construction(self, agent_persistence, mock_kvstore):
-        mock_kvstore.keys_in_range.return_value = []
+        mock_kvstore.values_in_range.return_value = []
 
         await agent_persistence.list_sessions()
 
-        mock_kvstore.keys_in_range.assert_called_once_with(
+        mock_kvstore.values_in_range.assert_called_once_with(
             start_key="session:test-agent-123:", end_key="session:test-agent-123:\xff\xff\xff\xff"
         )
