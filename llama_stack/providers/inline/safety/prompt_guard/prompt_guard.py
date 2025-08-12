@@ -64,6 +64,9 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
 
         return await self.shield.run(messages)
 
+    async def run_moderation(self, input: str | list[str], model: str):
+        raise NotImplementedError("run_moderation not implemented for PromptGuard")
+
 
 class PromptGuardShield:
     def __init__(
