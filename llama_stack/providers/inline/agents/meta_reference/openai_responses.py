@@ -38,6 +38,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageContent,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageFileSearchToolCall,
+    OpenAIResponseOutputMessageFileSearchToolCallResults,
     OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseOutputMessageWebSearchToolCall,
@@ -827,12 +828,13 @@ class OpenAIResponsesImpl:
                         text = result.metadata["chunks"][i] if "chunks" in result.metadata else None
                         score = result.metadata["scores"][i] if "scores" in result.metadata else None
                         message.results.append(
-                            {
-                                "file_id": doc_id,
-                                "filename": doc_id,
-                                "text": text,
-                                "score": score,
-                            }
+                            OpenAIResponseOutputMessageFileSearchToolCallResults(
+                                file_id=doc_id,
+                                filename=doc_id,
+                                text=text,
+                                score=score,
+                                attributes={},
+                            )
                         )
                 if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
                     message.status = "failed"
