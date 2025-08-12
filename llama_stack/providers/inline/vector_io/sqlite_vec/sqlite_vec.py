@@ -438,13 +438,14 @@ class SQLiteVecIndex(EmbeddingIndex):
                 cur.execute("BEGIN TRANSACTION")
 
                 # Delete from metadata table
-                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id = ANY(?)", (chunk_ids,))
+                placeholders = ",".join("?" * len(chunk_ids))
+                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 # Delete from vector table
-                cur.execute(f"DELETE FROM {self.vector_table} WHERE id = ANY(?)", (chunk_ids,))
+                cur.execute(f"DELETE FROM {self.vector_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 # Delete from FTS table
-                cur.execute(f"DELETE FROM {self.fts_table} WHERE id = ANY(?)", (chunk_ids,))
+                cur.execute(f"DELETE FROM {self.fts_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 connection.commit()
             except Exception as e:

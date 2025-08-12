@@ -293,7 +293,7 @@ class MilvusIndex(EmbeddingIndex):
         chunk_ids_str = ",".join(f"'{c.chunk_id}'" for c in chunks_for_deletion)
         try:
             await asyncio.to_thread(
-                self.client.delete, collection_name=self.collection_name, filter=f"chunk_id IN [{chunk_ids_str}]"
+                self.client.delete, collection_name=self.collection_name, filter=f"chunk_id in ({chunk_ids_str})"
             )
         except Exception as e:
             logger.error(f"Error deleting chunks from Milvus collection {self.collection_name}: {e}")
