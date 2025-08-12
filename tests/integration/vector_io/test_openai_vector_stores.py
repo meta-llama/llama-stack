@@ -9,10 +9,11 @@ import time
 from io import BytesIO
 
 import pytest
-from llama_stack_client import BadRequestError, LlamaStackClient
+from llama_stack_client import BadRequestError
 from openai import BadRequestError as OpenAIBadRequestError
 
 from llama_stack.apis.vector_io import Chunk
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 logger = logging.getLogger(__name__)
 
@@ -638,7 +639,7 @@ def test_openai_vector_store_list_files_invalid_vector_store(compat_client_with_
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
     compat_client = compat_client_with_empty_stores
-    if isinstance(compat_client, LlamaStackClient):
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
         errors = ValueError
     else:
         errors = (BadRequestError, OpenAIBadRequestError)
@@ -678,9 +679,15 @@ def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_sto
         file_id=file.id,
     )
 
-    assert file_contents
-    assert file_contents.content[0].type == "text"
-    assert file_contents.content[0].text == test_content.decode("utf-8")
+    assert file_contents is not None
+    assert len(file_contents.content) == 1
+    content = file_contents.content[0]
+
+    # llama-stack-client returns a model, openai-python is a badboy and returns a dict
+    if not isinstance(content, dict):
+        content = content.model_dump()
+    assert content["type"] == "text"
+    assert content["text"] == test_content.decode("utf-8")
     assert file_contents.filename == file_name
     assert file_contents.attributes == attributes
 
