@@ -25,7 +25,7 @@ providers:
       url: ${env.CHROMA_URL}
       kvstore:
         type: sqlite
-        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter/}/chroma_remote_registry.db
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/dell/}/chroma_remote_registry.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard
