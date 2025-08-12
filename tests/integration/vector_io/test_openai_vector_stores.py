@@ -588,16 +588,19 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
             file_buffer.name = f"openai_test_{i}.txt"
             file = compat_client.files.create(file=file_buffer, purpose="assistants")
 
-        compat_client.vector_stores.files.create(
+        response = compat_client.vector_stores.files.create(
             vector_store_id=vector_store.id,
             file_id=file.id,
+        )
+        assert response.status == "completed", (
+            f"Failed to attach file {file.id} to vector store {vector_store.id}: {response=}"
         )
         file_ids.append(file.id)
 
     files_list = compat_client.vector_stores.files.list(vector_store_id=vector_store.id)
     assert files_list
     assert files_list.object == "list"
-    assert files_list.data
+    assert files_list.data is not None
     assert not files_list.has_more
     assert len(files_list.data) == 3
     assert set(file_ids) == {file.id for file in files_list.data}

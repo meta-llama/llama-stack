@@ -38,7 +38,11 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponsePage,
 )
 from llama_stack.providers.utils.kvstore.api import KVStore
-from llama_stack.providers.utils.memory.vector_store import content_from_data_and_mime_type, make_overlapped_chunks
+from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
+    content_from_data_and_mime_type,
+    make_overlapped_chunks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -154,8 +158,8 @@ class OpenAIVectorStoreMixin(ABC):
         self.openai_vector_stores = await self._load_openai_vector_stores()
 
     @abstractmethod
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
-        """Delete a chunk from a vector store."""
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        """Delete chunks from a vector store."""
         pass
 
     @abstractmethod
@@ -767,7 +771,21 @@ class OpenAIVectorStoreMixin(ABC):
 
         dict_chunks = await self._load_openai_vector_store_file_contents(vector_store_id, file_id)
         chunks = [Chunk.model_validate(c) for c in dict_chunks]
-        await self.delete_chunks(vector_store_id, [str(c.chunk_id) for c in chunks if c.chunk_id])
+
+        # Create ChunkForDeletion objects with both chunk_id and document_id
+        chunks_for_deletion = []
+        for c in chunks:
+            if c.chunk_id:
+                document_id = c.metadata.get("document_id") or (
+                    c.chunk_metadata.document_id if c.chunk_metadata else None
+                )
+                if document_id:
+                    chunks_for_deletion.append(ChunkForDeletion(chunk_id=str(c.chunk_id), document_id=document_id))
+                else:
+                    logger.warning(f"Chunk {c.chunk_id} has no document_id, skipping deletion")
+
+        if chunks_for_deletion:
+            await self.delete_chunks(vector_store_id, chunks_for_deletion)
 
         store_info = self.openai_vector_stores[vector_store_id].copy()
 
