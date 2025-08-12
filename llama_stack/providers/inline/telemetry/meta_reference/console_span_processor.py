@@ -25,7 +25,7 @@ class ConsoleSpanProcessor(SpanProcessor):
             return
 
         timestamp = datetime.fromtimestamp(span.start_time / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
-        logger.info(f"[dim]{timestamp}[/dim] [bold magenta][START][/bold magenta] [dim]{span.name}[/dim]")
+        logger.debug(f"[dim]{timestamp}[/dim] [bold magenta][START][/bold magenta] [dim]{span.name}[/dim]")
 
     def on_end(self, span: ReadableSpan) -> None:
         timestamp = datetime.fromtimestamp(span.end_time / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
@@ -36,7 +36,7 @@ class ConsoleSpanProcessor(SpanProcessor):
             span_context += f" [{span.status.status_code}]"
         duration_ms = (span.end_time - span.start_time) / 1e6
         span_context += f" ({duration_ms:.2f}ms)"
-        logger.info(span_context)
+        logger.debug(span_context)
 
         if self.print_attributes and span.attributes:
             for key, value in span.attributes.items():
@@ -45,7 +45,7 @@ class ConsoleSpanProcessor(SpanProcessor):
                 str_value = str(value)
                 if len(str_value) > 1000:
                     str_value = str_value[:997] + "..."
-                logger.info(f"    [dim]{key}[/dim]: {str_value}")
+                logger.debug(f"    [dim]{key}[/dim]: {str_value}")
 
         for event in span.events:
             event_time = datetime.fromtimestamp(event.timestamp / 1e9, tz=UTC).strftime("%H:%M:%S.%f")[:-3]
@@ -59,12 +59,12 @@ class ConsoleSpanProcessor(SpanProcessor):
                 "info": "white",
                 "debug": "dim",
             }.get(severity, "white")
-            logger.info(f" {event_time} [bold {severity_color}][{severity.upper()}][/bold {severity_color}] {message}")
+            logger.debug(f" {event_time} [bold {severity_color}][{severity.upper()}][/bold {severity_color}] {message}")
             if event.attributes:
                 for key, value in event.attributes.items():
                     if key.startswith("__") or key in ["message", "severity"]:
                         continue
-                    logger.info(f"[dim]{key}[/dim]: {value}")
+                    logger.debug(f"[dim]{key}[/dim]: {value}")
 
     def shutdown(self) -> None:
         """Shutdown the processor."""
