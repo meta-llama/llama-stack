@@ -65,7 +65,7 @@ from llama_stack.providers.datatypes import HealthResponse, HealthStatus, Routin
 from llama_stack.providers.utils.inference.inference_store import InferenceStore
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="inference")
 
 
 class InferenceRouter(Inference):
@@ -854,4 +854,5 @@ class InferenceRouter(Inference):
                     model=model.identifier,
                     object="chat.completion",
                 )
+                logger.debug(f"InferenceRouter.completion_response: {final_response}")
                 await self.store.store_chat_completion(final_response, messages)

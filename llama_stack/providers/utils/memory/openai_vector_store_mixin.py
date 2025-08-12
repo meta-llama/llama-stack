@@ -614,7 +614,7 @@ class OpenAIVectorStoreMixin(ABC):
                 )
                 vector_store_file_object.status = "completed"
         except Exception as e:
-            logger.error(f"Error attaching file to vector store: {e}")
+            logger.exception("Error attaching file to vector store")
             vector_store_file_object.status = "failed"
             vector_store_file_object.last_error = VectorStoreFileLastError(
                 code="server_error",
