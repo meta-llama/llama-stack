@@ -183,16 +183,11 @@ class AgentPersistence:
         )
         return int(value) if value else None
 
-    async def _get_sessions_from_values(self, values: list[str]) -> list[Session]:
-        """
-        Helper method to process values from the KV store and extract session objects.
-
-        Args:
-        values: List of serialized JSON values from the KV store
-
-        Returns:
-            List of parsed Session objects
-        """
+    async def list_sessions(self) -> list[Session]:
+        values = await self.kvstore.values_in_range(
+            start_key=f"session:{self.agent_id}:",
+            end_key=f"session:{self.agent_id}:\xff\xff\xff\xff",
+        )
         sessions = []
         for value in values:
             try:
@@ -205,14 +200,6 @@ class AgentPersistence:
             except Exception as e:
                 log.error(f"Error parsing session info: {e}")
                 continue
-        return sessions
-
-    async def list_sessions(self) -> list[Session]:
-        values = await self.kvstore.values_in_range(
-            start_key=f"session:{self.agent_id}:",
-            end_key=f"session:{self.agent_id}:\xff\xff\xff\xff",
-        )
-        sessions = await self._get_sessions_from_values(values)
         return sessions
 
     async def delete_session_turns(self, session_id: str) -> None:
