@@ -6021,14 +6021,44 @@ components:
           type: array
           items:
             type: object
-            additionalProperties:
-              oneOf:
-                - type: 'null'
-                - type: boolean
-                - type: number
-                - type: string
-                - type: array
-                - type: object
+            properties:
+              attributes:
+                type: object
+                additionalProperties:
+                  oneOf:
+                    - type: 'null'
+                    - type: boolean
+                    - type: number
+                    - type: string
+                    - type: array
+                    - type: object
+                description: >-
+                  (Optional) Key-value attributes associated with the file
+              file_id:
+                type: string
+                description: >-
+                  Unique identifier of the file containing the result
+              filename:
+                type: string
+                description: Name of the file containing the result
+              score:
+                type: number
+                description: >-
+                  Relevance score for this search result (between 0 and 1)
+              text:
+                type: string
+                description: Text content of the search result
+            additionalProperties: false
+            required:
+              - attributes
+              - file_id
+              - filename
+              - score
+              - text
+            title: >-
+              OpenAIResponseOutputMessageFileSearchToolCallResults
+            description: >-
+              Search results returned by the file search operation.
           description: >-
             (Optional) Search results returned by the file search operation
       additionalProperties: false
@@ -6188,6 +6218,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/OpenAIResponseInputTool'
+        include:
+          type: array
+          items:
+            type: string
+          description: >-
+            (Optional) Additional fields to include in the response.
         max_infer_iters:
           type: integer
       additionalProperties: false
