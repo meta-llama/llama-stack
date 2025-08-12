@@ -363,6 +363,9 @@ def test_response_non_streaming_file_search_empty_vector_store(request, compat_c
     ids=case_id_generator,
 )
 def test_response_non_streaming_mcp_tool(request, compat_client, text_model_id, case):
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server() as mcp_server_info:
         tools = case["tools"]
         for tool in tools:
@@ -485,8 +488,11 @@ def test_response_non_streaming_multi_turn_image(request, compat_client, text_mo
     responses_test_cases["test_response_multi_turn_tool_execution"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
+def test_response_non_streaming_multi_turn_tool_execution(compat_client, text_model_id, case):
     """Test multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -541,8 +547,11 @@ def test_response_non_streaming_multi_turn_tool_execution(request, compat_client
     responses_test_cases["test_response_multi_turn_tool_execution_streaming"]["test_params"]["case"],
     ids=case_id_generator,
 )
-async def test_response_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
+def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_id, case):
     """Test streaming multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -634,7 +643,7 @@ async def test_response_streaming_multi_turn_tool_execution(request, compat_clie
         },
     ],
 )
-def test_response_text_format(request, compat_client, text_model_id, text_format):
+def test_response_text_format(compat_client, text_model_id, text_format):
     if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API text format is not yet supported in library client.")
 
@@ -653,7 +662,7 @@ def test_response_text_format(request, compat_client, text_model_id, text_format
 
 
 @pytest.fixture
-def vector_store_with_filtered_files(request, compat_client, text_model_id, tmp_path_factory):
+def vector_store_with_filtered_files(compat_client, text_model_id, tmp_path_factory):
     """Create a vector store with multiple files that have different attributes for filtering tests."""
     if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")

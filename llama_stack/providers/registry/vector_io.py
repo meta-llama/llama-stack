@@ -342,6 +342,7 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         InlineProviderSpec(
             api=Api.vector_io,
@@ -350,6 +351,7 @@ See [Chroma's documentation](https://docs.trychroma.com/docs/overview/introducti
             module="llama_stack.providers.inline.vector_io.chroma",
             config_class="llama_stack.providers.inline.vector_io.chroma.ChromaVectorIOConfig",
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
             description="""
 [Chroma](https://www.trychroma.com/) is an inline and remote vector
 database provider for Llama Stack. It allows you to store and query vectors directly within a Chroma database.
@@ -464,6 +466,7 @@ See [Weaviate's documentation](https://weaviate.io/developers/weaviate) for more
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         InlineProviderSpec(
             api=Api.vector_io,
@@ -731,6 +734,7 @@ For more details on TLS configuration, refer to the [TLS setup guide](https://mi
 """,
             ),
             api_dependencies=[Api.inference],
+            optional_api_dependencies=[Api.files],
         ),
         InlineProviderSpec(
             api=Api.vector_io,

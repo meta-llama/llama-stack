@@ -29,6 +29,7 @@ from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig a
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -88,15 +89,16 @@ class QdrantIndex(EmbeddingIndex):
 
         await self.client.upsert(collection_name=self.collection_name, points=points)
 
-    async def delete_chunk(self, chunk_id: str) -> None:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Remove a chunk from the Qdrant collection."""
+        chunk_ids = [convert_id(c.chunk_id) for c in chunks_for_deletion]
         try:
             await self.client.delete(
                 collection_name=self.collection_name,
-                points_selector=models.PointIdsList(points=[convert_id(chunk_id)]),
+                points_selector=models.PointIdsList(points=chunk_ids),
             )
         except Exception as e:
-            log.error(f"Error deleting chunk {chunk_id} from Qdrant collection {self.collection_name}: {e}")
+            log.error(f"Error deleting chunks from Qdrant collection {self.collection_name}: {e}")
             raise
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
@@ -264,12 +266,14 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> VectorStoreFileObject:
         # Qdrant doesn't allow multiple clients to access the same storage path simultaneously.
         async with self._qdrant_lock:
-            await super().openai_attach_file_to_vector_store(vector_store_id, file_id, attributes, chunking_strategy)
+            return await super().openai_attach_file_to_vector_store(
+                vector_store_id, file_id, attributes, chunking_strategy
+            )
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Delete chunks from a Qdrant vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise ValueError(f"Vector DB {store_id} not found")
-        for chunk_id in chunk_ids:
-            await index.index.delete_chunk(chunk_id)
+
+        await index.index.delete_chunks(chunks_for_deletion)
