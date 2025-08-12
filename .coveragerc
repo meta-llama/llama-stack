@@ -1,6 +1,0 @@
-[run]
-omit =
-    */tests/*
-    */llama_stack/providers/*
-    */llama_stack/templates/*
-    .venv/*
