@@ -592,6 +592,7 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
             vector_store_id=vector_store.id,
             file_id=file.id,
         )
+        assert response is not None
         assert response.status == "completed", (
             f"Failed to attach file {file.id} to vector store {vector_store.id}: {response=}"
         )

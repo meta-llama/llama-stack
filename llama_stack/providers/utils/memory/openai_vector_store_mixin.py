@@ -37,6 +37,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreSearchResponse,
     VectorStoreSearchResponsePage,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.vector_store import (
     ChunkForDeletion,
@@ -44,7 +45,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     make_overlapped_chunks,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__, category="vector_io")
 
 # Constants for OpenAI vector stores
 CHUNK_MULTIPLIER = 5

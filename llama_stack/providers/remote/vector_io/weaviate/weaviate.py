@@ -68,6 +68,7 @@ class WeaviateIndex(EmbeddingIndex):
             data_objects.append(
                 wvc.data.DataObject(
                     properties={
+                        "chunk_id": chunk.chunk_id,
                         "chunk_content": chunk.model_dump_json(),
                     },
                     vector=embeddings[i].tolist(),
@@ -84,7 +85,7 @@ class WeaviateIndex(EmbeddingIndex):
         sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
         collection = self.client.collections.get(sanitized_collection_name)
         chunk_ids = [chunk.chunk_id for chunk in chunks_for_deletion]
-        collection.data.delete_many(where=Filter.by_property("id").contains_any(chunk_ids))
+        collection.data.delete_many(where=Filter.by_property("chunk_id").contains_any(chunk_ids))
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)

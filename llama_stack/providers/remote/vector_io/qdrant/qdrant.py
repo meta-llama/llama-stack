@@ -266,7 +266,9 @@ class QdrantVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
     ) -> VectorStoreFileObject:
         # Qdrant doesn't allow multiple clients to access the same storage path simultaneously.
         async with self._qdrant_lock:
-            await super().openai_attach_file_to_vector_store(vector_store_id, file_id, attributes, chunking_strategy)
+            return await super().openai_attach_file_to_vector_store(
+                vector_store_id, file_id, attributes, chunking_strategy
+            )
 
     async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Delete chunks from a Qdrant vector store."""
