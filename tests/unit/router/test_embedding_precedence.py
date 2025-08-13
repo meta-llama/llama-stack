@@ -5,8 +5,12 @@
 # the root directory of this source tree.
 
 
+import pytest
+
 from llama_stack.apis.models import ModelType
 from llama_stack.core.routers.vector_io import VectorIORouter
+
+pytestmark = pytest.mark.asyncio
 
 
 class _DummyModel:
