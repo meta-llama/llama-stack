@@ -590,9 +590,17 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         # Verify tool call streaming events are present
         chunk_types = [chunk.type for chunk in chunks]
 
-        # Should have function call arguments delta events for tool calls
-        delta_events = [chunk for chunk in chunks if chunk.type == "response.function_call_arguments.delta"]
-        done_events = [chunk for chunk in chunks if chunk.type == "response.function_call_arguments.done"]
+        # Should have function call or MCP arguments delta/done events for tool calls
+        delta_events = [
+            chunk
+            for chunk in chunks
+            if chunk.type in ["response.function_call_arguments.delta", "response.mcp_call.arguments.delta"]
+        ]
+        done_events = [
+            chunk
+            for chunk in chunks
+            if chunk.type in ["response.function_call_arguments.done", "response.mcp_call.arguments.done"]
+        ]
 
         # Should have output item events for tool calls
         item_added_events = [chunk for chunk in chunks if chunk.type == "response.output_item.added"]
@@ -606,8 +614,12 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         assert len(chunks) > 10, f"Expected rich streaming with many events, got only {len(chunks)} chunks"
 
         # Since this test involves MCP tool calls, we should see streaming events
-        assert len(delta_events) > 0, f"Expected function_call_arguments.delta events, got chunk types: {chunk_types}"
-        assert len(done_events) > 0, f"Expected function_call_arguments.done events, got chunk types: {chunk_types}"
+        assert len(delta_events) > 0, (
+            f"Expected function_call_arguments.delta or mcp_call.arguments.delta events, got chunk types: {chunk_types}"
+        )
+        assert len(done_events) > 0, (
+            f"Expected function_call_arguments.done or mcp_call.arguments.done events, got chunk types: {chunk_types}"
+        )
 
         # Should have output item events for function calls
         assert len(item_added_events) > 0, f"Expected response.output_item.added events, got chunk types: {chunk_types}"
@@ -670,22 +682,32 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
             assert isinstance(done_event.output_index, int), "Output index should be integer"
             assert done_event.output_index >= 0, "Output index should be non-negative"
 
-        # Group function call argument events by item_id (these should have proper tracking)
-        function_call_events_by_item_id = {}
+        # Group function call and MCP argument events by item_id (these should have proper tracking)
+        argument_events_by_item_id = {}
         for chunk in chunks:
             if hasattr(chunk, "item_id") and chunk.type in [
                 "response.function_call_arguments.delta",
                 "response.function_call_arguments.done",
+                "response.mcp_call.arguments.delta",
+                "response.mcp_call.arguments.done",
             ]:
                 item_id = chunk.item_id
-                if item_id not in function_call_events_by_item_id:
-                    function_call_events_by_item_id[item_id] = []
-                function_call_events_by_item_id[item_id].append(chunk)
+                if item_id not in argument_events_by_item_id:
+                    argument_events_by_item_id[item_id] = []
+                argument_events_by_item_id[item_id].append(chunk)
 
-        for item_id, related_events in function_call_events_by_item_id.items():
-            # Should have at least one delta and one done event for a complete function call
-            delta_events = [e for e in related_events if e.type == "response.function_call_arguments.delta"]
-            done_events = [e for e in related_events if e.type == "response.function_call_arguments.done"]
+        for item_id, related_events in argument_events_by_item_id.items():
+            # Should have at least one delta and one done event for a complete tool call
+            delta_events = [
+                e
+                for e in related_events
+                if e.type in ["response.function_call_arguments.delta", "response.mcp_call.arguments.delta"]
+            ]
+            done_events = [
+                e
+                for e in related_events
+                if e.type in ["response.function_call_arguments.done", "response.mcp_call.arguments.done"]
+            ]
 
             assert len(delta_events) > 0, f"Item {item_id} should have at least one delta event"
             assert len(done_events) == 1, f"Item {item_id} should have exactly one done event"
@@ -693,6 +715,33 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
             # Verify all events have the same item_id
             for event in related_events:
                 assert event.item_id == item_id, f"Event should have consistent item_id {item_id}, got {event.item_id}"
+
+        # Verify content part events if they exist (for text streaming)
+        content_part_added_events = [chunk for chunk in chunks if chunk.type == "response.content_part.added"]
+        content_part_done_events = [chunk for chunk in chunks if chunk.type == "response.content_part.done"]
+
+        # Content part events should be paired (if any exist)
+        if len(content_part_added_events) > 0:
+            assert len(content_part_done_events) > 0, (
+                "Should have content_part.done events if content_part.added events exist"
+            )
+
+            # Verify content part event structure
+            for added_event in content_part_added_events:
+                assert hasattr(added_event, "response_id"), "Content part added event should have response_id"
+                assert hasattr(added_event, "item_id"), "Content part added event should have item_id"
+                assert hasattr(added_event, "part"), "Content part added event should have part"
+
+                # TODO: enable this after the client types are updated
+                # assert added_event.part.type == "output_text", "Content part should be an output_text"
+
+            for done_event in content_part_done_events:
+                assert hasattr(done_event, "response_id"), "Content part done event should have response_id"
+                assert hasattr(done_event, "item_id"), "Content part done event should have item_id"
+                assert hasattr(done_event, "part"), "Content part done event should have part"
+
+                # TODO: enable this after the client types are updated
+                # assert len(done_event.part.text) > 0, "Content part should have text when done"
 
         # Basic pairing check: each output_item.added should be followed by some activity
         # (but we can't enforce strict 1:1 pairing due to the complexity of multi-turn scenarios)

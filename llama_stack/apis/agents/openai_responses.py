@@ -623,6 +623,62 @@ class OpenAIResponseObjectStreamResponseMcpCallCompleted(BaseModel):
     type: Literal["response.mcp_call.completed"] = "response.mcp_call.completed"
 
 
+@json_schema_type
+class OpenAIResponseContentPartOutputText(BaseModel):
+    type: Literal["output_text"] = "output_text"
+    text: str
+    # TODO: add annotations, logprobs, etc.
+
+
+@json_schema_type
+class OpenAIResponseContentPartRefusal(BaseModel):
+    type: Literal["refusal"] = "refusal"
+    refusal: str
+
+
+OpenAIResponseContentPart = Annotated[
+    OpenAIResponseContentPartOutputText | OpenAIResponseContentPartRefusal,
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseContentPart, name="OpenAIResponseContentPart")
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseContentPartAdded(BaseModel):
+    """Streaming event for when a new content part is added to a response item.
+
+    :param response_id: Unique identifier of the response containing this content
+    :param item_id: Unique identifier of the output item containing this content part
+    :param part: The content part that was added
+    :param sequence_number: Sequential number for ordering streaming events
+    :param type: Event type identifier, always "response.content_part.added"
+    """
+
+    response_id: str
+    item_id: str
+    part: OpenAIResponseContentPart
+    sequence_number: int
+    type: Literal["response.content_part.added"] = "response.content_part.added"
+
+
+@json_schema_type
+class OpenAIResponseObjectStreamResponseContentPartDone(BaseModel):
+    """Streaming event for when a content part is completed.
+
+    :param response_id: Unique identifier of the response containing this content
+    :param item_id: Unique identifier of the output item containing this content part
+    :param part: The completed content part
+    :param sequence_number: Sequential number for ordering streaming events
+    :param type: Event type identifier, always "response.content_part.done"
+    """
+
+    response_id: str
+    item_id: str
+    part: OpenAIResponseContentPart
+    sequence_number: int
+    type: Literal["response.content_part.done"] = "response.content_part.done"
+
+
 OpenAIResponseObjectStream = Annotated[
     OpenAIResponseObjectStreamResponseCreated
     | OpenAIResponseObjectStreamResponseOutputItemAdded
@@ -642,6 +698,8 @@ OpenAIResponseObjectStream = Annotated[
     | OpenAIResponseObjectStreamResponseMcpCallInProgress
     | OpenAIResponseObjectStreamResponseMcpCallFailed
     | OpenAIResponseObjectStreamResponseMcpCallCompleted
+    | OpenAIResponseObjectStreamResponseContentPartAdded
+    | OpenAIResponseObjectStreamResponseContentPartDone
     | OpenAIResponseObjectStreamResponseCompleted,
     Field(discriminator="type"),
 ]

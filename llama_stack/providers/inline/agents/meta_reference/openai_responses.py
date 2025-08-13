@@ -20,6 +20,7 @@ from llama_stack.apis.agents.openai_responses import (
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIDeleteResponseObject,
+    OpenAIResponseContentPartOutputText,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputMessageContent,
@@ -32,9 +33,13 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
     OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseContentPartAdded,
+    OpenAIResponseObjectStreamResponseContentPartDone,
     OpenAIResponseObjectStreamResponseCreated,
     OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta,
     OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone,
+    OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta,
+    OpenAIResponseObjectStreamResponseMcpCallArgumentsDone,
     OpenAIResponseObjectStreamResponseMcpCallCompleted,
     OpenAIResponseObjectStreamResponseMcpCallFailed,
     OpenAIResponseObjectStreamResponseMcpCallInProgress,
@@ -475,6 +480,8 @@ class OpenAIResponsesImpl:
             message_item_id = f"msg_{uuid.uuid4()}"
             # Track tool call items for streaming events
             tool_call_item_ids: dict[int, str] = {}
+            # Track content parts for streaming events
+            content_part_emitted = False
 
             async for chunk in completion_result:
                 chat_response_id = chunk.id
@@ -483,6 +490,18 @@ class OpenAIResponsesImpl:
                 for chunk_choice in chunk.choices:
                     # Emit incremental text content as delta events
                     if chunk_choice.delta.content:
+                        # Emit content_part.added event for first text chunk
+                        if not content_part_emitted:
+                            content_part_emitted = True
+                            sequence_number += 1
+                            yield OpenAIResponseObjectStreamResponseContentPartAdded(
+                                response_id=response_id,
+                                item_id=message_item_id,
+                                part=OpenAIResponseContentPartOutputText(
+                                    text="",  # Will be filled incrementally via text deltas
+                                ),
+                                sequence_number=sequence_number,
+                            )
                         sequence_number += 1
                         yield OpenAIResponseObjectStreamResponseOutputTextDelta(
                             content_index=0,
@@ -529,16 +548,33 @@ class OpenAIResponsesImpl:
                                     sequence_number=sequence_number,
                                 )
 
-                            # Stream function call arguments as they arrive
+                            # Stream tool call arguments as they arrive (differentiate between MCP and function calls)
                             if tool_call.function and tool_call.function.arguments:
                                 tool_call_item_id = tool_call_item_ids[tool_call.index]
                                 sequence_number += 1
-                                yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta(
-                                    delta=tool_call.function.arguments,
-                                    item_id=tool_call_item_id,
-                                    output_index=len(output_messages),
-                                    sequence_number=sequence_number,
+
+                                # Check if this is an MCP tool call
+                                is_mcp_tool = (
+                                    ctx.mcp_tool_to_server
+                                    and tool_call.function.name
+                                    and tool_call.function.name in ctx.mcp_tool_to_server
                                 )
+                                if is_mcp_tool:
+                                    # Emit MCP-specific argument delta event
+                                    yield OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta(
+                                        delta=tool_call.function.arguments,
+                                        item_id=tool_call_item_id,
+                                        output_index=len(output_messages),
+                                        sequence_number=sequence_number,
+                                    )
+                                else:
+                                    # Emit function call argument delta event
+                                    yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta(
+                                        delta=tool_call.function.arguments,
+                                        item_id=tool_call_item_id,
+                                        output_index=len(output_messages),
+                                        sequence_number=sequence_number,
+                                    )
 
                                 # Accumulate arguments for final response (only for subsequent chunks)
                                 if not is_new_tool_call:
@@ -546,26 +582,54 @@ class OpenAIResponsesImpl:
                                         response_tool_call.function.arguments or ""
                                     ) + tool_call.function.arguments
 
-            # Emit function_call_arguments.done events for completed tool calls
+            # Emit arguments.done events for completed tool calls (differentiate between MCP and function calls)
             for tool_call_index in sorted(chat_response_tool_calls.keys()):
                 tool_call_item_id = tool_call_item_ids[tool_call_index]
                 final_arguments = chat_response_tool_calls[tool_call_index].function.arguments or ""
+                tool_call_name = chat_response_tool_calls[tool_call_index].function.name
+
+                # Check if this is an MCP tool call
+                is_mcp_tool = ctx.mcp_tool_to_server and tool_call_name and tool_call_name in ctx.mcp_tool_to_server
                 sequence_number += 1
-                yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(
-                    arguments=final_arguments,
-                    item_id=tool_call_item_id,
-                    output_index=len(output_messages),
-                    sequence_number=sequence_number,
-                )
+                if is_mcp_tool:
+                    # Emit MCP-specific argument done event
+                    yield OpenAIResponseObjectStreamResponseMcpCallArgumentsDone(
+                        arguments=final_arguments,
+                        item_id=tool_call_item_id,
+                        output_index=len(output_messages),
+                        sequence_number=sequence_number,
+                    )
+                else:
+                    # Emit function call argument done event
+                    yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(
+                        arguments=final_arguments,
+                        item_id=tool_call_item_id,
+                        output_index=len(output_messages),
+                        sequence_number=sequence_number,
+                    )
 
             # Convert collected chunks to complete response
             if chat_response_tool_calls:
                 tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
-
-                # when there are tool calls, we need to clear the content
-                chat_response_content = []
             else:
                 tool_calls = None
+
+            # Emit content_part.done event if text content was streamed (before content gets cleared)
+            if content_part_emitted:
+                final_text = "".join(chat_response_content)
+                sequence_number += 1
+                yield OpenAIResponseObjectStreamResponseContentPartDone(
+                    response_id=response_id,
+                    item_id=message_item_id,
+                    part=OpenAIResponseContentPartOutputText(
+                        text=final_text,
+                    ),
+                    sequence_number=sequence_number,
+                )
+
+            # Clear content when there are tool calls (OpenAI spec behavior)
+            if chat_response_tool_calls:
+                chat_response_content = []
 
             assistant_message = OpenAIAssistantMessageParam(
                 content="".join(chat_response_content),
