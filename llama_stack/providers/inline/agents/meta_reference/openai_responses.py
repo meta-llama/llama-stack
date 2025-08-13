@@ -531,16 +531,15 @@ class OpenAIResponsesImpl:
 
             # Emit function_call_arguments.done events for completed tool calls
             for tool_call_index in sorted(chat_response_tool_calls.keys()):
-                if tool_call_index in tool_call_item_ids:
-                    tool_call_item_id = tool_call_item_ids[tool_call_index]
-                    final_arguments = chat_response_tool_calls[tool_call_index].function.arguments or ""
-                    sequence_number += 1
-                    yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(
-                        arguments=final_arguments,
-                        item_id=tool_call_item_id,
-                        output_index=len(output_messages),
-                        sequence_number=sequence_number,
-                    )
+                tool_call_item_id = tool_call_item_ids[tool_call_index]
+                final_arguments = chat_response_tool_calls[tool_call_index].function.arguments or ""
+                sequence_number += 1
+                yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(
+                    arguments=final_arguments,
+                    item_id=tool_call_item_id,
+                    output_index=len(output_messages),
+                    sequence_number=sequence_number,
+                )
 
             # Convert collected chunks to complete response
             if chat_response_tool_calls:
