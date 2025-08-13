@@ -116,7 +116,7 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
 
     if isinstance(exc, RequestValidationError):
         return HTTPException(
-            status_code=400,
+            status_code=httpx.codes.BAD_REQUEST,
             detail={
                 "errors": [
                     {
@@ -129,20 +129,20 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
             },
         )
     elif isinstance(exc, ValueError):
-        return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.BAD_REQUEST, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
-        return HTTPException(status_code=400, detail=str(exc))
+        return HTTPException(status_code=httpx.codes.BAD_REQUEST, detail=str(exc))
     elif isinstance(exc, PermissionError | AccessDeniedError):
-        return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.FORBIDDEN, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, asyncio.TimeoutError | TimeoutError):
-        return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.GATEWAY_TIMEOUT, detail=f"Operation timed out: {str(exc)}")
     elif isinstance(exc, NotImplementedError):
-        return HTTPException(status_code=501, detail=f"Not implemented: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.NOT_IMPLEMENTED, detail=f"Not implemented: {str(exc)}")
     elif isinstance(exc, AuthenticationRequiredError):
-        return HTTPException(status_code=401, detail=f"Authentication required: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.UNAUTHORIZED, detail=f"Authentication required: {str(exc)}")
     else:
         return HTTPException(
-            status_code=500,
+            status_code=httpx.codes.INTERNAL_SERVER_ERROR,
             detail="Internal server error: An unexpected error occurred.",
         )
 
@@ -357,7 +357,7 @@ class ClientVersionMiddleware:
                             await send(
                                 {
                                     "type": "http.response.start",
-                                    "status": 426,
+                                    "status": httpx.codes.UPGRADE_REQUIRED,
                                     "headers": [[b"content-type", b"application/json"]],
                                 }
                             )
