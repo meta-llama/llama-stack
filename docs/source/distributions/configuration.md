@@ -688,13 +688,26 @@ shields:
 ...
 ```
 
-### Global Vector-Store Defaults
+## Global Vector Store Defaults
 
-You can provide a *stack-level* default embedding model that will be used whenever a new vector-store is created and the caller does **not** specify an `embedding_model` parameter.
+You can provide a stack-level default embedding model that will be used whenever a new vector store is created and the caller does not specify an `embedding_model` parameter.
 
-Add a top-level block next to `models:` and `vector_io:` in your build/run YAML:
+Add a top-level `vector_store_config` block at the root of your build/run YAML, alongside other root-level keys such as `models`, `shields`, `server`, and `metadata_store`:
 
 ```yaml
+# ... other configuration sections ...
+metadata_store:
+  namespace: null
+  type: sqlite
+  db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ollama}/registry.db
+models:
+- metadata: {}
+  model_id: ${env.INFERENCE_MODEL}
+  provider_id: ollama
+  provider_model_id: null
+shields: []
+server:
+  port: 8321
 vector_store_config:
   default_embedding_model: ${env.LLAMA_STACK_DEFAULT_EMBEDDING_MODEL:=all-MiniLM-L6-v2}
   # optional - if omitted, defaults to 384
