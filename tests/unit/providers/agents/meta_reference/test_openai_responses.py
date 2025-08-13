@@ -272,7 +272,9 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
 
     # Check that we got the content from our mocked tool execution result
     chunks = [chunk async for chunk in result]
-    assert len(chunks) == 2  # Should have response.created and response.completed
+    # Should have: response.created, output_item.added, function_call_arguments.delta,
+    # function_call_arguments.done, output_item.done, response.completed
+    assert len(chunks) == 6
 
     # Verify inference API was called correctly (after iterating over result)
     first_call = mock_inference_api.openai_chat_completion.call_args_list[0]
@@ -284,11 +286,17 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
     assert chunks[0].type == "response.created"
     assert len(chunks[0].response.output) == 0
 
+    # Check streaming events
+    assert chunks[1].type == "response.output_item.added"
+    assert chunks[2].type == "response.function_call_arguments.delta"
+    assert chunks[3].type == "response.function_call_arguments.done"
+    assert chunks[4].type == "response.output_item.done"
+
     # Check response.completed event (should have the tool call)
-    assert chunks[1].type == "response.completed"
-    assert len(chunks[1].response.output) == 1
-    assert chunks[1].response.output[0].type == "function_call"
-    assert chunks[1].response.output[0].name == "get_weather"
+    assert chunks[5].type == "response.completed"
+    assert len(chunks[5].response.output) == 1
+    assert chunks[5].response.output[0].type == "function_call"
+    assert chunks[5].response.output[0].name == "get_weather"
 
 
 async def test_create_openai_response_with_multiple_messages(openai_responses_impl, mock_inference_api):
