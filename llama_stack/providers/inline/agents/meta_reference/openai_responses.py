@@ -20,7 +20,7 @@ from llama_stack.apis.agents.openai_responses import (
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIDeleteResponseObject,
-    OpenAIResponseContentPartText,
+    OpenAIResponseContentPartOutputText,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputMessageContent,
@@ -481,7 +481,6 @@ class OpenAIResponsesImpl:
             # Track tool call items for streaming events
             tool_call_item_ids: dict[int, str] = {}
             # Track content parts for streaming events
-            content_part_id: str | None = None
             content_part_emitted = False
 
             async for chunk in completion_result:
@@ -493,14 +492,12 @@ class OpenAIResponsesImpl:
                     if chunk_choice.delta.content:
                         # Emit content_part.added event for first text chunk
                         if not content_part_emitted:
-                            content_part_id = f"cp_text_{uuid.uuid4()}"
                             content_part_emitted = True
                             sequence_number += 1
                             yield OpenAIResponseObjectStreamResponseContentPartAdded(
                                 response_id=response_id,
                                 item_id=message_item_id,
-                                part=OpenAIResponseContentPartText(
-                                    id=content_part_id,
+                                part=OpenAIResponseContentPartOutputText(
                                     text="",  # Will be filled incrementally via text deltas
                                 ),
                                 sequence_number=sequence_number,
@@ -618,14 +615,13 @@ class OpenAIResponsesImpl:
                 tool_calls = None
 
             # Emit content_part.done event if text content was streamed (before content gets cleared)
-            if content_part_emitted and content_part_id:
+            if content_part_emitted:
                 final_text = "".join(chat_response_content)
                 sequence_number += 1
                 yield OpenAIResponseObjectStreamResponseContentPartDone(
                     response_id=response_id,
                     item_id=message_item_id,
-                    part=OpenAIResponseContentPartText(
-                        id=content_part_id,
+                    part=OpenAIResponseContentPartOutputText(
                         text=final_text,
                     ),
                     sequence_number=sequence_number,
