@@ -487,7 +487,8 @@ class OpenAIResponsesImpl:
                         for tool_call in chunk_choice.delta.tool_calls:
                             response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
                             # Create new tool call entry if this is the first chunk for this index
-                            if response_tool_call is None:
+                            is_new_tool_call = response_tool_call is None
+                            if is_new_tool_call:
                                 tool_call_dict: dict[str, Any] = tool_call.model_dump()
                                 tool_call_dict.pop("type", None)
                                 response_tool_call = OpenAIChatCompletionToolCall(**tool_call_dict)
@@ -524,10 +525,11 @@ class OpenAIResponsesImpl:
                                     sequence_number=sequence_number,
                                 )
 
-                                # Accumulate arguments for final response
-                                response_tool_call.function.arguments = (
-                                    response_tool_call.function.arguments or ""
-                                ) + tool_call.function.arguments
+                                # Accumulate arguments for final response (only for subsequent chunks)
+                                if not is_new_tool_call:
+                                    response_tool_call.function.arguments = (
+                                        response_tool_call.function.arguments or ""
+                                    ) + tool_call.function.arguments
 
             # Emit function_call_arguments.done events for completed tool calls
             for tool_call_index in sorted(chat_response_tool_calls.keys()):
