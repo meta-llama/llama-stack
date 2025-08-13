@@ -15,6 +15,7 @@ from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
     SafetyViolation,
+    ShieldStore,
     ViolationLevel,
 )
 from llama_stack.apis.shields import Shield
@@ -32,6 +33,8 @@ PROMPT_GUARD_MODEL = "Prompt-Guard-86M"
 
 
 class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
+    shield_store: ShieldStore
+
     def __init__(self, config: PromptGuardConfig, _deps) -> None:
         self.config = config
 
@@ -53,13 +56,16 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
         self,
         shield_id: str,
         messages: list[Message],
-        params: dict[str, Any] = None,
+        params: dict[str, Any],
     ) -> RunShieldResponse:
         shield = await self.shield_store.get_shield(shield_id)
         if not shield:
             raise ValueError(f"Unknown shield {shield_id}")
 
         return await self.shield.run(messages)
+
+    async def run_moderation(self, input: str | list[str], model: str):
+        raise NotImplementedError("run_moderation not implemented for PromptGuard")
 
 
 class PromptGuardShield:
@@ -117,8 +123,10 @@ class PromptGuardShield:
         elif self.config.guard_type == PromptGuardType.jailbreak.value and score_malicious > self.threshold:
             violation = SafetyViolation(
                 violation_level=ViolationLevel.ERROR,
-                violation_type=f"prompt_injection:malicious={score_malicious}",
-                violation_return_message="Sorry, I cannot do this.",
+                user_message="Sorry, I cannot do this.",
+                metadata={
+                    "violation_type": f"prompt_injection:malicious={score_malicious}",
+                },
             )
 
         return RunShieldResponse(violation=violation)

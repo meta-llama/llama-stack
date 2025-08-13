@@ -18,7 +18,7 @@ from llama_stack.apis.common.content_types import (
     InterleavedContent,
     InterleavedContentItem,
 )
-from llama_stack.apis.common.errors import ModelNotFoundError
+from llama_stack.apis.common.errors import ModelNotFoundError, ModelTypeError
 from llama_stack.apis.inference import (
     BatchChatCompletionResponse,
     BatchCompletionResponse,
@@ -65,7 +65,7 @@ from llama_stack.providers.datatypes import HealthResponse, HealthStatus, Routin
 from llama_stack.providers.utils.inference.inference_store import InferenceStore
 from llama_stack.providers.utils.telemetry.tracing import get_current_span
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="inference")
 
 
 class InferenceRouter(Inference):
@@ -177,6 +177,15 @@ class InferenceRouter(Inference):
             encoded = self.formatter.encode_content(messages)
         return len(encoded.tokens) if encoded and encoded.tokens else 0
 
+    async def _get_model(self, model_id: str, expected_model_type: str) -> Model:
+        """takes a model id and gets model after ensuring that it is accessible and of the correct type"""
+        model = await self.routing_table.get_model(model_id)
+        if model is None:
+            raise ModelNotFoundError(model_id)
+        if model.model_type != expected_model_type:
+            raise ModelTypeError(model_id, model.model_type, expected_model_type)
+        return model
+
     async def chat_completion(
         self,
         model_id: str,
@@ -195,11 +204,7 @@ class InferenceRouter(Inference):
         )
         if sampling_params is None:
             sampling_params = SamplingParams()
-        model = await self.routing_table.get_model(model_id)
-        if model is None:
-            raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
+        model = await self._get_model(model_id, ModelType.llm)
         if tool_config:
             if tool_choice and tool_choice != tool_config.tool_choice:
                 raise ValueError("tool_choice and tool_config.tool_choice must match")
@@ -301,11 +306,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.completion: {model_id=}, {stream=}, {content=}, {sampling_params=}, {response_format=}",
         )
-        model = await self.routing_table.get_model(model_id)
-        if model is None:
-            raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model_id}' is an embedding model and does not support chat completions")
+        model = await self._get_model(model_id, ModelType.llm)
         provider = await self.routing_table.get_provider_impl(model_id)
         params = dict(
             model_id=model_id,
@@ -355,11 +356,7 @@ class InferenceRouter(Inference):
         task_type: EmbeddingTaskType | None = None,
     ) -> EmbeddingsResponse:
         logger.debug(f"InferenceRouter.embeddings: {model_id}")
-        model = await self.routing_table.get_model(model_id)
-        if model is None:
-            raise ModelNotFoundError(model_id)
-        if model.model_type == ModelType.llm:
-            raise ValueError(f"Model '{model_id}' is an LLM model and does not support embeddings")
+        await self._get_model(model_id, ModelType.embedding)
         provider = await self.routing_table.get_provider_impl(model_id)
         return await provider.embeddings(
             model_id=model_id,
@@ -395,12 +392,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.openai_completion: {model=}, {stream=}, {prompt=}",
         )
-        model_obj = await self.routing_table.get_model(model)
-        if model_obj is None:
-            raise ModelNotFoundError(model)
-        if model_obj.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model}' is an embedding model and does not support completions")
-
+        model_obj = await self._get_model(model, ModelType.llm)
         params = dict(
             model=model_obj.identifier,
             prompt=prompt,
@@ -476,11 +468,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.openai_chat_completion: {model=}, {stream=}, {messages=}",
         )
-        model_obj = await self.routing_table.get_model(model)
-        if model_obj is None:
-            raise ModelNotFoundError(model)
-        if model_obj.model_type == ModelType.embedding:
-            raise ValueError(f"Model '{model}' is an embedding model and does not support chat completions")
+        model_obj = await self._get_model(model, ModelType.llm)
 
         # Use the OpenAI client for a bit of extra input validation without
         # exposing the OpenAI client itself as part of our API surface
@@ -567,12 +555,7 @@ class InferenceRouter(Inference):
         logger.debug(
             f"InferenceRouter.openai_embeddings: {model=}, input_type={type(input)}, {encoding_format=}, {dimensions=}",
         )
-        model_obj = await self.routing_table.get_model(model)
-        if model_obj is None:
-            raise ModelNotFoundError(model)
-        if model_obj.model_type != ModelType.embedding:
-            raise ValueError(f"Model '{model}' is not an embedding model")
-
+        model_obj = await self._get_model(model, ModelType.embedding)
         params = dict(
             model=model_obj.identifier,
             input=input,
@@ -871,4 +854,5 @@ class InferenceRouter(Inference):
                     model=model.identifier,
                     object="chat.completion",
                 )
+                logger.debug(f"InferenceRouter.completion_response: {final_response}")
                 await self.store.store_chat_completion(final_response, messages)

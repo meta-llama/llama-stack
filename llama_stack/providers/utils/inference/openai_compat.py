@@ -70,7 +70,7 @@ from openai.types.chat.chat_completion_chunk import (
 from openai.types.chat.chat_completion_content_part_image_param import (
     ImageURL as OpenAIImageURL,
 )
-from openai.types.chat.chat_completion_message_tool_call_param import (
+from openai.types.chat.chat_completion_message_tool_call import (
     Function as OpenAIFunction,
 )
 from pydantic import BaseModel

@@ -170,6 +170,23 @@ class OpenAIResponseOutputMessageWebSearchToolCall(BaseModel):
     type: Literal["web_search_call"] = "web_search_call"
 
 
+class OpenAIResponseOutputMessageFileSearchToolCallResults(BaseModel):
+    """Search results returned by the file search operation.
+
+    :param attributes: (Optional) Key-value attributes associated with the file
+    :param file_id: Unique identifier of the file containing the result
+    :param filename: Name of the file containing the result
+    :param score: Relevance score for this search result (between 0 and 1)
+    :param text: Text content of the search result
+    """
+
+    attributes: dict[str, Any]
+    file_id: str
+    filename: str
+    score: float
+    text: str
+
+
 @json_schema_type
 class OpenAIResponseOutputMessageFileSearchToolCall(BaseModel):
     """File search tool call output message for OpenAI responses.
@@ -185,7 +202,7 @@ class OpenAIResponseOutputMessageFileSearchToolCall(BaseModel):
     queries: list[str]
     status: str
     type: Literal["file_search_call"] = "file_search_call"
-    results: list[dict[str, Any]] | None = None
+    results: list[OpenAIResponseOutputMessageFileSearchToolCallResults] | None = None
 
 
 @json_schema_type

@@ -38,6 +38,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageContent,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageFileSearchToolCall,
+    OpenAIResponseOutputMessageFileSearchToolCallResults,
     OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseOutputMessageWebSearchToolCall,
@@ -333,6 +334,7 @@ class OpenAIResponsesImpl:
         temperature: float | None = None,
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        include: list[str] | None = None,
         max_infer_iters: int | None = 10,
     ):
         stream = bool(stream)
@@ -486,8 +488,12 @@ class OpenAIResponsesImpl:
             # Convert collected chunks to complete response
             if chat_response_tool_calls:
                 tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
+
+                # when there are tool calls, we need to clear the content
+                chat_response_content = []
             else:
                 tool_calls = None
+
             assistant_message = OpenAIAssistantMessageParam(
                 content="".join(chat_response_content),
                 tool_calls=tool_calls,
@@ -826,12 +832,13 @@ class OpenAIResponsesImpl:
                         text = result.metadata["chunks"][i] if "chunks" in result.metadata else None
                         score = result.metadata["scores"][i] if "scores" in result.metadata else None
                         message.results.append(
-                            {
-                                "file_id": doc_id,
-                                "filename": doc_id,
-                                "text": text,
-                                "score": score,
-                            }
+                            OpenAIResponseOutputMessageFileSearchToolCallResults(
+                                file_id=doc_id,
+                                filename=doc_id,
+                                text=text,
+                                score=score,
+                                attributes={},
+                            )
                         )
                 if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
                     message.status = "failed"

@@ -35,6 +35,7 @@ remote_runpod
 remote_sambanova
 remote_tgi
 remote_together
+remote_vertexai
 remote_vllm
 remote_watsonx
 ```
