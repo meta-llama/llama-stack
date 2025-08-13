@@ -624,19 +624,23 @@ class OpenAIResponseObjectStreamResponseMcpCallCompleted(BaseModel):
 
 
 @json_schema_type
-class OpenAIResponseContentPart(BaseModel):
-    """Base class for response content parts."""
-
-    id: str
-    type: str
+class OpenAIResponseContentPartOutputText(BaseModel):
+    type: Literal["output_text"] = "output_text"
+    text: str
+    # TODO: add annotations, logprobs, etc.
 
 
 @json_schema_type
-class OpenAIResponseContentPartText(OpenAIResponseContentPart):
-    """Text content part for streaming responses."""
+class OpenAIResponseContentPartRefusal(BaseModel):
+    type: Literal["refusal"] = "refusal"
+    refusal: str
 
-    text: str
-    type: Literal["text"] = "text"
+
+OpenAIResponseContentPart = Annotated[
+    OpenAIResponseContentPartOutputText | OpenAIResponseContentPartRefusal,
+    Field(discriminator="type"),
+]
+register_schema(OpenAIResponseContentPart, name="OpenAIResponseContentPart")
 
 
 @json_schema_type

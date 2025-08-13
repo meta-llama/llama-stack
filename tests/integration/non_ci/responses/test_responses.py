@@ -731,27 +731,17 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
                 assert hasattr(added_event, "response_id"), "Content part added event should have response_id"
                 assert hasattr(added_event, "item_id"), "Content part added event should have item_id"
                 assert hasattr(added_event, "part"), "Content part added event should have part"
-                # Part might be a dict or object, handle both cases
-                if hasattr(added_event.part, "id"):
-                    assert added_event.part.id, "Content part should have id"
-                    assert added_event.part.type, "Content part should have type"
-                else:
-                    assert "id" in added_event.part, "Content part should have id"
-                    assert "type" in added_event.part, "Content part should have type"
+
+                # TODO: enable this after the client types are updated
+                # assert added_event.part.type == "output_text", "Content part should be an output_text"
 
             for done_event in content_part_done_events:
                 assert hasattr(done_event, "response_id"), "Content part done event should have response_id"
                 assert hasattr(done_event, "item_id"), "Content part done event should have item_id"
                 assert hasattr(done_event, "part"), "Content part done event should have part"
-                # Part might be a dict or object, handle both cases
-                # Note: In some scenarios (e.g., with tool calls), text content might be empty
-                if hasattr(done_event.part, "text"):
-                    # Text can be empty in tool call scenarios, so we just check it exists
-                    assert hasattr(done_event.part, "text"), "Content part should have text field when done"
-                else:
-                    # For dict case, text field might not be present if content was empty
-                    # This is valid behavior when tool calls are present
-                    pass
+
+                # TODO: enable this after the client types are updated
+                # assert len(done_event.part.text) > 0, "Content part should have text when done"
 
         # Basic pairing check: each output_item.added should be followed by some activity
         # (but we can't enforce strict 1:1 pairing due to the complexity of multi-turn scenarios)
