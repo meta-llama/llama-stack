@@ -19,6 +19,7 @@ The Containerfile is auto-generated from a template. To generate it:
    ```
 
 This will:
+
 - Check for the llama CLI installation
 - Generate dependencies using `llama stack build`
 - Create a new `Containerfile` with the required dependencies
@@ -33,6 +34,7 @@ NEVER edit the generated `Containerfile` manually.
 Once the Containerfile is generated, you can build the image using either Podman or Docker:
 
 ### Using Podman build image for x86_64
+
 ```bash
 podman build --platform linux/amd64 -f redhat-distribution/Containerfile -t rh .
 ```
