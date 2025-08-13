@@ -2,17 +2,6 @@
 ```{include} ../../../CONTRIBUTING.md
 ```
 
-## Testing
-
-See the [Test Page](testing.md) which describes how to test your changes.
-```{toctree}
-:maxdepth: 1
-:hidden:
-:caption: Testing
-
-testing
-```
-
 ## Adding a New Provider
 
 See the [Adding a New API Provider Page](new_api_provider.md) which describes how to add new API providers to the Stack.
@@ -26,4 +15,15 @@ See the [External Provider Page](../providers/external/index.md) which describes
 
 new_api_provider
 new_vector_database
+```
+
+## Testing
+
+See the [Test Page](testing.md) which describes how to test your changes.
+```{toctree}
+:maxdepth: 1
+:hidden:
+:caption: Testing
+
+testing
 ```

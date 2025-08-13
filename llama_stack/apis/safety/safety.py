@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from enum import Enum, StrEnum
+from enum import Enum
 from typing import Any, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
@@ -15,27 +15,6 @@ from llama_stack.providers.utils.telemetry.trace_protocol import trace_protocol
 from llama_stack.schema_utils import json_schema_type, webmethod
 
 
-# OpenAI Categories to return in the response
-class OpenAICategories(StrEnum):
-    """
-    Required set of categories in moderations api response
-    """
-
-    VIOLENCE = "violence"
-    VIOLENCE_GRAPHIC = "violence/graphic"
-    HARRASMENT = "harassment"
-    HARRASMENT_THREATENING = "harassment/threatening"
-    HATE = "hate"
-    HATE_THREATENING = "hate/threatening"
-    ILLICIT = "illicit"
-    ILLICIT_VIOLENT = "illicit/violent"
-    SEXUAL = "sexual"
-    SEXUAL_MINORS = "sexual/minors"
-    SELF_HARM = "self-harm"
-    SELF_HARM_INTENT = "self-harm/intent"
-    SELF_HARM_INSTRUCTIONS = "self-harm/instructions"
-
-
 @json_schema_type
 class ModerationObjectResults(BaseModel):
     """A moderation object.
@@ -43,20 +22,6 @@ class ModerationObjectResults(BaseModel):
     :param categories: A list of the categories, and whether they are flagged or not.
     :param category_applied_input_types: A list of the categories along with the input type(s) that the score applies to.
     :param category_scores: A list of the categories along with their scores as predicted by model.
-    Required set of categories that need to be in response
-    - violence
-    - violence/graphic
-    - harassment
-    - harassment/threatening
-    - hate
-    - hate/threatening
-    - illicit
-    - illicit/violent
-    - sexual
-    - sexual/minors
-    - self-harm
-    - self-harm/intent
-    - self-harm/instructions
     """
 
     flagged: bool

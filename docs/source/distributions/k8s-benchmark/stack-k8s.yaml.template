@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: llama-pvc
+  name: llama-benchmark-pvc
 spec:
   accessModes:
     - ReadWriteOnce
@@ -12,21 +12,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: llama-stack-server
+  name: llama-stack-benchmark-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: llama-stack
+      app.kubernetes.io/name: llama-stack-benchmark
       app.kubernetes.io/component: server
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: llama-stack
+        app.kubernetes.io/name: llama-stack-benchmark
         app.kubernetes.io/component: server
     spec:
       containers:
-      - name: llama-stack
+      - name: llama-stack-benchmark
         image: llamastack/distribution-starter:latest
         imagePullPolicy: Always # since we have specified latest instead of a version
         env:
@@ -34,14 +34,6 @@ spec:
           value: "true"
         - name: CHROMADB_URL
           value: http://chromadb.default.svc.cluster.local:6000
-        - name: VLLM_URL
-          value: http://vllm-server.default.svc.cluster.local:8000/v1
-        - name: VLLM_MAX_TOKENS
-          value: "3072"
-        - name: VLLM_SAFETY_URL
-          value: http://vllm-server-safety.default.svc.cluster.local:8001/v1
-        - name: VLLM_TLS_VERIFY
-          value: "false"
         - name: POSTGRES_HOST
           value: postgres-server.default.svc.cluster.local
         - name: POSTGRES_PORT
@@ -52,9 +44,21 @@ spec:
           value: "${SAFETY_MODEL}"
         - name: TAVILY_SEARCH_API_KEY
           value: "${TAVILY_SEARCH_API_KEY}"
-        command: ["python", "-m", "llama_stack.core.server.server", "/etc/config/stack_run_config.yaml", "--port", "8321"]
+        - name: MOCK_INFERENCE_PORT
+          value: "${MOCK_INFERENCE_PORT}"
+        - name: VLLM_URL
+          value: http://vllm-server.default.svc.cluster.local:8000/v1
+        - name: VLLM_MAX_TOKENS
+          value: "3072"
+        - name: VLLM_SAFETY_URL
+          value: http://vllm-server-safety.default.svc.cluster.local:8001/v1
+        - name: VLLM_TLS_VERIFY
+          value: "false"
+        - name: MOCK_INFERENCE_MODEL
+          value: "${MOCK_INFERENCE_MODEL}"
+        command: ["python", "-m", "llama_stack.core.server.server", "/etc/config/stack_run_config.yaml", "--port", "8323"]
         ports:
-          - containerPort: 8321
+          - containerPort: 8323
         volumeMounts:
           - name: llama-storage
             mountPath: /root/.llama
@@ -63,7 +67,21 @@ spec:
       volumes:
       - name: llama-storage
         persistentVolumeClaim:
-          claimName: llama-pvc
+          claimName: llama-benchmark-pvc
       - name: llama-config
         configMap:
           name: llama-stack-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llama-stack-benchmark-service
+spec:
+  selector:
+    app.kubernetes.io/name: llama-stack-benchmark
+    app.kubernetes.io/component: server
+  ports:
+  - name: http
+    port: 8323
+    targetPort: 8323
+  type: ClusterIP

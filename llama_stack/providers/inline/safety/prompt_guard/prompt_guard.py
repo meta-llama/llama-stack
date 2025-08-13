@@ -18,6 +18,7 @@ from llama_stack.apis.safety import (
     ShieldStore,
     ViolationLevel,
 )
+from llama_stack.apis.safety.safety import ModerationObject
 from llama_stack.apis.shields import Shield
 from llama_stack.core.utils.model_utils import model_local_dir
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
@@ -63,6 +64,9 @@ class PromptGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
             raise ValueError(f"Unknown shield {shield_id}")
 
         return await self.shield.run(messages)
+
+    async def run_moderation(self, input: str | list[str], model: str) -> ModerationObject:
+        raise NotImplementedError("run_moderation is not implemented for Prompt Guard")
 
 
 class PromptGuardShield:

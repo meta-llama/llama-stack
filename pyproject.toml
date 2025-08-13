@@ -33,7 +33,7 @@ dependencies = [
     "jsonschema",
     "llama-stack-client>=0.2.17",
     "llama-api-client>=0.1.2",
-    "openai>=1.66",
+    "openai>=1.99.6",
     "prompt-toolkit",
     "python-dotenv",
     "python-jose[cryptography]",
@@ -140,6 +140,9 @@ docs = [
     "requests",
 ]
 codegen = ["rich", "pydantic", "jinja2>=3.1.6"]
+benchmark = [
+    "locust>=2.37.14",
+]
 
 [project.urls]
 Homepage = "https://github.com/meta-llama/llama-stack"

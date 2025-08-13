@@ -31,6 +31,7 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIV
 from llama_stack.providers.utils.memory.vector_store import (
     RERANKER_TYPE_RRF,
     RERANKER_TYPE_WEIGHTED,
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -426,34 +427,36 @@ class SQLiteVecIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=chunks, scores=scores)
 
-    async def delete_chunk(self, chunk_id: str) -> None:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Remove a chunk from the SQLite vector store."""
+        chunk_ids = [c.chunk_id for c in chunks_for_deletion]
 
-        def _delete_chunk():
+        def _delete_chunks():
             connection = _create_sqlite_connection(self.db_path)
             cur = connection.cursor()
             try:
                 cur.execute("BEGIN TRANSACTION")
 
                 # Delete from metadata table
-                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id = ?", (chunk_id,))
+                placeholders = ",".join("?" * len(chunk_ids))
+                cur.execute(f"DELETE FROM {self.metadata_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 # Delete from vector table
-                cur.execute(f"DELETE FROM {self.vector_table} WHERE id = ?", (chunk_id,))
+                cur.execute(f"DELETE FROM {self.vector_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 # Delete from FTS table
-                cur.execute(f"DELETE FROM {self.fts_table} WHERE id = ?", (chunk_id,))
+                cur.execute(f"DELETE FROM {self.fts_table} WHERE id IN ({placeholders})", chunk_ids)
 
                 connection.commit()
             except Exception as e:
                 connection.rollback()
-                logger.error(f"Error deleting chunk {chunk_id}: {e}")
+                logger.error(f"Error deleting chunks: {e}")
                 raise
             finally:
                 cur.close()
                 connection.close()
 
-        await asyncio.to_thread(_delete_chunk)
+        await asyncio.to_thread(_delete_chunks)
 
 
 class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
@@ -551,12 +554,10 @@ class SQLiteVecVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoc
             raise VectorStoreNotFoundError(vector_db_id)
         return await index.query_chunks(query, params)
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
-        """Delete a chunk from a sqlite_vec index."""
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        """Delete chunks from a sqlite_vec index."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise VectorStoreNotFoundError(store_id)
 
-        for chunk_id in chunk_ids:
-            # Use the index's delete_chunk method
-            await index.index.delete_chunk(chunk_id)
+        await index.index.delete_chunks(chunks_for_deletion)
