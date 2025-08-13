@@ -50,6 +50,7 @@ from llama_stack.apis.inference import (
     CompletionMessage,
     Inference,
     Message,
+    OpenAIMessageParam,
     SamplingParams,
     StopReason,
     SystemMessage,
@@ -516,18 +517,13 @@ class ChatAgent(ShieldRunnerMixin):
                 if self.agent_config.name:
                     span.set_attribute("agent_name", self.agent_config.name)
                 # Convert messages to OpenAI format
-                openai_messages = []
+                openai_messages: list[OpenAIMessageParam] = []
                 for message in input_messages:
                     openai_message = await convert_message_to_openai_dict_new(message)
                     openai_messages.append(openai_message)
 
                 # Convert tool definitions to OpenAI format
-                openai_tools = None
-                if self.tool_defs:
-                    openai_tools = []
-                    for tool_def in self.tool_defs:
-                        openai_tool = convert_tooldef_to_openai_tool(tool_def)
-                        openai_tools.append(openai_tool)
+                openai_tools = [convert_tooldef_to_openai_tool(x) for x in (self.tool_defs or [])]
 
                 # Extract tool_choice from tool_config for OpenAI compatibility
                 # Note: tool_choice can only be provided when tools are also provided

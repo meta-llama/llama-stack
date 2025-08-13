@@ -1267,7 +1267,12 @@ async def prepare_openai_completion_params(**params):
         elif isinstance(value, dict):
             new_value = {k: await _prepare_value(v) for k, v in value.items()}
         elif isinstance(value, BaseModel):
-            new_value = value.model_dump(exclude_none=True)
+            # Special handling for OpenAIMessageParam, preserve as Pydantic objects
+            if hasattr(value, 'role') and hasattr(value, 'content'):
+                new_value = value
+            else:
+                # Other BaseModel objects get converted to dicts
+                new_value = value.model_dump(exclude_none=True)
         return new_value
 
     completion_params = {}
