@@ -134,6 +134,10 @@ providers:
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+  - provider_id: CodeScanner
+    provider_type: inline::code-scanner
+    config:
+      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
