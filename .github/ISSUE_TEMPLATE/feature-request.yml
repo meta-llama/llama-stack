@@ -1,0 +1,28 @@
+name: 🚀 Feature request
+description: Request a new llama-stack feature
+labels: ["enhancement"]
+body:
+- type: textarea
+  id: feature-pitch
+  attributes:
+    label: 🚀 Describe the new functionality needed
+    description: >
+      A clear and concise description of _what_ needs to be built.
+  validations:
+    required: true
+
+- type: textarea
+  id: feature-motivation
+  attributes:
+    label: 💡 Why is this needed? What if we don't build it?
+    description: >
+      A clear and concise description of _why_ this functionality is needed.
+  validations:
+    required: true
+
+- type: textarea
+  id: other-thoughts
+  attributes:
+    label: Other thoughts
+    description: >
+      Any thoughts about how this may result in complexity in the codebase, or other trade-offs.
