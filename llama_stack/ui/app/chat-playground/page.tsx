@@ -17,24 +17,52 @@ import type { CompletionCreateParams } from "llama-stack-client/resources/chat/c
 import type { Model } from "llama-stack-client/resources/models";
 import type { VectorDBListResponse } from "llama-stack-client/resources/vector-dbs";
 import { VectorDbManager } from "@/components/vector-db/vector-db-manager";
+import { SessionManager, SessionUtils } from "@/components/chat-playground/session-manager";
+
+interface ChatSession {
+  id: string;
+  name: string;
+  messages: Message[];
+  selectedModel: string;
+  selectedVectorDb: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 export default function ChatPlaygroundPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [input, setInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [models, setModels] = useState<Model[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("");
   const [modelsLoading, setModelsLoading] = useState(true);
   const [modelsError, setModelsError] = useState<string | null>(null);
   const [vectorDbs, setVectorDbs] = useState<VectorDBListResponse>([]);
-  const [selectedVectorDb, setSelectedVectorDb] = useState<string>("");
   const [vectorDbsLoading, setVectorDbsLoading] = useState(true);
   const [vectorDbsError, setVectorDbsError] = useState<string | null>(null);
   const client = useAuthClient();
 
   const isModelsLoading = modelsLoading ?? true;
 
+  // Load current session on mount
+  useEffect(() => {
+    const savedSession = SessionUtils.loadCurrentSession();
+    if (savedSession) {
+      setCurrentSession(savedSession);
+    } else {
+      // Create default session if none exists - will be updated with model when models load
+      const defaultSession = SessionUtils.createDefaultSession();
+      setCurrentSession(defaultSession);
+      SessionUtils.saveCurrentSession(defaultSession);
+    }
+  }, []);
+
+  // Save session when it changes
+  useEffect(() => {
+    if (currentSession) {
+      SessionUtils.saveCurrentSession(currentSession);
+    }
+  }, [currentSession]);
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -44,8 +72,8 @@ export default function ChatPlaygroundPage() {
         const modelList = await client.models.list();
         const llmModels = modelList.filter(model => model.model_type === 'llm');
         setModels(llmModels);
-        if (llmModels.length > 0) {
-          setSelectedModel(llmModels[0].identifier);
+        if (llmModels.length > 0 && currentSession && !currentSession.selectedModel) {
+          setCurrentSession(prev => prev ? { ...prev, selectedModel: llmModels[0].identifier } : null);
         }
       } catch (err) {
         console.error("Error fetching models:", err);
@@ -95,7 +123,7 @@ export default function ChatPlaygroundPage() {
 
 const handleSubmit = async (event?: { preventDefault?: () => void }) => {
   event?.preventDefault?.();
-  if (!input.trim()) return;
+  if (!input.trim() || !currentSession || !currentSession.selectedModel) return;
 
   // Add user message to chat
   const userMessage: Message = {
@@ -105,7 +133,11 @@ const handleSubmit = async (event?: { preventDefault?: () => void }) => {
     createdAt: new Date(),
   };
 
-  setMessages(prev => [...prev, userMessage]);
+  setCurrentSession(prev => prev ? {
+    ...prev,
+    messages: [...prev.messages, userMessage],
+    updatedAt: Date.now()
+  } : null);
   setInput("");
 
   // Use the helper function with the content
@@ -118,26 +150,26 @@ const handleSubmitWithContent = async (content: string) => {
 
   try {
     let enhancedContent = content;
-    
+
     // If a vector DB is selected, query for relevant context
-    if (selectedVectorDb && selectedVectorDb !== "none") {
+    if (currentSession?.selectedVectorDb && currentSession.selectedVectorDb !== "none") {
       try {
         const vectorResponse = await client.vectorIo.query({
           query: content,
-          vector_db_id: selectedVectorDb,
+          vector_db_id: currentSession.selectedVectorDb,
         });
-        
+
         if (vectorResponse.chunks && vectorResponse.chunks.length > 0) {
           const context = vectorResponse.chunks
             .map(chunk => {
               // Extract text content from the chunk
-              const chunkContent = typeof chunk.content === 'string' 
-                ? chunk.content 
+              const chunkContent = typeof chunk.content === 'string'
+                ? chunk.content
                 : extractTextContent(chunk.content);
               return chunkContent;
             })
             .join('\n\n');
-          
+
           enhancedContent = `Please answer the following query using the context below.\n\nCONTEXT:\n${context}\n\nQUERY:\n${content}`;
         }
       } catch (vectorErr) {
@@ -147,7 +179,7 @@ const handleSubmitWithContent = async (content: string) => {
     }
 
     const messageParams: CompletionCreateParams["messages"] = [
-      ...messages.map(msg => {
+      ...(currentSession?.messages || []).map(msg => {
         const msgContent = typeof msg.content === 'string' ? msg.content : extractTextContent(msg.content);
         if (msg.role === "user") {
           return { role: "user" as const, content: msgContent };
@@ -161,7 +193,7 @@ const handleSubmitWithContent = async (content: string) => {
     ];
 
     const response = await client.chat.completions.create({
-      model: selectedModel,
+      model: currentSession?.selectedModel || "",
       messages: messageParams,
       stream: true,
     });
@@ -173,7 +205,12 @@ const handleSubmitWithContent = async (content: string) => {
       createdAt: new Date(),
     };
 
-    setMessages(prev => [...prev, assistantMessage]);
+    setCurrentSession(prev => prev ? {
+      ...prev,
+      messages: [...prev.messages, assistantMessage],
+      updatedAt: Date.now()
+    } : null);
+
     let fullContent = "";
     for await (const chunk of response) {
       if (chunk.choices && chunk.choices[0]?.delta?.content) {
@@ -181,13 +218,14 @@ const handleSubmitWithContent = async (content: string) => {
         fullContent += deltaContent;
 
         flushSync(() => {
-          setMessages(prev => {
-            const newMessages = [...prev];
+          setCurrentSession(prev => {
+            if (!prev) return null;
+            const newMessages = [...prev.messages];
             const lastMessage = newMessages[newMessages.length - 1];
             if (lastMessage.role === "assistant") {
               lastMessage.content = fullContent;
             }
-            return newMessages;
+            return { ...prev, messages: newMessages, updatedAt: Date.now() };
           });
         });
       }
@@ -195,7 +233,11 @@ const handleSubmitWithContent = async (content: string) => {
   } catch (err) {
     console.error("Error sending message:", err);
     setError("Failed to send message. Please try again.");
-    setMessages(prev => prev.slice(0, -1));
+    setCurrentSession(prev => prev ? {
+      ...prev,
+      messages: prev.messages.slice(0, -1),
+      updatedAt: Date.now()
+    } : null);
   } finally {
     setIsGenerating(false);
   }
@@ -213,13 +255,39 @@ const handleSubmitWithContent = async (content: string) => {
       content: message.content,
       createdAt: new Date(),
     };
-    setMessages(prev => [...prev, newMessage])
+    setCurrentSession(prev => prev ? {
+      ...prev,
+      messages: [...prev.messages, newMessage],
+      updatedAt: Date.now()
+    } : null);
     handleSubmitWithContent(newMessage.content);
   };
 
   const clearChat = () => {
-    setMessages([]);
+    setCurrentSession(prev => prev ? {
+      ...prev,
+      messages: [],
+      updatedAt: Date.now()
+    } : null);
     setError(null);
+  };
+
+  const handleSessionChange = (session: ChatSession) => {
+    setCurrentSession(session);
+    setError(null);
+  };
+
+  const handleNewSession = () => {
+    const defaultModel = currentSession?.selectedModel || (models.length > 0 ? models[0].identifier : "");
+    const defaultVectorDb = currentSession?.selectedVectorDb || "";
+
+    const newSession = {
+      ...SessionUtils.createDefaultSession(),
+      selectedModel: defaultModel,
+      selectedVectorDb: defaultVectorDb,
+    };
+    setCurrentSession(newSession);
+    SessionUtils.saveCurrentSession(newSession);
   };
 
   const refreshVectorDbs = async () => {
@@ -237,42 +305,69 @@ const handleSubmitWithContent = async (content: string) => {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto">
-      <div className="mb-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Chat Playground</h1>
-        <div className="flex gap-2">
-          <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isModelsLoading || isGenerating}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={isModelsLoading ? "Loading models..." : "Select Model"} />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((model) => (
-                <SelectItem key={model.identifier} value={model.identifier}>
-                  {model.identifier}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={selectedVectorDb} onValueChange={setSelectedVectorDb} disabled={vectorDbsLoading || isGenerating}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={vectorDbsLoading ? "Loading vector DBs..." : "Select Vector DB (Optional)"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None (No RAG)</SelectItem>
-              {vectorDbs.map((vectorDb) => (
-                <SelectItem key={vectorDb.identifier} value={vectorDb.identifier}>
-                  {vectorDb.identifier}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <VectorDbManager 
-            client={client}
-            onVectorDbCreated={refreshVectorDbs}
+    <div className="flex flex-col h-full w-full max-w-4xl mx-auto">
+      <div className="mb-4 space-y-3">
+        <div>
+          <h1 className="text-2xl font-bold">Chat Playground</h1>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <SessionManager
+            currentSession={currentSession}
+            onSessionChange={handleSessionChange}
+            onNewSession={handleNewSession}
           />
           <Button variant="outline" onClick={clearChat} disabled={isGenerating}>
             Clear Chat
           </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-600">Model:</span>
+            <Select
+              value={currentSession?.selectedModel || ""}
+              onValueChange={(value) => setCurrentSession(prev => prev ? { ...prev, selectedModel: value, updatedAt: Date.now() } : null)}
+              disabled={isModelsLoading || isGenerating}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={isModelsLoading ? "Loading..." : "Select Model"} />
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((model) => (
+                  <SelectItem key={model.identifier} value={model.identifier}>
+                    {model.identifier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-600">Vector DB:</span>
+            <Select
+              value={currentSession?.selectedVectorDb || ""}
+              onValueChange={(value) => setCurrentSession(prev => prev ? { ...prev, selectedVectorDb: value, updatedAt: Date.now() } : null)}
+              disabled={vectorDbsLoading || isGenerating}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder={vectorDbsLoading ? "Loading..." : "None"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {vectorDbs.map((vectorDb) => (
+                  <SelectItem key={vectorDb.identifier} value={vectorDb.identifier}>
+                    {vectorDb.identifier}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <VectorDbManager
+            client={client}
+            onVectorDbCreated={refreshVectorDbs}
+          />
         </div>
       </div>
 
@@ -296,14 +391,14 @@ const handleSubmitWithContent = async (content: string) => {
 
       <Chat
         className="flex-1"
-        messages={messages}
+        messages={currentSession?.messages || []}
         handleSubmit={handleSubmit}
         input={input}
         handleInputChange={handleInputChange}
         isGenerating={isGenerating}
         append={append}
         suggestions={suggestions}
-        setMessages={setMessages}
+        setMessages={(messages) => setCurrentSession(prev => prev ? { ...prev, messages, updatedAt: Date.now() } : null)}
       />
     </div>
   );
