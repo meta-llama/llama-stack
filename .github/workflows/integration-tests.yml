@@ -20,7 +20,6 @@ on:
   schedule:
     # If changing the cron schedule, update the provider in the test-matrix job
     - cron: '0 0 * * *'  # (test latest client) Daily at 12 AM UTC
-    - cron: '1 0 * * 0'  # (test vllm) Weekly on Sunday at 1 AM UTC
   workflow_dispatch:
     inputs:
       test-all-client-versions:
@@ -38,28 +37,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  discover-tests:
-    runs-on: ubuntu-latest
-    outputs:
-      test-types: ${{ steps.generate-test-types.outputs.test-types }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Generate test types
-        id: generate-test-types
-        run: |
-          # Get test directories dynamically, excluding non-test directories
-          # NOTE: we are excluding post_training since the tests take too long
-          TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d |
-            sed 's|tests/integration/||' |
-            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|non_ci|post_training)$" |
-            sort | jq -R -s -c 'split("\n")[:-1]')
-          echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
-
   run-replay-mode-tests:
-    needs: discover-tests
     runs-on: ubuntu-latest
     name: ${{ format('Integration Tests ({0}, {1}, {2}, client={3}, vision={4})', matrix.client-type, matrix.provider, matrix.python-version, matrix.client-version, matrix.run-vision-tests) }}
 
@@ -68,11 +46,14 @@ jobs:
       matrix:
         client-type: [library, server]
         # Use vllm on weekly schedule, otherwise use test-provider input (defaults to ollama)
-        provider: ${{ (github.event.schedule == '1 0 * * 0') && fromJSON('["vllm"]') || fromJSON(format('["{0}"]', github.event.inputs.test-provider || 'ollama')) }}
+        provider: [ollama, vllm]
         # Use Python 3.13 only on nightly schedule (daily latest client test), otherwise use 3.12
         python-version: ${{ github.event.schedule == '0 0 * * *' && fromJSON('["3.12", "3.13"]') || fromJSON('["3.12"]') }}
         client-version: ${{ (github.event.schedule == '0 0 * * *' || github.event.inputs.test-all-client-versions == 'true') && fromJSON('["published", "latest"]') || fromJSON('["latest"]') }}
         run-vision-tests: [true, false]
+        exclude:
+          - provider: vllm
+            run-vision-tests: true
 
     steps:
       - name: Checkout repository
@@ -87,10 +68,27 @@ jobs:
           run-vision-tests: ${{ matrix.run-vision-tests }}
           inference-mode: 'replay'
 
+      - name: Generate test types
+        id: generate-test-types
+        run: |
+          # Only run inference tests for vllm as these are more likely to exercise the vllm provider
+          # TODO: Add agent tests for vllm
+          if [ ${{ matrix.provider }} == "vllm" ]; then
+            echo "test-types=[\"inference\"]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Get test directories dynamically, excluding non-test directories
+          # NOTE: we are excluding post_training since the tests take too long
+          TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d |
+            sed 's|tests/integration/||' |
+            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|non_ci|post_training)$" |
+            sort | jq -R -s -c 'split("\n")[:-1]')
+          echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
+
       - name: Run tests
         uses: ./.github/actions/run-and-record-tests
         with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
+          test-types: ${{ steps.generate-test-types.outputs.test-types }}
           stack-config: ${{ matrix.client-type == 'library' && 'ci-tests' || 'server:ci-tests' }}
           provider: ${{ matrix.provider }}
           inference-mode: 'replay'
