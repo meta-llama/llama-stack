@@ -384,12 +384,18 @@ def test_response_non_streaming_mcp_tool(request, compat_client, text_model_id, 
         assert list_tools.type == "mcp_list_tools"
         assert list_tools.server_label == "localmcp"
         assert len(list_tools.tools) == 2
-        assert {t.name for t in list_tools.tools} == {"get_boiling_point", "greet_everyone"}
+        assert {t.name for t in list_tools.tools} == {
+            "get_boiling_point",
+            "greet_everyone",
+        }
 
         call = response.output[1]
         assert call.type == "mcp_call"
         assert call.name == "get_boiling_point"
-        assert json.loads(call.arguments) == {"liquid_name": "myawesomeliquid", "celsius": True}
+        assert json.loads(call.arguments) == {
+            "liquid_name": "myawesomeliquid",
+            "celsius": True,
+        }
         assert call.error is None
         assert "-100" in call.output
 
@@ -581,6 +587,105 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
             f"Last chunk should be response.completed, got {chunks[-1].type}"
         )
 
+        # Verify tool call streaming events are present
+        chunk_types = [chunk.type for chunk in chunks]
+
+        # Should have function call arguments delta events for tool calls
+        delta_events = [chunk for chunk in chunks if chunk.type == "response.function_call_arguments.delta"]
+        done_events = [chunk for chunk in chunks if chunk.type == "response.function_call_arguments.done"]
+
+        # Should have output item events for tool calls
+        item_added_events = [chunk for chunk in chunks if chunk.type == "response.output_item.added"]
+        item_done_events = [chunk for chunk in chunks if chunk.type == "response.output_item.done"]
+
+        # Verify we have substantial streaming activity (not just batch events)
+        assert len(chunks) > 10, f"Expected rich streaming with many events, got only {len(chunks)} chunks"
+
+        # Since this test involves MCP tool calls, we should see streaming events
+        assert len(delta_events) > 0, f"Expected function_call_arguments.delta events, got chunk types: {chunk_types}"
+        assert len(done_events) > 0, f"Expected function_call_arguments.done events, got chunk types: {chunk_types}"
+
+        # Should have output item events for function calls
+        assert len(item_added_events) > 0, f"Expected response.output_item.added events, got chunk types: {chunk_types}"
+        assert len(item_done_events) > 0, f"Expected response.output_item.done events, got chunk types: {chunk_types}"
+
+        # Verify delta events have proper structure
+        for delta_event in delta_events:
+            assert hasattr(delta_event, "delta"), "Delta event should have 'delta' field"
+            assert hasattr(delta_event, "item_id"), "Delta event should have 'item_id' field"
+            assert hasattr(delta_event, "sequence_number"), "Delta event should have 'sequence_number' field"
+            assert delta_event.delta, "Delta should not be empty"
+
+        # Verify done events have proper structure
+        for done_event in done_events:
+            assert hasattr(done_event, "arguments"), "Done event should have 'arguments' field"
+            assert hasattr(done_event, "item_id"), "Done event should have 'item_id' field"
+            assert done_event.arguments, "Final arguments should not be empty"
+
+        # Verify output item added events have proper structure
+        for added_event in item_added_events:
+            assert hasattr(added_event, "item"), "Added event should have 'item' field"
+            assert hasattr(added_event, "output_index"), "Added event should have 'output_index' field"
+            assert hasattr(added_event, "sequence_number"), "Added event should have 'sequence_number' field"
+            assert hasattr(added_event, "response_id"), "Added event should have 'response_id' field"
+            assert added_event.item.type in ["function_call", "mcp_call"], "Added item should be a tool call"
+            assert added_event.item.status == "in_progress", "Added item should be in progress"
+            assert added_event.response_id, "Response ID should not be empty"
+            assert isinstance(added_event.output_index, int), "Output index should be integer"
+            assert added_event.output_index >= 0, "Output index should be non-negative"
+
+        # Verify output item done events have proper structure
+        for done_event in item_done_events:
+            assert hasattr(done_event, "item"), "Done event should have 'item' field"
+            assert hasattr(done_event, "output_index"), "Done event should have 'output_index' field"
+            assert hasattr(done_event, "sequence_number"), "Done event should have 'sequence_number' field"
+            assert hasattr(done_event, "response_id"), "Done event should have 'response_id' field"
+            assert done_event.item.type in ["function_call", "mcp_call"], "Done item should be a tool call"
+            # Note: MCP calls don't have a status field, only function calls do
+            if done_event.item.type == "function_call":
+                assert done_event.item.status == "completed", "Function call should be completed"
+            assert done_event.response_id, "Response ID should not be empty"
+            assert isinstance(done_event.output_index, int), "Output index should be integer"
+            assert done_event.output_index >= 0, "Output index should be non-negative"
+
+        # Group function call argument events by item_id (these should have proper tracking)
+        function_call_events_by_item_id = {}
+        for chunk in chunks:
+            if hasattr(chunk, "item_id") and chunk.type in [
+                "response.function_call_arguments.delta",
+                "response.function_call_arguments.done",
+            ]:
+                item_id = chunk.item_id
+                if item_id not in function_call_events_by_item_id:
+                    function_call_events_by_item_id[item_id] = []
+                function_call_events_by_item_id[item_id].append(chunk)
+
+        for item_id, related_events in function_call_events_by_item_id.items():
+            # Should have at least one delta and one done event for a complete function call
+            delta_events = [e for e in related_events if e.type == "response.function_call_arguments.delta"]
+            done_events = [e for e in related_events if e.type == "response.function_call_arguments.done"]
+
+            assert len(delta_events) > 0, f"Item {item_id} should have at least one delta event"
+            assert len(done_events) == 1, f"Item {item_id} should have exactly one done event"
+
+            # Verify all events have the same item_id
+            for event in related_events:
+                assert event.item_id == item_id, f"Event should have consistent item_id {item_id}, got {event.item_id}"
+
+        # Basic pairing check: each output_item.added should be followed by some activity
+        # (but we can't enforce strict 1:1 pairing due to the complexity of multi-turn scenarios)
+        assert len(item_added_events) > 0, "Should have at least one output_item.added event"
+
+        # Verify response_id consistency across all events
+        response_ids = set()
+        for chunk in chunks:
+            if hasattr(chunk, "response_id"):
+                response_ids.add(chunk.response_id)
+            elif hasattr(chunk, "response") and hasattr(chunk.response, "id"):
+                response_ids.add(chunk.response.id)
+
+        assert len(response_ids) == 1, f"All events should reference the same response_id, found: {response_ids}"
+
         # Get the final response from the last chunk
         final_chunk = chunks[-1]
         if hasattr(final_chunk, "response"):
@@ -722,7 +827,9 @@ def vector_store_with_filtered_files(compat_client, text_model_id, tmp_path_fact
 
         # Attach file to vector store with attributes
         file_attach_response = compat_client.vector_stores.files.create(
-            vector_store_id=vector_store.id, file_id=file_response.id, attributes=file_data["attributes"]
+            vector_store_id=vector_store.id,
+            file_id=file_response.id,
+            attributes=file_data["attributes"],
         )
 
         # Wait for attachment
