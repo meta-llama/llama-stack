@@ -69,7 +69,7 @@ from llama_stack.models.llama.datatypes import (
     ToolCall,
 )
 from llama_stack.providers.utils.inference.openai_compat import (
-    convert_message_to_openai_dict_new,
+    convert_message_to_openai_dict,
     convert_openai_chat_completion_stream,
     convert_tooldef_to_openai_tool,
 )
@@ -518,7 +518,7 @@ class ChatAgent(ShieldRunnerMixin):
                 # Convert messages to OpenAI format
                 openai_messages = []
                 for message in input_messages:
-                    openai_message = await convert_message_to_openai_dict_new(message)
+                    openai_message = await convert_message_to_openai_dict(message)
                     openai_messages.append(openai_message)
 
                 # Convert tool definitions to OpenAI format
