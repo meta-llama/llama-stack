@@ -488,8 +488,12 @@ class OpenAIResponsesImpl:
             # Convert collected chunks to complete response
             if chat_response_tool_calls:
                 tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
+
+                # when there are tool calls, we need to clear the content
+                chat_response_content = []
             else:
                 tool_calls = None
+
             assistant_message = OpenAIAssistantMessageParam(
                 content="".join(chat_response_content),
                 tool_calls=tool_calls,

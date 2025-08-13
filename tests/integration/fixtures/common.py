@@ -270,7 +270,7 @@ def openai_client(client_with_models):
 
 @pytest.fixture(params=["openai_client", "client_with_models"])
 def compat_client(request, client_with_models):
-    if isinstance(client_with_models, LlamaStackAsLibraryClient):
+    if request.param == "openai_client" and isinstance(client_with_models, LlamaStackAsLibraryClient):
         # OpenAI client expects a server, so unless we also rewrite OpenAI client's requests
         # to go via the Stack library client (which itself rewrites requests to be served inline),
         # we cannot do this.

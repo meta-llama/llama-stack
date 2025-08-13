@@ -1,12 +1,81 @@
-# Contributing to Llama-Stack
+# Contributing to Llama Stack
 We want to make contributing to this project as easy and transparent as
 possible.
+
+## Set up your development environment
+
+We use [uv](https://github.com/astral-sh/uv) to manage python dependencies and virtual environments.
+You can install `uv` by following this [guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+You can install the dependencies by running:
+
+```bash
+cd llama-stack
+uv sync --group dev
+uv pip install -e .
+source .venv/bin/activate
+```
+
+```{note}
+You can use a specific version of Python with `uv` by adding the `--python <version>` flag (e.g. `--python 3.12`).
+Otherwise, `uv` will automatically select a Python version according to the `requires-python` section of the `pyproject.toml`.
+For more info, see the [uv docs around Python versions](https://docs.astral.sh/uv/concepts/python-versions/).
+```
+
+Note that you can create a dotenv file `.env` that includes necessary environment variables:
+```
+LLAMA_STACK_BASE_URL=http://localhost:8321
+LLAMA_STACK_CLIENT_LOG=debug
+LLAMA_STACK_PORT=8321
+LLAMA_STACK_CONFIG=<provider-name>
+TAVILY_SEARCH_API_KEY=
+BRAVE_SEARCH_API_KEY=
+```
+
+And then use this dotenv file when running client SDK tests via the following:
+```bash
+uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py --text-model=meta-llama/Llama-3.1-8B-Instruct
+```
+
+### Pre-commit Hooks
+
+We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
+
+```bash
+uv run pre-commit install
+```
+
+After that, pre-commit hooks will run automatically before each commit.
+
+Alternatively, if you don't want to install the pre-commit hooks, you can run the checks manually by running:
+
+```bash
+uv run pre-commit run --all-files
+```
+
+```{caution}
+Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
+```
 
 ## Discussions -> Issues -> Pull Requests
 
 We actively welcome your pull requests. However, please read the following. This is heavily inspired by [Ghostty](https://github.com/ghostty-org/ghostty/blob/main/CONTRIBUTING.md).
 
 If in doubt, please open a [discussion](https://github.com/meta-llama/llama-stack/discussions); we can always convert that to an issue later.
+
+### Issues
+We use GitHub issues to track public bugs. Please ensure your description is
+clear and has sufficient instructions to be able to reproduce the issue.
+
+Meta has a [bounty program](http://facebook.com/whitehat/info) for the safe
+disclosure of security bugs. In those cases, please go through the process
+outlined on that page and do not file a public issue.
+
+### Contributor License Agreement ("CLA")
+In order to accept your pull request, we need you to submit a CLA. You only need
+to do this once to work on any of Meta's open source projects.
+
+Complete your CLA here: <https://code.facebook.com/cla>
 
 **I'd like to contribute!**
 
@@ -51,93 +120,15 @@ Please avoid picking up too many issues at once. This helps you stay focused and
 
 Please keep pull requests (PRs) small and focused. If you have a large set of changes, consider splitting them into logically grouped, smaller PRs to facilitate review and testing.
 
-> [!TIP]
-> As a general guideline:
-> - Experienced contributors should try to keep no more than 5 open PRs at a time.
-> - New contributors are encouraged to have only one open PR at a time until they’re familiar with the codebase and process.
-
-## Contributor License Agreement ("CLA")
-In order to accept your pull request, we need you to submit a CLA. You only need
-to do this once to work on any of Meta's open source projects.
-
-Complete your CLA here: <https://code.facebook.com/cla>
-
-## Issues
-We use GitHub issues to track public bugs. Please ensure your description is
-clear and has sufficient instructions to be able to reproduce the issue.
-
-Meta has a [bounty program](http://facebook.com/whitehat/info) for the safe
-disclosure of security bugs. In those cases, please go through the process
-outlined on that page and do not file a public issue.
-
-
-## Set up your development environment
-
-We use [uv](https://github.com/astral-sh/uv) to manage python dependencies and virtual environments.
-You can install `uv` by following this [guide](https://docs.astral.sh/uv/getting-started/installation/).
-
-You can install the dependencies by running:
-
-```bash
-cd llama-stack
-uv sync --group dev
-uv pip install -e .
-source .venv/bin/activate
+```{tip}
+As a general guideline:
+- Experienced contributors should try to keep no more than 5 open PRs at a time.
+- New contributors are encouraged to have only one open PR at a time until they’re familiar with the codebase and process.
 ```
 
-> [!NOTE]
-> You can use a specific version of Python with `uv` by adding the `--python <version>` flag (e.g. `--python 3.12`)
-> Otherwise, `uv` will automatically select a Python version according to the `requires-python` section of the `pyproject.toml`.
-> For more info, see the [uv docs around Python versions](https://docs.astral.sh/uv/concepts/python-versions/).
+## Repository guidelines
 
-Note that you can create a dotenv file `.env` that includes necessary environment variables:
-```
-LLAMA_STACK_BASE_URL=http://localhost:8321
-LLAMA_STACK_CLIENT_LOG=debug
-LLAMA_STACK_PORT=8321
-LLAMA_STACK_CONFIG=<provider-name>
-TAVILY_SEARCH_API_KEY=
-BRAVE_SEARCH_API_KEY=
-```
-
-And then use this dotenv file when running client SDK tests via the following:
-```bash
-uv run --env-file .env -- pytest -v tests/integration/inference/test_text_inference.py --text-model=meta-llama/Llama-3.1-8B-Instruct
-```
-
-## Pre-commit Hooks
-
-We use [pre-commit](https://pre-commit.com/) to run linting and formatting checks on your code. You can install the pre-commit hooks by running:
-
-```bash
-uv run pre-commit install
-```
-
-After that, pre-commit hooks will run automatically before each commit.
-
-Alternatively, if you don't want to install the pre-commit hooks, you can run the checks manually by running:
-
-```bash
-uv run pre-commit run --all-files
-```
-
-> [!CAUTION]
-> Before pushing your changes, make sure that the pre-commit hooks have passed successfully.
-
-## Running tests
-
-You can find the Llama Stack testing documentation [here](https://github.com/meta-llama/llama-stack/blob/main/tests/README.md).
-
-## Adding a new dependency to the project
-
-To add a new dependency to the project, you can use the `uv` command. For example, to add `foo` to the project, you can run:
-
-```bash
-uv add foo
-uv sync
-```
-
-## Coding Style
+### Coding Style
 
 * Comments should provide meaningful insights into the code. Avoid filler comments that simply
   describe the next step, as they create unnecessary clutter, same goes for docstrings.
@@ -158,6 +149,10 @@ uv sync
   documentation.
 * When possible, use keyword arguments only when calling functions.
 * Llama Stack utilizes [custom Exception classes](llama_stack/apis/common/errors.py) for certain Resources that should be used where applicable.
+
+### License
+By contributing to Llama, you agree that your contributions will be licensed
+under the LICENSE file in the root directory of this source tree.
 
 ## Common Tasks
 
@@ -211,7 +206,3 @@ uv run ./docs/openapi_generator/run_openapi_generator.sh
 ```
 
 The generated API documentation will be available in `docs/_static/`. Make sure to review the changes before committing.
-
-## License
-By contributing to Llama, you agree that your contributions will be licensed
-under the LICENSE file in the root directory of this source tree.
