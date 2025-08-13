@@ -598,6 +598,10 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         item_added_events = [chunk for chunk in chunks if chunk.type == "response.output_item.added"]
         item_done_events = [chunk for chunk in chunks if chunk.type == "response.output_item.done"]
 
+        # Should have tool execution progress events
+        mcp_in_progress_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.in_progress"]
+        mcp_completed_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.completed"]
+
         # Verify we have substantial streaming activity (not just batch events)
         assert len(chunks) > 10, f"Expected rich streaming with many events, got only {len(chunks)} chunks"
 
@@ -608,6 +612,24 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         # Should have output item events for function calls
         assert len(item_added_events) > 0, f"Expected response.output_item.added events, got chunk types: {chunk_types}"
         assert len(item_done_events) > 0, f"Expected response.output_item.done events, got chunk types: {chunk_types}"
+
+        # Should have tool execution progress events
+        assert len(mcp_in_progress_events) > 0, (
+            f"Expected response.mcp_call.in_progress events, got chunk types: {chunk_types}"
+        )
+        assert len(mcp_completed_events) > 0, (
+            f"Expected response.mcp_call.completed events, got chunk types: {chunk_types}"
+        )
+        # MCP failed events are optional (only if errors occur)
+
+        # Verify progress events have proper structure
+        for progress_event in mcp_in_progress_events:
+            assert hasattr(progress_event, "item_id"), "Progress event should have 'item_id' field"
+            assert hasattr(progress_event, "output_index"), "Progress event should have 'output_index' field"
+            assert hasattr(progress_event, "sequence_number"), "Progress event should have 'sequence_number' field"
+
+        for completed_event in mcp_completed_events:
+            assert hasattr(completed_event, "sequence_number"), "Completed event should have 'sequence_number' field"
 
         # Verify delta events have proper structure
         for delta_event in delta_events:
