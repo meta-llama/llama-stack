@@ -112,7 +112,7 @@ def openai_client(base_url, api_key, provider):
         if len(parts) != 2:
             raise ValueError(f"Invalid config for Llama Stack: {provider}, it must be of the form 'stack:<config>'")
         config = parts[1]
-        client = LlamaStackAsLibraryClient(config, skip_logger_removal=True)
+        client = LlamaStackAsLibraryClient(config)
         # Client is automatically initialized during construction
         return client
 

@@ -254,7 +254,6 @@ def instantiate_llama_stack_client(session):
     client = LlamaStackAsLibraryClient(
         config,
         provider_data=get_provider_data(),
-        skip_logger_removal=True,
     )
     # Client is automatically initialized during construction
     return client
