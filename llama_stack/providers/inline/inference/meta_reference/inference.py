@@ -33,6 +33,9 @@ from llama_stack.apis.inference import (
     InterleavedContent,
     LogProbConfig,
     Message,
+    OpenAIChatCompletionContentPartImageParam,
+    OpenAIChatCompletionContentPartTextParam,
+    RerankResponse,
     ResponseFormat,
     SamplingParams,
     StopReason,
@@ -441,6 +444,15 @@ class MetaReferenceInferenceImpl(
 
         results = await self._nonstream_chat_completion(request_batch)
         return BatchChatCompletionResponse(batch=results)
+
+    async def rerank(
+        self,
+        model: str,
+        query: str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam,
+        items: list[str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam],
+        max_num_results: int | None = None,
+    ) -> RerankResponse:
+        raise NotImplementedError("Reranking is not supported for Meta Reference")
 
     async def _nonstream_chat_completion(
         self, request_batch: list[ChatCompletionRequest]
