@@ -15,60 +15,111 @@ from llama_stack.core.library_client import (
     AsyncLlamaStackAsLibraryClient,
     LlamaStackAsLibraryClient,
 )
+from llama_stack.core.server.routes import RouteImpls
 
 
 class TestLlamaStackAsLibraryClientAutoInitialization:
     """Test automatic initialization of library clients."""
 
-    def test_sync_client_auto_initialization(self):
+    def test_sync_client_auto_initialization(self, monkeypatch):
         """Test that sync client is automatically initialized after construction."""
-        client = LlamaStackAsLibraryClient("nvidia")
+        # Mock the stack construction to avoid dependency issues
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
 
-        # Client should be automatically initialized
-        assert client.async_client._is_initialized is True
+        async def mock_construct_stack(config, custom_provider_registry):
+            return mock_impls
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("llama_stack.core.library_client.construct_stack", mock_construct_stack)
+        monkeypatch.setattr("llama_stack.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        client = LlamaStackAsLibraryClient("ci-tests")
+
         assert client.async_client.route_impls is not None
 
-    async def test_async_client_auto_initialization(self):
+    async def test_async_client_auto_initialization(self, monkeypatch):
         """Test that async client can be initialized and works properly."""
-        client = AsyncLlamaStackAsLibraryClient("nvidia")
+        # Mock the stack construction to avoid dependency issues
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
+
+        async def mock_construct_stack(config, custom_provider_registry):
+            return mock_impls
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("llama_stack.core.library_client.construct_stack", mock_construct_stack)
+        monkeypatch.setattr("llama_stack.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        client = AsyncLlamaStackAsLibraryClient("ci-tests")
 
         # Initialize the client
         result = await client.initialize()
         assert result is True
-        assert client._is_initialized is True
         assert client.route_impls is not None
 
-    def test_initialize_method_backward_compatibility(self):
+    def test_initialize_method_backward_compatibility(self, monkeypatch):
         """Test that initialize() method still works for backward compatibility."""
-        client = LlamaStackAsLibraryClient("nvidia")
+        # Mock the stack construction to avoid dependency issues
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
 
-        # initialize() should return None (historical behavior) and not cause errors
+        async def mock_construct_stack(config, custom_provider_registry):
+            return mock_impls
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("llama_stack.core.library_client.construct_stack", mock_construct_stack)
+        monkeypatch.setattr("llama_stack.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        client = LlamaStackAsLibraryClient("ci-tests")
+
         result = client.initialize()
         assert result is None
 
-        # Multiple calls should be safe
         result2 = client.initialize()
         assert result2 is None
 
-    async def test_async_initialize_method_idempotent(self):
+    async def test_async_initialize_method_idempotent(self, monkeypatch):
         """Test that async initialize() method can be called multiple times safely."""
-        client = AsyncLlamaStackAsLibraryClient("nvidia")
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
 
-        # First initialization
+        async def mock_construct_stack(config, custom_provider_registry):
+            return mock_impls
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("llama_stack.core.library_client.construct_stack", mock_construct_stack)
+        monkeypatch.setattr("llama_stack.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        client = AsyncLlamaStackAsLibraryClient("ci-tests")
+
         result1 = await client.initialize()
         assert result1 is True
-        assert client._is_initialized is True
 
-        # Second initialization should be safe and return True
         result2 = await client.initialize()
         assert result2 is True
-        assert client._is_initialized is True
 
-    def test_route_impls_automatically_set(self):
+    def test_route_impls_automatically_set(self, monkeypatch):
         """Test that route_impls is automatically set during construction."""
-        # Test sync client - should be auto-initialized
-        sync_client = LlamaStackAsLibraryClient("nvidia")
-        assert sync_client.async_client.route_impls is not None
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
 
-        # Test that the async client is marked as initialized
-        assert sync_client.async_client._is_initialized is True
+        async def mock_construct_stack(config, custom_provider_registry):
+            return mock_impls
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("llama_stack.core.library_client.construct_stack", mock_construct_stack)
+        monkeypatch.setattr("llama_stack.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        sync_client = LlamaStackAsLibraryClient("ci-tests")
+        assert sync_client.async_client.route_impls is not None

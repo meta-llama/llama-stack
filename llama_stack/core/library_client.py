@@ -149,7 +149,6 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
             config_path_or_distro_name, custom_provider_registry, provider_data, skip_logger_removal
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
-        self.skip_logger_removal = skip_logger_removal
         self.provider_data = provider_data
 
         self.loop = asyncio.new_event_loop()
@@ -247,7 +246,7 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
 
     async def initialize(self) -> bool:
         """
-        Initialize the async client. Can be called multiple times safely.
+        Initialize the async client.
 
         Returns:
             bool: True if initialization was successful
@@ -312,6 +311,9 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         stream=False,
         stream_cls=None,
     ):
+        if self.route_impls is None:
+            raise ValueError("Client not initialized. Please call initialize() first.")
+
         # Create headers with provider data if available
         headers = options.headers or {}
         if self.provider_data:
