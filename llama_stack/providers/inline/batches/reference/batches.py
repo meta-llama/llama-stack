@@ -10,7 +10,7 @@ import json
 import time
 import uuid
 from io import BytesIO
-from typing import Any
+from typing import Any, Literal
 
 from openai.types.batch import BatchError, Errors
 from pydantic import BaseModel
@@ -108,7 +108,7 @@ class ReferenceBatchesImpl(Batches):
         self,
         input_file_id: str,
         endpoint: str,
-        completion_window: str,
+        completion_window: Literal["24h"],
         metadata: dict[str, str] | None = None,
     ) -> BatchObject:
         """
