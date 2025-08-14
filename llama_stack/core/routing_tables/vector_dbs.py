@@ -35,7 +35,7 @@ logger = get_logger(name=__name__, category="core")
 
 class VectorDBsRoutingTable(CommonRoutingTableImpl, VectorDBs):
     async def list_vector_dbs(self) -> ListVectorDBsResponse:
-        return ListVectorDBsResponse(data=await self.get_all_with_type("vector_db"))
+        return ListVectorDBsResponse(data=await self.get_all_with_type_filtered("vector_db"))
 
     async def get_vector_db(self, vector_db_id: str) -> VectorDB:
         vector_db = await self.get_object_by_identifier("vector_db", vector_db_id)

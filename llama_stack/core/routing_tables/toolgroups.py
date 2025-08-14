@@ -49,7 +49,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
                 toolgroup_id = group_id
             toolgroups = [await self.get_tool_group(toolgroup_id)]
         else:
-            toolgroups = await self.get_all_with_type("tool_group")
+            toolgroups = await self.get_all_with_type_filtered("tool_group")
 
         all_tools = []
         for toolgroup in toolgroups:
@@ -83,7 +83,7 @@ class ToolGroupsRoutingTable(CommonRoutingTableImpl, ToolGroups):
             self.tool_to_toolgroup[tool.identifier] = toolgroup.identifier
 
     async def list_tool_groups(self) -> ListToolGroupsResponse:
-        return ListToolGroupsResponse(data=await self.get_all_with_type("tool_group"))
+        return ListToolGroupsResponse(data=await self.get_all_with_type_filtered("tool_group"))
 
     async def get_tool_group(self, toolgroup_id: str) -> ToolGroup:
         tool_group = await self.get_object_by_identifier("tool_group", toolgroup_id)

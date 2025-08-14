@@ -43,10 +43,10 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
             await self.update_registered_models(provider_id, models)
 
     async def list_models(self) -> ListModelsResponse:
-        return ListModelsResponse(data=await self.get_all_with_type("model"))
+        return ListModelsResponse(data=await self.get_all_with_type_filtered("model"))
 
     async def openai_list_models(self) -> OpenAIListModelsResponse:
-        models = await self.get_all_with_type("model")
+        models = await self.get_all_with_type_filtered("model")
         openai_models = [
             OpenAIModel(
                 id=model.identifier,
@@ -122,7 +122,7 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
         provider_id: str,
         models: list[Model],
     ) -> None:
-        existing_models = await self.get_all_with_type("model")
+        existing_models = await self.get_all_with_type_filtered("model")
 
         # we may have an alias for the model registered by the user (or during initialization
         # from run.yaml) that we need to keep track of

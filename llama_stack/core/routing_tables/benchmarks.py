@@ -19,7 +19,7 @@ logger = get_logger(name=__name__, category="core")
 
 class BenchmarksRoutingTable(CommonRoutingTableImpl, Benchmarks):
     async def list_benchmarks(self) -> ListBenchmarksResponse:
-        return ListBenchmarksResponse(data=await self.get_all_with_type("benchmark"))
+        return ListBenchmarksResponse(data=await self.get_all_with_type_filtered("benchmark"))
 
     async def get_benchmark(self, benchmark_id: str) -> Benchmark:
         benchmark = await self.get_object_by_identifier("benchmark", benchmark_id)
