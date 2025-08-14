@@ -134,10 +134,8 @@ providers:
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
-  - provider_id: CodeScanner
+  - provider_id: code-scanner
     provider_type: inline::code-scanner
-    config:
-      excluded_categories: []
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -219,6 +217,9 @@ shields:
 - shield_id: llama-guard
   provider_id: ${env.SAFETY_MODEL:+llama-guard}
   provider_shield_id: ${env.SAFETY_MODEL:=}
+- shield_id: code-scanner
+  provider_id: ${env.CODE_SCANNER_MODEL:+code-scanner}
+  provider_shield_id: ${env.CODE_SCANNER_MODEL:=}
 vector_dbs: []
 datasets: []
 scoring_fns: []

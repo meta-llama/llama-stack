@@ -28,8 +28,8 @@ from .config import CodeScannerConfig
 log = logging.getLogger(__name__)
 
 ALLOWED_CODE_SCANNER_MODEL_IDS = [
-    "CodeScanner",
-    "CodeShield",
+    "code-scanner",
+    "code-shield",
 ]
 
 

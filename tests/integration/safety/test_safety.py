@@ -27,10 +27,10 @@ def data_url_from_image(file_path):
 
 @pytest.fixture(scope="session")
 def code_scanner_shield_id(available_shields):
-    if "CodeScanner" in available_shields:
-        return "CodeScanner"
+    if "code-scanner" in available_shields:
+        return "code-scanner"
 
-    pytest.skip("CodeScanner shield is not available. Skipping.")
+    pytest.skip("code-scanner shield is not available. Skipping.")
 
 
 def test_unsafe_examples(client_with_models, shield_id):
