@@ -455,7 +455,7 @@ class LlamaGuardShield:
 
     def is_content_safe(self, response: str, unsafe_code: str | None = None) -> bool:
         """Check if content is safe based on response and unsafe code."""
-        if response.strip() == SAFE_RESPONSE:
+        if response.strip().lower().startswith(SAFE_RESPONSE):
             return True
 
         if unsafe_code:
