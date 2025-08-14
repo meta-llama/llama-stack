@@ -136,9 +136,12 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         input=input_text,
         model=model,
         temperature=0.1,
+        stream=True,  # Enable streaming to test content part events
     )
 
-    # Verify
+    # For streaming response, collect all chunks
+    chunks = [chunk async for chunk in result]
+
     mock_inference_api.openai_chat_completion.assert_called_once_with(
         model=model,
         messages=[OpenAIUserMessageParam(role="user", content="What is the capital of Ireland?", name=None)],
@@ -147,11 +150,32 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         stream=True,
         temperature=0.1,
     )
+
+    # Should have content part events for text streaming
+    # Expected: response.created, content_part.added, output_text.delta, content_part.done, response.completed
+    assert len(chunks) >= 4
+    assert chunks[0].type == "response.created"
+
+    # Check for content part events
+    content_part_added_events = [c for c in chunks if c.type == "response.content_part.added"]
+    content_part_done_events = [c for c in chunks if c.type == "response.content_part.done"]
+    text_delta_events = [c for c in chunks if c.type == "response.output_text.delta"]
+
+    assert len(content_part_added_events) >= 1, "Should have content_part.added event for text"
+    assert len(content_part_done_events) >= 1, "Should have content_part.done event for text"
+    assert len(text_delta_events) >= 1, "Should have text delta events"
+
+    # Verify final event is completion
+    assert chunks[-1].type == "response.completed"
+
+    # When streaming, the final response is in the last chunk
+    final_response = chunks[-1].response
+    assert final_response.model == model
+    assert len(final_response.output) == 1
+    assert isinstance(final_response.output[0], OpenAIResponseMessage)
+
     openai_responses_impl.responses_store.store_response_object.assert_called_once()
-    assert result.model == model
-    assert len(result.output) == 1
-    assert isinstance(result.output[0], OpenAIResponseMessage)
-    assert result.output[0].content[0].text == "Dublin"
+    assert final_response.output[0].content[0].text == "Dublin"
 
 
 async def test_create_openai_response_with_string_input_with_tools(openai_responses_impl, mock_inference_api):
@@ -272,6 +296,8 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
 
     # Check that we got the content from our mocked tool execution result
     chunks = [chunk async for chunk in result]
+
+    # Verify event types
     # Should have: response.created, output_item.added, function_call_arguments.delta,
     # function_call_arguments.done, output_item.done, response.completed
     assert len(chunks) == 6
