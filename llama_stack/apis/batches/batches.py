@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 from pydantic import BaseModel, Field
 
@@ -14,16 +14,6 @@ try:
     from openai.types import Batch as BatchObject
 except ImportError as e:
     raise ImportError("OpenAI package is required for batches API. Please install it with: pip install openai") from e
-
-
-@json_schema_type
-class CreateBatchRequest(BaseModel):
-    """Request to create a new batch."""
-
-    input_file_id: str = Field(..., description="The ID of an uploaded file that contains requests for the new batch")
-    endpoint: str = Field(..., description="The endpoint to be used for all requests in the batch")
-    completion_window: str = Field(..., description="The time window within which the batch should be processed")
-    metadata: dict[str, Any] | None = Field(default=None, description="Optional metadata for the batch")
 
 
 @json_schema_type
@@ -53,7 +43,7 @@ class Batches(Protocol):
         self,
         input_file_id: str,
         endpoint: str,
-        completion_window: str,
+        completion_window: Literal["24h"],
         metadata: dict[str, str] | None = None,
     ) -> BatchObject:
         """Create a new batch for processing multiple API requests.

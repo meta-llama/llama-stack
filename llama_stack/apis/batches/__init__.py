@@ -4,6 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from .batches import Batches, BatchObject, CreateBatchRequest, ListBatchesResponse
+from .batches import Batches, BatchObject, ListBatchesResponse
 
-__all__ = ["Batches", "BatchObject", "CreateBatchRequest", "ListBatchesResponse"]
+__all__ = ["Batches", "BatchObject", "ListBatchesResponse"]

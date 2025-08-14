@@ -379,9 +379,8 @@ class TestBatchesErrorHandling:
                     )
             assert exc_info.value.status_code == 400
             error_msg = str(exc_info.value).lower()
-            assert "invalid value" in error_msg
+            assert "error" in error_msg
             assert "completion_window" in error_msg
-            assert "supported values are" in error_msg
 
     def test_batch_streaming_not_supported(self, openai_client, batch_helper, text_model_id):
         """Test that streaming responses are not supported in batches."""
