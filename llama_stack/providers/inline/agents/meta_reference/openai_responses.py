@@ -20,6 +20,7 @@ from llama_stack.apis.agents.openai_responses import (
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
     OpenAIDeleteResponseObject,
+    OpenAIResponseContentPartOutputText,
     OpenAIResponseInput,
     OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputMessageContent,
@@ -32,12 +33,27 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
     OpenAIResponseObjectStreamResponseCompleted,
+    OpenAIResponseObjectStreamResponseContentPartAdded,
+    OpenAIResponseObjectStreamResponseContentPartDone,
     OpenAIResponseObjectStreamResponseCreated,
+    OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta,
+    OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone,
+    OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta,
+    OpenAIResponseObjectStreamResponseMcpCallArgumentsDone,
+    OpenAIResponseObjectStreamResponseMcpCallCompleted,
+    OpenAIResponseObjectStreamResponseMcpCallFailed,
+    OpenAIResponseObjectStreamResponseMcpCallInProgress,
+    OpenAIResponseObjectStreamResponseOutputItemAdded,
+    OpenAIResponseObjectStreamResponseOutputItemDone,
     OpenAIResponseObjectStreamResponseOutputTextDelta,
+    OpenAIResponseObjectStreamResponseWebSearchCallCompleted,
+    OpenAIResponseObjectStreamResponseWebSearchCallInProgress,
+    OpenAIResponseObjectStreamResponseWebSearchCallSearching,
     OpenAIResponseOutput,
     OpenAIResponseOutputMessageContent,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageFileSearchToolCall,
+    OpenAIResponseOutputMessageFileSearchToolCallResults,
     OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseOutputMessageWebSearchToolCall,
@@ -72,7 +88,9 @@ from llama_stack.apis.tools import ToolGroups, ToolInvocationResult, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
-from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
+from llama_stack.providers.utils.inference.openai_compat import (
+    convert_tooldef_to_openai_tool,
+)
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
 logger = get_logger(name=__name__, category="openai_responses")
@@ -80,8 +98,17 @@ logger = get_logger(name=__name__, category="openai_responses")
 OPENAI_RESPONSES_PREFIX = "openai_responses:"
 
 
+class ToolExecutionResult(BaseModel):
+    """Result of streaming tool execution."""
+
+    stream_event: OpenAIResponseObjectStream | None = None
+    sequence_number: int
+    final_output_message: OpenAIResponseOutput | None = None
+    final_input_message: OpenAIMessageParam | None = None
+
+
 async def _convert_response_content_to_chat_content(
-    content: str | list[OpenAIResponseInputMessageContent] | list[OpenAIResponseOutputMessageContent],
+    content: (str | list[OpenAIResponseInputMessageContent] | list[OpenAIResponseOutputMessageContent]),
 ) -> str | list[OpenAIChatCompletionContentPartParam]:
     """
     Convert the content parts from an OpenAI Response API request into OpenAI Chat Completion content parts.
@@ -149,7 +176,9 @@ async def _convert_response_input_to_chat_messages(
     return messages
 
 
-async def _convert_chat_choice_to_response_message(choice: OpenAIChoice) -> OpenAIResponseMessage:
+async def _convert_chat_choice_to_response_message(
+    choice: OpenAIChoice,
+) -> OpenAIResponseMessage:
     """
     Convert an OpenAI Chat Completion choice into an OpenAI Response output message.
     """
@@ -171,7 +200,9 @@ async def _convert_chat_choice_to_response_message(choice: OpenAIChoice) -> Open
     )
 
 
-async def _convert_response_text_to_chat_response_format(text: OpenAIResponseText) -> OpenAIResponseFormatParam:
+async def _convert_response_text_to_chat_response_format(
+    text: OpenAIResponseText,
+) -> OpenAIResponseFormatParam:
     """
     Convert an OpenAI Response text parameter into an OpenAI Chat Completion response format.
     """
@@ -227,7 +258,9 @@ class OpenAIResponsesImpl:
         self.vector_io_api = vector_io_api
 
     async def _prepend_previous_response(
-        self, input: str | list[OpenAIResponseInput], previous_response_id: str | None = None
+        self,
+        input: str | list[OpenAIResponseInput],
+        previous_response_id: str | None = None,
     ):
         if previous_response_id:
             previous_response_with_input = await self.responses_store.get_response_object(previous_response_id)
@@ -333,6 +366,7 @@ class OpenAIResponsesImpl:
         temperature: float | None = None,
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        include: list[str] | None = None,
         max_infer_iters: int | None = 10,
     ):
         stream = bool(stream)
@@ -444,6 +478,10 @@ class OpenAIResponsesImpl:
 
             # Create a placeholder message item for delta events
             message_item_id = f"msg_{uuid.uuid4()}"
+            # Track tool call items for streaming events
+            tool_call_item_ids: dict[int, str] = {}
+            # Track content parts for streaming events
+            content_part_emitted = False
 
             async for chunk in completion_result:
                 chat_response_id = chunk.id
@@ -452,6 +490,18 @@ class OpenAIResponsesImpl:
                 for chunk_choice in chunk.choices:
                     # Emit incremental text content as delta events
                     if chunk_choice.delta.content:
+                        # Emit content_part.added event for first text chunk
+                        if not content_part_emitted:
+                            content_part_emitted = True
+                            sequence_number += 1
+                            yield OpenAIResponseObjectStreamResponseContentPartAdded(
+                                response_id=response_id,
+                                item_id=message_item_id,
+                                part=OpenAIResponseContentPartOutputText(
+                                    text="",  # Will be filled incrementally via text deltas
+                                ),
+                                sequence_number=sequence_number,
+                            )
                         sequence_number += 1
                         yield OpenAIResponseObjectStreamResponseOutputTextDelta(
                             content_index=0,
@@ -470,24 +520,117 @@ class OpenAIResponsesImpl:
                     if chunk_choice.delta.tool_calls:
                         for tool_call in chunk_choice.delta.tool_calls:
                             response_tool_call = chat_response_tool_calls.get(tool_call.index, None)
-                            if response_tool_call:
-                                # Don't attempt to concatenate arguments if we don't have any new argumentsAdd commentMore actions
-                                if tool_call.function.arguments:
-                                    # Guard against an initial None argument before we concatenate
-                                    response_tool_call.function.arguments = (
-                                        response_tool_call.function.arguments or ""
-                                    ) + tool_call.function.arguments
-                            else:
+                            # Create new tool call entry if this is the first chunk for this index
+                            is_new_tool_call = response_tool_call is None
+                            if is_new_tool_call:
                                 tool_call_dict: dict[str, Any] = tool_call.model_dump()
                                 tool_call_dict.pop("type", None)
                                 response_tool_call = OpenAIChatCompletionToolCall(**tool_call_dict)
-                            chat_response_tool_calls[tool_call.index] = response_tool_call
+                                chat_response_tool_calls[tool_call.index] = response_tool_call
+
+                                # Create item ID for this tool call for streaming events
+                                tool_call_item_id = f"fc_{uuid.uuid4()}"
+                                tool_call_item_ids[tool_call.index] = tool_call_item_id
+
+                                # Emit output_item.added event for the new function call
+                                sequence_number += 1
+                                function_call_item = OpenAIResponseOutputMessageFunctionToolCall(
+                                    arguments="",  # Will be filled incrementally via delta events
+                                    call_id=tool_call.id or "",
+                                    name=tool_call.function.name if tool_call.function else "",
+                                    id=tool_call_item_id,
+                                    status="in_progress",
+                                )
+                                yield OpenAIResponseObjectStreamResponseOutputItemAdded(
+                                    response_id=response_id,
+                                    item=function_call_item,
+                                    output_index=len(output_messages),
+                                    sequence_number=sequence_number,
+                                )
+
+                            # Stream tool call arguments as they arrive (differentiate between MCP and function calls)
+                            if tool_call.function and tool_call.function.arguments:
+                                tool_call_item_id = tool_call_item_ids[tool_call.index]
+                                sequence_number += 1
+
+                                # Check if this is an MCP tool call
+                                is_mcp_tool = (
+                                    ctx.mcp_tool_to_server
+                                    and tool_call.function.name
+                                    and tool_call.function.name in ctx.mcp_tool_to_server
+                                )
+                                if is_mcp_tool:
+                                    # Emit MCP-specific argument delta event
+                                    yield OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta(
+                                        delta=tool_call.function.arguments,
+                                        item_id=tool_call_item_id,
+                                        output_index=len(output_messages),
+                                        sequence_number=sequence_number,
+                                    )
+                                else:
+                                    # Emit function call argument delta event
+                                    yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDelta(
+                                        delta=tool_call.function.arguments,
+                                        item_id=tool_call_item_id,
+                                        output_index=len(output_messages),
+                                        sequence_number=sequence_number,
+                                    )
+
+                                # Accumulate arguments for final response (only for subsequent chunks)
+                                if not is_new_tool_call:
+                                    response_tool_call.function.arguments = (
+                                        response_tool_call.function.arguments or ""
+                                    ) + tool_call.function.arguments
+
+            # Emit arguments.done events for completed tool calls (differentiate between MCP and function calls)
+            for tool_call_index in sorted(chat_response_tool_calls.keys()):
+                tool_call_item_id = tool_call_item_ids[tool_call_index]
+                final_arguments = chat_response_tool_calls[tool_call_index].function.arguments or ""
+                tool_call_name = chat_response_tool_calls[tool_call_index].function.name
+
+                # Check if this is an MCP tool call
+                is_mcp_tool = ctx.mcp_tool_to_server and tool_call_name and tool_call_name in ctx.mcp_tool_to_server
+                sequence_number += 1
+                if is_mcp_tool:
+                    # Emit MCP-specific argument done event
+                    yield OpenAIResponseObjectStreamResponseMcpCallArgumentsDone(
+                        arguments=final_arguments,
+                        item_id=tool_call_item_id,
+                        output_index=len(output_messages),
+                        sequence_number=sequence_number,
+                    )
+                else:
+                    # Emit function call argument done event
+                    yield OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone(
+                        arguments=final_arguments,
+                        item_id=tool_call_item_id,
+                        output_index=len(output_messages),
+                        sequence_number=sequence_number,
+                    )
 
             # Convert collected chunks to complete response
             if chat_response_tool_calls:
                 tool_calls = [chat_response_tool_calls[i] for i in sorted(chat_response_tool_calls.keys())]
             else:
                 tool_calls = None
+
+            # Emit content_part.done event if text content was streamed (before content gets cleared)
+            if content_part_emitted:
+                final_text = "".join(chat_response_content)
+                sequence_number += 1
+                yield OpenAIResponseObjectStreamResponseContentPartDone(
+                    response_id=response_id,
+                    item_id=message_item_id,
+                    part=OpenAIResponseContentPartOutputText(
+                        text=final_text,
+                    ),
+                    sequence_number=sequence_number,
+                )
+
+            # Clear content when there are tool calls (OpenAI spec behavior)
+            if chat_response_tool_calls:
+                chat_response_content = []
+
             assistant_message = OpenAIAssistantMessageParam(
                 content="".join(chat_response_content),
                 tool_calls=tool_calls,
@@ -523,21 +666,78 @@ class OpenAIResponsesImpl:
 
             # execute non-function tool calls
             for tool_call in non_function_tool_calls:
-                tool_call_log, tool_response_message = await self._execute_tool_call(tool_call, ctx)
+                # Find the item_id for this tool call
+                matching_item_id = None
+                for index, item_id in tool_call_item_ids.items():
+                    response_tool_call = chat_response_tool_calls.get(index)
+                    if response_tool_call and response_tool_call.id == tool_call.id:
+                        matching_item_id = item_id
+                        break
+
+                # Use a fallback item_id if not found
+                if not matching_item_id:
+                    matching_item_id = f"tc_{uuid.uuid4()}"
+
+                # Execute tool call with streaming
+                tool_call_log = None
+                tool_response_message = None
+                async for result in self._execute_tool_call(
+                    tool_call, ctx, sequence_number, response_id, len(output_messages), matching_item_id
+                ):
+                    if result.stream_event:
+                        # Forward streaming events
+                        sequence_number = result.sequence_number
+                        yield result.stream_event
+
+                    if result.final_output_message is not None:
+                        tool_call_log = result.final_output_message
+                        tool_response_message = result.final_input_message
+                        sequence_number = result.sequence_number
+
                 if tool_call_log:
                     output_messages.append(tool_call_log)
+
+                    # Emit output_item.done event for completed non-function tool call
+                    if matching_item_id:
+                        sequence_number += 1
+                        yield OpenAIResponseObjectStreamResponseOutputItemDone(
+                            response_id=response_id,
+                            item=tool_call_log,
+                            output_index=len(output_messages) - 1,
+                            sequence_number=sequence_number,
+                        )
+
                 if tool_response_message:
                     next_turn_messages.append(tool_response_message)
 
             for tool_call in function_tool_calls:
-                output_messages.append(
-                    OpenAIResponseOutputMessageFunctionToolCall(
-                        arguments=tool_call.function.arguments or "",
-                        call_id=tool_call.id,
-                        name=tool_call.function.name or "",
-                        id=f"fc_{uuid.uuid4()}",
-                        status="completed",
-                    )
+                # Find the item_id for this tool call from our tracking dictionary
+                matching_item_id = None
+                for index, item_id in tool_call_item_ids.items():
+                    response_tool_call = chat_response_tool_calls.get(index)
+                    if response_tool_call and response_tool_call.id == tool_call.id:
+                        matching_item_id = item_id
+                        break
+
+                # Use existing item_id or create new one if not found
+                final_item_id = matching_item_id or f"fc_{uuid.uuid4()}"
+
+                function_call_item = OpenAIResponseOutputMessageFunctionToolCall(
+                    arguments=tool_call.function.arguments or "",
+                    call_id=tool_call.id,
+                    name=tool_call.function.name or "",
+                    id=final_item_id,
+                    status="completed",
+                )
+                output_messages.append(function_call_item)
+
+                # Emit output_item.done event for completed function call
+                sequence_number += 1
+                yield OpenAIResponseObjectStreamResponseOutputItemDone(
+                    response_id=response_id,
+                    item=function_call_item,
+                    output_index=len(output_messages) - 1,
+                    sequence_number=sequence_number,
                 )
 
             if not function_tool_calls and not non_function_tool_calls:
@@ -746,7 +946,11 @@ class OpenAIResponsesImpl:
         self,
         tool_call: OpenAIChatCompletionToolCall,
         ctx: ChatCompletionContext,
-    ) -> tuple[OpenAIResponseOutput | None, OpenAIMessageParam | None]:
+        sequence_number: int,
+        response_id: str,
+        output_index: int,
+        item_id: str,
+    ) -> AsyncIterator[ToolExecutionResult]:
         from llama_stack.providers.utils.inference.prompt_adapter import (
             interleaved_content_as_str,
         )
@@ -756,8 +960,41 @@ class OpenAIResponsesImpl:
         tool_kwargs = json.loads(function.arguments) if function.arguments else {}
 
         if not function or not tool_call_id or not function.name:
-            return None, None
+            yield ToolExecutionResult(sequence_number=sequence_number)
+            return
 
+        # Emit in_progress event based on tool type (only for tools with specific streaming events)
+        progress_event = None
+        if ctx.mcp_tool_to_server and function.name in ctx.mcp_tool_to_server:
+            sequence_number += 1
+            progress_event = OpenAIResponseObjectStreamResponseMcpCallInProgress(
+                item_id=item_id,
+                output_index=output_index,
+                sequence_number=sequence_number,
+            )
+        elif function.name == "web_search":
+            sequence_number += 1
+            progress_event = OpenAIResponseObjectStreamResponseWebSearchCallInProgress(
+                item_id=item_id,
+                output_index=output_index,
+                sequence_number=sequence_number,
+            )
+        # Note: knowledge_search and other custom tools don't have specific streaming events in OpenAI spec
+
+        if progress_event:
+            yield ToolExecutionResult(stream_event=progress_event, sequence_number=sequence_number)
+
+        # For web search, emit searching event
+        if function.name == "web_search":
+            sequence_number += 1
+            searching_event = OpenAIResponseObjectStreamResponseWebSearchCallSearching(
+                item_id=item_id,
+                output_index=output_index,
+                sequence_number=sequence_number,
+            )
+            yield ToolExecutionResult(stream_event=searching_event, sequence_number=sequence_number)
+
+        # Execute the actual tool call
         error_exc = None
         result = None
         try:
@@ -773,7 +1010,8 @@ class OpenAIResponsesImpl:
                 )
             elif function.name == "knowledge_search":
                 response_file_search_tool = next(
-                    (t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)), None
+                    (t for t in ctx.response_tools if isinstance(t, OpenAIResponseInputToolFileSearch)),
+                    None,
                 )
                 if response_file_search_tool:
                     # Use vector_stores.search API instead of knowledge_search tool
@@ -791,8 +1029,37 @@ class OpenAIResponsesImpl:
         except Exception as e:
             error_exc = e
 
+        # Emit completion or failure event based on result (only for tools with specific streaming events)
+        has_error = error_exc or (result and ((result.error_code and result.error_code > 0) or result.error_message))
+        completion_event = None
+
+        if ctx.mcp_tool_to_server and function.name in ctx.mcp_tool_to_server:
+            sequence_number += 1
+            if has_error:
+                completion_event = OpenAIResponseObjectStreamResponseMcpCallFailed(
+                    sequence_number=sequence_number,
+                )
+            else:
+                completion_event = OpenAIResponseObjectStreamResponseMcpCallCompleted(
+                    sequence_number=sequence_number,
+                )
+        elif function.name == "web_search":
+            sequence_number += 1
+            completion_event = OpenAIResponseObjectStreamResponseWebSearchCallCompleted(
+                item_id=item_id,
+                output_index=output_index,
+                sequence_number=sequence_number,
+            )
+        # Note: knowledge_search and other custom tools don't have specific completion events in OpenAI spec
+
+        if completion_event:
+            yield ToolExecutionResult(stream_event=completion_event, sequence_number=sequence_number)
+
+        # Build the result message and input message
         if function.name in ctx.mcp_tool_to_server:
-            from llama_stack.apis.agents.openai_responses import OpenAIResponseOutputMessageMCPCall
+            from llama_stack.apis.agents.openai_responses import (
+                OpenAIResponseOutputMessageMCPCall,
+            )
 
             message = OpenAIResponseOutputMessageMCPCall(
                 id=tool_call_id,
@@ -802,9 +1069,9 @@ class OpenAIResponsesImpl:
             )
             if error_exc:
                 message.error = str(error_exc)
-            elif (result.error_code and result.error_code > 0) or result.error_message:
+            elif (result and result.error_code and result.error_code > 0) or (result and result.error_message):
                 message.error = f"Error (code {result.error_code}): {result.error_message}"
-            elif result.content:
+            elif result and result.content:
                 message.output = interleaved_content_as_str(result.content)
         else:
             if function.name == "web_search":
@@ -812,7 +1079,7 @@ class OpenAIResponsesImpl:
                     id=tool_call_id,
                     status="completed",
                 )
-                if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
+                if has_error:
                     message.status = "failed"
             elif function.name == "knowledge_search":
                 message = OpenAIResponseOutputMessageFileSearchToolCall(
@@ -820,20 +1087,21 @@ class OpenAIResponsesImpl:
                     queries=[tool_kwargs.get("query", "")],
                     status="completed",
                 )
-                if "document_ids" in result.metadata:
+                if result and "document_ids" in result.metadata:
                     message.results = []
                     for i, doc_id in enumerate(result.metadata["document_ids"]):
                         text = result.metadata["chunks"][i] if "chunks" in result.metadata else None
                         score = result.metadata["scores"][i] if "scores" in result.metadata else None
                         message.results.append(
-                            {
-                                "file_id": doc_id,
-                                "filename": doc_id,
-                                "text": text,
-                                "score": score,
-                            }
+                            OpenAIResponseOutputMessageFileSearchToolCallResults(
+                                file_id=doc_id,
+                                filename=doc_id,
+                                text=text,
+                                score=score,
+                                attributes={},
+                            )
                         )
-                if error_exc or (result.error_code and result.error_code > 0) or result.error_message:
+                if has_error:
                     message.status = "failed"
             else:
                 raise ValueError(f"Unknown tool {function.name} called")
@@ -843,7 +1111,10 @@ class OpenAIResponsesImpl:
             if isinstance(result.content, str):
                 content = result.content
             elif isinstance(result.content, list):
-                from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
+                from llama_stack.apis.common.content_types import (
+                    ImageContentItem,
+                    TextContentItem,
+                )
 
                 content = []
                 for item in result.content:
@@ -862,10 +1133,13 @@ class OpenAIResponsesImpl:
                 raise ValueError(f"Unknown result content type: {type(result.content)}")
             input_message = OpenAIToolMessageParam(content=content, tool_call_id=tool_call_id)
         else:
-            text = str(error_exc)
+            text = str(error_exc) if error_exc else "Tool execution failed"
             input_message = OpenAIToolMessageParam(content=text, tool_call_id=tool_call_id)
 
-        return message, input_message
+        # Yield the final result
+        yield ToolExecutionResult(
+            sequence_number=sequence_number, final_output_message=message, final_input_message=input_message
+        )
 
 
 def _is_function_tool_call(

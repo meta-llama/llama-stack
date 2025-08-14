@@ -21,10 +21,11 @@ from importlib.metadata import version as parse_version
 from pathlib import Path
 from typing import Annotated, Any, get_origin
 
+import httpx
 import rich.pretty
 import yaml
 from aiohttp import hdrs
-from fastapi import Body, FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -115,7 +116,7 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
 
     if isinstance(exc, RequestValidationError):
         return HTTPException(
-            status_code=400,
+            status_code=httpx.codes.BAD_REQUEST,
             detail={
                 "errors": [
                     {
@@ -128,20 +129,20 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
             },
         )
     elif isinstance(exc, ValueError):
-        return HTTPException(status_code=400, detail=f"Invalid value: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.BAD_REQUEST, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
-        return HTTPException(status_code=400, detail=str(exc))
+        return HTTPException(status_code=httpx.codes.BAD_REQUEST, detail=str(exc))
     elif isinstance(exc, PermissionError | AccessDeniedError):
-        return HTTPException(status_code=403, detail=f"Permission denied: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.FORBIDDEN, detail=f"Permission denied: {str(exc)}")
     elif isinstance(exc, asyncio.TimeoutError | TimeoutError):
-        return HTTPException(status_code=504, detail=f"Operation timed out: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.GATEWAY_TIMEOUT, detail=f"Operation timed out: {str(exc)}")
     elif isinstance(exc, NotImplementedError):
-        return HTTPException(status_code=501, detail=f"Not implemented: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.NOT_IMPLEMENTED, detail=f"Not implemented: {str(exc)}")
     elif isinstance(exc, AuthenticationRequiredError):
-        return HTTPException(status_code=401, detail=f"Authentication required: {str(exc)}")
+        return HTTPException(status_code=httpx.codes.UNAUTHORIZED, detail=f"Authentication required: {str(exc)}")
     else:
         return HTTPException(
-            status_code=500,
+            status_code=httpx.codes.INTERNAL_SERVER_ERROR,
             detail="Internal server error: An unexpected error occurred.",
         )
 
@@ -180,7 +181,6 @@ async def sse_generator(event_gen_coroutine):
         event_gen = await event_gen_coroutine
         async for item in event_gen:
             yield create_sse_event(item)
-            await asyncio.sleep(0.01)
     except asyncio.CancelledError:
         logger.info("Generator cancelled")
         if event_gen:
@@ -236,6 +236,10 @@ def create_dynamic_typed_route(func: Any, method: str, route: str) -> Callable:
                     result = await maybe_await(value)
                     if isinstance(result, PaginatedResponse) and result.url is None:
                         result.url = route
+
+                    if method.upper() == "DELETE" and result is None:
+                        return Response(status_code=httpx.codes.NO_CONTENT)
+
                     return result
             except Exception as e:
                 if logger.isEnabledFor(logging.DEBUG):
@@ -352,7 +356,7 @@ class ClientVersionMiddleware:
                             await send(
                                 {
                                     "type": "http.response.start",
-                                    "status": 426,
+                                    "status": httpx.codes.UPGRADE_REQUIRED,
                                     "headers": [[b"content-type", b"application/json"]],
                                 }
                             )

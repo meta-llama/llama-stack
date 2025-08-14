@@ -22,7 +22,7 @@ from llama_stack.apis.safety import (
     SafetyViolation,
     ViolationLevel,
 )
-from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults, OpenAICategories
+from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults
 from llama_stack.apis.shields import Shield
 from llama_stack.core.datatypes import Api
 from llama_stack.models.llama.datatypes import Role
@@ -71,30 +71,6 @@ SAFETY_CATEGORIES_TO_CODE_MAP = {
     CAT_CODE_INTERPRETER_ABUSE: "S14",
 }
 SAFETY_CODE_TO_CATEGORIES_MAP = {v: k for k, v in SAFETY_CATEGORIES_TO_CODE_MAP.items()}
-
-OPENAI_TO_LLAMA_CATEGORIES_MAP = {
-    OpenAICategories.VIOLENCE: [CAT_VIOLENT_CRIMES],
-    OpenAICategories.VIOLENCE_GRAPHIC: [CAT_VIOLENT_CRIMES],
-    OpenAICategories.HARRASMENT: [CAT_CHILD_EXPLOITATION],
-    OpenAICategories.HARRASMENT_THREATENING: [CAT_VIOLENT_CRIMES, CAT_CHILD_EXPLOITATION],
-    OpenAICategories.HATE: [CAT_HATE],
-    OpenAICategories.HATE_THREATENING: [CAT_HATE, CAT_VIOLENT_CRIMES],
-    OpenAICategories.ILLICIT: [CAT_NON_VIOLENT_CRIMES],
-    OpenAICategories.ILLICIT_VIOLENT: [CAT_VIOLENT_CRIMES, CAT_INDISCRIMINATE_WEAPONS],
-    OpenAICategories.SEXUAL: [CAT_SEX_CRIMES, CAT_SEXUAL_CONTENT],
-    OpenAICategories.SEXUAL_MINORS: [CAT_CHILD_EXPLOITATION],
-    OpenAICategories.SELF_HARM: [CAT_SELF_HARM],
-    OpenAICategories.SELF_HARM_INTENT: [CAT_SELF_HARM],
-    OpenAICategories.SELF_HARM_INSTRUCTIONS: [CAT_SELF_HARM, CAT_SPECIALIZED_ADVICE],
-    # These are custom categories that are not in the OpenAI moderation categories
-    "custom/defamation": [CAT_DEFAMATION],
-    "custom/specialized_advice": [CAT_SPECIALIZED_ADVICE],
-    "custom/privacy_violation": [CAT_PRIVACY],
-    "custom/intellectual_property": [CAT_INTELLECTUAL_PROPERTY],
-    "custom/weapons": [CAT_INDISCRIMINATE_WEAPONS],
-    "custom/elections": [CAT_ELECTIONS],
-    "custom/code_interpreter_abuse": [CAT_CODE_INTERPRETER_ABUSE],
-}
 
 
 DEFAULT_LG_V3_SAFETY_CATEGORIES = [
@@ -424,9 +400,9 @@ class LlamaGuardShield:
             ModerationObject with appropriate configuration
         """
         # Set default values for safe case
-        categories = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), False)
-        category_scores = dict.fromkeys(OPENAI_TO_LLAMA_CATEGORIES_MAP.keys(), 1.0)
-        category_applied_input_types = {key: [] for key in OPENAI_TO_LLAMA_CATEGORIES_MAP.keys()}
+        categories = dict.fromkeys(SAFETY_CATEGORIES_TO_CODE_MAP.keys(), False)
+        category_scores = dict.fromkeys(SAFETY_CATEGORIES_TO_CODE_MAP.keys(), 1.0)
+        category_applied_input_types = {key: [] for key in SAFETY_CATEGORIES_TO_CODE_MAP.keys()}
         flagged = False
         user_message = None
         metadata = {}
@@ -453,19 +429,15 @@ class LlamaGuardShield:
                     ],
                 )
 
-            # Get OpenAI categories for the unsafe codes
-            openai_categories = []
-            for code in unsafe_code_list:
-                llama_guard_category = SAFETY_CODE_TO_CATEGORIES_MAP[code]
-                openai_categories.extend(
-                    k for k, v_l in OPENAI_TO_LLAMA_CATEGORIES_MAP.items() if llama_guard_category in v_l
-                )
+            llama_guard_category = [SAFETY_CODE_TO_CATEGORIES_MAP[code] for code in unsafe_code_list]
 
             # Update categories for unsafe content
-            categories = {k: k in openai_categories for k in OPENAI_TO_LLAMA_CATEGORIES_MAP}
-            category_scores = {k: 1.0 if k in openai_categories else 0.0 for k in OPENAI_TO_LLAMA_CATEGORIES_MAP}
+            categories = {k: k in llama_guard_category for k in SAFETY_CATEGORIES_TO_CODE_MAP.keys()}
+            category_scores = {
+                k: 1.0 if k in llama_guard_category else 0.0 for k in SAFETY_CATEGORIES_TO_CODE_MAP.keys()
+            }
             category_applied_input_types = {
-                k: ["text"] if k in openai_categories else [] for k in OPENAI_TO_LLAMA_CATEGORIES_MAP
+                k: ["text"] if k in llama_guard_category else [] for k in SAFETY_CATEGORIES_TO_CODE_MAP.keys()
             }
             flagged = True
             user_message = CANNED_RESPONSE_TEXT

@@ -327,10 +327,21 @@ class MetaReferenceAgentsImpl(Agents):
         temperature: float | None = None,
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        include: list[str] | None = None,
         max_infer_iters: int | None = 10,
     ) -> OpenAIResponseObject:
         return await self.openai_responses_impl.create_openai_response(
-            input, model, instructions, previous_response_id, store, stream, temperature, text, tools, max_infer_iters
+            input,
+            model,
+            instructions,
+            previous_response_id,
+            store,
+            stream,
+            temperature,
+            text,
+            tools,
+            include,
+            max_infer_iters,
         )
 
     async def list_openai_responses(

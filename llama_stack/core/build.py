@@ -91,7 +91,7 @@ def get_provider_dependencies(
 
 
 def print_pip_install_help(config: BuildConfig):
-    normal_deps, special_deps = get_provider_dependencies(config)
+    normal_deps, special_deps, _ = get_provider_dependencies(config)
 
     cprint(
         f"Please install needed dependencies using the following commands:\n\nuv pip install {' '.join(normal_deps)}",

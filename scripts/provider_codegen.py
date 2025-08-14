@@ -187,7 +187,7 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
 
         if config_info.get("accepts_extra_config"):
             md_lines.append(
-                "> **Note**: This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider."
+                "```{note}\n This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider.\n ```\n"
             )
             md_lines.append("")
 
@@ -232,7 +232,7 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
     if hasattr(provider_spec, "deprecation_warning") and provider_spec.deprecation_warning:
         md_lines.append("## Deprecation Notice")
         md_lines.append("")
-        md_lines.append(f"⚠️ **Warning**: {provider_spec.deprecation_warning}")
+        md_lines.append(f"```{{warning}}\n{provider_spec.deprecation_warning}\n```")
         md_lines.append("")
 
     if hasattr(provider_spec, "deprecation_error") and provider_spec.deprecation_error:

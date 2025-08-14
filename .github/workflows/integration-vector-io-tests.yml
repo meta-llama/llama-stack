@@ -164,9 +164,9 @@ jobs:
           ENABLE_WEAVIATE: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'true' || '' }}
           WEAVIATE_CLUSTER_URL: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'localhost:8080' || '' }}
         run: |
-          uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
+          uv run pytest -sv --stack-config="files=inline::localfs,inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
-            --embedding-model sentence-transformers/all-MiniLM-L6-v2
+            --embedding-model inline::sentence-transformers/all-MiniLM-L6-v2
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}

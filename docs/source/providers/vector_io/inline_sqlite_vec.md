@@ -25,5 +25,7 @@ kvstore:
 
 ## Deprecation Notice
 
-⚠️ **Warning**: Please use the `inline::sqlite-vec` provider (notice the hyphen instead of underscore) instead.
+```{warning}
+Please use the `inline::sqlite-vec` provider (notice the hyphen instead of underscore) instead.
+```
 

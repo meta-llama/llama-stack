@@ -33,6 +33,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -128,11 +129,12 @@ class FaissIndex(EmbeddingIndex):
         # Save updated index
         await self._save_index()
 
-    async def delete_chunk(self, chunk_id: str) -> None:
-        if chunk_id not in self.chunk_ids:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        chunk_ids = [c.chunk_id for c in chunks_for_deletion]
+        if not set(chunk_ids).issubset(self.chunk_ids):
             return
 
-        async with self.chunk_id_lock:
+        def remove_chunk(chunk_id: str):
             index = self.chunk_ids.index(chunk_id)
             self.index.remove_ids(np.array([index]))
 
@@ -145,6 +147,10 @@ class FaissIndex(EmbeddingIndex):
                     new_chunk_by_index[idx] = chunk
             self.chunk_by_index = new_chunk_by_index
             self.chunk_ids.pop(index)
+
+        async with self.chunk_id_lock:
+            for chunk_id in chunk_ids:
+                remove_chunk(chunk_id)
 
         await self._save_index()
 
@@ -297,8 +303,7 @@ class FaissVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPr
 
         return await index.query_chunks(query, params)
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
-        """Delete a chunk from a faiss index"""
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        """Delete chunks from a faiss index"""
         faiss_index = self.cache[store_id].index
-        for chunk_id in chunk_ids:
-            await faiss_index.delete_chunk(chunk_id)
+        await faiss_index.delete_chunks(chunks_for_deletion)

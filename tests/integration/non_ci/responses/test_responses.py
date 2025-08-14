@@ -363,6 +363,9 @@ def test_response_non_streaming_file_search_empty_vector_store(request, compat_c
     ids=case_id_generator,
 )
 def test_response_non_streaming_mcp_tool(request, compat_client, text_model_id, case):
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server() as mcp_server_info:
         tools = case["tools"]
         for tool in tools:
@@ -381,12 +384,18 @@ def test_response_non_streaming_mcp_tool(request, compat_client, text_model_id, 
         assert list_tools.type == "mcp_list_tools"
         assert list_tools.server_label == "localmcp"
         assert len(list_tools.tools) == 2
-        assert {t.name for t in list_tools.tools} == {"get_boiling_point", "greet_everyone"}
+        assert {t.name for t in list_tools.tools} == {
+            "get_boiling_point",
+            "greet_everyone",
+        }
 
         call = response.output[1]
         assert call.type == "mcp_call"
         assert call.name == "get_boiling_point"
-        assert json.loads(call.arguments) == {"liquid_name": "myawesomeliquid", "celsius": True}
+        assert json.loads(call.arguments) == {
+            "liquid_name": "myawesomeliquid",
+            "celsius": True,
+        }
         assert call.error is None
         assert "-100" in call.output
 
@@ -485,8 +494,11 @@ def test_response_non_streaming_multi_turn_image(request, compat_client, text_mo
     responses_test_cases["test_response_multi_turn_tool_execution"]["test_params"]["case"],
     ids=case_id_generator,
 )
-def test_response_non_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
+def test_response_non_streaming_multi_turn_tool_execution(compat_client, text_model_id, case):
     """Test multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -541,8 +553,11 @@ def test_response_non_streaming_multi_turn_tool_execution(request, compat_client
     responses_test_cases["test_response_multi_turn_tool_execution_streaming"]["test_params"]["case"],
     ids=case_id_generator,
 )
-async def test_response_streaming_multi_turn_tool_execution(request, compat_client, text_model_id, case):
+def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_id, case):
     """Test streaming multi-turn tool execution where multiple MCP tool calls are performed in sequence."""
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
     with make_mcp_server(tools=dependency_tools()) as mcp_server_info:
         tools = case["tools"]
         # Replace the placeholder URL with the actual server URL
@@ -571,6 +586,176 @@ async def test_response_streaming_multi_turn_tool_execution(request, compat_clie
         assert chunks[-1].type == "response.completed", (
             f"Last chunk should be response.completed, got {chunks[-1].type}"
         )
+
+        # Verify tool call streaming events are present
+        chunk_types = [chunk.type for chunk in chunks]
+
+        # Should have function call or MCP arguments delta/done events for tool calls
+        delta_events = [
+            chunk
+            for chunk in chunks
+            if chunk.type in ["response.function_call_arguments.delta", "response.mcp_call.arguments.delta"]
+        ]
+        done_events = [
+            chunk
+            for chunk in chunks
+            if chunk.type in ["response.function_call_arguments.done", "response.mcp_call.arguments.done"]
+        ]
+
+        # Should have output item events for tool calls
+        item_added_events = [chunk for chunk in chunks if chunk.type == "response.output_item.added"]
+        item_done_events = [chunk for chunk in chunks if chunk.type == "response.output_item.done"]
+
+        # Should have tool execution progress events
+        mcp_in_progress_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.in_progress"]
+        mcp_completed_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.completed"]
+
+        # Verify we have substantial streaming activity (not just batch events)
+        assert len(chunks) > 10, f"Expected rich streaming with many events, got only {len(chunks)} chunks"
+
+        # Since this test involves MCP tool calls, we should see streaming events
+        assert len(delta_events) > 0, (
+            f"Expected function_call_arguments.delta or mcp_call.arguments.delta events, got chunk types: {chunk_types}"
+        )
+        assert len(done_events) > 0, (
+            f"Expected function_call_arguments.done or mcp_call.arguments.done events, got chunk types: {chunk_types}"
+        )
+
+        # Should have output item events for function calls
+        assert len(item_added_events) > 0, f"Expected response.output_item.added events, got chunk types: {chunk_types}"
+        assert len(item_done_events) > 0, f"Expected response.output_item.done events, got chunk types: {chunk_types}"
+
+        # Should have tool execution progress events
+        assert len(mcp_in_progress_events) > 0, (
+            f"Expected response.mcp_call.in_progress events, got chunk types: {chunk_types}"
+        )
+        assert len(mcp_completed_events) > 0, (
+            f"Expected response.mcp_call.completed events, got chunk types: {chunk_types}"
+        )
+        # MCP failed events are optional (only if errors occur)
+
+        # Verify progress events have proper structure
+        for progress_event in mcp_in_progress_events:
+            assert hasattr(progress_event, "item_id"), "Progress event should have 'item_id' field"
+            assert hasattr(progress_event, "output_index"), "Progress event should have 'output_index' field"
+            assert hasattr(progress_event, "sequence_number"), "Progress event should have 'sequence_number' field"
+
+        for completed_event in mcp_completed_events:
+            assert hasattr(completed_event, "sequence_number"), "Completed event should have 'sequence_number' field"
+
+        # Verify delta events have proper structure
+        for delta_event in delta_events:
+            assert hasattr(delta_event, "delta"), "Delta event should have 'delta' field"
+            assert hasattr(delta_event, "item_id"), "Delta event should have 'item_id' field"
+            assert hasattr(delta_event, "sequence_number"), "Delta event should have 'sequence_number' field"
+            assert delta_event.delta, "Delta should not be empty"
+
+        # Verify done events have proper structure
+        for done_event in done_events:
+            assert hasattr(done_event, "arguments"), "Done event should have 'arguments' field"
+            assert hasattr(done_event, "item_id"), "Done event should have 'item_id' field"
+            assert done_event.arguments, "Final arguments should not be empty"
+
+        # Verify output item added events have proper structure
+        for added_event in item_added_events:
+            assert hasattr(added_event, "item"), "Added event should have 'item' field"
+            assert hasattr(added_event, "output_index"), "Added event should have 'output_index' field"
+            assert hasattr(added_event, "sequence_number"), "Added event should have 'sequence_number' field"
+            assert hasattr(added_event, "response_id"), "Added event should have 'response_id' field"
+            assert added_event.item.type in ["function_call", "mcp_call"], "Added item should be a tool call"
+            assert added_event.item.status == "in_progress", "Added item should be in progress"
+            assert added_event.response_id, "Response ID should not be empty"
+            assert isinstance(added_event.output_index, int), "Output index should be integer"
+            assert added_event.output_index >= 0, "Output index should be non-negative"
+
+        # Verify output item done events have proper structure
+        for done_event in item_done_events:
+            assert hasattr(done_event, "item"), "Done event should have 'item' field"
+            assert hasattr(done_event, "output_index"), "Done event should have 'output_index' field"
+            assert hasattr(done_event, "sequence_number"), "Done event should have 'sequence_number' field"
+            assert hasattr(done_event, "response_id"), "Done event should have 'response_id' field"
+            assert done_event.item.type in ["function_call", "mcp_call"], "Done item should be a tool call"
+            # Note: MCP calls don't have a status field, only function calls do
+            if done_event.item.type == "function_call":
+                assert done_event.item.status == "completed", "Function call should be completed"
+            assert done_event.response_id, "Response ID should not be empty"
+            assert isinstance(done_event.output_index, int), "Output index should be integer"
+            assert done_event.output_index >= 0, "Output index should be non-negative"
+
+        # Group function call and MCP argument events by item_id (these should have proper tracking)
+        argument_events_by_item_id = {}
+        for chunk in chunks:
+            if hasattr(chunk, "item_id") and chunk.type in [
+                "response.function_call_arguments.delta",
+                "response.function_call_arguments.done",
+                "response.mcp_call.arguments.delta",
+                "response.mcp_call.arguments.done",
+            ]:
+                item_id = chunk.item_id
+                if item_id not in argument_events_by_item_id:
+                    argument_events_by_item_id[item_id] = []
+                argument_events_by_item_id[item_id].append(chunk)
+
+        for item_id, related_events in argument_events_by_item_id.items():
+            # Should have at least one delta and one done event for a complete tool call
+            delta_events = [
+                e
+                for e in related_events
+                if e.type in ["response.function_call_arguments.delta", "response.mcp_call.arguments.delta"]
+            ]
+            done_events = [
+                e
+                for e in related_events
+                if e.type in ["response.function_call_arguments.done", "response.mcp_call.arguments.done"]
+            ]
+
+            assert len(delta_events) > 0, f"Item {item_id} should have at least one delta event"
+            assert len(done_events) == 1, f"Item {item_id} should have exactly one done event"
+
+            # Verify all events have the same item_id
+            for event in related_events:
+                assert event.item_id == item_id, f"Event should have consistent item_id {item_id}, got {event.item_id}"
+
+        # Verify content part events if they exist (for text streaming)
+        content_part_added_events = [chunk for chunk in chunks if chunk.type == "response.content_part.added"]
+        content_part_done_events = [chunk for chunk in chunks if chunk.type == "response.content_part.done"]
+
+        # Content part events should be paired (if any exist)
+        if len(content_part_added_events) > 0:
+            assert len(content_part_done_events) > 0, (
+                "Should have content_part.done events if content_part.added events exist"
+            )
+
+            # Verify content part event structure
+            for added_event in content_part_added_events:
+                assert hasattr(added_event, "response_id"), "Content part added event should have response_id"
+                assert hasattr(added_event, "item_id"), "Content part added event should have item_id"
+                assert hasattr(added_event, "part"), "Content part added event should have part"
+
+                # TODO: enable this after the client types are updated
+                # assert added_event.part.type == "output_text", "Content part should be an output_text"
+
+            for done_event in content_part_done_events:
+                assert hasattr(done_event, "response_id"), "Content part done event should have response_id"
+                assert hasattr(done_event, "item_id"), "Content part done event should have item_id"
+                assert hasattr(done_event, "part"), "Content part done event should have part"
+
+                # TODO: enable this after the client types are updated
+                # assert len(done_event.part.text) > 0, "Content part should have text when done"
+
+        # Basic pairing check: each output_item.added should be followed by some activity
+        # (but we can't enforce strict 1:1 pairing due to the complexity of multi-turn scenarios)
+        assert len(item_added_events) > 0, "Should have at least one output_item.added event"
+
+        # Verify response_id consistency across all events
+        response_ids = set()
+        for chunk in chunks:
+            if hasattr(chunk, "response_id"):
+                response_ids.add(chunk.response_id)
+            elif hasattr(chunk, "response") and hasattr(chunk.response, "id"):
+                response_ids.add(chunk.response.id)
+
+        assert len(response_ids) == 1, f"All events should reference the same response_id, found: {response_ids}"
 
         # Get the final response from the last chunk
         final_chunk = chunks[-1]
@@ -634,7 +819,7 @@ async def test_response_streaming_multi_turn_tool_execution(request, compat_clie
         },
     ],
 )
-def test_response_text_format(request, compat_client, text_model_id, text_format):
+def test_response_text_format(compat_client, text_model_id, text_format):
     if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API text format is not yet supported in library client.")
 
@@ -653,7 +838,7 @@ def test_response_text_format(request, compat_client, text_model_id, text_format
 
 
 @pytest.fixture
-def vector_store_with_filtered_files(request, compat_client, text_model_id, tmp_path_factory):
+def vector_store_with_filtered_files(compat_client, text_model_id, tmp_path_factory):
     """Create a vector store with multiple files that have different attributes for filtering tests."""
     if isinstance(compat_client, LlamaStackAsLibraryClient):
         pytest.skip("Responses API file search is not yet supported in library client.")
@@ -713,7 +898,9 @@ def vector_store_with_filtered_files(request, compat_client, text_model_id, tmp_
 
         # Attach file to vector store with attributes
         file_attach_response = compat_client.vector_stores.files.create(
-            vector_store_id=vector_store.id, file_id=file_response.id, attributes=file_data["attributes"]
+            vector_store_id=vector_store.id,
+            file_id=file_response.id,
+            attributes=file_data["attributes"],
         )
 
         # Wait for attachment

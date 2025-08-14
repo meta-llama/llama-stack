@@ -62,3 +62,13 @@ class SessionNotFoundError(ValueError):
     def __init__(self, session_name: str) -> None:
         message = f"Session '{session_name}' not found or access denied."
         super().__init__(message)
+
+
+class ModelTypeError(TypeError):
+    """raised when a model is present but not the correct type"""
+
+    def __init__(self, model_name: str, model_type: str, expected_model_type: str) -> None:
+        message = (
+            f"Model '{model_name}' is of type '{model_type}' rather than the expected type '{expected_model_type}'"
+        )
+        super().__init__(message)

@@ -3,7 +3,7 @@ name: Integration Tests (Record)
 run-name: Run the integration test suite from tests/integration
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     types: [opened, synchronize, labeled]
     paths:
@@ -23,7 +23,7 @@ on:
         default: 'ollama'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:

@@ -111,7 +111,7 @@ name = "llama-stack-api-weather"
 version = "0.1.0"
 description = "Weather API for Llama Stack"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = ["llama-stack", "pydantic"]
 
 [build-system]
@@ -231,7 +231,7 @@ name = "llama-stack-provider-kaze"
 version = "0.1.0"
 description = "Kaze weather provider for Llama Stack"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = ["llama-stack", "pydantic", "aiohttp"]
 
 [build-system]

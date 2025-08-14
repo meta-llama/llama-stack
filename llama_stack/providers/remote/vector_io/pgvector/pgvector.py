@@ -27,6 +27,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -163,10 +164,11 @@ class PGVectorIndex(EmbeddingIndex):
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
             cur.execute(f"DROP TABLE IF EXISTS {self.table_name}")
 
-    async def delete_chunk(self, chunk_id: str) -> None:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Remove a chunk from the PostgreSQL table."""
+        chunk_ids = [c.chunk_id for c in chunks_for_deletion]
         with self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
-            cur.execute(f"DELETE FROM {self.table_name} WHERE id = %s", (chunk_id,))
+            cur.execute(f"DELETE FROM {self.table_name} WHERE id = ANY(%s)", (chunk_ids,))
 
 
 class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
@@ -275,12 +277,10 @@ class PGVectorVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtoco
         self.cache[vector_db_id] = VectorDBWithIndex(vector_db, index, self.inference_api)
         return self.cache[vector_db_id]
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Delete a chunk from a PostgreSQL vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise VectorStoreNotFoundError(store_id)
 
-        for chunk_id in chunk_ids:
-            # Use the index's delete_chunk method
-            await index.index.delete_chunk(chunk_id)
+        await index.index.delete_chunks(chunks_for_deletion)

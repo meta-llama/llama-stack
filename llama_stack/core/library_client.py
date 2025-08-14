@@ -380,8 +380,17 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         json_content = json.dumps(convert_pydantic_to_json_value(result))
 
         filtered_body = {k: v for k, v in body.items() if not isinstance(v, LibraryClientUploadFile)}
+
+        status_code = httpx.codes.OK
+
+        if options.method.upper() == "DELETE" and result is None:
+            status_code = httpx.codes.NO_CONTENT
+
+        if status_code == httpx.codes.NO_CONTENT:
+            json_content = ""
+
         mock_response = httpx.Response(
-            status_code=httpx.codes.OK,
+            status_code=status_code,
             content=json_content.encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
