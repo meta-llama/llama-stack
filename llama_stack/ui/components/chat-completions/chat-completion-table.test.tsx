@@ -83,7 +83,7 @@ describe("ChatCompletionsTable", () => {
     // Default pass-through implementations
     truncateText.mockImplementation((text: string | undefined) => text);
     extractTextFromContentPart.mockImplementation((content: unknown) =>
-      typeof content === "string" ? content : "extracted text",
+      typeof content === "string" ? content : "extracted text"
     );
     extractDisplayableText.mockImplementation((message: unknown) => {
       const msg = message as { content?: string };
@@ -138,7 +138,7 @@ describe("ChatCompletionsTable", () => {
     if (row) {
       fireEvent.click(row);
       expect(mockPush).toHaveBeenCalledWith(
-        "/logs/chat-completions/completion_123",
+        "/logs/chat-completions/completion_123"
       );
     } else {
       throw new Error('Row with "Test prompt" not found for router mock test.');
@@ -162,7 +162,7 @@ describe("ChatCompletionsTable", () => {
       expect(tableCaption).toBeInTheDocument();
       if (tableCaption) {
         const captionSkeleton = tableCaption.querySelector(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(captionSkeleton).toBeInTheDocument();
       }
@@ -172,7 +172,7 @@ describe("ChatCompletionsTable", () => {
       expect(tableBody).toBeInTheDocument();
       if (tableBody) {
         const bodySkeletons = tableBody.querySelectorAll(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(bodySkeletons.length).toBeGreaterThan(0);
       }
@@ -192,14 +192,14 @@ describe("ChatCompletionsTable", () => {
 
       render(<ChatCompletionsTable {...defaultProps} />);
       expect(
-        screen.getByText("Unable to load chat completions"),
+        screen.getByText("Unable to load chat completions")
       ).toBeInTheDocument();
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
     test.each([{ name: "Error", message: "" }, {}])(
       "renders default error message when error has no message",
-      (errorObject) => {
+      errorObject => {
         mockedUsePagination.mockReturnValue({
           data: [],
           status: "error",
@@ -210,14 +210,14 @@ describe("ChatCompletionsTable", () => {
 
         render(<ChatCompletionsTable {...defaultProps} />);
         expect(
-          screen.getByText("Unable to load chat completions"),
+          screen.getByText("Unable to load chat completions")
         ).toBeInTheDocument();
         expect(
           screen.getByText(
-            "An unexpected error occurred while loading the data.",
-          ),
+            "An unexpected error occurred while loading the data."
+          )
         ).toBeInTheDocument();
-      },
+      }
     );
   });
 
@@ -225,7 +225,7 @@ describe("ChatCompletionsTable", () => {
     test('renders "No chat completions found." and no table when data array is empty', () => {
       render(<ChatCompletionsTable {...defaultProps} />);
       expect(
-        screen.getByText("No chat completions found."),
+        screen.getByText("No chat completions found.")
       ).toBeInTheDocument();
 
       // Ensure that the table structure is NOT rendered in the empty state
@@ -292,7 +292,7 @@ describe("ChatCompletionsTable", () => {
 
       // Table caption
       expect(
-        screen.getByText("A list of your recent chat completions."),
+        screen.getByText("A list of your recent chat completions.")
       ).toBeInTheDocument();
 
       // Table headers
@@ -306,14 +306,14 @@ describe("ChatCompletionsTable", () => {
       expect(screen.getByText("Test output")).toBeInTheDocument();
       expect(screen.getByText("llama-test-model")).toBeInTheDocument();
       expect(
-        screen.getByText(new Date(1710000000 * 1000).toLocaleString()),
+        screen.getByText(new Date(1710000000 * 1000).toLocaleString())
       ).toBeInTheDocument();
 
       expect(screen.getByText("Another input")).toBeInTheDocument();
       expect(screen.getByText("Another output")).toBeInTheDocument();
       expect(screen.getByText("llama-another-model")).toBeInTheDocument();
       expect(
-        screen.getByText(new Date(1710001000 * 1000).toLocaleString()),
+        screen.getByText(new Date(1710001000 * 1000).toLocaleString())
       ).toBeInTheDocument();
     });
   });
@@ -328,7 +328,7 @@ describe("ChatCompletionsTable", () => {
           return typeof text === "string" && text.length > effectiveMaxLength
             ? text.slice(0, effectiveMaxLength) + "..."
             : text;
-        },
+        }
       );
 
       const longInput =
@@ -368,7 +368,7 @@ describe("ChatCompletionsTable", () => {
 
       // The truncated text should be present for both input and output
       const truncatedTexts = screen.getAllByText(
-        longInput.slice(0, 10) + "...",
+        longInput.slice(0, 10) + "..."
       );
       expect(truncatedTexts.length).toBe(2); // one for input, one for output
     });
@@ -420,7 +420,7 @@ describe("ChatCompletionsTable", () => {
       // Verify the extracted text appears in the table
       expect(screen.getByText("Extracted input")).toBeInTheDocument();
       expect(
-        screen.getByText("Extracted output from assistant"),
+        screen.getByText("Extracted output from assistant")
       ).toBeInTheDocument();
     });
   });

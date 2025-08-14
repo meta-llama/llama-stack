@@ -24,7 +24,10 @@ interface UploadState {
   uploadError: string | null;
 }
 
-export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerProps) {
+export function VectorDbManager({
+  client,
+  onVectorDbCreated,
+}: VectorDbManagerProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -78,7 +81,9 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
       onVectorDbCreated();
     } catch (err) {
       console.error("Error creating vector DB:", err);
-      setCreateError(err instanceof Error ? err.message : "Failed to create vector database");
+      setCreateError(
+        err instanceof Error ? err.message : "Failed to create vector database"
+      );
     } finally {
       setIsCreating(false);
     }
@@ -105,13 +110,17 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
     const chunks: string[] = [];
 
     for (let i = 0; i < words.length; i += chunkSize) {
-      chunks.push(words.slice(i, i + chunkSize).join(' '));
+      chunks.push(words.slice(i, i + chunkSize).join(" "));
     }
 
     return chunks;
   };
 
-  const ingestDocument = async (content: string, documentId: string, vectorDbId: string) => {
+  const ingestDocument = async (
+    content: string,
+    documentId: string,
+    vectorDbId: string
+  ) => {
     const chunks = chunkText(content);
 
     const vectorChunks = chunks.map((chunk, index) => ({
@@ -165,7 +174,8 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
       setUploadState({
         isUploading: false,
         uploadProgress: "",
-        uploadError: err instanceof Error ? err.message : "Failed to upload file",
+        uploadError:
+          err instanceof Error ? err.message : "Failed to upload file",
       });
     }
   };
@@ -181,8 +191,8 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
 
     try {
       const response = await fetch(`/api/fetch-url`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: urlInput }),
       });
 
@@ -212,7 +222,8 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
       setUploadState({
         isUploading: false,
         uploadProgress: "",
-        uploadError: err instanceof Error ? err.message : "Failed to fetch URL content",
+        uploadError:
+          err instanceof Error ? err.message : "Failed to fetch URL content",
       });
     }
   };
@@ -239,13 +250,17 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
 
           {uploadState.uploadError && (
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-              <p className="text-destructive text-sm">{uploadState.uploadError}</p>
+              <p className="text-destructive text-sm">
+                {uploadState.uploadError}
+              </p>
             </div>
           )}
 
           {uploadState.uploadProgress && (
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-blue-700 text-sm">{uploadState.uploadProgress}</p>
+              <p className="text-blue-700 text-sm">
+                {uploadState.uploadProgress}
+              </p>
             </div>
           )}
 
@@ -256,7 +271,9 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
               </label>
               <Input
                 value={formData.vectorDbId}
-                onChange={(e) => setFormData({ ...formData, vectorDbId: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, vectorDbId: e.target.value })
+                }
                 placeholder="Enter unique vector DB identifier"
                 disabled={isCreating || uploadState.isUploading}
               />
@@ -268,17 +285,27 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
               </label>
               <Select
                 value={formData.embeddingModel}
-                onValueChange={(value) => setFormData({ ...formData, embeddingModel: value })}
+                onValueChange={value =>
+                  setFormData({ ...formData, embeddingModel: value })
+                }
                 disabled={isCreating || uploadState.isUploading}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all-MiniLM-L6-v2">all-MiniLM-L6-v2</SelectItem>
-                  <SelectItem value="text-embedding-ada-002">text-embedding-ada-002</SelectItem>
-                  <SelectItem value="text-embedding-3-small">text-embedding-3-small</SelectItem>
-                  <SelectItem value="text-embedding-3-large">text-embedding-3-large</SelectItem>
+                  <SelectItem value="all-MiniLM-L6-v2">
+                    all-MiniLM-L6-v2
+                  </SelectItem>
+                  <SelectItem value="text-embedding-ada-002">
+                    text-embedding-ada-002
+                  </SelectItem>
+                  <SelectItem value="text-embedding-3-small">
+                    text-embedding-3-small
+                  </SelectItem>
+                  <SelectItem value="text-embedding-3-large">
+                    text-embedding-3-large
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -289,7 +316,9 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
               </label>
               <Select
                 value={formData.embeddingDimension}
-                onValueChange={(value) => setFormData({ ...formData, embeddingDimension: value })}
+                onValueChange={value =>
+                  setFormData({ ...formData, embeddingDimension: value })
+                }
                 disabled={isCreating || uploadState.isUploading}
               >
                 <SelectTrigger>
@@ -339,7 +368,11 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
               />
               <Button
                 onClick={() => handleFileUpload(formData.vectorDbId)}
-                disabled={!formData.vectorDbId || !fileInputRef.current?.files?.length || uploadState.isUploading}
+                disabled={
+                  !formData.vectorDbId ||
+                  !fileInputRef.current?.files?.length ||
+                  uploadState.isUploading
+                }
                 className="mt-2 w-full"
                 variant="outline"
                 size="sm"
@@ -354,13 +387,17 @@ export function VectorDbManager({ client, onVectorDbCreated }: VectorDbManagerPr
               </label>
               <Input
                 value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
+                onChange={e => setUrlInput(e.target.value)}
                 placeholder="https://example.com/article"
                 disabled={!formData.vectorDbId || uploadState.isUploading}
               />
               <Button
                 onClick={() => handleUrlUpload(formData.vectorDbId)}
-                disabled={!formData.vectorDbId || !urlInput.trim() || uploadState.isUploading}
+                disabled={
+                  !formData.vectorDbId ||
+                  !urlInput.trim() ||
+                  uploadState.isUploading
+                }
                 className="mt-2 w-full"
                 variant="outline"
                 size="sm"

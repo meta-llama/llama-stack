@@ -19,6 +19,7 @@ interface ChatSession {
   messages: Message[];
   selectedModel: string;
   selectedVectorDb: string;
+  systemMessage: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -29,10 +30,13 @@ interface SessionManagerProps {
   onNewSession: () => void;
 }
 
-const SESSIONS_STORAGE_KEY = 'chat-playground-sessions';
-const CURRENT_SESSION_KEY = 'chat-playground-current-session';
+const SESSIONS_STORAGE_KEY = "chat-playground-sessions";
+const CURRENT_SESSION_KEY = "chat-playground-current-session";
 
-export function SessionManager({ currentSession, onSessionChange, onNewSession }: SessionManagerProps) {
+export function SessionManager({
+  currentSession,
+  onSessionChange,
+}: SessionManagerProps) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newSessionName, setNewSessionName] = useState("");
@@ -56,13 +60,16 @@ export function SessionManager({ currentSession, onSessionChange, onNewSession }
   };
 
   const createNewSession = () => {
-    const sessionName = newSessionName.trim() || `Session ${sessions.length + 1}`;
+    const sessionName =
+      newSessionName.trim() || `Session ${sessions.length + 1}`;
     const newSession: ChatSession = {
       id: Date.now().toString(),
       name: sessionName,
       messages: [],
       selectedModel: currentSession?.selectedModel || "",
       selectedVectorDb: currentSession?.selectedVectorDb || "",
+      systemMessage:
+        currentSession?.systemMessage || "You are a helpful assistant.",
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -85,48 +92,27 @@ export function SessionManager({ currentSession, onSessionChange, onNewSession }
     }
   };
 
-  // These functions are available for future use but not currently implemented in UI
-  // const deleteSession = (sessionId: string) => {
-  //   const updatedSessions = sessions.filter(s => s.id !== sessionId);
-  //   saveSessions(updatedSessions);
-
-  //   // If we deleted the current session, switch to the first available or create new
-  //   if (currentSession?.id === sessionId) {
-  //     if (updatedSessions.length > 0) {
-  //       switchToSession(updatedSessions[0].id);
-  //     } else {
-  //       localStorage.removeItem(CURRENT_SESSION_KEY);
-  //       onNewSession();
-  //     }
-  //   }
-  // };
-
-  // const renameSession = (sessionId: string, newName: string) => {
-  //   const updatedSessions = sessions.map(session =>
-  //     session.id === sessionId
-  //       ? { ...session, name: newName, updatedAt: Date.now() }
-  //       : session
-  //   );
-  //   saveSessions(updatedSessions);
-
-  //   if (currentSession?.id === sessionId) {
-  //     onSessionChange({ ...currentSession, name: newName });
-  //   }
-  // };
-
   // Update current session in the sessions list
   useEffect(() => {
     if (currentSession) {
-      const updatedSessions = sessions.map(session =>
-        session.id === currentSession.id ? currentSession : session
-      );
+      setSessions(prevSessions => {
+        const updatedSessions = prevSessions.map(session =>
+          session.id === currentSession.id ? currentSession : session
+        );
 
-      // Add session if it doesn't exist
-      if (!sessions.find(s => s.id === currentSession.id)) {
-        updatedSessions.push(currentSession);
-      }
+        // Add session if it doesn't exist
+        if (!prevSessions.find(s => s.id === currentSession.id)) {
+          updatedSessions.push(currentSession);
+        }
 
-      saveSessions(updatedSessions);
+        // Save to localStorage
+        localStorage.setItem(
+          SESSIONS_STORAGE_KEY,
+          JSON.stringify(updatedSessions)
+        );
+
+        return updatedSessions;
+      });
     }
   }, [currentSession]);
 
@@ -141,7 +127,7 @@ export function SessionManager({ currentSession, onSessionChange, onNewSession }
             <SelectValue placeholder="Select Session" />
           </SelectTrigger>
           <SelectContent>
-            {sessions.map((session) => (
+            {sessions.map(session => (
               <SelectItem key={session.id} value={session.id}>
                 {session.name}
               </SelectItem>
@@ -164,12 +150,12 @@ export function SessionManager({ currentSession, onSessionChange, onNewSession }
 
           <Input
             value={newSessionName}
-            onChange={(e) => setNewSessionName(e.target.value)}
+            onChange={e => setNewSessionName(e.target.value)}
             placeholder="Session name (optional)"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+            onKeyDown={e => {
+              if (e.key === "Enter") {
                 createNewSession();
-              } else if (e.key === 'Escape') {
+              } else if (e.key === "Escape") {
                 setShowCreateForm(false);
                 setNewSessionName("");
               }
@@ -197,7 +183,8 @@ export function SessionManager({ currentSession, onSessionChange, onNewSession }
       {currentSession && sessions.length > 1 && (
         <div className="mt-2 text-xs text-gray-500">
           {sessions.length} sessions • Current: {currentSession.name}
-          {currentSession.messages.length > 0 && ` • ${currentSession.messages.length} messages`}
+          {currentSession.messages.length > 0 &&
+            ` • ${currentSession.messages.length} messages`}
         </div>
       )}
     </div>
@@ -237,19 +224,27 @@ export const SessionUtils = {
     if (existingIndex >= 0) {
       sessions[existingIndex] = { ...session, updatedAt: Date.now() };
     } else {
-      sessions.push({ ...session, createdAt: Date.now(), updatedAt: Date.now() });
+      sessions.push({
+        ...session,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
     }
 
     localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
     localStorage.setItem(CURRENT_SESSION_KEY, session.id);
   },
 
-  createDefaultSession: (inheritModel?: string, inheritVectorDb?: string): ChatSession => ({
+  createDefaultSession: (
+    inheritModel?: string,
+    inheritVectorDb?: string
+  ): ChatSession => ({
     id: Date.now().toString(),
     name: "Default Session",
     messages: [],
     selectedModel: inheritModel || "",
     selectedVectorDb: inheritVectorDb || "",
+    systemMessage: "You are a helpful assistant.",
     createdAt: Date.now(),
     updatedAt: Date.now(),
   }),

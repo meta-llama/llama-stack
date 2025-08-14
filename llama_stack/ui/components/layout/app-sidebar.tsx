@@ -72,14 +72,15 @@ export function AppSidebar() {
                   className={cn(
                     "justify-start",
                     pathname.startsWith(chatPlaygroundItem.url) &&
-                      "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
+                      "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                   )}
                 >
                   <Link href={chatPlaygroundItem.url}>
                     <chatPlaygroundItem.icon
                       className={cn(
-                        pathname.startsWith(chatPlaygroundItem.url) && "text-gray-900 dark:text-gray-100",
-                        "mr-2 h-4 w-4",
+                        pathname.startsWith(chatPlaygroundItem.url) &&
+                          "text-gray-900 dark:text-gray-100",
+                        "mr-2 h-4 w-4"
                       )}
                     />
                     <span>{chatPlaygroundItem.title}</span>
@@ -95,7 +96,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Logs</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {logItems.map((item) => {
+              {logItems.map(item => {
                 const isActive = pathname.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -104,14 +105,14 @@ export function AppSidebar() {
                       className={cn(
                         "justify-start",
                         isActive &&
-                          "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
+                          "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                       )}
                     >
                       <Link href={item.url}>
                         <item.icon
                           className={cn(
                             isActive && "text-gray-900 dark:text-gray-100",
-                            "mr-2 h-4 w-4",
+                            "mr-2 h-4 w-4"
                           )}
                         />
                         <span>{item.title}</span>
