@@ -203,7 +203,7 @@ export function Chat({
           <div className="flex-1 flex items-center justify-center">
             <div className="max-w-4xl mx-auto w-full">
               <PromptSuggestions
-                label="Try these prompts ✨"
+                label="Try asking a question ✨"
                 append={append}
                 suggestions={suggestions}
               />
@@ -269,7 +269,7 @@ export function ChatMessages({
       onScroll={handleScroll}
       onTouchStart={handleTouchStart}
     >
-      <div className="max-w-4xl mx-auto w-full [grid-column:1/1] [grid-row:1/1]">
+      <div className="max-w-full [grid-column:1/1] [grid-row:1/1]">
         {children}
       </div>
 
