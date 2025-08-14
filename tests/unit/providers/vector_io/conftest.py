@@ -4,7 +4,9 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import os
 import random
+from unittest.mock import AsyncMock
 
 import numpy as np
 import pytest
@@ -22,6 +24,8 @@ from llama_stack.providers.inline.vector_io.sqlite_vec import SQLiteVectorIOConf
 from llama_stack.providers.inline.vector_io.sqlite_vec.sqlite_vec import SQLiteVecIndex, SQLiteVecVectorIOAdapter
 from llama_stack.providers.remote.vector_io.chroma.chroma import ChromaIndex, ChromaVectorIOAdapter, maybe_await
 from llama_stack.providers.remote.vector_io.milvus.milvus import MilvusIndex, MilvusVectorIOAdapter
+from llama_stack.providers.remote.vector_io.opengauss.config import OpenGaussVectorIOConfig
+from llama_stack.providers.remote.vector_io.opengauss.opengauss import OpenGaussIndex, OpenGaussVectorIOAdapter
 from llama_stack.providers.remote.vector_io.qdrant.qdrant import QdrantVectorIOAdapter
 
 EMBEDDING_DIMENSION = 384
@@ -29,7 +33,7 @@ COLLECTION_PREFIX = "test_collection"
 MILVUS_ALIAS = "test_milvus"
 
 
-@pytest.fixture(params=["milvus", "sqlite_vec", "faiss", "chroma"])
+@pytest.fixture(params=["milvus", "sqlite_vec", "faiss", "chroma", "opengauss"])
 def vector_provider(request):
     return request.param
 
@@ -334,6 +338,92 @@ async def qdrant_vec_index(qdrant_vec_db_path, embedding_dimension):
 
 
 @pytest.fixture
+def opengauss_vec_db_path():
+    return {
+        "host": "localhost",
+        "port": 5432,
+        "db": "test_db",
+        "user": "test_user",
+        "password": "test_password",
+    }
+
+
+@pytest.fixture
+async def opengauss_vec_index(embedding_dimension, opengauss_vec_db_path):
+    mock_conn = AsyncMock()
+    mock_cursor = AsyncMock()
+    mock_conn.cursor.return_value.__enter__.return_value = mock_cursor
+
+    vector_db = VectorDB(
+        identifier=f"test_opengauss_db_{np.random.randint(1e6)}",
+        provider_id="opengauss",
+        embedding_model="test_model",
+        embedding_dimension=embedding_dimension,
+    )
+
+    if all(
+        os.getenv(var)
+        for var in ["OPENGAUSS_HOST", "OPENGAUSS_PORT", "OPENGAUSS_DB", "OPENGAUSS_USER", "OPENGAUSS_PASSWORD"]
+    ):
+        import psycopg2
+
+        real_conn = psycopg2.connect(**opengauss_vec_db_path)
+        real_conn.autocommit = True
+        index = OpenGaussIndex(vector_db, embedding_dimension, real_conn)
+        yield index
+        await index.delete()
+        real_conn.close()
+    else:
+        index = OpenGaussIndex(vector_db, embedding_dimension, mock_conn)
+        yield index
+
+
+@pytest.fixture
+async def opengauss_vec_adapter(mock_inference_api, embedding_dimension, tmp_path_factory):
+    temp_dir = tmp_path_factory.getbasetemp()
+    kv_db_path = str(temp_dir / f"opengauss_kv_{np.random.randint(1e6)}.db")
+
+    config = OpenGaussVectorIOConfig(
+        host=os.getenv("OPENGAUSS_HOST", "localhost"),
+        port=int(os.getenv("OPENGAUSS_PORT", "5432")),
+        db=os.getenv("OPENGAUSS_DB", "test_db"),
+        user=os.getenv("OPENGAUSS_USER", "test_user"),
+        password=os.getenv("OPENGAUSS_PASSWORD", "test_password"),
+        kvstore=SqliteKVStoreConfig(db_path=kv_db_path),
+    )
+
+    if all(
+        os.getenv(var)
+        for var in ["OPENGAUSS_HOST", "OPENGAUSS_PORT", "OPENGAUSS_DB", "OPENGAUSS_USER", "OPENGAUSS_PASSWORD"]
+    ):
+        adapter = OpenGaussVectorIOAdapter(config, mock_inference_api)
+        await adapter.initialize()
+
+        collection_id = f"opengauss_test_collection_{np.random.randint(1e6)}"
+        await adapter.register_vector_db(
+            VectorDB(
+                identifier=collection_id,
+                provider_id="opengauss",
+                embedding_model="test_model",
+                embedding_dimension=embedding_dimension,
+            )
+        )
+        adapter.test_collection_id = collection_id
+        yield adapter
+
+        try:
+            await adapter.unregister_vector_db(collection_id)
+        except Exception:
+            pass
+        await adapter.shutdown()
+
+        if os.path.exists(kv_db_path):
+            os.remove(kv_db_path)
+    else:
+        pytest.skip("OpenGauss connection not available for integration testing")
+
+
+@pytest.fixture
 def vector_io_adapter(vector_provider, request):
     """Returns the appropriate vector IO adapter based on the provider parameter."""
     vector_provider_dict = {
@@ -342,6 +432,7 @@ def vector_io_adapter(vector_provider, request):
         "sqlite_vec": "sqlite_vec_adapter",
         "chroma": "chroma_vec_adapter",
         "qdrant": "qdrant_vec_adapter",
+        "opengauss": "opengauss_vec_adapter",
     }
     return request.getfixturevalue(vector_provider_dict[vector_provider])
 

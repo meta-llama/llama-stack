@@ -429,6 +429,44 @@ See [PGVector's documentation](https://github.com/pgvector/pgvector) for more de
         remote_provider_spec(
             Api.vector_io,
             AdapterSpec(
+                adapter_type="opengauss",
+                pip_packages=["psycopg2-binary"],
+                module="llama_stack.providers.remote.vector_io.opengauss",
+                config_class="llama_stack.providers.remote.vector_io.opengauss.OpenGaussVectorIOConfig",
+                description="""
+[OpenGauss](https://opengauss.org/en/) is a remote vector database provider for Llama Stack. It
+allows you to store and query vectors directly in memory.
+That means you'll get fast and efficient vector retrieval.
+
+## Features
+
+- Easy to use
+- Fully integrated with Llama Stack
+
+## Usage
+
+To use OpenGauss in your Llama Stack project, follow these steps:
+
+1. Install the necessary dependencies.
+2. Configure your Llama Stack project to use OpenGauss.
+3. Start storing and querying vectors.
+
+## Installation
+
+You can install OpenGauss using docker:
+
+```bash
+docker pull opengauss/opengauss:latest
+```
+## Documentation
+See [OpenGauss' documentation](https://docs.opengauss.org/en/docs/5.0.0/docs/GettingStarted/understanding-opengauss.html) for more details about OpenGauss in general.
+""",
+            ),
+            api_dependencies=[Api.inference],
+        ),
+        remote_provider_spec(
+            Api.vector_io,
+            AdapterSpec(
                 adapter_type="weaviate",
                 pip_packages=["weaviate-client"],
                 module="llama_stack.providers.remote.vector_io.weaviate",
