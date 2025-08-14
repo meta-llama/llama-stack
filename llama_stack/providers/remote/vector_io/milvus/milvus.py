@@ -28,6 +28,7 @@ from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
     RERANKER_TYPE_WEIGHTED,
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -287,14 +288,17 @@ class MilvusIndex(EmbeddingIndex):
 
         return QueryChunksResponse(chunks=filtered_chunks, scores=filtered_scores)
 
-    async def delete_chunk(self, chunk_id: str) -> None:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Remove a chunk from the Milvus collection."""
+        chunk_ids = [c.chunk_id for c in chunks_for_deletion]
         try:
+            # Use IN clause with square brackets and single quotes for VARCHAR field
+            chunk_ids_str = ", ".join(f"'{chunk_id}'" for chunk_id in chunk_ids)
             await asyncio.to_thread(
-                self.client.delete, collection_name=self.collection_name, filter=f'chunk_id == "{chunk_id}"'
+                self.client.delete, collection_name=self.collection_name, filter=f"chunk_id in [{chunk_ids_str}]"
             )
         except Exception as e:
-            logger.error(f"Error deleting chunk {chunk_id} from Milvus collection {self.collection_name}: {e}")
+            logger.error(f"Error deleting chunks from Milvus collection {self.collection_name}: {e}")
             raise
 
 
@@ -420,12 +424,10 @@ class MilvusVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
 
         return await index.query_chunks(query, params)
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         """Delete a chunk from a milvus vector store."""
         index = await self._get_and_cache_vector_db_index(store_id)
         if not index:
             raise VectorStoreNotFoundError(store_id)
 
-        for chunk_id in chunk_ids:
-            # Use the index's delete_chunk method
-            await index.index.delete_chunk(chunk_id)
+        await index.index.delete_chunks(chunks_for_deletion)

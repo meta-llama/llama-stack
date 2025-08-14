@@ -26,6 +26,7 @@ from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
 from llama_stack.providers.utils.memory.openai_vector_store_mixin import OpenAIVectorStoreMixin
 from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -115,8 +116,10 @@ class ChromaIndex(EmbeddingIndex):
     ) -> QueryChunksResponse:
         raise NotImplementedError("Keyword search is not supported in Chroma")
 
-    async def delete_chunk(self, chunk_id: str) -> None:
-        raise NotImplementedError("delete_chunk is not supported in Chroma")
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        """Delete a single chunk from the Chroma collection by its ID."""
+        ids = [f"{chunk.document_id}:{chunk.chunk_id}" for chunk in chunks_for_deletion]
+        await maybe_await(self.collection.delete(ids=ids))
 
     async def query_hybrid(
         self,
@@ -144,6 +147,7 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self.cache = {}
         self.kvstore: KVStore | None = None
         self.vector_db_store = None
+        self.files_api = files_api
 
     async def initialize(self) -> None:
         self.kvstore = await kvstore_impl(self.config.kvstore)
@@ -227,5 +231,10 @@ class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolP
         self.cache[vector_db_id] = index
         return index
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
-        raise NotImplementedError("OpenAI Vector Stores API is not supported in Chroma")
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
+        """Delete chunks from a Chroma vector store."""
+        index = await self._get_and_cache_vector_db_index(store_id)
+        if not index:
+            raise ValueError(f"Vector DB {store_id} not found")
+
+        await index.index.delete_chunks(chunks_for_deletion)

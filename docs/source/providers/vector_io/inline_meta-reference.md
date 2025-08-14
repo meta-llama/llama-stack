@@ -21,5 +21,7 @@ kvstore:
 
 ## Deprecation Notice
 
-⚠️ **Warning**: Please use the `inline::faiss` provider instead.
+```{warning}
+Please use the `inline::faiss` provider instead.
+```
 

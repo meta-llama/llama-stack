@@ -5,7 +5,7 @@ run-name: Run the integration test suite from tests/integration in replay mode
 on:
   push:
     branches: [ main ]
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     types: [opened, synchronize, reopened]
     paths:
@@ -34,7 +34,7 @@ on:
 
 concurrency:
   # Skip concurrency for pushes to main - each commit should be tested independently
-  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -52,7 +52,8 @@ jobs:
         run: |
           # Get test directories dynamically, excluding non-test directories
           # NOTE: we are excluding post_training since the tests take too long
-          TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
+          TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d |
+            sed 's|tests/integration/||' |
             grep -Ev "^(__pycache__|fixtures|test_cases|recordings|non_ci|post_training)$" |
             sort | jq -R -s -c 'split("\n")[:-1]')
           echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT

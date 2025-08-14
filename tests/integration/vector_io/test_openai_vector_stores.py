@@ -9,10 +9,11 @@ import time
 from io import BytesIO
 
 import pytest
-from llama_stack_client import BadRequestError, LlamaStackClient
+from llama_stack_client import BadRequestError
 from openai import BadRequestError as OpenAIBadRequestError
 
 from llama_stack.apis.vector_io import Chunk
+from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 logger = logging.getLogger(__name__)
 
@@ -475,9 +476,6 @@ def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client
     """Test OpenAI vector store attach file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
-
     compat_client = compat_client_with_empty_stores
 
     # Create a vector store
@@ -525,9 +523,6 @@ def test_openai_vector_store_attach_file(compat_client_with_empty_stores, client
 def test_openai_vector_store_attach_files_on_creation(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store attach files on creation."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
 
     compat_client = compat_client_with_empty_stores
 
@@ -582,9 +577,6 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
     """Test OpenAI vector store list files."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
-
     compat_client = compat_client_with_empty_stores
 
     # Create a vector store
@@ -597,16 +589,20 @@ def test_openai_vector_store_list_files(compat_client_with_empty_stores, client_
             file_buffer.name = f"openai_test_{i}.txt"
             file = compat_client.files.create(file=file_buffer, purpose="assistants")
 
-        compat_client.vector_stores.files.create(
+        response = compat_client.vector_stores.files.create(
             vector_store_id=vector_store.id,
             file_id=file.id,
+        )
+        assert response is not None
+        assert response.status == "completed", (
+            f"Failed to attach file {file.id} to vector store {vector_store.id}: {response=}"
         )
         file_ids.append(file.id)
 
     files_list = compat_client.vector_stores.files.list(vector_store_id=vector_store.id)
     assert files_list
     assert files_list.object == "list"
-    assert files_list.data
+    assert files_list.data is not None
     assert not files_list.has_more
     assert len(files_list.data) == 3
     assert set(file_ids) == {file.id for file in files_list.data}
@@ -642,21 +638,19 @@ def test_openai_vector_store_list_files_invalid_vector_store(compat_client_with_
     """Test OpenAI vector store list files with invalid vector store ID."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
-
     compat_client = compat_client_with_empty_stores
+    if isinstance(compat_client, LlamaStackAsLibraryClient):
+        errors = ValueError
+    else:
+        errors = (BadRequestError, OpenAIBadRequestError)
 
-    with pytest.raises((BadRequestError, OpenAIBadRequestError)):
+    with pytest.raises(errors):
         compat_client.vector_stores.files.list(vector_store_id="abc123")
 
 
 def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store retrieve file contents."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files retrieve contents is not yet supported with LlamaStackClient")
 
     compat_client = compat_client_with_empty_stores
 
@@ -685,9 +679,15 @@ def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_sto
         file_id=file.id,
     )
 
-    assert file_contents
-    assert file_contents.content[0]["type"] == "text"
-    assert file_contents.content[0]["text"] == test_content.decode("utf-8")
+    assert file_contents is not None
+    assert len(file_contents.content) == 1
+    content = file_contents.content[0]
+
+    # llama-stack-client returns a model, openai-python is a badboy and returns a dict
+    if not isinstance(content, dict):
+        content = content.model_dump()
+    assert content["type"] == "text"
+    assert content["text"] == test_content.decode("utf-8")
     assert file_contents.filename == file_name
     assert file_contents.attributes == attributes
 
@@ -695,9 +695,6 @@ def test_openai_vector_store_retrieve_file_contents(compat_client_with_empty_sto
 def test_openai_vector_store_delete_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store delete file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files list is not yet supported with LlamaStackClient")
 
     compat_client = compat_client_with_empty_stores
 
@@ -751,9 +748,6 @@ def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client
     """Test OpenAI vector store delete file removes from vector store."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
 
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files attach is not yet supported with LlamaStackClient")
-
     compat_client = compat_client_with_empty_stores
 
     # Create a vector store
@@ -791,9 +785,6 @@ def test_openai_vector_store_delete_file_removes_from_vector_store(compat_client
 def test_openai_vector_store_update_file(compat_client_with_empty_stores, client_with_models):
     """Test OpenAI vector store update file."""
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files update is not yet supported with LlamaStackClient")
 
     compat_client = compat_client_with_empty_stores
 
@@ -839,9 +830,6 @@ def test_create_vector_store_files_duplicate_vector_store_name(compat_client_wit
     This test confirms that client.vector_stores.create() creates a unique ID
     """
     skip_if_provider_doesnt_support_openai_vector_stores(client_with_models)
-
-    if isinstance(compat_client_with_empty_stores, LlamaStackClient):
-        pytest.skip("Vector Store Files create is not yet supported with LlamaStackClient")
 
     compat_client = compat_client_with_empty_stores
 
