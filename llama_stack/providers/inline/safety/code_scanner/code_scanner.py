@@ -109,8 +109,20 @@ class MetaReferenceCodeScannerSafetyImpl(Safety):
 
         for text_input in inputs:
             log.info(f"Running CodeScannerShield moderation on input: {text_input[:100]}...")
-            scan_result = await CodeShield.scan_code(text_input)
-            moderation_result = self.get_moderation_object_results(scan_result)
+            try:
+                scan_result = await CodeShield.scan_code(text_input)
+                moderation_result = self.get_moderation_object_results(scan_result)
+            except Exception as e:
+                log.error(f"CodeShield.scan_code failed: {e}")
+                # create safe fallback response on scanner failure to avoid blocking legitimate requests
+                moderation_result = ModerationObjectResults(
+                    flagged=False,
+                    categories={},
+                    category_scores={},
+                    category_applied_input_types={},
+                    user_message=None,
+                    metadata={"scanner_error": str(e)},
+                )
             results.append(moderation_result)
 
         return ModerationObject(id=str(uuid.uuid4()), model=model, results=results)
