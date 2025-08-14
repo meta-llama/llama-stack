@@ -86,7 +86,6 @@ class Api(Enum, metaclass=DynamicApiMeta):
     :cvar inference: Text generation, chat completions, and embeddings
     :cvar safety: Content moderation and safety shields
     :cvar agents: Agent orchestration and execution
-    :cvar batches: Batch processing for asynchronous API requests
     :cvar vector_io: Vector database operations and queries
     :cvar datasetio: Dataset input/output operations
     :cvar scoring: Model output evaluation and scoring
@@ -109,7 +108,6 @@ class Api(Enum, metaclass=DynamicApiMeta):
     inference = "inference"
     safety = "safety"
     agents = "agents"
-    batches = "batches"
     vector_io = "vector_io"
     datasetio = "datasetio"
     scoring = "scoring"
