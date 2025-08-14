@@ -32,11 +32,18 @@ export interface VectorStoreListContentsResponse {
 export class ContentsAPI {
   constructor(private client: LlamaStackClient) {}
 
-  async getFileContents(vectorStoreId: string, fileId: string): Promise<VectorStoreContentsResponse> {
+  async getFileContents(
+    vectorStoreId: string,
+    fileId: string
+  ): Promise<VectorStoreContentsResponse> {
     return this.client.vectorStores.files.content(vectorStoreId, fileId);
   }
 
-  async getContent(vectorStoreId: string, fileId: string, contentId: string): Promise<VectorStoreContentItem> {
+  async getContent(
+    vectorStoreId: string,
+    fileId: string,
+    contentId: string
+  ): Promise<VectorStoreContentItem> {
     const contentsResponse = await this.listContents(vectorStoreId, fileId);
     const targetContent = contentsResponse.data.find(c => c.id === contentId);
 
@@ -56,7 +63,11 @@ export class ContentsAPI {
     throw new Error("Individual content updates not yet implemented in API");
   }
 
-  async deleteContent(vectorStoreId: string, fileId: string, contentId: string): Promise<VectorStoreContentDeleteResponse> {
+  async deleteContent(
+    vectorStoreId: string,
+    fileId: string,
+    contentId: string
+  ): Promise<VectorStoreContentDeleteResponse> {
     throw new Error("Individual content deletion not yet implemented in API");
   }
 
@@ -70,7 +81,10 @@ export class ContentsAPI {
       before?: string;
     }
   ): Promise<VectorStoreListContentsResponse> {
-    const fileContents = await this.client.vectorStores.files.content(vectorStoreId, fileId);
+    const fileContents = await this.client.vectorStores.files.content(
+      vectorStoreId,
+      fileId
+    );
     const contentItems: VectorStoreContentItem[] = [];
 
     fileContents.content.forEach((content, contentIndex) => {
@@ -78,10 +92,16 @@ export class ContentsAPI {
 
       // Extract actual fields from the API response
       const embedding = rawContent.embedding || undefined;
-      const created_timestamp = rawContent.created_timestamp || rawContent.created_at || Date.now() / 1000;
+      const created_timestamp =
+        rawContent.created_timestamp ||
+        rawContent.created_at ||
+        Date.now() / 1000;
       const chunkMetadata = rawContent.chunk_metadata || {};
-      const contentId = rawContent.chunk_metadata?.chunk_id || rawContent.id || `content_${fileId}_${contentIndex}`;
-      const objectType = rawContent.object || 'vector_store.file.content';
+      const contentId =
+        rawContent.chunk_metadata?.chunk_id ||
+        rawContent.id ||
+        `content_${fileId}_${contentIndex}`;
+      const objectType = rawContent.object || "vector_store.file.content";
       contentItems.push({
         id: contentId,
         object: objectType,
@@ -92,7 +112,7 @@ export class ContentsAPI {
         embedding: embedding,
         metadata: {
           ...chunkMetadata, // chunk_metadata fields from API
-          content_length: content.type === 'text' ? content.text.length : 0,
+          content_length: content.type === "text" ? content.text.length : 0,
         },
       });
     });
@@ -104,7 +124,7 @@ export class ContentsAPI {
     }
 
     return {
-      object: 'list',
+      object: "list",
       data: filteredItems,
       has_more: contentItems.length > (options?.limit || contentItems.length),
     };

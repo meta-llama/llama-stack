@@ -53,11 +53,11 @@ export function ChatCompletionDetailView({
           {completion.choices?.[0]?.message?.tool_calls &&
           Array.isArray(completion.choices[0].message.tool_calls) &&
           !completion.input_messages?.some(
-            (im) =>
+            im =>
               im.role === "assistant" &&
               im.tool_calls &&
               Array.isArray(im.tool_calls) &&
-              im.tool_calls.length > 0,
+              im.tool_calls.length > 0
           )
             ? completion.choices[0].message.tool_calls.map(
                 (toolCall: any, index: number) => {
@@ -72,7 +72,7 @@ export function ChatCompletionDetailView({
                       message={assistantToolCallMessage}
                     />
                   );
-                },
+                }
               )
             : null}
         </CardContent>

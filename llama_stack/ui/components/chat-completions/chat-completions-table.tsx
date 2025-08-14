@@ -38,7 +38,7 @@ export function ChatCompletionsTable({
       limit: number;
       model?: string;
       order?: string;
-    },
+    }
   ) => {
     const response = await client.chat.completions.list({
       after: params.after,

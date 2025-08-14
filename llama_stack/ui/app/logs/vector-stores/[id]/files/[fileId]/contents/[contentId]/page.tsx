@@ -18,7 +18,10 @@ import {
   PropertiesCard,
   PropertyItem,
 } from "@/components/layout/detail-layout";
-import { PageBreadcrumb, BreadcrumbSegment } from "@/components/layout/page-breadcrumb";
+import {
+  PageBreadcrumb,
+  BreadcrumbSegment,
+} from "@/components/layout/page-breadcrumb";
 
 export default function ContentDetailPage() {
   const params = useParams();
@@ -29,12 +32,12 @@ export default function ContentDetailPage() {
   const client = useAuthClient();
 
   const getTextFromContent = (content: any): string => {
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       return content;
-    } else if (content && content.type === 'text') {
+    } else if (content && content.type === "text") {
       return content.text;
     }
-    return '';
+    return "";
   };
 
   const [store, setStore] = useState<VectorStore | null>(null);
@@ -64,8 +67,13 @@ export default function ContentDetailPage() {
         setFile(fileResponse as VectorStoreFile);
 
         const contentsAPI = new ContentsAPI(client);
-        const contentsResponse = await contentsAPI.listContents(vectorStoreId, fileId);
-        const targetContent = contentsResponse.data.find(c => c.id === contentId);
+        const contentsResponse = await contentsAPI.listContents(
+          vectorStoreId,
+          fileId
+        );
+        const targetContent = contentsResponse.data.find(
+          c => c.id === contentId
+        );
 
         if (targetContent) {
           setContent(targetContent);
@@ -76,7 +84,9 @@ export default function ContentDetailPage() {
           throw new Error(`Content ${contentId} not found`);
         }
       } catch (err) {
-        setError(err instanceof Error ? err : new Error("Failed to load content."));
+        setError(
+          err instanceof Error ? err : new Error("Failed to load content.")
+        );
       } finally {
         setIsLoading(false);
       }
@@ -100,25 +110,32 @@ export default function ContentDetailPage() {
 
       if (Object.keys(updates).length > 0) {
         const contentsAPI = new ContentsAPI(client);
-        const updatedContent = await contentsAPI.updateContent(vectorStoreId, fileId, contentId, updates);
+        const updatedContent = await contentsAPI.updateContent(
+          vectorStoreId,
+          fileId,
+          contentId,
+          updates
+        );
         setContent(updatedContent);
       }
 
       setIsEditing(false);
     } catch (err) {
-      console.error('Failed to update content:', err);
+      console.error("Failed to update content:", err);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this content?')) return;
+    if (!confirm("Are you sure you want to delete this content?")) return;
 
     try {
       const contentsAPI = new ContentsAPI(client);
       await contentsAPI.deleteContent(vectorStoreId, fileId, contentId);
-      router.push(`/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents`);
+      router.push(
+        `/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents`
+      );
     } catch (err) {
-      console.error('Failed to delete content:', err);
+      console.error("Failed to delete content:", err);
     }
   };
 
@@ -134,10 +151,19 @@ export default function ContentDetailPage() {
 
   const breadcrumbSegments: BreadcrumbSegment[] = [
     { label: "Vector Stores", href: "/logs/vector-stores" },
-    { label: store?.name || vectorStoreId, href: `/logs/vector-stores/${vectorStoreId}` },
+    {
+      label: store?.name || vectorStoreId,
+      href: `/logs/vector-stores/${vectorStoreId}`,
+    },
     { label: "Files", href: `/logs/vector-stores/${vectorStoreId}` },
-    { label: fileId, href: `/logs/vector-stores/${vectorStoreId}/files/${fileId}` },
-    { label: "Contents", href: `/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents` },
+    {
+      label: fileId,
+      href: `/logs/vector-stores/${vectorStoreId}/files/${fileId}`,
+    },
+    {
+      label: "Contents",
+      href: `/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents`,
+    },
     { label: contentId },
   ];
 
@@ -186,7 +212,7 @@ export default function ContentDetailPage() {
           {isEditing ? (
             <textarea
               value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
+              onChange={e => setEditedContent(e.target.value)}
               className="w-full h-64 p-3 border rounded-md resize-none font-mono text-sm"
               placeholder="Enter content..."
             />
@@ -206,16 +232,23 @@ export default function ContentDetailPage() {
           <div className="flex gap-2">
             {isEditingEmbedding ? (
               <>
-                <Button size="sm" onClick={() => {
-                  setIsEditingEmbedding(false);
-                }}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setIsEditingEmbedding(false);
+                  }}
+                >
                   <Save className="h-4 w-4 mr-1" />
                   Save
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => {
-                  setEditedEmbedding(content?.embedding || []);
-                  setIsEditingEmbedding(false);
-                }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setEditedEmbedding(content?.embedding || []);
+                    setIsEditingEmbedding(false);
+                  }}
+                >
                   <X className="h-4 w-4 mr-1" />
                   Cancel
                 </Button>
@@ -237,14 +270,16 @@ export default function ContentDetailPage() {
                 </p>
                 <textarea
                   value={JSON.stringify(editedEmbedding, null, 2)}
-                  onChange={(e) => {
+                  onChange={e => {
                     try {
                       const parsed = JSON.parse(e.target.value);
-                      if (Array.isArray(parsed) && parsed.every(v => typeof v === 'number')) {
+                      if (
+                        Array.isArray(parsed) &&
+                        parsed.every(v => typeof v === "number")
+                      ) {
                         setEditedEmbedding(parsed);
                       }
-                    } catch {
-                    }
+                    } catch {}
                   }}
                   className="w-full h-32 p-3 border rounded-md resize-none font-mono text-xs"
                   placeholder="Enter embedding as JSON array..."
@@ -259,8 +294,15 @@ export default function ContentDetailPage() {
                 </div>
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md max-h-32 overflow-y-auto">
                   <pre className="whitespace-pre-wrap font-mono text-xs text-gray-900 dark:text-gray-100">
-                    [{content.embedding.slice(0, 20).map(v => v.toFixed(6)).join(', ')}
-                    {content.embedding.length > 20 ? `\n... and ${content.embedding.length - 20} more values` : ''}]
+                    [
+                    {content.embedding
+                      .slice(0, 20)
+                      .map(v => v.toFixed(6))
+                      .join(", ")}
+                    {content.embedding.length > 20
+                      ? `\n... and ${content.embedding.length - 20} more values`
+                      : ""}
+                    ]
                   </pre>
                 </div>
               </div>
@@ -284,7 +326,7 @@ export default function ContentDetailPage() {
                 <div key={key} className="flex gap-2">
                   <Input
                     value={key}
-                    onChange={(e) => {
+                    onChange={e => {
                       const newMetadata = { ...editedMetadata };
                       delete newMetadata[key];
                       newMetadata[e.target.value] = value;
@@ -294,11 +336,13 @@ export default function ContentDetailPage() {
                     className="flex-1"
                   />
                   <Input
-                    value={typeof value === 'string' ? value : JSON.stringify(value)}
-                    onChange={(e) => {
+                    value={
+                      typeof value === "string" ? value : JSON.stringify(value)
+                    }
+                    onChange={e => {
                       setEditedMetadata({
                         ...editedMetadata,
-                        [key]: e.target.value
+                        [key]: e.target.value,
                       });
                     }}
                     placeholder="Value"
@@ -312,7 +356,7 @@ export default function ContentDetailPage() {
                 onClick={() => {
                   setEditedMetadata({
                     ...editedMetadata,
-                    ['']: ''
+                    [""]: "",
                   });
                 }}
               >
@@ -325,7 +369,7 @@ export default function ContentDetailPage() {
                 <div key={key} className="flex justify-between py-1">
                   <span className="font-medium text-gray-600">{key}:</span>
                   <span className="font-mono text-sm">
-                    {typeof value === 'string' ? value : JSON.stringify(value)}
+                    {typeof value === "string" ? value : JSON.stringify(value)}
                   </span>
                 </div>
               ))}
@@ -351,15 +395,15 @@ export default function ContentDetailPage() {
         value={`${getTextFromContent(content.content).length} chars`}
       />
       {content.metadata.chunk_window && (
-        <PropertyItem
-          label="Position"
-          value={content.metadata.chunk_window}
-        />
+        <PropertyItem label="Position" value={content.metadata.chunk_window} />
       )}
       {file && (
         <>
           <PropertyItem label="File Status" value={file.status} />
-          <PropertyItem label="File Usage" value={`${file.usage_bytes} bytes`} />
+          <PropertyItem
+            label="File Usage"
+            value={`${file.usage_bytes} bytes`}
+          />
         </>
       )}
       {store && (

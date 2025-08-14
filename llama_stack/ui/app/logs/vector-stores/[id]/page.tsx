@@ -34,9 +34,7 @@ export default function VectorStoreDetailPage() {
         setStore(response as VectorStore);
       } catch (err) {
         setErrorStore(
-          err instanceof Error
-            ? err
-            : new Error("Failed to load vector store."),
+          err instanceof Error ? err : new Error("Failed to load vector store.")
         );
       } finally {
         setIsLoadingStore(false);
@@ -59,7 +57,7 @@ export default function VectorStoreDetailPage() {
         setFiles((result as any).data);
       } catch (err) {
         setErrorFiles(
-          err instanceof Error ? err : new Error("Failed to load files."),
+          err instanceof Error ? err : new Error("Failed to load files.")
         );
       } finally {
         setIsLoadingFiles(false);

@@ -27,7 +27,7 @@ interface ResponsesTableProps {
  * Helper function to convert ResponseListResponse.Data to OpenAIResponse
  */
 const convertResponseListData = (
-  responseData: ResponseListResponse.Data,
+  responseData: ResponseListResponse.Data
 ): OpenAIResponse => {
   return {
     id: responseData.id,
@@ -56,9 +56,7 @@ function getInputText(response: OpenAIResponse): string {
 }
 
 function getOutputText(response: OpenAIResponse): string {
-  const firstMessage = response.output.find((item) =>
-    isMessageItem(item as any),
-  );
+  const firstMessage = response.output.find(item => isMessageItem(item as any));
   if (firstMessage) {
     const content = extractContentFromItem(firstMessage as MessageItem);
     if (content) {
@@ -66,15 +64,15 @@ function getOutputText(response: OpenAIResponse): string {
     }
   }
 
-  const functionCall = response.output.find((item) =>
-    isFunctionCallItem(item as any),
+  const functionCall = response.output.find(item =>
+    isFunctionCallItem(item as any)
   );
   if (functionCall) {
     return formatFunctionCall(functionCall as FunctionCallItem);
   }
 
-  const webSearchCall = response.output.find((item) =>
-    isWebSearchCallItem(item as any),
+  const webSearchCall = response.output.find(item =>
+    isWebSearchCallItem(item as any)
   );
   if (webSearchCall) {
     return formatWebSearchCall(webSearchCall as WebSearchCallItem);
@@ -95,7 +93,7 @@ function extractContentFromItem(item: {
   } else if (Array.isArray(item.content)) {
     const textContent = item.content.find(
       (c: ResponseInputMessageContent) =>
-        c.type === "input_text" || c.type === "output_text",
+        c.type === "input_text" || c.type === "output_text"
     );
     return textContent?.text || "";
   }
@@ -131,7 +129,7 @@ export function ResponsesTable({ paginationOptions }: ResponsesTableProps) {
       limit: number;
       model?: string;
       order?: string;
-    },
+    }
   ) => {
     const response = await client.responses.list({
       after: params.after,
