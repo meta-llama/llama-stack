@@ -232,15 +232,21 @@ class CommonRoutingTableImpl(RoutingTable):
 
     async def get_all_with_type(self, type: str) -> list[RoutableObjectWithProvider]:
         objs = await self.dist_registry.get_all()
-        filtered_objs = [obj for obj in objs if obj.type == type]
+        return [obj for obj in objs if obj.type == type]
+
+    async def get_all_with_type_filtered(self, type: str) -> list[RoutableObjectWithProvider]:
+        all_objs = await self.get_all_with_type(type=type)
 
         # Apply attribute-based access control filtering
-        if filtered_objs:
-            filtered_objs = [
-                obj for obj in filtered_objs if is_action_allowed(self.policy, "read", obj, get_authenticated_user())
+        if all_objs:
+            all_objs = [
+                obj
+                for obj in all_objs
+                if is_action_allowed(self.policy, "read", obj, get_authenticated_user())
+                and obj.provider_id in self.impls_by_provider_id
             ]
 
-        return filtered_objs
+        return all_objs
 
 
 async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> Model:
@@ -257,7 +263,7 @@ async def lookup_model(routing_table: CommonRoutingTableImpl, model_id: str) -> 
     )
     # if not found, this means model_id is an unscoped provider_model_id, we need
     # to iterate (given a lack of an efficient index on the KVStore)
-    models = await routing_table.get_all_with_type("model")
+    models = await routing_table.get_all_with_type_filtered("model")
     matching_models = [m for m in models if m.provider_resource_id == model_id]
     if len(matching_models) == 0:
         raise ModelNotFoundError(model_id)

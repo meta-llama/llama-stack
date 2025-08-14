@@ -31,7 +31,7 @@ logger = get_logger(name=__name__, category="core")
 
 class DatasetsRoutingTable(CommonRoutingTableImpl, Datasets):
     async def list_datasets(self) -> ListDatasetsResponse:
-        return ListDatasetsResponse(data=await self.get_all_with_type(ResourceType.dataset.value))
+        return ListDatasetsResponse(data=await self.get_all_with_type_filtered(ResourceType.dataset.value))
 
     async def get_dataset(self, dataset_id: str) -> Dataset:
         dataset = await self.get_object_by_identifier("dataset", dataset_id)

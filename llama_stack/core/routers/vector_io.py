@@ -171,7 +171,7 @@ class VectorIORouter(VectorIO):
         logger.debug(f"VectorIORouter.openai_list_vector_stores: limit={limit}")
         # Route to default provider for now - could aggregate from all providers in the future
         # call retrieve on each vector dbs to get list of vector stores
-        vector_dbs = await self.routing_table.get_all_with_type("vector_db")
+        vector_dbs = await self.routing_table.get_all_with_type_filtered("vector_db")
         all_stores = []
         for vector_db in vector_dbs:
             try:
