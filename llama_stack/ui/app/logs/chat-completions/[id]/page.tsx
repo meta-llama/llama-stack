@@ -33,12 +33,12 @@ export default function ChatCompletionDetailPage() {
       } catch (err) {
         console.error(
           `Error fetching chat completion detail for ID ${id}:`,
-          err,
+          err
         );
         setError(
           err instanceof Error
             ? err
-            : new Error("Failed to fetch completion detail"),
+            : new Error("Failed to fetch completion detail")
         );
       } finally {
         setIsLoading(false);

@@ -38,14 +38,14 @@ export function ChatCompletionsTable({
       limit: number;
       model?: string;
       order?: string;
-    },
+    }
   ) => {
     const response = await client.chat.completions.list({
       after: params.after,
       limit: params.limit,
       ...(params.model && { model: params.model }),
       ...(params.order && { order: params.order }),
-    } as any);
+    } as Parameters<typeof client.chat.completions.list>[0]);
 
     return response as ListChatCompletionsResponse;
   };

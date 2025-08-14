@@ -142,7 +142,7 @@ export function LogsTable({
         <Table>
           <TableCaption className="sr-only">{caption}</TableCaption>
           <TableBody>
-            {data.map((row) => (
+            {data.map(row => (
               <TableRow
                 key={row.id}
                 onClick={() => router.push(row.detailPath)}

@@ -38,7 +38,7 @@ interface UsePaginationParams<T> extends UsePaginationOptions {
       limit: number;
       model?: string;
       order?: string;
-    },
+    }
   ) => Promise<PaginationResponse<T>>;
   errorMessagePrefix: string;
   enabled?: boolean;
@@ -81,7 +81,7 @@ export function usePagination<T>({
       const fetchLimit = targetRows || limit;
 
       try {
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           status: isInitialLoad ? "loading" : "loading-more",
           error: null,
@@ -94,7 +94,7 @@ export function usePagination<T>({
           ...(order && { order }),
         });
 
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           data: isInitialLoad
             ? response.data
@@ -124,14 +124,14 @@ export function usePagination<T>({
             ? new Error(`${errorMessage} ${err.message}`)
             : new Error(errorMessage);
 
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           error,
           status: "error",
         }));
       }
     },
-    [limit, model, order, fetchFunction, errorMessagePrefix, client, router],
+    [limit, model, order, fetchFunction, errorMessagePrefix, client, router]
   );
 
   /**

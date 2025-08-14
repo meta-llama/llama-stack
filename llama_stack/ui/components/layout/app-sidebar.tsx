@@ -111,6 +111,7 @@ return (
     <SidebarHeader>
       <Link href="/">Llama Stack</Link>
     </SidebarHeader>
+
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupLabel>Create</SidebarGroupLabel>
@@ -126,10 +127,35 @@ return (
         </SidebarGroupContent>
       </SidebarGroup>
 
+      {/* Optimize */}
       <SidebarGroup>
         <SidebarGroupLabel>Optimize</SidebarGroupLabel>
         <SidebarGroupContent>
           <SidebarMenu>
+            {/* Chat Playground (active + clickable) */}
+            <SidebarMenuItem key={chatPlaygroundItem.title}>
+              <SidebarMenuButton
+                asChild
+                className={cn(
+                  "justify-start",
+                  pathname.startsWith(chatPlaygroundItem.url) &&
+                    "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                )}
+              >
+                <Link href={chatPlaygroundItem.url}>
+                  <chatPlaygroundItem.icon
+                    className={cn(
+                      pathname.startsWith(chatPlaygroundItem.url) &&
+                        "text-gray-900 dark:text-gray-100",
+                      "mr-2 h-4 w-4"
+                    )}
+                  />
+                  <span>{chatPlaygroundItem.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {/* Other Optimize items (disabled, Coming Soon) */}
             {optimizeItems.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
@@ -138,14 +164,49 @@ return (
                 >
                   <item.icon className="mr-2 h-4 w-4" />
                   <span>{item.title}</span>
-                  <span className="ml-2 text-xs text-gray-500">(Coming Soon)</span>
+                  <span className="ml-2 text-xs text-gray-500">
+                    (Coming Soon)
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
+
+      {/* Logs section */}
+      <SidebarGroup>
+        <SidebarGroupLabel>Logs</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {logItems.map((item) => {
+              const isActive = pathname.startsWith(item.url);
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      "justify-start",
+                      isActive &&
+                        "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    )}
+                  >
+                    <Link href={item.url}>
+                      <item.icon
+                        className={cn(
+                          isActive && "text-gray-900 dark:text-gray-100",
+                          "mr-2 h-4 w-4"
+                        )}
+                      />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
     </SidebarContent>
   </Sidebar>
-  );
-}
+);

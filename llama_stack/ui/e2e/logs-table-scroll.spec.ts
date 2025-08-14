@@ -45,7 +45,7 @@ test.describe("LogsTable Scroll and Progressive Loading", () => {
     const scrollContainer = page.locator("div.overflow-auto").first();
 
     // Scroll to near the bottom
-    await scrollContainer.evaluate((element) => {
+    await scrollContainer.evaluate(element => {
       element.scrollTop = element.scrollHeight - element.clientHeight - 100;
     });
 
