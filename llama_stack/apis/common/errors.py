@@ -64,12 +64,6 @@ class SessionNotFoundError(ValueError):
         super().__init__(message)
 
 
-class ConflictError(ValueError):
-    """raised when an operation cannot be performed due to a conflict with the current state"""
-
-    pass
-
-
 class ModelTypeError(TypeError):
     """raised when a model is present but not the correct type"""
 
