@@ -77,7 +77,7 @@ interface ToolResult {
   toolName: string;
   result: {
     __cancelled?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -101,7 +101,7 @@ interface TextPart {
 // For compatibility with AI SDK types, not used
 interface SourcePart {
   type: "source";
-  source?: any;
+  source?: unknown;
 }
 
 interface FilePart {

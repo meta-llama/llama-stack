@@ -11,7 +11,7 @@ export interface VectorStoreContentItem {
   vector_store_id: string;
   file_id: string;
   content: VectorStoreContent;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   embedding?: number[];
 }
 
@@ -54,20 +54,11 @@ export class ContentsAPI {
     return targetContent;
   }
 
-  async updateContent(
-    vectorStoreId: string,
-    fileId: string,
-    contentId: string,
-    updates: { content?: string; metadata?: Record<string, any> }
-  ): Promise<VectorStoreContentItem> {
+  async updateContent(): Promise<VectorStoreContentItem> {
     throw new Error("Individual content updates not yet implemented in API");
   }
 
-  async deleteContent(
-    vectorStoreId: string,
-    fileId: string,
-    contentId: string
-  ): Promise<VectorStoreContentDeleteResponse> {
+  async deleteContent(): Promise<VectorStoreContentDeleteResponse> {
     throw new Error("Individual content deletion not yet implemented in API");
   }
 
@@ -88,7 +79,7 @@ export class ContentsAPI {
     const contentItems: VectorStoreContentItem[] = [];
 
     fileContents.content.forEach((content, contentIndex) => {
-      const rawContent = content as any;
+      const rawContent = content as Record<string, unknown>;
 
       // Extract actual fields from the API response
       const embedding = rawContent.embedding || undefined;

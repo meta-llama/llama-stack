@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useAuthClient } from "@/hooks/use-auth-client";
 import type { VectorStore } from "llama-stack-client/resources/vector-stores/vector-stores";
 import type { VectorStoreFile } from "llama-stack-client/resources/vector-stores/files";
@@ -11,7 +11,6 @@ export default function VectorStoreDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const client = useAuthClient();
-  const router = useRouter();
 
   const [store, setStore] = useState<VectorStore | null>(null);
   const [files, setFiles] = useState<VectorStoreFile[]>([]);
@@ -53,8 +52,8 @@ export default function VectorStoreDetailPage() {
       setIsLoadingFiles(true);
       setErrorFiles(null);
       try {
-        const result = await client.vectorStores.files.list(id as any);
-        setFiles((result as any).data);
+        const result = await client.vectorStores.files.list(id);
+        setFiles((result as { data: VectorStoreFile[] }).data);
       } catch (err) {
         setErrorFiles(
           err instanceof Error ? err : new Error("Failed to load files.")
@@ -64,7 +63,7 @@ export default function VectorStoreDetailPage() {
       }
     };
     fetchFiles();
-  }, [id]);
+  }, [id, client.vectorStores.files]);
 
   return (
     <VectorStoreDetailView

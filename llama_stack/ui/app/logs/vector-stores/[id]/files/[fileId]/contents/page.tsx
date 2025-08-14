@@ -39,7 +39,7 @@ export default function ContentsListPage() {
   const fileId = params.fileId as string;
   const client = useAuthClient();
 
-  const getTextFromContent = (content: any): string => {
+  const getTextFromContent = (content: unknown): string => {
     if (typeof content === "string") {
       return content;
     } else if (content && content.type === "text") {
@@ -52,10 +52,8 @@ export default function ContentsListPage() {
   const [file, setFile] = useState<VectorStoreFile | null>(null);
   const [contents, setContents] = useState<VectorStoreContentItem[]>([]);
   const [isLoadingStore, setIsLoadingStore] = useState(true);
-  const [isLoadingFile, setIsLoadingFile] = useState(true);
   const [isLoadingContents, setIsLoadingContents] = useState(true);
   const [errorStore, setErrorStore] = useState<Error | null>(null);
-  const [errorFile, setErrorFile] = useState<Error | null>(null);
   const [errorContents, setErrorContents] = useState<Error | null>(null);
 
   useEffect(() => {

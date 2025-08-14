@@ -33,7 +33,7 @@ interface ChatPropsBase {
     messageId: string,
     rating: "thumbs-up" | "thumbs-down"
   ) => void;
-  setMessages?: (messages: any[]) => void;
+  setMessages?: (messages: Message[]) => void;
   transcribeAudio?: (blob: Blob) => Promise<string>;
 }
 
@@ -113,27 +113,32 @@ export function Chat({
     }
 
     if (lastAssistantMessage.parts && lastAssistantMessage.parts.length > 0) {
-      const updatedParts = lastAssistantMessage.parts.map((part: any) => {
-        if (
-          part.type === "tool-invocation" &&
-          part.toolInvocation &&
-          part.toolInvocation.state === "call"
-        ) {
-          needsUpdate = true;
-          return {
-            ...part,
-            toolInvocation: {
-              ...part.toolInvocation,
-              state: "result",
-              result: {
-                content: "Tool execution was cancelled",
-                __cancelled: true,
+      const updatedParts = lastAssistantMessage.parts.map(
+        (part: {
+          type: string;
+          toolInvocation?: { state: string; toolName: string };
+        }) => {
+          if (
+            part.type === "tool-invocation" &&
+            part.toolInvocation &&
+            part.toolInvocation.state === "call"
+          ) {
+            needsUpdate = true;
+            return {
+              ...part,
+              toolInvocation: {
+                ...part.toolInvocation,
+                state: "result",
+                result: {
+                  content: "Tool execution was cancelled",
+                  __cancelled: true,
+                },
               },
-            },
-          };
+            };
+          }
+          return part;
         }
-        return part;
-      });
+      );
 
       if (needsUpdate) {
         updatedMessage = {
@@ -316,10 +321,10 @@ export const ChatForm = forwardRef<HTMLFormElement, ChatFormProps>(
     const [files, setFiles] = useState<File[] | null>(null);
 
     const onSubmit = (event: React.FormEvent) => {
-      // if (isPending) {
-      //   event.preventDefault()
-      //   return
-      // }
+      if (isPending) {
+        event.preventDefault();
+        return;
+      }
 
       if (!files) {
         handleSubmit(event);

@@ -56,6 +56,6 @@ export function isFunctionCallOutputItem(
   return (
     item.type === "function_call_output" &&
     "call_id" in item &&
-    typeof (item as any).call_id === "string"
+    typeof (item as Record<string, unknown>).call_id === "string"
   );
 }

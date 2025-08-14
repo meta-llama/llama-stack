@@ -5,6 +5,7 @@ import {
   UsePaginationOptions,
   ListChatCompletionsResponse,
 } from "@/lib/types";
+import { ListChatCompletionsParams } from "@/lib/llama-stack-client";
 import { LogsTable, LogTableRow } from "@/components/logs/logs-table";
 import {
   extractTextFromContentPart,
@@ -45,7 +46,7 @@ export function ChatCompletionsTable({
       limit: params.limit,
       ...(params.model && { model: params.model }),
       ...(params.order && { order: params.order }),
-    } as any);
+    } as ListChatCompletionsParams);
 
     return response as ListChatCompletionsResponse;
   };

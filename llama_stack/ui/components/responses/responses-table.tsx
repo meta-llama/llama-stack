@@ -56,7 +56,9 @@ function getInputText(response: OpenAIResponse): string {
 }
 
 function getOutputText(response: OpenAIResponse): string {
-  const firstMessage = response.output.find(item => isMessageItem(item as any));
+  const firstMessage = response.output.find(item =>
+    isMessageItem(item as Record<string, unknown>)
+  );
   if (firstMessage) {
     const content = extractContentFromItem(firstMessage as MessageItem);
     if (content) {
@@ -65,14 +67,14 @@ function getOutputText(response: OpenAIResponse): string {
   }
 
   const functionCall = response.output.find(item =>
-    isFunctionCallItem(item as any)
+    isFunctionCallItem(item as Record<string, unknown>)
   );
   if (functionCall) {
     return formatFunctionCall(functionCall as FunctionCallItem);
   }
 
   const webSearchCall = response.output.find(item =>
-    isWebSearchCallItem(item as any)
+    isWebSearchCallItem(item as Record<string, unknown>)
   );
   if (webSearchCall) {
     return formatWebSearchCall(webSearchCall as WebSearchCallItem);
@@ -136,7 +138,7 @@ export function ResponsesTable({ paginationOptions }: ResponsesTableProps) {
       limit: params.limit,
       ...(params.model && { model: params.model }),
       ...(params.order && { order: params.order }),
-    } as any);
+    } as Parameters<typeof client.responses.list>[0]);
 
     const listResponse = response as ResponseListResponse;
 

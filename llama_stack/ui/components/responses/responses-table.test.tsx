@@ -565,7 +565,7 @@ describe("ResponsesTable", () => {
             id: "unknown_123",
             status: "completed",
             custom_field: "custom_value",
-          } as any,
+          } as unknown,
         ],
         input: [{ type: "message", content: "input" }],
       };
@@ -594,7 +594,7 @@ describe("ResponsesTable", () => {
           {
             type: "unknown_type",
             data: "some data",
-          } as any,
+          } as unknown,
         ],
         input: [{ type: "message", content: "input" }],
       };

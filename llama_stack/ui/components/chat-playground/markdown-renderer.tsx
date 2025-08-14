@@ -26,7 +26,7 @@ interface HighlightedPre extends React.HTMLAttributes<HTMLPreElement> {
 
 const HighlightedPre = React.memo(
   ({ children, language, ...props }: HighlightedPre) => {
-    const [tokens, setTokens] = useState<any[] | null>(null);
+    const [tokens, setTokens] = useState<unknown[] | null>(null);
     const [isSupported, setIsSupported] = useState(false);
 
     useEffect(() => {
@@ -57,7 +57,7 @@ const HighlightedPre = React.memo(
           if (mounted) {
             setTokens(highlightedTokens);
           }
-        } catch (error) {
+        } catch {
           if (mounted) {
             setIsSupported(false);
           }
@@ -155,7 +155,7 @@ const CodeBlock = ({
   );
 };
 
-function childrenTakeAllStringContents(element: any): string {
+function childrenTakeAllStringContents(element: unknown): string {
   if (typeof element === "string") {
     return element;
   }
@@ -184,7 +184,13 @@ const COMPONENTS = {
   strong: withClass("strong", "font-semibold"),
   a: withClass("a", "text-primary underline underline-offset-2"),
   blockquote: withClass("blockquote", "border-l-2 border-primary pl-4"),
-  code: ({ children, className, node, ...rest }: any) => {
+  code: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => {
     const match = /language-(\w+)/.exec(className || "");
     return match ? (
       <CodeBlock className={className} language={match[1]} {...rest}>
@@ -201,7 +207,7 @@ const COMPONENTS = {
       </code>
     );
   },
-  pre: ({ children }: any) => children,
+  pre: ({ children }: { children: React.ReactNode }) => children,
   ol: withClass("ol", "list-decimal space-y-2 pl-6"),
   ul: withClass("ul", "list-disc space-y-2 pl-6"),
   li: withClass("li", "my-1.5"),
@@ -223,7 +229,7 @@ const COMPONENTS = {
 };
 
 function withClass(Tag: keyof JSX.IntrinsicElements, classes: string) {
-  const Component = ({ node, ...props }: any) => (
+  const Component = ({ ...props }: Record<string, unknown>) => (
     <Tag className={classes} {...props} />
   );
   Component.displayName = Tag;

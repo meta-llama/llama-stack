@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useAuthClient } from "@/hooks/use-auth-client";
 import type {
   ListVectorStoresResponse,
   VectorStore,
@@ -12,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -21,7 +19,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VectorStoresPage() {
-  const client = useAuthClient();
   const router = useRouter();
   const {
     data: stores,
@@ -37,7 +34,7 @@ export default function VectorStoresPage() {
         after: params.after,
         limit: params.limit,
         order: params.order,
-      } as any);
+      } as Parameters<typeof client.vectorStores.list>[0]);
       return response as ListVectorStoresResponse;
     },
     errorMessagePrefix: "vector stores",

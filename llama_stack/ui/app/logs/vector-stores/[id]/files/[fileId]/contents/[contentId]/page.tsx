@@ -31,7 +31,7 @@ export default function ContentDetailPage() {
   const contentId = params.contentId as string;
   const client = useAuthClient();
 
-  const getTextFromContent = (content: any): string => {
+  const getTextFromContent = (content: unknown): string => {
     if (typeof content === "string") {
       return content;
     } else if (content && content.type === "text") {
@@ -47,7 +47,9 @@ export default function ContentDetailPage() {
   const [error, setError] = useState<Error | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState("");
-  const [editedMetadata, setEditedMetadata] = useState<Record<string, any>>({});
+  const [editedMetadata, setEditedMetadata] = useState<Record<string, unknown>>(
+    {}
+  );
   const [isEditingEmbedding, setIsEditingEmbedding] = useState(false);
   const [editedEmbedding, setEditedEmbedding] = useState<number[]>([]);
 
@@ -98,7 +100,8 @@ export default function ContentDetailPage() {
     if (!content) return;
 
     try {
-      const updates: { content?: string; metadata?: Record<string, any> } = {};
+      const updates: { content?: string; metadata?: Record<string, unknown> } =
+        {};
 
       if (editedContent !== getTextFromContent(content.content)) {
         updates.content = editedContent;

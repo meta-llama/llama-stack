@@ -53,7 +53,7 @@ describe("extractTextFromContentPart", () => {
   });
 
   it("should handle arrays with plain strings", () => {
-    const content = ["This is", " a test."] as any;
+    const content = ["This is", " a test."] as unknown;
     expect(extractTextFromContentPart(content)).toBe("This is  a test.");
   });
 
@@ -65,7 +65,7 @@ describe("extractTextFromContentPart", () => {
       null,
       undefined,
       { type: "text", noTextProperty: true },
-    ] as any;
+    ] as unknown;
     expect(extractTextFromContentPart(content)).toBe("Valid");
   });
 
@@ -75,7 +75,7 @@ describe("extractTextFromContentPart", () => {
       "Just a string.",
       { type: "image_url", image_url: { url: "http://example.com/image.png" } },
       { type: "text", text: "Last part." },
-    ] as any;
+    ] as unknown;
     expect(extractTextFromContentPart(content)).toBe(
       "First part. Just a string. [Image] Last part."
     );
@@ -83,7 +83,9 @@ describe("extractTextFromContentPart", () => {
 });
 
 describe("extractDisplayableText (composite function)", () => {
-  const mockFormatToolCallToString = (toolCall: any) => {
+  const mockFormatToolCallToString = (toolCall: {
+    function?: { name?: string; arguments?: unknown };
+  }) => {
     if (!toolCall || !toolCall.function || !toolCall.function.name) return "";
     const args = toolCall.function.arguments
       ? JSON.stringify(toolCall.function.arguments)

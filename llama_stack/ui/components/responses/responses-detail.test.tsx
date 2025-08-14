@@ -616,7 +616,7 @@ describe("ResponseDetailView", () => {
             type: "unknown_type",
             custom_field: "custom_value",
             data: { nested: "object" },
-          } as any,
+          } as unknown,
         ],
         input: [],
       };
@@ -666,7 +666,7 @@ describe("ResponseDetailView", () => {
             role: "assistant",
             call_id: "call_123",
             content: "sunny and warm",
-          } as any, // Using any to bypass the type restriction for this test
+          } as unknown, // Using any to bypass the type restriction for this test
         ],
         input: [],
       };
@@ -706,7 +706,7 @@ describe("ResponseDetailView", () => {
             status: "completed",
             call_id: "call_123",
             output: "sunny and warm",
-          } as any, // Using any to bypass the type restriction for this test
+          } as unknown,
         ],
         input: [],
       };
