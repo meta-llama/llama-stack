@@ -23,7 +23,7 @@ app = Flask(__name__)
 
 # Models from environment variables
 def get_models():
-    models_str = os.getenv("MOCK_MODELS", "mock-inference")
+    models_str = os.getenv("MOCK_MODELS", "meta-llama/Llama-3.2-3B-Instruct")
     model_ids = [m.strip() for m in models_str.split(",") if m.strip()]
     
     return {
@@ -49,13 +49,13 @@ def generate_random_text(length=50):
     ]
     return " ".join(random.choices(words, k=length))
 
-@app.route('/models', methods=['GET'])
+@app.route('/v1/models', methods=['GET'])
 def list_models():
     models = get_models()
     print(f"[MOCK] Returning models: {[m['id'] for m in models['data']]}")
     return jsonify(models)
 
-@app.route('/chat/completions', methods=['POST'])
+@app.route('/v1/chat/completions', methods=['POST'])
 def chat_completions():
     """Return OpenAI-formatted chat completion responses."""
     data = request.get_json()
