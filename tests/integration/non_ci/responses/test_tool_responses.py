@@ -260,6 +260,94 @@ def test_response_non_streaming_custom_tool(compat_client, text_model_id, case):
     assert response.output[0].name == "get_weather"
 
 
+@pytest.mark.parametrize("case", custom_tool_test_cases)
+def test_response_function_call_ordering_1(compat_client, text_model_id, case):
+    response = compat_client.responses.create(
+        model=text_model_id,
+        input=case.input,
+        tools=case.tools,
+        stream=False,
+    )
+    assert len(response.output) == 1
+    assert response.output[0].type == "function_call"
+    assert response.output[0].status == "completed"
+    assert response.output[0].name == "get_weather"
+    inputs = []
+    inputs.append(
+        {
+            "role": "user",
+            "content": case.input,
+        }
+    )
+    inputs.append(
+        {
+            "type": "function_call_output",
+            "output": "It is raining.",
+            "call_id": response.output[0].call_id,
+        }
+    )
+    response = compat_client.responses.create(
+        model=text_model_id, input=inputs, tools=case.tools, stream=False, previous_response_id=response.id
+    )
+    assert len(response.output) == 1
+
+
+def test_response_function_call_ordering_2(compat_client, text_model_id):
+    tools = [
+        {
+            "type": "function",
+            "name": "get_weather",
+            "description": "Get current temperature for a given location.",
+            "parameters": {
+                "additionalProperties": False,
+                "properties": {
+                    "location": {
+                        "description": "City and country e.g. Bogotá, Colombia",
+                        "type": "string",
+                    }
+                },
+                "required": ["location"],
+                "type": "object",
+            },
+        }
+    ]
+    inputs = [
+        {
+            "role": "user",
+            "content": "Is the weather better in San Francisco or Los Angeles?",
+        }
+    ]
+    response = compat_client.responses.create(
+        model=text_model_id,
+        input=inputs,
+        tools=tools,
+        stream=False,
+    )
+    for output in response.output:
+        if output.type == "function_call" and output.status == "completed" and output.name == "get_weather":
+            inputs.append(output)
+    for output in response.output:
+        if output.type == "function_call" and output.status == "completed" and output.name == "get_weather":
+            weather = "It is raining."
+            if "Los Angeles" in output.arguments:
+                weather = "It is cloudy."
+            inputs.append(
+                {
+                    "type": "function_call_output",
+                    "output": weather,
+                    "call_id": output.call_id,
+                }
+            )
+    response = compat_client.responses.create(
+        model=text_model_id,
+        input=inputs,
+        tools=tools,
+        stream=False,
+    )
+    assert len(response.output) == 1
+    assert "Los Angeles" in response.output_text
+
+
 @pytest.mark.parametrize("case", multi_turn_tool_execution_test_cases)
 def test_response_non_streaming_multi_turn_tool_execution(compat_client, text_model_id, case):
     """Test multi-turn tool execution where multiple MCP tool calls are performed in sequence."""

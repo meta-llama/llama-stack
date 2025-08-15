@@ -146,6 +146,47 @@ class TestConvertResponseInputToChatMessages:
         assert result[0].tool_calls[0].function.name == "test_function"
         assert result[0].tool_calls[0].function.arguments == '{"param": "value"}'
 
+    async def test_convert_function_call_ordering(self):
+        input_items = [
+            OpenAIResponseOutputMessageFunctionToolCall(
+                call_id="call_123",
+                name="test_function_a",
+                arguments='{"param": "value"}',
+            ),
+            OpenAIResponseOutputMessageFunctionToolCall(
+                call_id="call_456",
+                name="test_function_b",
+                arguments='{"param": "value"}',
+            ),
+            OpenAIResponseInputFunctionToolCallOutput(
+                output="AAA",
+                call_id="call_123",
+            ),
+            OpenAIResponseInputFunctionToolCallOutput(
+                output="BBB",
+                call_id="call_456",
+            ),
+        ]
+
+        result = await convert_response_input_to_chat_messages(input_items)
+        assert len(result) == 4
+        assert isinstance(result[0], OpenAIAssistantMessageParam)
+        assert len(result[0].tool_calls) == 1
+        assert result[0].tool_calls[0].id == "call_123"
+        assert result[0].tool_calls[0].function.name == "test_function_a"
+        assert result[0].tool_calls[0].function.arguments == '{"param": "value"}'
+        assert isinstance(result[1], OpenAIToolMessageParam)
+        assert result[1].content == "AAA"
+        assert result[1].tool_call_id == "call_123"
+        assert isinstance(result[2], OpenAIAssistantMessageParam)
+        assert len(result[2].tool_calls) == 1
+        assert result[2].tool_calls[0].id == "call_456"
+        assert result[2].tool_calls[0].function.name == "test_function_b"
+        assert result[2].tool_calls[0].function.arguments == '{"param": "value"}'
+        assert isinstance(result[3], OpenAIToolMessageParam)
+        assert result[3].content == "BBB"
+        assert result[3].tool_call_id == "call_456"
+
     async def test_convert_response_message(self):
         input_items = [
             OpenAIResponseMessage(

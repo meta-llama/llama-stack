@@ -101,14 +101,22 @@ async def convert_response_input_to_chat_messages(
     """
     messages: list[OpenAIMessageParam] = []
     if isinstance(input, list):
+        # extract all OpenAIResponseInputFunctionToolCallOutput items
+        # so their corresponding OpenAIToolMessageParam instances can
+        # be added immediately following the corresponding
+        # OpenAIAssistantMessageParam
+        tool_call_results = {}
         for input_item in input:
             if isinstance(input_item, OpenAIResponseInputFunctionToolCallOutput):
-                messages.append(
-                    OpenAIToolMessageParam(
-                        content=input_item.output,
-                        tool_call_id=input_item.call_id,
-                    )
+                tool_call_results[input_item.call_id] = OpenAIToolMessageParam(
+                    content=input_item.output,
+                    tool_call_id=input_item.call_id,
                 )
+
+        for input_item in input:
+            if isinstance(input_item, OpenAIResponseInputFunctionToolCallOutput):
+                # skip as these have been extracted and inserted in order
+                pass
             elif isinstance(input_item, OpenAIResponseOutputMessageFunctionToolCall):
                 tool_call = OpenAIChatCompletionToolCall(
                     index=0,
@@ -119,6 +127,9 @@ async def convert_response_input_to_chat_messages(
                     ),
                 )
                 messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
+                if input_item.call_id in tool_call_results:
+                    messages.append(tool_call_results[input_item.call_id])
+                    del tool_call_results[input_item.call_id]
             elif isinstance(input_item, OpenAIResponseOutputMessageMCPCall):
                 tool_call = OpenAIChatCompletionToolCall(
                     index=0,
@@ -146,6 +157,8 @@ async def convert_response_input_to_chat_messages(
                         f"Llama Stack OpenAI Responses does not yet support message role '{input_item.role}' in this context"
                     )
                 messages.append(message_type(content=content))
+        for result in tool_call_results.values():
+            messages.append(result)
     else:
         messages.append(OpenAIUserMessageParam(content=input))
     return messages
