@@ -24,6 +24,7 @@ from llama_stack.apis.inference import (
 from llama_stack.models.llama.datatypes import BuiltinTool, StopReason, ToolCall
 from llama_stack.providers.utils.inference.openai_compat import (
     convert_message_to_openai_dict,
+    convert_message_to_openai_dict_new,
     openai_messages_to_messages,
 )
 
@@ -182,3 +183,42 @@ def test_user_message_accepts_images():
     assert len(msg.content) == 2
     assert msg.content[0].text == "Describe this image:"
     assert msg.content[1].image_url.url == "http://example.com/image.jpg"
+
+
+async def test_convert_message_to_openai_dict_new_user_message():
+    """Test convert_message_to_openai_dict_new with UserMessage."""
+    message = UserMessage(content="Hello, world!", role="user")
+    result = await convert_message_to_openai_dict_new(message)
+
+    assert result["role"] == "user"
+    assert result["content"] == "Hello, world!"
+
+
+async def test_convert_message_to_openai_dict_new_completion_message_with_tool_calls():
+    """Test convert_message_to_openai_dict_new with CompletionMessage containing tool calls."""
+    message = CompletionMessage(
+        content="I'll help you find the weather.",
+        tool_calls=[
+            ToolCall(
+                call_id="call_123",
+                tool_name="get_weather",
+                arguments={"city": "Sligo"},
+                arguments_json='{"city": "Sligo"}',
+            )
+        ],
+        stop_reason=StopReason.end_of_turn,
+    )
+    result = await convert_message_to_openai_dict_new(message)
+
+    # This would have failed with "Cannot instantiate typing.Union" before the fix
+    assert result["role"] == "assistant"
+    assert result["content"] == "I'll help you find the weather."
+    assert "tool_calls" in result
+    assert result["tool_calls"] is not None
+    assert len(result["tool_calls"]) == 1
+
+    tool_call = result["tool_calls"][0]
+    assert tool_call.id == "call_123"
+    assert tool_call.type == "function"
+    assert tool_call.function.name == "get_weather"
+    assert tool_call.function.arguments == '{"city": "Sligo"}'

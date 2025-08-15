@@ -12,6 +12,18 @@ That means you'll get fast and efficient vector retrieval.
 - Lightweight and easy to use
 - Fully integrated with Llama Stack
 - GPU support
+- **Vector search** - FAISS supports pure vector similarity search using embeddings
+
+## Search Modes
+
+**Supported:**
+- **Vector Search** (`mode="vector"`): Performs vector similarity search using embeddings
+
+**Not Supported:**
+- **Keyword Search** (`mode="keyword"`): Not supported by FAISS
+- **Hybrid Search** (`mode="hybrid"`): Not supported by FAISS
+
+> **Note**: FAISS is designed as a pure vector similarity search library. See the [FAISS GitHub repository](https://github.com/facebookresearch/faiss) for more details about FAISS's core functionality.
 
 ## Usage
 

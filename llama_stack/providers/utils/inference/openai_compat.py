@@ -32,13 +32,13 @@ from openai.types.chat import (
     ChatCompletionContentPartTextParam as OpenAIChatCompletionContentPartTextParam,
 )
 from openai.types.chat import (
+    ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+)
+from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
 from openai.types.chat import (
     ChatCompletionMessageToolCall,
-)
-from openai.types.chat import (
-    ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
 )
 from openai.types.chat import (
     ChatCompletionSystemMessageParam as OpenAIChatCompletionSystemMessage,
@@ -70,7 +70,7 @@ from openai.types.chat.chat_completion_chunk import (
 from openai.types.chat.chat_completion_content_part_image_param import (
     ImageURL as OpenAIImageURL,
 )
-from openai.types.chat.chat_completion_message_tool_call_param import (
+from openai.types.chat.chat_completion_message_tool_call import (
     Function as OpenAIFunction,
 )
 from pydantic import BaseModel
@@ -633,7 +633,7 @@ async def convert_message_to_openai_dict_new(
         )
     elif isinstance(message, CompletionMessage):
         tool_calls = [
-            OpenAIChatCompletionMessageToolCall(
+            OpenAIChatCompletionMessageFunctionToolCall(
                 id=tool.call_id,
                 function=OpenAIFunction(
                     name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
@@ -903,7 +903,7 @@ def _convert_openai_request_response_format(
 
 
 def _convert_openai_tool_calls(
-    tool_calls: list[OpenAIChatCompletionMessageToolCall],
+    tool_calls: list[OpenAIChatCompletionMessageFunctionToolCall],
 ) -> list[ToolCall]:
     """
     Convert an OpenAI ChatCompletionMessageToolCall list into a list of ToolCall.
