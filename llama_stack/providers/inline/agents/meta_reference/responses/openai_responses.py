@@ -19,9 +19,6 @@ from llama_stack.apis.agents.openai_responses import (
     MCPListToolsTool,
     OpenAIDeleteResponseObject,
     OpenAIResponseInput,
-    OpenAIResponseInputFunctionToolCallOutput,
-    OpenAIResponseInputMessageContent,
-    OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
     OpenAIResponseInputToolMCP,
@@ -29,9 +26,6 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
     OpenAIResponseOutput,
-    OpenAIResponseOutputMessageContent,
-    OpenAIResponseOutputMessageContentOutputText,
-    OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
@@ -39,23 +33,7 @@ from llama_stack.apis.agents.openai_responses import (
 )
 from llama_stack.apis.inference import (
     Inference,
-    OpenAIAssistantMessageParam,
-    OpenAIChatCompletionContentPartImageParam,
-    OpenAIChatCompletionContentPartParam,
-    OpenAIChatCompletionContentPartTextParam,
-    OpenAIChatCompletionToolCall,
-    OpenAIChatCompletionToolCallFunction,
-    OpenAIDeveloperMessageParam,
-    OpenAIImageURL,
-    OpenAIJSONSchema,
-    OpenAIMessageParam,
-    OpenAIResponseFormatJSONObject,
-    OpenAIResponseFormatJSONSchema,
-    OpenAIResponseFormatParam,
-    OpenAIResponseFormatText,
     OpenAISystemMessageParam,
-    OpenAIToolMessageParam,
-    OpenAIUserMessageParam,
 )
 from llama_stack.apis.tools import Tool, ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
@@ -69,104 +47,12 @@ from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 from .streaming import StreamingResponseOrchestrator
 from .tool_executor import ToolExecutor
 from .types import ChatCompletionContext
+from .utils import (
+    convert_response_input_to_chat_messages,
+    convert_response_text_to_chat_response_format,
+)
 
 logger = get_logger(name=__name__, category="responses")
-
-
-async def _convert_response_content_to_chat_content(
-    content: (str | list[OpenAIResponseInputMessageContent] | list[OpenAIResponseOutputMessageContent]),
-) -> str | list[OpenAIChatCompletionContentPartParam]:
-    """
-    Convert the content parts from an OpenAI Response API request into OpenAI Chat Completion content parts.
-
-    The content schemas of each API look similar, but are not exactly the same.
-    """
-    if isinstance(content, str):
-        return content
-
-    converted_parts = []
-    for content_part in content:
-        if isinstance(content_part, OpenAIResponseInputMessageContentText):
-            converted_parts.append(OpenAIChatCompletionContentPartTextParam(text=content_part.text))
-        elif isinstance(content_part, OpenAIResponseOutputMessageContentOutputText):
-            converted_parts.append(OpenAIChatCompletionContentPartTextParam(text=content_part.text))
-        elif isinstance(content_part, OpenAIResponseInputMessageContentImage):
-            if content_part.image_url:
-                image_url = OpenAIImageURL(url=content_part.image_url, detail=content_part.detail)
-                converted_parts.append(OpenAIChatCompletionContentPartImageParam(image_url=image_url))
-        elif isinstance(content_part, str):
-            converted_parts.append(OpenAIChatCompletionContentPartTextParam(text=content_part))
-        else:
-            raise ValueError(
-                f"Llama Stack OpenAI Responses does not yet support content type '{type(content_part)}' in this context"
-            )
-    return converted_parts
-
-
-async def _convert_response_input_to_chat_messages(
-    input: str | list[OpenAIResponseInput],
-) -> list[OpenAIMessageParam]:
-    """
-    Convert the input from an OpenAI Response API request into OpenAI Chat Completion messages.
-    """
-    messages: list[OpenAIMessageParam] = []
-    if isinstance(input, list):
-        for input_item in input:
-            if isinstance(input_item, OpenAIResponseInputFunctionToolCallOutput):
-                messages.append(
-                    OpenAIToolMessageParam(
-                        content=input_item.output,
-                        tool_call_id=input_item.call_id,
-                    )
-                )
-            elif isinstance(input_item, OpenAIResponseOutputMessageFunctionToolCall):
-                tool_call = OpenAIChatCompletionToolCall(
-                    index=0,
-                    id=input_item.call_id,
-                    function=OpenAIChatCompletionToolCallFunction(
-                        name=input_item.name,
-                        arguments=input_item.arguments,
-                    ),
-                )
-                messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
-            else:
-                content = await _convert_response_content_to_chat_content(input_item.content)
-                message_type = await _get_message_type_by_role(input_item.role)
-                if message_type is None:
-                    raise ValueError(
-                        f"Llama Stack OpenAI Responses does not yet support message role '{input_item.role}' in this context"
-                    )
-                messages.append(message_type(content=content))
-    else:
-        messages.append(OpenAIUserMessageParam(content=input))
-    return messages
-
-
-async def _convert_response_text_to_chat_response_format(
-    text: OpenAIResponseText,
-) -> OpenAIResponseFormatParam:
-    """
-    Convert an OpenAI Response text parameter into an OpenAI Chat Completion response format.
-    """
-    if not text.format or text.format["type"] == "text":
-        return OpenAIResponseFormatText(type="text")
-    if text.format["type"] == "json_object":
-        return OpenAIResponseFormatJSONObject()
-    if text.format["type"] == "json_schema":
-        return OpenAIResponseFormatJSONSchema(
-            json_schema=OpenAIJSONSchema(name=text.format["name"], schema=text.format["schema"])
-        )
-    raise ValueError(f"Unsupported text format: {text.format}")
-
-
-async def _get_message_type_by_role(role: str):
-    role_to_type = {
-        "user": OpenAIUserMessageParam,
-        "system": OpenAISystemMessageParam,
-        "assistant": OpenAIAssistantMessageParam,
-        "developer": OpenAIDeveloperMessageParam,
-    }
-    return role_to_type.get(role)
 
 
 class OpenAIResponsePreviousResponseWithInputItems(BaseModel):
@@ -350,11 +236,11 @@ class OpenAIResponsesImpl:
     ) -> AsyncIterator[OpenAIResponseObjectStream]:
         # Input preprocessing
         input = await self._prepend_previous_response(input, previous_response_id)
-        messages = await _convert_response_input_to_chat_messages(input)
+        messages = await convert_response_input_to_chat_messages(input)
         await self._prepend_instructions(messages, instructions)
 
         # Structured outputs
-        response_format = await _convert_response_text_to_chat_response_format(text)
+        response_format = await convert_response_text_to_chat_response_format(text)
 
         # Tool setup, TODO: refactor this slightly since this can also yield events
         chat_tools, mcp_tool_to_server, mcp_list_message = (
