@@ -23,6 +23,11 @@ new_vector_database
 ```{include} ../../../tests/README.md
 ```
 
+## Benchmarking
+
+```{include} ../../../docs/source/distributions/k8s-benchmark/README.md
+```
+
 ### Advanced Topics
 
 For developers who need deeper understanding of the testing system internals:
