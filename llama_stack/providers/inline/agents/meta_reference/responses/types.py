@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInputTool,
-    OpenAIResponseInputToolMCP,
     OpenAIResponseObjectStream,
     OpenAIResponseOutput,
 )
@@ -57,6 +56,5 @@ class ChatCompletionContext(BaseModel):
     messages: list[OpenAIMessageParam]
     response_tools: list[OpenAIResponseInputTool] | None = None
     chat_tools: list[ChatCompletionToolParam] | None = None
-    mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP]
     temperature: float | None
     response_format: OpenAIResponseFormatParam

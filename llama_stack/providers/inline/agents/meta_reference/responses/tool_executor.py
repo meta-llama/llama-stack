@@ -10,6 +10,7 @@ from collections.abc import AsyncIterator
 
 from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseInputToolFileSearch,
+    OpenAIResponseInputToolMCP,
     OpenAIResponseObjectStreamResponseMcpCallCompleted,
     OpenAIResponseObjectStreamResponseMcpCallFailed,
     OpenAIResponseObjectStreamResponseMcpCallInProgress,
@@ -58,6 +59,7 @@ class ToolExecutor:
         sequence_number: int,
         output_index: int,
         item_id: str,
+        mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] | None = None,
     ) -> AsyncIterator[ToolExecutionResult]:
         tool_call_id = tool_call.id
         function = tool_call.function
@@ -69,25 +71,25 @@ class ToolExecutor:
 
         # Emit progress events for tool execution start
         async for event_result in self._emit_progress_events(
-            function.name, ctx, sequence_number, output_index, item_id
+            function.name, ctx, sequence_number, output_index, item_id, mcp_tool_to_server
         ):
             sequence_number = event_result.sequence_number
             yield event_result
 
         # Execute the actual tool call
-        error_exc, result = await self._execute_tool(function.name, tool_kwargs, ctx)
+        error_exc, result = await self._execute_tool(function.name, tool_kwargs, ctx, mcp_tool_to_server)
 
         # Emit completion events for tool execution
         has_error = error_exc or (result and ((result.error_code and result.error_code > 0) or result.error_message))
         async for event_result in self._emit_completion_events(
-            function.name, ctx, sequence_number, output_index, item_id, has_error
+            function.name, ctx, sequence_number, output_index, item_id, has_error, mcp_tool_to_server
         ):
             sequence_number = event_result.sequence_number
             yield event_result
 
         # Build result messages from tool execution
         output_message, input_message = await self._build_result_messages(
-            function, tool_call_id, tool_kwargs, ctx, error_exc, result, has_error
+            function, tool_call_id, tool_kwargs, ctx, error_exc, result, has_error, mcp_tool_to_server
         )
 
         # Yield the final result
@@ -161,12 +163,18 @@ class ToolExecutor:
         )
 
     async def _emit_progress_events(
-        self, function_name: str, ctx: ChatCompletionContext, sequence_number: int, output_index: int, item_id: str
+        self,
+        function_name: str,
+        ctx: ChatCompletionContext,
+        sequence_number: int,
+        output_index: int,
+        item_id: str,
+        mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] | None = None,
     ) -> AsyncIterator[ToolExecutionResult]:
         """Emit progress events for tool execution start."""
         # Emit in_progress event based on tool type (only for tools with specific streaming events)
         progress_event = None
-        if ctx.mcp_tool_to_server and function_name in ctx.mcp_tool_to_server:
+        if mcp_tool_to_server and function_name in mcp_tool_to_server:
             sequence_number += 1
             progress_event = OpenAIResponseObjectStreamResponseMcpCallInProgress(
                 item_id=item_id,
@@ -196,17 +204,21 @@ class ToolExecutor:
             yield ToolExecutionResult(stream_event=searching_event, sequence_number=sequence_number)
 
     async def _execute_tool(
-        self, function_name: str, tool_kwargs: dict, ctx: ChatCompletionContext
+        self,
+        function_name: str,
+        tool_kwargs: dict,
+        ctx: ChatCompletionContext,
+        mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] | None = None,
     ) -> tuple[Exception | None, any]:
         """Execute the tool and return error exception and result."""
         error_exc = None
         result = None
 
         try:
-            if ctx.mcp_tool_to_server and function_name in ctx.mcp_tool_to_server:
+            if mcp_tool_to_server and function_name in mcp_tool_to_server:
                 from llama_stack.providers.utils.tools.mcp import invoke_mcp_tool
 
-                mcp_tool = ctx.mcp_tool_to_server[function_name]
+                mcp_tool = mcp_tool_to_server[function_name]
                 result = await invoke_mcp_tool(
                     endpoint=mcp_tool.server_url,
                     headers=mcp_tool.headers or {},
@@ -244,11 +256,12 @@ class ToolExecutor:
         output_index: int,
         item_id: str,
         has_error: bool,
+        mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] | None = None,
     ) -> AsyncIterator[ToolExecutionResult]:
         """Emit completion or failure events for tool execution."""
         completion_event = None
 
-        if ctx.mcp_tool_to_server and function_name in ctx.mcp_tool_to_server:
+        if mcp_tool_to_server and function_name in mcp_tool_to_server:
             sequence_number += 1
             if has_error:
                 completion_event = OpenAIResponseObjectStreamResponseMcpCallFailed(
@@ -279,6 +292,7 @@ class ToolExecutor:
         error_exc: Exception | None,
         result: any,
         has_error: bool,
+        mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] | None = None,
     ) -> tuple[any, any]:
         """Build output and input messages from tool execution results."""
         from llama_stack.providers.utils.inference.prompt_adapter import (
@@ -286,7 +300,7 @@ class ToolExecutor:
         )
 
         # Build output message
-        if function.name in ctx.mcp_tool_to_server:
+        if mcp_tool_to_server and function.name in mcp_tool_to_server:
             from llama_stack.apis.agents.openai_responses import (
                 OpenAIResponseOutputMessageMCPCall,
             )
@@ -295,7 +309,7 @@ class ToolExecutor:
                 id=tool_call_id,
                 arguments=function.arguments,
                 name=function.name,
-                server_label=ctx.mcp_tool_to_server[function.name].server_label,
+                server_label=mcp_tool_to_server[function.name].server_label,
             )
             if error_exc:
                 message.error = str(error_exc)

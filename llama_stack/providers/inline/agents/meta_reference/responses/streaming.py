@@ -9,7 +9,11 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from llama_stack.apis.agents.openai_responses import (
+    AllowedToolsFilter,
+    MCPListToolsTool,
     OpenAIResponseContentPartOutputText,
+    OpenAIResponseInputTool,
+    OpenAIResponseInputToolMCP,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
     OpenAIResponseObjectStreamResponseCompleted,
@@ -20,12 +24,16 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseObjectStreamResponseFunctionCallArgumentsDone,
     OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta,
     OpenAIResponseObjectStreamResponseMcpCallArgumentsDone,
+    OpenAIResponseObjectStreamResponseMcpListToolsCompleted,
+    OpenAIResponseObjectStreamResponseMcpListToolsInProgress,
     OpenAIResponseObjectStreamResponseOutputItemAdded,
     OpenAIResponseObjectStreamResponseOutputItemDone,
     OpenAIResponseObjectStreamResponseOutputTextDelta,
     OpenAIResponseOutput,
     OpenAIResponseOutputMessageFunctionToolCall,
+    OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseText,
+    WebSearchToolTypes,
 )
 from llama_stack.apis.inference import (
     Inference,
@@ -52,7 +60,6 @@ class StreamingResponseOrchestrator:
         text: OpenAIResponseText,
         max_infer_iters: int,
         tool_executor,  # Will be the tool execution logic from the main class
-        mcp_list_message: OpenAIResponseOutput | None = None,
     ):
         self.inference_api = inference_api
         self.ctx = ctx
@@ -62,13 +69,12 @@ class StreamingResponseOrchestrator:
         self.max_infer_iters = max_infer_iters
         self.tool_executor = tool_executor
         self.sequence_number = 0
-        self.mcp_list_message = mcp_list_message
+        # Store MCP tool mapping that gets built during tool processing
+        self.mcp_tool_to_server: dict[str, OpenAIResponseInputToolMCP] = {}
 
     async def create_response(self) -> AsyncIterator[OpenAIResponseObjectStream]:
-        # Initialize output messages with MCP list message if present
+        # Initialize output messages
         output_messages: list[OpenAIResponseOutput] = []
-        if self.mcp_list_message:
-            output_messages.append(self.mcp_list_message)
         # Create initial response and emit response.created immediately
         initial_response = OpenAIResponseObject(
             created_at=self.created_at,
@@ -81,6 +87,11 @@ class StreamingResponseOrchestrator:
         )
 
         yield OpenAIResponseObjectStreamResponseCreated(response=initial_response)
+
+        # Process all tools (including MCP tools) and emit streaming events
+        if self.ctx.response_tools:
+            async for stream_event in self._process_tools(self.ctx.response_tools, output_messages):
+                yield stream_event
 
         n_iter = 0
         messages = self.ctx.messages.copy()
@@ -261,9 +272,7 @@ class StreamingResponseOrchestrator:
                             self.sequence_number += 1
 
                             # Check if this is an MCP tool call
-                            is_mcp_tool = (
-                                tool_call.function.name and tool_call.function.name in self.ctx.mcp_tool_to_server
-                            )
+                            is_mcp_tool = tool_call.function.name and tool_call.function.name in self.mcp_tool_to_server
                             if is_mcp_tool:
                                 # Emit MCP-specific argument delta event
                                 yield OpenAIResponseObjectStreamResponseMcpCallArgumentsDelta(
@@ -294,9 +303,7 @@ class StreamingResponseOrchestrator:
             tool_call_name = chat_response_tool_calls[tool_call_index].function.name
 
             # Check if this is an MCP tool call
-            is_mcp_tool = (
-                self.ctx.mcp_tool_to_server and tool_call_name and tool_call_name in self.ctx.mcp_tool_to_server
-            )
+            is_mcp_tool = tool_call_name and tool_call_name in self.mcp_tool_to_server
             self.sequence_number += 1
             done_event_cls = (
                 OpenAIResponseObjectStreamResponseMcpCallArgumentsDone
@@ -391,7 +398,12 @@ class StreamingResponseOrchestrator:
             tool_call_log = None
             tool_response_message = None
             async for result in self.tool_executor.execute_tool_call(
-                tool_call, self.ctx, self.sequence_number, len(output_messages), matching_item_id
+                tool_call,
+                self.ctx,
+                self.sequence_number,
+                len(output_messages),
+                matching_item_id,
+                self.mcp_tool_to_server,
             ):
                 if result.stream_event:
                     # Forward streaming events
@@ -449,3 +461,174 @@ class StreamingResponseOrchestrator:
                 output_index=len(output_messages) - 1,
                 sequence_number=self.sequence_number,
             )
+
+    async def _process_tools(
+        self, tools: list[OpenAIResponseInputTool], output_messages: list[OpenAIResponseOutput]
+    ) -> AsyncIterator[OpenAIResponseObjectStream]:
+        """Process all tools and emit appropriate streaming events."""
+        from openai.types.chat import ChatCompletionToolParam
+
+        from llama_stack.apis.tools import Tool
+        from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
+        from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
+
+        def make_openai_tool(tool_name: str, tool: Tool) -> ChatCompletionToolParam:
+            tool_def = ToolDefinition(
+                tool_name=tool_name,
+                description=tool.description,
+                parameters={
+                    param.name: ToolParamDefinition(
+                        param_type=param.parameter_type,
+                        description=param.description,
+                        required=param.required,
+                        default=param.default,
+                    )
+                    for param in tool.parameters
+                },
+            )
+            return convert_tooldef_to_openai_tool(tool_def)
+
+        # Initialize chat_tools if not already set
+        if self.ctx.chat_tools is None:
+            self.ctx.chat_tools = []
+
+        for input_tool in tools:
+            if input_tool.type == "function":
+                self.ctx.chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
+            elif input_tool.type in WebSearchToolTypes:
+                tool_name = "web_search"
+                # Need to access tool_groups_api from tool_executor
+                tool = await self.tool_executor.tool_groups_api.get_tool(tool_name)
+                if not tool:
+                    raise ValueError(f"Tool {tool_name} not found")
+                self.ctx.chat_tools.append(make_openai_tool(tool_name, tool))
+            elif input_tool.type == "file_search":
+                tool_name = "knowledge_search"
+                tool = await self.tool_executor.tool_groups_api.get_tool(tool_name)
+                if not tool:
+                    raise ValueError(f"Tool {tool_name} not found")
+                self.ctx.chat_tools.append(make_openai_tool(tool_name, tool))
+            elif input_tool.type == "mcp":
+                async for stream_event in self._process_mcp_tool(input_tool, output_messages):
+                    yield stream_event
+            else:
+                raise ValueError(f"Llama Stack OpenAI Responses does not yet support tool type: {input_tool.type}")
+
+    async def _process_mcp_tool(
+        self, mcp_tool: OpenAIResponseInputToolMCP, output_messages: list[OpenAIResponseOutput]
+    ) -> AsyncIterator[OpenAIResponseObjectStream]:
+        """Process an MCP tool configuration and emit appropriate streaming events."""
+        from llama_stack.providers.utils.tools.mcp import list_mcp_tools
+
+        # Emit mcp_list_tools.in_progress
+        self.sequence_number += 1
+        yield OpenAIResponseObjectStreamResponseMcpListToolsInProgress(
+            sequence_number=self.sequence_number,
+        )
+
+        try:
+            # Parse allowed/never allowed tools
+            always_allowed = None
+            never_allowed = None
+            if mcp_tool.allowed_tools:
+                if isinstance(mcp_tool.allowed_tools, list):
+                    always_allowed = mcp_tool.allowed_tools
+                elif isinstance(mcp_tool.allowed_tools, AllowedToolsFilter):
+                    always_allowed = mcp_tool.allowed_tools.always
+                    never_allowed = mcp_tool.allowed_tools.never
+
+            # Call list_mcp_tools
+            tool_defs = await list_mcp_tools(
+                endpoint=mcp_tool.server_url,
+                headers=mcp_tool.headers or {},
+            )
+
+            # Create the MCP list tools message
+            mcp_list_message = OpenAIResponseOutputMessageMCPListTools(
+                id=f"mcp_list_{uuid.uuid4()}",
+                server_label=mcp_tool.server_label,
+                tools=[],
+            )
+
+            # Process tools and update context
+            for t in tool_defs.data:
+                if never_allowed and t.name in never_allowed:
+                    continue
+                if not always_allowed or t.name in always_allowed:
+                    # Add to chat tools for inference
+                    from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
+                    from llama_stack.providers.utils.inference.openai_compat import convert_tooldef_to_openai_tool
+
+                    tool_def = ToolDefinition(
+                        tool_name=t.name,
+                        description=t.description,
+                        parameters={
+                            param.name: ToolParamDefinition(
+                                param_type=param.parameter_type,
+                                description=param.description,
+                                required=param.required,
+                                default=param.default,
+                            )
+                            for param in t.parameters
+                        },
+                    )
+                    openai_tool = convert_tooldef_to_openai_tool(tool_def)
+                    if self.ctx.chat_tools is None:
+                        self.ctx.chat_tools = []
+                    self.ctx.chat_tools.append(openai_tool)
+
+                    # Add to MCP tool mapping
+                    if t.name in self.mcp_tool_to_server:
+                        raise ValueError(f"Duplicate tool name {t.name} found for server {mcp_tool.server_label}")
+                    self.mcp_tool_to_server[t.name] = mcp_tool
+
+                    # Add to MCP list message
+                    mcp_list_message.tools.append(
+                        MCPListToolsTool(
+                            name=t.name,
+                            description=t.description,
+                            input_schema={
+                                "type": "object",
+                                "properties": {
+                                    p.name: {
+                                        "type": p.parameter_type,
+                                        "description": p.description,
+                                    }
+                                    for p in t.parameters
+                                },
+                                "required": [p.name for p in t.parameters if p.required],
+                            },
+                        )
+                    )
+
+            # Add the MCP list message to output
+            output_messages.append(mcp_list_message)
+
+            # Emit output_item.added for the MCP list tools message
+            self.sequence_number += 1
+            yield OpenAIResponseObjectStreamResponseOutputItemAdded(
+                response_id=self.response_id,
+                item=mcp_list_message,
+                output_index=len(output_messages) - 1,
+                sequence_number=self.sequence_number,
+            )
+
+            # Emit mcp_list_tools.completed
+            self.sequence_number += 1
+            yield OpenAIResponseObjectStreamResponseMcpListToolsCompleted(
+                sequence_number=self.sequence_number,
+            )
+
+            # Emit output_item.done for the MCP list tools message
+            self.sequence_number += 1
+            yield OpenAIResponseObjectStreamResponseOutputItemDone(
+                response_id=self.response_id,
+                item=mcp_list_message,
+                output_index=len(output_messages) - 1,
+                sequence_number=self.sequence_number,
+            )
+
+        except Exception as e:
+            # TODO: Emit mcp_list_tools.failed event if needed
+            logger.exception(f"Failed to list MCP tools from {mcp_tool.server_url}: {e}")
+            raise

@@ -8,40 +8,29 @@ import time
 import uuid
 from collections.abc import AsyncIterator
 
-from openai.types.chat import ChatCompletionToolParam
 from pydantic import BaseModel
 
 from llama_stack.apis.agents import Order
 from llama_stack.apis.agents.openai_responses import (
-    AllowedToolsFilter,
     ListOpenAIResponseInputItem,
     ListOpenAIResponseObject,
-    MCPListToolsTool,
     OpenAIDeleteResponseObject,
     OpenAIResponseInput,
     OpenAIResponseInputMessageContentText,
     OpenAIResponseInputTool,
-    OpenAIResponseInputToolMCP,
     OpenAIResponseMessage,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
-    OpenAIResponseOutput,
-    OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
-    WebSearchToolTypes,
 )
 from llama_stack.apis.inference import (
     Inference,
     OpenAISystemMessageParam,
 )
-from llama_stack.apis.tools import Tool, ToolGroups, ToolRuntime
+from llama_stack.apis.tools import ToolGroups, ToolRuntime
 from llama_stack.apis.vector_io import VectorIO
 from llama_stack.log import get_logger
-from llama_stack.models.llama.datatypes import ToolDefinition, ToolParamDefinition
-from llama_stack.providers.utils.inference.openai_compat import (
-    convert_tooldef_to_openai_tool,
-)
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
 from .streaming import StreamingResponseOrchestrator
@@ -242,17 +231,10 @@ class OpenAIResponsesImpl:
         # Structured outputs
         response_format = await convert_response_text_to_chat_response_format(text)
 
-        # Tool setup, TODO: refactor this slightly since this can also yield events
-        chat_tools, mcp_tool_to_server, mcp_list_message = (
-            await self._convert_response_tools_to_chat_tools(tools) if tools else (None, {}, None)
-        )
-
         ctx = ChatCompletionContext(
             model=model,
             messages=messages,
             response_tools=tools,
-            chat_tools=chat_tools,
-            mcp_tool_to_server=mcp_tool_to_server,
             temperature=temperature,
             response_format=response_format,
         )
@@ -269,7 +251,6 @@ class OpenAIResponsesImpl:
             text=text,
             max_infer_iters=max_infer_iters,
             tool_executor=self.tool_executor,
-            mcp_list_message=mcp_list_message,
         )
 
         # Stream the response
@@ -288,98 +269,3 @@ class OpenAIResponsesImpl:
 
     async def delete_openai_response(self, response_id: str) -> OpenAIDeleteResponseObject:
         return await self.responses_store.delete_response_object(response_id)
-
-    async def _convert_response_tools_to_chat_tools(
-        self, tools: list[OpenAIResponseInputTool]
-    ) -> tuple[
-        list[ChatCompletionToolParam],
-        dict[str, OpenAIResponseInputToolMCP],
-        OpenAIResponseOutput | None,
-    ]:
-        mcp_tool_to_server = {}
-
-        def make_openai_tool(tool_name: str, tool: Tool) -> ChatCompletionToolParam:
-            tool_def = ToolDefinition(
-                tool_name=tool_name,
-                description=tool.description,
-                parameters={
-                    param.name: ToolParamDefinition(
-                        param_type=param.parameter_type,
-                        description=param.description,
-                        required=param.required,
-                        default=param.default,
-                    )
-                    for param in tool.parameters
-                },
-            )
-            return convert_tooldef_to_openai_tool(tool_def)
-
-        mcp_list_message = None
-        chat_tools: list[ChatCompletionToolParam] = []
-        for input_tool in tools:
-            # TODO: Handle other tool types
-            if input_tool.type == "function":
-                chat_tools.append(ChatCompletionToolParam(type="function", function=input_tool.model_dump()))
-            elif input_tool.type in WebSearchToolTypes:
-                tool_name = "web_search"
-                tool = await self.tool_groups_api.get_tool(tool_name)
-                if not tool:
-                    raise ValueError(f"Tool {tool_name} not found")
-                chat_tools.append(make_openai_tool(tool_name, tool))
-            elif input_tool.type == "file_search":
-                tool_name = "knowledge_search"
-                tool = await self.tool_groups_api.get_tool(tool_name)
-                if not tool:
-                    raise ValueError(f"Tool {tool_name} not found")
-                chat_tools.append(make_openai_tool(tool_name, tool))
-            elif input_tool.type == "mcp":
-                from llama_stack.providers.utils.tools.mcp import list_mcp_tools
-
-                always_allowed = None
-                never_allowed = None
-                if input_tool.allowed_tools:
-                    if isinstance(input_tool.allowed_tools, list):
-                        always_allowed = input_tool.allowed_tools
-                    elif isinstance(input_tool.allowed_tools, AllowedToolsFilter):
-                        always_allowed = input_tool.allowed_tools.always
-                        never_allowed = input_tool.allowed_tools.never
-
-                tool_defs = await list_mcp_tools(
-                    endpoint=input_tool.server_url,
-                    headers=input_tool.headers or {},
-                )
-
-                mcp_list_message = OpenAIResponseOutputMessageMCPListTools(
-                    id=f"mcp_list_{uuid.uuid4()}",
-                    status="completed",
-                    server_label=input_tool.server_label,
-                    tools=[],
-                )
-                for t in tool_defs.data:
-                    if never_allowed and t.name in never_allowed:
-                        continue
-                    if not always_allowed or t.name in always_allowed:
-                        chat_tools.append(make_openai_tool(t.name, t))
-                        if t.name in mcp_tool_to_server:
-                            raise ValueError(f"Duplicate tool name {t.name} found for server {input_tool.server_label}")
-                        mcp_tool_to_server[t.name] = input_tool
-                        mcp_list_message.tools.append(
-                            MCPListToolsTool(
-                                name=t.name,
-                                description=t.description,
-                                input_schema={
-                                    "type": "object",
-                                    "properties": {
-                                        p.name: {
-                                            "type": p.parameter_type,
-                                            "description": p.description,
-                                        }
-                                        for p in t.parameters
-                                    },
-                                    "required": [p.name for p in t.parameters if p.required],
-                                },
-                            )
-                        )
-            else:
-                raise ValueError(f"Llama Stack OpenAI Responses does not yet support tool type: {input_tool.type}")
-        return chat_tools, mcp_tool_to_server, mcp_list_message

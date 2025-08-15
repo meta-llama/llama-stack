@@ -610,6 +610,14 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         mcp_in_progress_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.in_progress"]
         mcp_completed_events = [chunk for chunk in chunks if chunk.type == "response.mcp_call.completed"]
 
+        # Should have MCP list tools streaming events
+        mcp_list_tools_in_progress_events = [
+            chunk for chunk in chunks if chunk.type == "response.mcp_list_tools.in_progress"
+        ]
+        mcp_list_tools_completed_events = [
+            chunk for chunk in chunks if chunk.type == "response.mcp_list_tools.completed"
+        ]
+
         # Verify we have substantial streaming activity (not just batch events)
         assert len(chunks) > 10, f"Expected rich streaming with many events, got only {len(chunks)} chunks"
 
@@ -632,6 +640,14 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
         assert len(mcp_completed_events) > 0, (
             f"Expected response.mcp_call.completed events, got chunk types: {chunk_types}"
         )
+
+        # Should have MCP list tools streaming events
+        assert len(mcp_list_tools_in_progress_events) > 0, (
+            f"Expected response.mcp_list_tools.in_progress events, got chunk types: {chunk_types}"
+        )
+        assert len(mcp_list_tools_completed_events) > 0, (
+            f"Expected response.mcp_list_tools.completed events, got chunk types: {chunk_types}"
+        )
         # MCP failed events are optional (only if errors occur)
 
         # Verify progress events have proper structure
@@ -642,6 +658,17 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
 
         for completed_event in mcp_completed_events:
             assert hasattr(completed_event, "sequence_number"), "Completed event should have 'sequence_number' field"
+
+        # Verify MCP list tools events have proper structure
+        for list_tools_progress_event in mcp_list_tools_in_progress_events:
+            assert hasattr(list_tools_progress_event, "sequence_number"), (
+                "MCP list tools progress event should have 'sequence_number' field"
+            )
+
+        for list_tools_completed_event in mcp_list_tools_completed_events:
+            assert hasattr(list_tools_completed_event, "sequence_number"), (
+                "MCP list tools completed event should have 'sequence_number' field"
+            )
 
         # Verify delta events have proper structure
         for delta_event in delta_events:
@@ -662,8 +689,12 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
             assert hasattr(added_event, "output_index"), "Added event should have 'output_index' field"
             assert hasattr(added_event, "sequence_number"), "Added event should have 'sequence_number' field"
             assert hasattr(added_event, "response_id"), "Added event should have 'response_id' field"
-            assert added_event.item.type in ["function_call", "mcp_call"], "Added item should be a tool call"
-            assert added_event.item.status == "in_progress", "Added item should be in progress"
+            assert added_event.item.type in ["function_call", "mcp_call", "mcp_list_tools"], (
+                "Added item should be a tool call or MCP list tools"
+            )
+            if added_event.item.type in ["function_call", "mcp_call"]:
+                assert added_event.item.status == "in_progress", "Added tool call should be in progress"
+            # Note: mcp_list_tools doesn't have a status field, it's implicitly completed when added
             assert added_event.response_id, "Response ID should not be empty"
             assert isinstance(added_event.output_index, int), "Output index should be integer"
             assert added_event.output_index >= 0, "Output index should be non-negative"
@@ -674,10 +705,13 @@ def test_response_streaming_multi_turn_tool_execution(compat_client, text_model_
             assert hasattr(done_event, "output_index"), "Done event should have 'output_index' field"
             assert hasattr(done_event, "sequence_number"), "Done event should have 'sequence_number' field"
             assert hasattr(done_event, "response_id"), "Done event should have 'response_id' field"
-            assert done_event.item.type in ["function_call", "mcp_call"], "Done item should be a tool call"
-            # Note: MCP calls don't have a status field, only function calls do
+            assert done_event.item.type in ["function_call", "mcp_call", "mcp_list_tools"], (
+                "Done item should be a tool call or MCP list tools"
+            )
+            # Note: MCP calls and mcp_list_tools don't have a status field, only function calls do
             if done_event.item.type == "function_call":
                 assert done_event.item.status == "completed", "Function call should be completed"
+            # Note: mcp_call and mcp_list_tools don't have status fields
             assert done_event.response_id, "Response ID should not be empty"
             assert isinstance(done_event.output_index, int), "Output index should be integer"
             assert done_event.output_index >= 0, "Output index should be non-negative"
