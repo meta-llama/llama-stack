@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-import re
 from pathlib import Path
 
 import pytest
@@ -46,19 +45,6 @@ def _load_all_verification_configs():
             raise OSError(f"Error loading config file {config_path}: {e}") from e
 
     return {"providers": all_provider_configs}
-
-
-def case_id_generator(case):
-    """Generate a test ID from the case's 'case_id' field, or use a default."""
-    case_id = case.get("case_id")
-    if isinstance(case_id, str | int):
-        return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
-    return None
-
-
-# Helper to get the base test name from the request object
-def get_base_test_name(request):
-    return request.node.originalname
 
 
 # --- End Helper Functions ---
