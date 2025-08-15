@@ -68,11 +68,6 @@ from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     ToolCall,
 )
-from llama_stack.providers.utils.inference.openai_compat import (
-    convert_message_to_openai_dict,
-    convert_openai_chat_completion_stream,
-    convert_tooldef_to_openai_tool,
-)
 from llama_stack.providers.utils.kvstore import KVStore
 from llama_stack.providers.utils.telemetry import tracing
 
@@ -515,60 +510,16 @@ class ChatAgent(ShieldRunnerMixin):
             async with tracing.span("inference") as span:
                 if self.agent_config.name:
                     span.set_attribute("agent_name", self.agent_config.name)
-                # Convert messages to OpenAI format
-                openai_messages = []
-                for message in input_messages:
-                    openai_message = await convert_message_to_openai_dict(message)
-                    openai_messages.append(openai_message)
-
-                # Convert tool definitions to OpenAI format
-                openai_tools = None
-                if self.tool_defs:
-                    openai_tools = []
-                    for tool_def in self.tool_defs:
-                        openai_tool = convert_tooldef_to_openai_tool(tool_def)
-                        openai_tools.append(openai_tool)
-
-                # Extract tool_choice from tool_config for OpenAI compatibility
-                # Note: tool_choice can only be provided when tools are also provided
-                tool_choice = None
-                if openai_tools and self.agent_config.tool_config and self.agent_config.tool_config.tool_choice:
-                    tool_choice = (
-                        self.agent_config.tool_config.tool_choice.value
-                        if hasattr(self.agent_config.tool_config.tool_choice, "value")
-                        else str(self.agent_config.tool_config.tool_choice)
-                    )
-
-                # Convert sampling params to OpenAI format (temperature, top_p, max_tokens)
-                temperature = None
-                top_p = None
-                max_tokens = None
-                if sampling_params:
-                    if hasattr(sampling_params.strategy, "temperature"):
-                        temperature = sampling_params.strategy.temperature
-                    if hasattr(sampling_params.strategy, "top_p"):
-                        top_p = sampling_params.strategy.top_p
-                    if sampling_params.max_tokens:
-                        max_tokens = sampling_params.max_tokens
-
-                # Use OpenAI chat completion
-                openai_stream = await self.inference_api.openai_chat_completion(
-                    model=self.agent_config.model,
-                    messages=openai_messages,
-                    tools=openai_tools if openai_tools else None,
-                    tool_choice=tool_choice,
-                    temperature=temperature,
-                    top_p=top_p,
-                    max_tokens=max_tokens,
+                async for chunk in await self.inference_api.chat_completion(
+                    self.agent_config.model,
+                    input_messages,
+                    tools=self.tool_defs,
+                    tool_prompt_format=self.agent_config.tool_config.tool_prompt_format,
+                    response_format=self.agent_config.response_format,
                     stream=True,
-                )
-
-                # Convert OpenAI stream back to Llama Stack format
-                response_stream = convert_openai_chat_completion_stream(
-                    openai_stream, enable_incremental_tool_calls=True
-                )
-
-                async for chunk in response_stream:
+                    sampling_params=sampling_params,
+                    tool_config=self.agent_config.tool_config,
+                ):
                     event = chunk.event
                     if event.event_type == ChatCompletionResponseEventType.start:
                         continue
