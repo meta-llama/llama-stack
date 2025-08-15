@@ -27,32 +27,34 @@ Trigger the integration test recording workflow remotely. This way you do not ne
 
 OPTIONS:
     -b, --branch BRANCH         Branch to run the workflow on (defaults to current branch)
-    -s, --test-subdirs DIRS     Comma-separated list of test subdirectories to run
-    -p, --test-provider PROVIDER Test provider to use (default: ollama)
+    -s, --test-subdirs DIRS     Comma-separated list of test subdirectories to run (REQUIRED)
+    -p, --test-provider PROVIDER Test provider to use: vllm or ollama (default: ollama)
     -v, --run-vision-tests      Include vision tests in the recording
     -k, --test-pattern PATTERN  Regex pattern to pass to pytest -k
     -h, --help                  Show this help message
 
 EXAMPLES:
-    # Record tests for current branch with default settings
-    $0
+    # Record tests for current branch with agents subdirectory
+    $0 --test-subdirs "agents"
 
     # Record tests for specific branch with vision tests
-    $0 -b my-feature-branch -v
+    $0 -b my-feature-branch --test-subdirs "inference" --run-vision-tests
 
-    # Record only specific test subdirectories
-    $0 -s "agents,inference" -p openai
+    # Record multiple test subdirectories with specific provider
+    $0 --test-subdirs "agents,inference" --test-provider vllm
 
     # Record tests matching a specific pattern
-    $0 -k "test_streaming"
-
-PREREQUISITES:
-    - GitHub CLI (gh) must be installed and authenticated
-    - You must be in a git repository that is a fork or clone of llamastack/llama-stack
-    - The branch must exist on the remote repository where you want to run the workflow
+    $0 --test-subdirs "inference" --test-pattern "test_streaming"
 
 EOF
 }
+
+# PREREQUISITES:
+#     - GitHub CLI (gh) must be installed and authenticated
+#     - jq must be installed for JSON parsing
+#     - You must be in a git repository that is a fork or clone of llamastack/llama-stack
+#     - The branch must exist on the remote repository where you want to run the workflow
+#     - You must specify test subdirectories to run with -s/--test-subdirs
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -88,6 +90,24 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Validate required parameters
+if [[ -z "$TEST_SUBDIRS" ]]; then
+    echo "Error: --test-subdirs is required"
+    echo "Please specify which test subdirectories to run, e.g.:"
+    echo "  $0 --test-subdirs \"agents,inference\""
+    echo "  $0 --test-subdirs \"inference\" --run-vision-tests"
+    echo ""
+    exit 1
+fi
+
+# Validate test provider
+if [[ "$TEST_PROVIDER" != "vllm" && "$TEST_PROVIDER" != "ollama" ]]; then
+    echo "❌ Error: Invalid test provider '$TEST_PROVIDER'"
+    echo "   Supported providers: vllm, ollama"
+    echo "   Example: $0 --test-subdirs \"agents\" --test-provider vllm"
+    exit 1
+fi
 
 # Check if required tools are installed
 if ! command -v gh &> /dev/null; then
@@ -218,16 +238,13 @@ fi
 echo "Triggering integration test recording workflow..."
 echo "Branch: $BRANCH"
 echo "Test provider: $TEST_PROVIDER"
-echo "Test subdirs: ${TEST_SUBDIRS:-"(all)"}"
+echo "Test subdirs: $TEST_SUBDIRS"
 echo "Run vision tests: $RUN_VISION_TESTS"
 echo "Test pattern: ${TEST_PATTERN:-"(none)"}"
 echo ""
 
 # Prepare inputs for gh workflow run
-INPUTS=""
-if [[ -n "$TEST_SUBDIRS" ]]; then
-    INPUTS="$INPUTS -f test-subdirs='$TEST_SUBDIRS'"
-fi
+INPUTS="-f test-subdirs='$TEST_SUBDIRS'"
 if [[ -n "$TEST_PROVIDER" ]]; then
     INPUTS="$INPUTS -f test-provider='$TEST_PROVIDER'"
 fi
