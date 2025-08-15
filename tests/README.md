@@ -100,7 +100,6 @@ This script:
 - 🔍 **Auto-detects your branch** and associated PR
 - 🍴 **Works from forks** - handles repository context automatically
 - ✅ **Commits recordings back** to your branch
-- 🛡️ **Validates inputs** - prevents common mistakes
 
 **Prerequisites:**
 - GitHub CLI: `brew install gh && gh auth login`
