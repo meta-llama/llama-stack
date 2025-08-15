@@ -10,11 +10,15 @@ import hashlib
 import json
 import os
 import sqlite3
+import uuid
 from collections.abc import Generator
 from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal, cast
+
+from openai.pagination import AsyncPage
+from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 from llama_stack.log import get_logger
 
@@ -105,6 +109,7 @@ def _deserialize_response(data: dict[str, Any]) -> Any:
         try:
             # Import the original class and reconstruct the object
             module_path, class_name = data["__type__"].rsplit(".", 1)
+
             module = __import__(module_path, fromlist=[class_name])
             cls = getattr(module, class_name)
 
@@ -248,6 +253,20 @@ async def _patched_inference_method(original_method, self, client_type, endpoint
         recording = _current_storage.find_recording(request_hash)
         if recording:
             response_body = recording["response"]["body"]
+            if (
+                isinstance(response_body, list)
+                and len(response_body) > 0
+                and isinstance(response_body[0], ChatCompletionChunk)
+            ):
+                # We can't replay chatcompletions with the same id and we store them in a sqlite database with a unique constraint on the id.
+                # So we generate a new id and replace the old one.
+                newid = uuid.uuid4().hex
+                response_body[0].id = "chatcmpl-" + newid
+            elif isinstance(response_body, ChatCompletion):
+                # We can't replay chatcompletions with the same id and we store them in a sqlite database with a unique constraint on the id.
+                # So we generate a new id and replace the old one.
+                newid = uuid.uuid4().hex
+                response_body.id = "chatcmpl-" + newid
 
             if recording["response"].get("is_streaming", False):
 
@@ -281,8 +300,11 @@ async def _patched_inference_method(original_method, self, client_type, endpoint
         # Determine if this is a streaming request based on request parameters
         is_streaming = body.get("stream", False)
 
-        if is_streaming:
-            # For streaming responses, we need to collect all chunks immediately before yielding
+        # Check if this is a paged response
+        is_paged = isinstance(response, AsyncPage)
+
+        if is_streaming or is_paged:
+            # For streaming and paged responses, we need to collect all chunks immediately before yielding
             # This ensures the recording is saved even if the generator isn't fully consumed
             chunks = []
             async for chunk in response:
@@ -315,9 +337,11 @@ def patch_inference_clients():
     from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
     from openai.resources.completions import AsyncCompletions
     from openai.resources.embeddings import AsyncEmbeddings
+    from openai.resources.models import AsyncModels
 
     # Store original methods for both OpenAI and Ollama clients
     _original_methods = {
+        "model_list": AsyncModels.list,
         "chat_completions_create": AsyncChatCompletions.create,
         "completions_create": AsyncCompletions.create,
         "embeddings_create": AsyncEmbeddings.create,
@@ -330,6 +354,58 @@ def patch_inference_clients():
     }
 
     # Create patched methods for OpenAI client
+    def patched_model_list(self, *args, **kwargs):
+        # The original models.list() returns an AsyncPaginator that can be used with async for
+        # We need to create a wrapper that preserves this behavior
+        class PatchedAsyncPaginator:
+            def __init__(self, original_method, instance, client_type, endpoint, args, kwargs):
+                self.original_method = original_method
+                self.instance = instance
+                self.client_type = client_type
+                self.endpoint = endpoint
+                self.args = args
+                self.kwargs = kwargs
+                self._result = None
+                self._iter_index = 0
+
+            def __await__(self):
+                # Make it awaitable like the original AsyncPaginator
+                async def _await():
+                    self._result = await _patched_inference_method(
+                        self.original_method, self.instance, self.client_type, self.endpoint, *self.args, **self.kwargs
+                    )
+                    return self._result
+
+                return _await().__await__()
+
+            def __aiter__(self):
+                # Make it async iterable like the original AsyncPaginator
+                return self
+
+            async def __anext__(self):
+                # Get the result if we haven't already
+                if self._result is None:
+                    self._result = [
+                        r
+                        async for r in await _patched_inference_method(
+                            self.original_method,
+                            self.instance,
+                            self.client_type,
+                            self.endpoint,
+                            *self.args,
+                            **self.kwargs,
+                        )
+                    ]
+
+                # Return next item from the list
+                if self._iter_index >= len(self._result):
+                    raise StopAsyncIteration
+                item = self._result[self._iter_index]
+                self._iter_index += 1
+                return item
+
+        return PatchedAsyncPaginator(_original_methods["model_list"], self, "openai", "/v1/models", args, kwargs)
+
     async def patched_chat_completions_create(self, *args, **kwargs):
         return await _patched_inference_method(
             _original_methods["chat_completions_create"], self, "openai", "/v1/chat/completions", *args, **kwargs
@@ -346,6 +422,7 @@ def patch_inference_clients():
         )
 
     # Apply OpenAI patches
+    AsyncModels.list = patched_model_list
     AsyncChatCompletions.create = patched_chat_completions_create
     AsyncCompletions.create = patched_completions_create
     AsyncEmbeddings.create = patched_embeddings_create
@@ -402,8 +479,10 @@ def unpatch_inference_clients():
     from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
     from openai.resources.completions import AsyncCompletions
     from openai.resources.embeddings import AsyncEmbeddings
+    from openai.resources.models import AsyncModels
 
     # Restore OpenAI client methods
+    AsyncModels.list = _original_methods["model_list"]
     AsyncChatCompletions.create = _original_methods["chat_completions_create"]
     AsyncCompletions.create = _original_methods["completions_create"]
     AsyncEmbeddings.create = _original_methods["embeddings_create"]
