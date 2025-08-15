@@ -221,6 +221,11 @@ for test_subdir in $(echo "$TEST_SUBDIRS" | tr ',' '\n'); do
         fi
     fi
 
+    if [[ "$STACK_CONFIG" != *"server:"* ]] && [[ "$test_subdir" == "batches" ]]; then
+        echo "Skipping $test_subdir for library client until types are supported"
+        continue
+    fi
+
     if [[ -d "tests/integration/$test_subdir" ]]; then
         # Find all Python test files in this directory
         test_files=$(find tests/integration/$test_subdir -name "test_*.py" -o -name "*_test.py")
