@@ -1,7 +1,7 @@
-# This workflow should be run manually when needing to re-record tests. This happens when you have 
+# This workflow should be run manually when needing to re-record tests. This happens when you have
 #  - added a new test
 #  - or changed an existing test such that a new inference call is made
-# You should make a PR and then run this workflow on that PR branch. The workflow will re-record the 
+# You should make a PR and then run this workflow on that PR branch. The workflow will re-record the
 # tests and commit the recordings to the PR branch.
 name: Integration Tests (Record)
 

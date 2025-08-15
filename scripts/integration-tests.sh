@@ -31,7 +31,7 @@ Options:
     --test-subdirs STRING    Comma-separated list of test subdirectories to run (default: 'inference')
     --run-vision-tests       Run vision tests instead of regular tests
     --inference-mode STRING  Inference mode: record or replay (default: replay)
-    --test-pattern STRING    Regex pattern to pass to pytest -k 
+    --test-pattern STRING    Regex pattern to pass to pytest -k
     --help                   Show this help message
 
 Examples:
@@ -179,19 +179,26 @@ fi
 # Run vision tests if specified
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     echo "Running vision tests..."
-    if uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
+    set +e
+    uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
         --stack-config="$STACK_CONFIG" \
         -k "$PYTEST_PATTERN" \
         --vision-model=ollama/llama3.2-vision:11b \
         --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
         --color=yes $EXTRA_PARAMS \
-        --capture=tee-sys; then
+        --capture=tee-sys
+    exit_code=$?
+    set -e
+
+    if [ $exit_code -eq 0 ]; then
         echo "✅ Vision tests completed successfully"
+    elif [ $exit_code -eq 5 ]; then
+        echo "⚠️ No vision tests collected (pattern matched no tests)"
+        exit 0
     else
         echo "❌ Vision tests failed"
         exit 1
     fi
-    exit 0
 fi
 
 # Run regular tests
