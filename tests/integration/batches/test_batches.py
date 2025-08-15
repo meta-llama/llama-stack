@@ -180,8 +180,8 @@ class TestBatchesIntegration:
                 "url": "/v1/chat/completions",
                 "body": {
                     "model": text_model_id,
-                    "messages": [{"role": "user", "content": "This should fail"}],
-                    "max_tokens": -1,  # Invalid negative max_tokens will cause inference error
+                    "messages": [{"rolez": "user", "contentz": "This should fail"}],  # Invalid keys to trigger error
+                    # note: ollama does not validate max_tokens values or the "role" key, so they won't trigger an error
                 },
             },
         ]
