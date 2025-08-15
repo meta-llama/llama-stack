@@ -134,6 +134,15 @@ cat recordings/responses/abc123.json | jq '.'
 ```
 
 ### Re-recording Tests
+
+#### Remote Re-recording (Recommended)
+Use the automated workflow script for easier re-recording:
+```bash
+./scripts/github/schedule-record-workflow.sh --test-subdirs "inference,agents"
+```
+See the [main testing guide](../README.md#remote-re-recording-recommended) for full details.
+
+#### Local Re-recording
 ```bash
 # Re-record specific tests
 LLAMA_STACK_TEST_INFERENCE_MODE=record \

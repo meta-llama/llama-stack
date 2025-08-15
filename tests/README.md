@@ -60,7 +60,9 @@ FIREWORKS_API_KEY=your_key pytest -sv tests/integration/inference --stack-config
 
 ### Re-recording tests
 
-If you want to re-record tests, you can do so with:
+#### Local Re-recording (Manual Setup Required)
+
+If you want to re-record tests locally, you can do so with:
 
 ```bash
 LLAMA_STACK_TEST_INFERENCE_MODE=record \
@@ -71,13 +73,41 @@ LLAMA_STACK_TEST_INFERENCE_MODE=record \
 
 This will record new API responses and overwrite the existing recordings.
 
-
 ```{warning}
 
 You must be careful when re-recording. CI workflows assume a specific setup for running the replay-mode tests. You must re-record the tests in the same way as the CI workflows. This means
 - you need Ollama running and serving some specific models.
 - you are using the `starter` distribution.
 ```
+
+#### Remote Re-recording (Recommended)
+
+**For easier re-recording without local setup**, use the automated recording workflow:
+
+```bash
+# Record tests for specific test subdirectories
+./scripts/github/schedule-record-workflow.sh --test-subdirs "agents,inference"
+
+# Record with vision tests enabled
+./scripts/github/schedule-record-workflow.sh --test-subdirs "inference" --run-vision-tests
+
+# Record with specific provider
+./scripts/github/schedule-record-workflow.sh --test-subdirs "agents" --test-provider vllm
+```
+
+This script:
+- 🚀 **Runs in GitHub Actions** - no local Ollama setup required
+- 🔍 **Auto-detects your branch** and associated PR
+- 🍴 **Works from forks** - handles repository context automatically
+- ✅ **Commits recordings back** to your branch
+- 🛡️ **Validates inputs** - prevents common mistakes
+
+**Prerequisites:**
+- GitHub CLI: `brew install gh && gh auth login`
+- jq: `brew install jq`
+- Your branch pushed to a remote
+
+**Supported providers:** `vllm`, `ollama`
 
 
 ### Next Steps
