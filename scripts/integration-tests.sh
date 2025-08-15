@@ -194,11 +194,11 @@ if [[ "$RUN_VISION_TESTS" == "true" ]]; then
         echo "✅ Vision tests completed successfully"
     elif [ $exit_code -eq 5 ]; then
         echo "⚠️ No vision tests collected (pattern matched no tests)"
-        exit 0
     else
         echo "❌ Vision tests failed"
         exit 1
     fi
+    exit 0
 fi
 
 # Run regular tests
