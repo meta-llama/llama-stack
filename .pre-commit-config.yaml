@@ -2,6 +2,7 @@ exclude: 'build/'
 
 default_language_version:
     python: python3.12
+    node: "22"
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
@@ -145,6 +146,20 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^.github/workflows/.*$
+      - id: ui-prettier
+        name: Format UI code with Prettier
+        entry: bash -c 'cd llama_stack/ui && npm run format'
+        language: system
+        files: ^llama_stack/ui/.*\.(ts|tsx)$
+        pass_filenames: false
+        require_serial: true
+      - id: ui-eslint
+        name: Lint UI code with ESLint
+        entry: bash -c 'cd llama_stack/ui && npm run lint -- --fix --quiet'
+        language: system
+        files: ^llama_stack/ui/.*\.(ts|tsx)$
+        pass_filenames: false
+        require_serial: true
 
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

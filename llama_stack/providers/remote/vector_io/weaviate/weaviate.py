@@ -26,6 +26,7 @@ from llama_stack.providers.utils.memory.openai_vector_store_mixin import (
     OpenAIVectorStoreMixin,
 )
 from llama_stack.providers.utils.memory.vector_store import (
+    ChunkForDeletion,
     EmbeddingIndex,
     VectorDBWithIndex,
 )
@@ -67,6 +68,7 @@ class WeaviateIndex(EmbeddingIndex):
             data_objects.append(
                 wvc.data.DataObject(
                     properties={
+                        "chunk_id": chunk.chunk_id,
                         "chunk_content": chunk.model_dump_json(),
                     },
                     vector=embeddings[i].tolist(),
@@ -79,10 +81,11 @@ class WeaviateIndex(EmbeddingIndex):
         # TODO: make this async friendly
         collection.data.insert_many(data_objects)
 
-    async def delete_chunk(self, chunk_id: str) -> None:
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
         collection = self.client.collections.get(sanitized_collection_name)
-        collection.data.delete_many(where=Filter.by_property("id").contains_any([chunk_id]))
+        chunk_ids = [chunk.chunk_id for chunk in chunks_for_deletion]
+        collection.data.delete_many(where=Filter.by_property("chunk_id").contains_any(chunk_ids))
 
     async def query_vector(self, embedding: NDArray, k: int, score_threshold: float) -> QueryChunksResponse:
         sanitized_collection_name = sanitize_collection_name(self.collection_name, weaviate_format=True)
@@ -307,10 +310,10 @@ class WeaviateVectorIOAdapter(
 
         return await index.query_chunks(query, params)
 
-    async def delete_chunks(self, store_id: str, chunk_ids: list[str]) -> None:
+    async def delete_chunks(self, store_id: str, chunks_for_deletion: list[ChunkForDeletion]) -> None:
         sanitized_collection_name = sanitize_collection_name(store_id, weaviate_format=True)
         index = await self._get_and_cache_vector_db_index(sanitized_collection_name)
         if not index:
             raise ValueError(f"Vector DB {sanitized_collection_name} not found")
 
-        await index.delete(chunk_ids)
+        await index.index.delete_chunks(chunks_for_deletion)

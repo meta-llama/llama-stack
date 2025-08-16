@@ -14,7 +14,8 @@ set -euo pipefail
 # Default values
 STACK_CONFIG=""
 PROVIDER=""
-TEST_TYPES='["inference"]'
+TEST_SUBDIRS=""
+TEST_PATTERN=""
 RUN_VISION_TESTS="false"
 INFERENCE_MODE="replay"
 EXTRA_PARAMS=""
@@ -27,23 +28,24 @@ Usage: $0 [OPTIONS]
 Options:
     --stack-config STRING    Stack configuration to use (required)
     --provider STRING        Provider to use (ollama, vllm, etc.) (required)
-    --test-types JSON        JSON array of test types to run (default: '["inference"]')
+    --test-subdirs STRING    Comma-separated list of test subdirectories to run (default: 'inference')
     --run-vision-tests       Run vision tests instead of regular tests
     --inference-mode STRING  Inference mode: record or replay (default: replay)
+    --test-pattern STRING    Regex pattern to pass to pytest -k
     --help                   Show this help message
 
 Examples:
     # Basic inference tests with ollama
-    $0 --stack-config server:ollama --provider ollama
+    $0 --stack-config server:ci-tests --provider ollama
 
-    # Multiple test types with vllm
-    $0 --stack-config server:vllm --provider vllm --test-types '["inference", "agents"]'
+    # Multiple test directories with vllm
+    $0 --stack-config server:ci-tests --provider vllm --test-subdirs 'inference,agents'
 
     # Vision tests with ollama
-    $0 --stack-config server:ollama --provider ollama --run-vision-tests
+    $0 --stack-config server:ci-tests --provider ollama --run-vision-tests
 
     # Record mode for updating test recordings
-    $0 --stack-config server:ollama --provider ollama --inference-mode record
+    $0 --stack-config server:ci-tests --provider ollama --inference-mode record
 EOF
 }
 
@@ -58,8 +60,8 @@ while [[ $# -gt 0 ]]; do
             PROVIDER="$2"
             shift 2
             ;;
-        --test-types)
-            TEST_TYPES="$2"
+        --test-subdirs)
+            TEST_SUBDIRS="$2"
             shift 2
             ;;
         --run-vision-tests)
@@ -68,6 +70,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --inference-mode)
             INFERENCE_MODE="$2"
+            shift 2
+            ;;
+        --test-pattern)
+            TEST_PATTERN="$2"
             shift 2
             ;;
         --help)
@@ -99,9 +105,10 @@ fi
 echo "=== Llama Stack Integration Test Runner ==="
 echo "Stack Config: $STACK_CONFIG"
 echo "Provider: $PROVIDER"
-echo "Test Types: $TEST_TYPES"
+echo "Test Subdirs: $TEST_SUBDIRS"
 echo "Vision Tests: $RUN_VISION_TESTS"
 echo "Inference Mode: $INFERENCE_MODE"
+echo "Test Pattern: $TEST_PATTERN"
 echo ""
 
 # Check storage and memory before tests
@@ -164,17 +171,29 @@ if [[ "$PROVIDER" == "vllm" ]]; then
     EXCLUDE_TESTS="${EXCLUDE_TESTS} or test_inference_store_tool_calls"
 fi
 
+PYTEST_PATTERN="not( $EXCLUDE_TESTS )"
+if [[ -n "$TEST_PATTERN" ]]; then
+    PYTEST_PATTERN="${PYTEST_PATTERN} and $TEST_PATTERN"
+fi
+
 # Run vision tests if specified
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     echo "Running vision tests..."
-    if uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
+    set +e
+    uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
         --stack-config="$STACK_CONFIG" \
-        -k "not( $EXCLUDE_TESTS )" \
+        -k "$PYTEST_PATTERN" \
         --vision-model=ollama/llama3.2-vision:11b \
         --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
         --color=yes $EXTRA_PARAMS \
-        --capture=tee-sys | tee pytest-${INFERENCE_MODE}-vision.log; then
+        --capture=tee-sys
+    exit_code=$?
+    set -e
+
+    if [ $exit_code -eq 0 ]; then
         echo "✅ Vision tests completed successfully"
+    elif [ $exit_code -eq 5 ]; then
+        echo "⚠️ No vision tests collected (pattern matched no tests)"
     else
         echo "❌ Vision tests failed"
         exit 1
@@ -183,28 +202,39 @@ if [[ "$RUN_VISION_TESTS" == "true" ]]; then
 fi
 
 # Run regular tests
-echo "Test types to run: $TEST_TYPES"
+if [[ -z "$TEST_SUBDIRS" ]]; then
+   TEST_SUBDIRS=$(find tests/integration -maxdepth 1 -mindepth 1 -type d |
+            sed 's|tests/integration/||' |
+            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|non_ci|post_training)$" |
+            sort)
+fi
+echo "Test subdirs to run: $TEST_SUBDIRS"
 
 # Collect all test files for the specified test types
 TEST_FILES=""
-for test_type in $(echo "$TEST_TYPES" | jq -r '.[]'); do
+for test_subdir in $(echo "$TEST_SUBDIRS" | tr ',' '\n'); do
     # Skip certain test types for vllm provider
     if [[ "$PROVIDER" == "vllm" ]]; then
-        if [[ "$test_type" == "safety" ]] || [[ "$test_type" == "post_training" ]] || [[ "$test_type" == "tool_runtime" ]]; then
-            echo "Skipping $test_type for vllm provider"
+        if [[ "$test_subdir" == "safety" ]] || [[ "$test_subdir" == "post_training" ]] || [[ "$test_subdir" == "tool_runtime" ]]; then
+            echo "Skipping $test_subdir for vllm provider"
             continue
         fi
     fi
 
-    if [[ -d "tests/integration/$test_type" ]]; then
+    if [[ "$STACK_CONFIG" != *"server:"* ]] && [[ "$test_subdir" == "batches" ]]; then
+        echo "Skipping $test_subdir for library client until types are supported"
+        continue
+    fi
+
+    if [[ -d "tests/integration/$test_subdir" ]]; then
         # Find all Python test files in this directory
-        test_files=$(find tests/integration/$test_type -name "test_*.py" -o -name "*_test.py")
+        test_files=$(find tests/integration/$test_subdir -name "test_*.py" -o -name "*_test.py")
         if [[ -n "$test_files" ]]; then
             TEST_FILES="$TEST_FILES $test_files"
-            echo "Added test files from $test_type: $(echo $test_files | wc -w) files"
+            echo "Added test files from $test_subdir: $(echo $test_files | wc -w) files"
         fi
     else
-        echo "Warning: Directory tests/integration/$test_type does not exist"
+        echo "Warning: Directory tests/integration/$test_subdir does not exist"
     fi
 done
 
@@ -217,14 +247,21 @@ echo ""
 echo "=== Running all collected tests in a single pytest command ==="
 echo "Total test files: $(echo $TEST_FILES | wc -w)"
 
-if uv run pytest -s -v $TEST_FILES \
+set +e
+uv run pytest -s -v $TEST_FILES \
     --stack-config="$STACK_CONFIG" \
-    -k "not( $EXCLUDE_TESTS )" \
+    -k "$PYTEST_PATTERN" \
     --text-model="$TEXT_MODEL" \
     --embedding-model=sentence-transformers/all-MiniLM-L6-v2 \
     --color=yes $EXTRA_PARAMS \
-    --capture=tee-sys | tee pytest-${INFERENCE_MODE}-all.log; then
+    --capture=tee-sys
+exit_code=$?
+set -e
+
+if [ $exit_code -eq 0 ]; then
     echo "✅ All tests completed successfully"
+elif [ $exit_code -eq 5 ]; then
+    echo "⚠️ No tests collected (pattern matched no tests)"
 else
     echo "❌ Tests failed"
     exit 1

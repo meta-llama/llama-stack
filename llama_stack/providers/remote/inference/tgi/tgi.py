@@ -308,9 +308,7 @@ class TGIAdapter(_HfAdapter):
         if not config.url:
             raise ValueError("You must provide a URL in run.yaml (or via the TGI_URL environment variable) to use TGI.")
         log.info(f"Initializing TGI client with url={config.url}")
-        self.client = AsyncInferenceClient(
-            model=config.url,
-        )
+        self.client = AsyncInferenceClient(model=config.url, provider="hf-inference")
         endpoint_info = await self.client.get_endpoint_info()
         self.max_tokens = endpoint_info["max_total_tokens"]
         self.model_id = endpoint_info["model_id"]

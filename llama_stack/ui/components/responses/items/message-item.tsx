@@ -20,7 +20,7 @@ export function MessageItemComponent({
     content = item.content;
   } else if (Array.isArray(item.content)) {
     content = item.content
-      .map((c) => {
+      .map(c => {
         return c.type === "input_text" || c.type === "output_text"
           ? c.text
           : JSON.stringify(c);

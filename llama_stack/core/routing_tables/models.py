@@ -63,6 +63,8 @@ class ModelsRoutingTable(CommonRoutingTableImpl, Models):
 
     async def get_provider_impl(self, model_id: str) -> Any:
         model = await lookup_model(self, model_id)
+        if model.provider_id not in self.impls_by_provider_id:
+            raise ValueError(f"Provider {model.provider_id} not found in the routing table")
         return self.impls_by_provider_id[model.provider_id]
 
     async def register_model(

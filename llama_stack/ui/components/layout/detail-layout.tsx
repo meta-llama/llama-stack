@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export function DetailLoadingView({ title }: { title: string }) {
+export function DetailLoadingView() {
   return (
     <>
       <Skeleton className="h-8 w-3/4 mb-6" /> {/* Title Skeleton */}

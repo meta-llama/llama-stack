@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useAuthClient } from "@/hooks/use-auth-client";
 import type {
   ListVectorStoresResponse,
   VectorStore,
@@ -12,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -21,7 +19,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VectorStoresPage() {
-  const client = useAuthClient();
   const router = useRouter();
   const {
     data: stores,
@@ -37,7 +34,7 @@ export default function VectorStoresPage() {
         after: params.after,
         limit: params.limit,
         order: params.order,
-      } as any);
+      } as Parameters<typeof client.vectorStores.list>[0]);
       return response as ListVectorStoresResponse;
     },
     errorMessagePrefix: "vector stores",
@@ -53,11 +50,11 @@ export default function VectorStoresPage() {
   const renderContent = () => {
     if (status === "loading") {
       return (
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-full"/>
-            <Skeleton className="h-4 w-full"/>
-            <Skeleton className="h-4 w-full"/>
-          </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+        </div>
       );
     }
 
@@ -70,72 +67,72 @@ export default function VectorStoresPage() {
     }
 
     return (
-        <div className="overflow-auto flex-1 min-h-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Completed</TableHead>
-                <TableHead>Cancelled</TableHead>
-                <TableHead>Failed</TableHead>
-                <TableHead>In Progress</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Usage Bytes</TableHead>
-                <TableHead>Provider ID</TableHead>
-                <TableHead>Provider Vector DB ID</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {stores.map((store) => {
-                const fileCounts = store.file_counts;
-                const metadata = store.metadata || {};
-                const providerId = metadata.provider_id ?? "";
-                const providerDbId = metadata.provider_vector_db_id ?? "";
+      <div className="overflow-auto flex-1 min-h-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Completed</TableHead>
+              <TableHead>Cancelled</TableHead>
+              <TableHead>Failed</TableHead>
+              <TableHead>In Progress</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Usage Bytes</TableHead>
+              <TableHead>Provider ID</TableHead>
+              <TableHead>Provider Vector DB ID</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {stores.map(store => {
+              const fileCounts = store.file_counts;
+              const metadata = store.metadata || {};
+              const providerId = metadata.provider_id ?? "";
+              const providerDbId = metadata.provider_vector_db_id ?? "";
 
-                return (
-                    <TableRow
-                        key={store.id}
-                        onClick={() => router.push(`/logs/vector-stores/${store.id}`)}
-                        className="cursor-pointer hover:bg-muted/50"
+              return (
+                <TableRow
+                  key={store.id}
+                  onClick={() => router.push(`/logs/vector-stores/${store.id}`)}
+                  className="cursor-pointer hover:bg-muted/50"
+                >
+                  <TableCell>
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto font-mono text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      onClick={() =>
+                        router.push(`/logs/vector-stores/${store.id}`)
+                      }
                     >
-                    <TableCell>
-                      <Button
-                        variant="link"
-                        className="p-0 h-auto font-mono text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                        onClick={() =>
-                          router.push(`/logs/vector-stores/${store.id}`)
-                        }
-                      >
-                        {store.id}
-                      </Button>
-                    </TableCell>
-                      <TableCell>{store.name}</TableCell>
-                      <TableCell>
-                        {new Date(store.created_at * 1000).toLocaleString()}
-                      </TableCell>
-                      <TableCell>{fileCounts.completed}</TableCell>
-                      <TableCell>{fileCounts.cancelled}</TableCell>
-                      <TableCell>{fileCounts.failed}</TableCell>
-                      <TableCell>{fileCounts.in_progress}</TableCell>
-                      <TableCell>{fileCounts.total}</TableCell>
-                      <TableCell>{store.usage_bytes}</TableCell>
-                      <TableCell>{providerId}</TableCell>
-                      <TableCell>{providerDbId}</TableCell>
-                    </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                      {store.id}
+                    </Button>
+                  </TableCell>
+                  <TableCell>{store.name}</TableCell>
+                  <TableCell>
+                    {new Date(store.created_at * 1000).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{fileCounts.completed}</TableCell>
+                  <TableCell>{fileCounts.cancelled}</TableCell>
+                  <TableCell>{fileCounts.failed}</TableCell>
+                  <TableCell>{fileCounts.in_progress}</TableCell>
+                  <TableCell>{fileCounts.total}</TableCell>
+                  <TableCell>{store.usage_bytes}</TableCell>
+                  <TableCell>{providerId}</TableCell>
+                  <TableCell>{providerDbId}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     );
   };
 
   return (
-      <div className="space-y-4">
-        <h1 className="text-2xl font-semibold">Vector Stores</h1>
-        {renderContent()}
-      </div>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold">Vector Stores</h1>
+      {renderContent()}
+    </div>
   );
 }

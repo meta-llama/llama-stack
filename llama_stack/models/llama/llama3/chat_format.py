@@ -236,6 +236,7 @@ class ChatFormat:
                     arguments_json=json.dumps(tool_arguments),
                 )
             )
+            content = ""
 
         return RawMessage(
             role="assistant",

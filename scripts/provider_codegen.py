@@ -18,6 +18,23 @@ from llama_stack.core.distribution import get_provider_registry
 REPO_ROOT = Path(__file__).parent.parent
 
 
+def get_api_docstring(api_name: str) -> str | None:
+    """Extract docstring from the API protocol class."""
+    try:
+        # Import the API module dynamically
+        api_module = __import__(f"llama_stack.apis.{api_name}", fromlist=[api_name.title()])
+
+        # Get the main protocol class (usually capitalized API name)
+        protocol_class_name = api_name.title()
+        if hasattr(api_module, protocol_class_name):
+            protocol_class = getattr(api_module, protocol_class_name)
+            return protocol_class.__doc__
+    except (ImportError, AttributeError):
+        pass
+
+    return None
+
+
 class ChangedPathTracker:
     """Track a list of paths we may have changed."""
 
@@ -187,7 +204,7 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
 
         if config_info.get("accepts_extra_config"):
             md_lines.append(
-                "> **Note**: This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider."
+                "```{note}\n This configuration class accepts additional fields beyond those listed above. You can pass any additional configuration options that will be forwarded to the underlying provider.\n ```\n"
             )
             md_lines.append("")
 
@@ -232,7 +249,7 @@ def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
     if hasattr(provider_spec, "deprecation_warning") and provider_spec.deprecation_warning:
         md_lines.append("## Deprecation Notice")
         md_lines.append("")
-        md_lines.append(f"⚠️ **Warning**: {provider_spec.deprecation_warning}")
+        md_lines.append(f"```{{warning}}\n{provider_spec.deprecation_warning}\n```")
         md_lines.append("")
 
     if hasattr(provider_spec, "deprecation_error") and provider_spec.deprecation_error:
@@ -260,6 +277,11 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
             index_content = []
             index_content.append(f"# {api_name.title()}\n")
             index_content.append("## Overview\n")
+
+            api_docstring = get_api_docstring(api_name)
+            if api_docstring:
+                cleaned_docstring = api_docstring.strip()
+                index_content.append(f"{cleaned_docstring}\n")
 
             index_content.append(
                 f"This section contains documentation for all available providers for the **{api_name}** API.\n"

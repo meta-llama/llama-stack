@@ -16,6 +16,7 @@ from llama_stack.distributions.template import DistributionTemplate, RunConfigSe
 from llama_stack.providers.inline.inference.sentence_transformers import (
     SentenceTransformersInferenceConfig,
 )
+from llama_stack.providers.remote.vector_io.chroma import ChromaVectorIOConfig
 
 
 def get_distribution_template() -> DistributionTemplate:
@@ -71,9 +72,10 @@ def get_distribution_template() -> DistributionTemplate:
     chromadb_provider = Provider(
         provider_id="chromadb",
         provider_type="remote::chromadb",
-        config={
-            "url": "${env.CHROMA_URL}",
-        },
+        config=ChromaVectorIOConfig.sample_run_config(
+            f"~/.llama/distributions/{name}/",
+            url="${env.CHROMADB_URL:=}",
+        ),
     )
 
     inference_model = ModelInput(

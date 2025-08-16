@@ -14,9 +14,11 @@ on:
       - 'pyproject.toml'
       - 'requirements.txt'
       - '.github/workflows/integration-vector-io-tests.yml' # This workflow
+  schedule:
+    - cron: '0 0 * * *'  # (test on python 3.13) Daily at 12 AM UTC
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,7 +27,7 @@ jobs:
     strategy:
       matrix:
         vector-io-provider: ["inline::faiss", "inline::sqlite-vec", "inline::milvus", "remote::chromadb", "remote::pgvector", "remote::weaviate", "remote::qdrant"]
-        python-version: ["3.12", "3.13"]
+        python-version: ${{ github.event.schedule == '0 0 * * *' && fromJSON('["3.12", "3.13"]') || fromJSON('["3.12"]') }}
       fail-fast: false # we want to run all tests regardless of failure
 
     steps:
@@ -164,9 +166,9 @@ jobs:
           ENABLE_WEAVIATE: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'true' || '' }}
           WEAVIATE_CLUSTER_URL: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'localhost:8080' || '' }}
         run: |
-          uv run pytest -sv --stack-config="inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
+          uv run pytest -sv --stack-config="files=inline::localfs,inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
-            --embedding-model sentence-transformers/all-MiniLM-L6-v2
+            --embedding-model inline::sentence-transformers/all-MiniLM-L6-v2
 
       - name: Check Storage and Memory Available After Tests
         if: ${{ always() }}

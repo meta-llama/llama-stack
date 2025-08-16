@@ -56,18 +56,19 @@ const manageItems = [
   },
 ];
 
-const optimizeItems: { title: string; url: string; icon: React.ElementType }[] = [
+const optimizeItems: { title: string; url: string; icon: React.ElementType }[] =
+  [
     {
-        title: "Evaluations",
-        url: "",
-        icon: Compass,
+      title: "Evaluations",
+      url: "",
+      icon: Compass,
     },
     {
-        title: "Fine-tuning",
-        url: "",
-        icon: Settings2,
+      title: "Fine-tuning",
+      url: "",
+      icon: Settings2,
     },
-];
+  ];
 
 interface SidebarItem {
   title: string;
@@ -79,7 +80,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   const renderSidebarItems = (items: SidebarItem[]) => {
-    return items.map((item) => {
+    return items.map(item => {
       const isActive = pathname.startsWith(item.url);
       return (
         <SidebarMenuItem key={item.title}>
@@ -88,14 +89,14 @@ export function AppSidebar() {
             className={cn(
               "justify-start",
               isActive &&
-                "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100",
+                "bg-gray-200 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
             )}
           >
             <Link href={item.url}>
               <item.icon
                 className={cn(
                   isActive && "text-gray-900 dark:text-gray-100",
-                  "mr-2 h-4 w-4",
+                  "mr-2 h-4 w-4"
                 )}
               />
               <span>{item.title}</span>
@@ -106,46 +107,48 @@ export function AppSidebar() {
     });
   };
 
-return (
-  <Sidebar>
-    <SidebarHeader>
-      <Link href="/">Llama Stack</Link>
-    </SidebarHeader>
-    <SidebarContent>
-      <SidebarGroup>
-        <SidebarGroupLabel>Create</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>{renderSidebarItems(createItems)}</SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+  return (
+    <Sidebar>
+      <SidebarHeader>
+        <Link href="/">Llama Stack</Link>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Create</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderSidebarItems(createItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-      <SidebarGroup>
-        <SidebarGroupLabel>Manage</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>{renderSidebarItems(manageItems)}</SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Manage</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{renderSidebarItems(manageItems)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-      <SidebarGroup>
-        <SidebarGroupLabel>Optimize</SidebarGroupLabel>
-        <SidebarGroupContent>
-          <SidebarMenu>
-            {optimizeItems.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  disabled
-                  className="justify-start opacity-60 cursor-not-allowed"
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                  <span className="ml-2 text-xs text-gray-500">(Coming Soon)</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroupContent>
-      </SidebarGroup>
-    </SidebarContent>
-  </Sidebar>
+        <SidebarGroup>
+          <SidebarGroupLabel>Optimize</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {optimizeItems.map(item => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    disabled
+                    className="justify-start opacity-60 cursor-not-allowed"
+                  >
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.title}</span>
+                    <span className="ml-2 text-xs text-gray-500">
+                      (Coming Soon)
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }

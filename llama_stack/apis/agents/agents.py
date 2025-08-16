@@ -706,6 +706,7 @@ class Agents(Protocol):
         temperature: float | None = None,
         text: OpenAIResponseText | None = None,
         tools: list[OpenAIResponseInputTool] | None = None,
+        include: list[str] | None = None,
         max_infer_iters: int | None = 10,  # this is an extension to the OpenAI API
     ) -> OpenAIResponseObject | AsyncIterator[OpenAIResponseObjectStream]:
         """Create a new OpenAI response.
@@ -713,6 +714,7 @@ class Agents(Protocol):
         :param input: Input message(s) to create the response.
         :param model: The underlying LLM used for completions.
         :param previous_response_id: (Optional) if specified, the new response will be a continuation of the previous response. This can be used to easily fork-off new responses from existing responses.
+        :param include: (Optional) Additional fields to include in the response.
         :returns: An OpenAIResponseObject.
         """
         ...

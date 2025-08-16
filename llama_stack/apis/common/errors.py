@@ -80,3 +80,10 @@ class MissingTrainingConfigError(ValueError):
     def __init__(self, config_name: str) -> None:
         message = f"'{config_name}' is required for training"
         super().__init__(message)
+
+
+class ConflictError(ValueError):
+    """raised when an operation cannot be performed due to a conflict with the current state"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

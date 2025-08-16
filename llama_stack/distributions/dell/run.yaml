@@ -22,7 +22,10 @@ providers:
   - provider_id: chromadb
     provider_type: remote::chromadb
     config:
-      url: ${env.CHROMA_URL}
+      url: ${env.CHROMADB_URL:=}
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/dell/}/chroma_remote_registry.db
   safety:
   - provider_id: llama-guard
     provider_type: inline::llama-guard

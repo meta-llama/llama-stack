@@ -27,19 +27,19 @@ export function validateServerConfig() {
       !optionalConfigs.GITHUB_CLIENT_SECRET
     ) {
       console.log(
-        "\n📝 GitHub OAuth not configured (authentication features disabled)",
+        "\n📝 GitHub OAuth not configured (authentication features disabled)"
       );
       console.log("   To enable GitHub OAuth:");
       console.log("   1. Go to https://github.com/settings/applications/new");
       console.log(
-        "   2. Set Application name: Llama Stack UI (or your preferred name)",
+        "   2. Set Application name: Llama Stack UI (or your preferred name)"
       );
       console.log("   3. Set Homepage URL: http://localhost:8322");
       console.log(
-        "   4. Set Authorization callback URL: http://localhost:8322/api/auth/callback/github",
+        "   4. Set Authorization callback URL: http://localhost:8322/api/auth/callback/github"
       );
       console.log(
-        "   5. Create the app and copy the Client ID and Client Secret",
+        "   5. Create the app and copy the Client ID and Client Secret"
       );
       console.log("   6. Add them to your .env.local file:");
       console.log("      GITHUB_CLIENT_ID=your_client_id");

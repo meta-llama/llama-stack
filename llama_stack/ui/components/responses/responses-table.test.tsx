@@ -146,7 +146,7 @@ describe("ResponsesTable", () => {
       expect(tableCaption).toBeInTheDocument();
       if (tableCaption) {
         const captionSkeleton = tableCaption.querySelector(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(captionSkeleton).toBeInTheDocument();
       }
@@ -156,7 +156,7 @@ describe("ResponsesTable", () => {
       expect(tableBody).toBeInTheDocument();
       if (tableBody) {
         const bodySkeletons = tableBody.querySelectorAll(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(bodySkeletons.length).toBeGreaterThan(0);
       }
@@ -176,14 +176,14 @@ describe("ResponsesTable", () => {
 
       render(<ResponsesTable {...defaultProps} />);
       expect(
-        screen.getByText("Unable to load chat completions"),
+        screen.getByText("Unable to load chat completions")
       ).toBeInTheDocument();
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
 
     test.each([{ name: "Error", message: "" }, {}])(
       "renders default error message when error has no message",
-      (errorObject) => {
+      errorObject => {
         mockedUsePagination.mockReturnValue({
           data: [],
           status: "error",
@@ -194,14 +194,14 @@ describe("ResponsesTable", () => {
 
         render(<ResponsesTable {...defaultProps} />);
         expect(
-          screen.getByText("Unable to load chat completions"),
+          screen.getByText("Unable to load chat completions")
         ).toBeInTheDocument();
         expect(
           screen.getByText(
-            "An unexpected error occurred while loading the data.",
-          ),
+            "An unexpected error occurred while loading the data."
+          )
         ).toBeInTheDocument();
-      },
+      }
     );
   });
 
@@ -275,7 +275,7 @@ describe("ResponsesTable", () => {
 
       // Table caption
       expect(
-        screen.getByText("A list of your recent responses."),
+        screen.getByText("A list of your recent responses.")
       ).toBeInTheDocument();
 
       // Table headers
@@ -289,14 +289,14 @@ describe("ResponsesTable", () => {
       expect(screen.getByText("Test output")).toBeInTheDocument();
       expect(screen.getByText("llama-test-model")).toBeInTheDocument();
       expect(
-        screen.getByText(new Date(1710000000 * 1000).toLocaleString()),
+        screen.getByText(new Date(1710000000 * 1000).toLocaleString())
       ).toBeInTheDocument();
 
       expect(screen.getByText("Another input")).toBeInTheDocument();
       expect(screen.getByText("Another output")).toBeInTheDocument();
       expect(screen.getByText("llama-another-model")).toBeInTheDocument();
       expect(
-        screen.getByText(new Date(1710001000 * 1000).toLocaleString()),
+        screen.getByText(new Date(1710001000 * 1000).toLocaleString())
       ).toBeInTheDocument();
     });
   });
@@ -487,7 +487,7 @@ describe("ResponsesTable", () => {
 
       render(<ResponsesTable {...defaultProps} />);
       expect(
-        screen.getByText('search_function({"query": "test"})'),
+        screen.getByText('search_function({"query": "test"})')
       ).toBeInTheDocument();
     });
 
@@ -548,7 +548,7 @@ describe("ResponsesTable", () => {
 
       render(<ResponsesTable {...defaultProps} />);
       expect(
-        screen.getByText("web_search_call(status: completed)"),
+        screen.getByText("web_search_call(status: completed)")
       ).toBeInTheDocument();
     });
 
@@ -565,7 +565,7 @@ describe("ResponsesTable", () => {
             id: "unknown_123",
             status: "completed",
             custom_field: "custom_value",
-          } as any,
+          } as unknown,
         ],
         input: [{ type: "message", content: "input" }],
       };
@@ -594,7 +594,7 @@ describe("ResponsesTable", () => {
           {
             type: "unknown_type",
             data: "some data",
-          } as any,
+          } as unknown,
         ],
         input: [{ type: "message", content: "input" }],
       };
@@ -623,7 +623,7 @@ describe("ResponsesTable", () => {
           return typeof text === "string" && text.length > effectiveMaxLength
             ? text.slice(0, effectiveMaxLength) + "..."
             : text;
-        },
+        }
       );
 
       const longInput =
@@ -665,7 +665,7 @@ describe("ResponsesTable", () => {
 
       // The truncated text should be present for both input and output
       const truncatedTexts = screen.getAllByText(
-        longInput.slice(0, 10) + "...",
+        longInput.slice(0, 10) + "..."
       );
       expect(truncatedTexts.length).toBe(2); // one for input, one for output
     });

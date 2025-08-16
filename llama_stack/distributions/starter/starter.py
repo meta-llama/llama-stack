@@ -139,6 +139,9 @@ def get_distribution_template() -> DistributionTemplate:
             BuildProvider(provider_type="inline::rag-runtime"),
             BuildProvider(provider_type="remote::model-context-protocol"),
         ],
+        "batches": [
+            BuildProvider(provider_type="inline::reference"),
+        ],
     }
     files_provider = Provider(
         provider_id="meta-reference-files",

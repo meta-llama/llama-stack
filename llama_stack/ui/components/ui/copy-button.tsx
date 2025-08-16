@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { Check, Copy } from "lucide-react"
+import { Check, Copy } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { Button } from "@/components/ui/button";
 
 type CopyButtonProps = {
-  content: string
-  copyMessage?: string
-}
+  content: string;
+  copyMessage?: string;
+};
 
 export function CopyButton({ content, copyMessage }: CopyButtonProps) {
   const { isCopied, handleCopy } = useCopyToClipboard({
     text: content,
     copyMessage,
-  })
+  });
 
   return (
     <Button
@@ -40,5 +40,5 @@ export function CopyButton({ content, copyMessage }: CopyButtonProps) {
         )}
       />
     </Button>
-  )
+  );
 }

@@ -22,6 +22,7 @@ class OpenAIFilePurpose(StrEnum):
     """
 
     ASSISTANTS = "assistants"
+    BATCH = "batch"
     # TODO: Add other purposes as needed
 
 

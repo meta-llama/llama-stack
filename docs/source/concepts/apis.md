@@ -18,3 +18,4 @@ We are working on adding a few more APIs to complete the application lifecycle. 
 - **Batch Inference**: run inference on a dataset of inputs
 - **Batch Agents**: run agents on a dataset of inputs
 - **Synthetic Data Generation**: generate synthetic data for model development
+- **Batches**: OpenAI-compatible batch management for inference

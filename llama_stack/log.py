@@ -32,6 +32,7 @@ CATEGORIES = [
     "tools",
     "client",
     "telemetry",
+    "openai_responses",
 ]
 
 # Initialize category levels with default level
