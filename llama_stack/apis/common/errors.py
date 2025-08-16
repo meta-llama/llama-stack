@@ -74,6 +74,14 @@ class ModelTypeError(TypeError):
         super().__init__(message)
 
 
+class MissingTrainingConfigError(ValueError):
+    """raise when Llama Stack is missing configuration for training"""
+
+    def __init__(self, config_name: str) -> None:
+        message = f"'{config_name}' is required for training"
+        super().__init__(message)
+
+
 class ConflictError(ValueError):
     """raised when an operation cannot be performed due to a conflict with the current state"""
 
