@@ -30,7 +30,6 @@ def available_providers() -> list[ProviderSpec]:
         InlineProviderSpec(
             api=Api.safety,
             provider_type="inline::llama-guard",
-            pip_packages=[],
             module="llama_stack.providers.inline.safety.llama_guard",
             config_class="llama_stack.providers.inline.safety.llama_guard.LlamaGuardConfig",
             api_dependencies=[
@@ -52,7 +51,6 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.safety,
             adapter=AdapterSpec(
                 adapter_type="bedrock",
-                pip_packages=["boto3"],
                 module="llama_stack.providers.remote.safety.bedrock",
                 config_class="llama_stack.providers.remote.safety.bedrock.BedrockSafetyConfig",
                 description="AWS Bedrock safety provider for content moderation using AWS's safety services.",
@@ -62,7 +60,6 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.safety,
             adapter=AdapterSpec(
                 adapter_type="nvidia",
-                pip_packages=["requests"],
                 module="llama_stack.providers.remote.safety.nvidia",
                 config_class="llama_stack.providers.remote.safety.nvidia.NVIDIASafetyConfig",
                 description="NVIDIA's safety provider for content moderation and safety filtering.",
@@ -72,7 +69,6 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.safety,
             adapter=AdapterSpec(
                 adapter_type="sambanova",
-                pip_packages=["litellm", "requests"],
                 module="llama_stack.providers.remote.safety.sambanova",
                 config_class="llama_stack.providers.remote.safety.sambanova.SambaNovaSafetyConfig",
                 provider_data_validator="llama_stack.providers.remote.safety.sambanova.config.SambaNovaProviderDataValidator",
