@@ -10,7 +10,12 @@ import os
 import httpx
 import openai
 import pytest
-from fixtures.test_cases import (
+
+from llama_stack import LlamaStackAsLibraryClient
+from llama_stack.core.datatypes import AuthenticationRequiredError
+from tests.common.mcp import dependency_tools, make_mcp_server
+
+from .fixtures.test_cases import (
     custom_tool_test_cases,
     file_search_test_cases,
     mcp_tool_test_cases,
@@ -18,12 +23,8 @@ from fixtures.test_cases import (
     multi_turn_tool_execution_test_cases,
     web_search_test_cases,
 )
-from helpers import new_vector_store, setup_mcp_tools, upload_file, wait_for_file_attachment
-from streaming_assertions import StreamingValidator
-
-from llama_stack import LlamaStackAsLibraryClient
-from llama_stack.core.datatypes import AuthenticationRequiredError
-from tests.common.mcp import dependency_tools, make_mcp_server
+from .helpers import new_vector_store, setup_mcp_tools, upload_file, wait_for_file_attachment
+from .streaming_assertions import StreamingValidator
 
 
 @pytest.mark.parametrize("case", web_search_test_cases)
@@ -193,6 +194,56 @@ def test_response_non_streaming_mcp_tool(compat_client, text_model_id, case):
             stream=False,
         )
         assert len(response.output) >= 3
+
+
+@pytest.mark.parametrize("case", mcp_tool_test_cases)
+def test_response_sequential_mcp_tool(compat_client, text_model_id, case):
+    if not isinstance(compat_client, LlamaStackAsLibraryClient):
+        pytest.skip("in-process MCP server is only supported in library client")
+
+    with make_mcp_server() as mcp_server_info:
+        tools = setup_mcp_tools(case.tools, mcp_server_info)
+
+        response = compat_client.responses.create(
+            model=text_model_id,
+            input=case.input,
+            tools=tools,
+            stream=False,
+        )
+
+        assert len(response.output) >= 3
+        list_tools = response.output[0]
+        assert list_tools.type == "mcp_list_tools"
+        assert list_tools.server_label == "localmcp"
+        assert len(list_tools.tools) == 2
+        assert {t.name for t in list_tools.tools} == {
+            "get_boiling_point",
+            "greet_everyone",
+        }
+
+        call = response.output[1]
+        assert call.type == "mcp_call"
+        assert call.name == "get_boiling_point"
+        assert json.loads(call.arguments) == {
+            "liquid_name": "myawesomeliquid",
+            "celsius": True,
+        }
+        assert call.error is None
+        assert "-100" in call.output
+
+        # sometimes the model will call the tool again, so we need to get the last message
+        message = response.output[-1]
+        text_content = message.content[0].text
+        assert "boiling point" in text_content.lower()
+
+        response2 = compat_client.responses.create(
+            model=text_model_id, input=case.input, tools=tools, stream=False, previous_response_id=response.id
+        )
+
+        assert len(response2.output) >= 1
+        message = response2.output[-1]
+        text_content = message.content[0].text
+        assert "boiling point" in text_content.lower()
 
 
 @pytest.mark.parametrize("case", custom_tool_test_cases)
