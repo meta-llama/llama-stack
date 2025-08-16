@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.12"
 resolution-markers = [
     "(python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1809,6 +1809,7 @@ test = [
     { name = "chardet" },
     { name = "datasets" },
     { name = "mcp" },
+    { name = "milvus-lite" },
     { name = "openai" },
     { name = "pymilvus" },
     { name = "pypdf" },
@@ -1831,6 +1832,7 @@ unit = [
     { name = "faiss-cpu" },
     { name = "litellm" },
     { name = "mcp" },
+    { name = "milvus-lite" },
     { name = "ollama" },
     { name = "openai" },
     { name = "pymilvus" },
@@ -1925,6 +1927,7 @@ test = [
     { name = "chardet" },
     { name = "datasets" },
     { name = "mcp" },
+    { name = "milvus-lite", specifier = ">=2.5.0" },
     { name = "openai" },
     { name = "pymilvus", specifier = ">=2.5.12" },
     { name = "pypdf" },
@@ -1946,6 +1949,7 @@ unit = [
     { name = "faiss-cpu" },
     { name = "litellm" },
     { name = "mcp" },
+    { name = "milvus-lite", specifier = ">=2.5.0" },
     { name = "ollama" },
     { name = "openai" },
     { name = "pymilvus", specifier = ">=2.5.12" },
