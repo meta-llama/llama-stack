@@ -20,7 +20,7 @@ logger = get_logger(name=__name__, category="core")
 
 class ShieldsRoutingTable(CommonRoutingTableImpl, Shields):
     async def list_shields(self) -> ListShieldsResponse:
-        return ListShieldsResponse(data=await self.get_all_with_type(ResourceType.shield.value))
+        return ListShieldsResponse(data=await self.get_all_with_type_filtered(ResourceType.shield.value))
 
     async def get_shield(self, identifier: str) -> Shield:
         shield = await self.get_object_by_identifier("shield", identifier)
