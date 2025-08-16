@@ -143,8 +143,17 @@ ensure_conda_env_python310() {
     if [ -n "$external_provider_deps" ]; then
       IFS='#' read -ra parts <<<"$external_provider_deps"
       for part in "${parts[@]}"; do
-        echo "$part"
-        uv pip install "$part"
+        echo "Installing external provider: $part"
+
+        # Create a temporary constraint file to exclude llama-stack
+        cat > /tmp/constraints.txt << 'EOF'
+# Exclude llama-stack to avoid circular dependencies
+llama-stack==0.0.0
+EOF
+
+        # Install the external provider with constraints to exclude llama-stack
+        uv pip install --constraint /tmp/constraints.txt "$part"
+        rm -f /tmp/constraints.txt
       done
     fi
   else
@@ -193,7 +202,12 @@ try:
     module = importlib.import_module(f'$package_name.provider')
     spec = module.get_provider_spec()
     if hasattr(spec, 'pip_packages') and spec.pip_packages:
-        print('\\n'.join(spec.pip_packages))
+        # Filter out llama-stack from pip_packages to avoid circular dependency
+        filtered_packages = [pkg for pkg in spec.pip_packages if not pkg.startswith('llama-stack')]
+        if filtered_packages:
+            print('\\n'.join(filtered_packages))
+        else:
+            print('No non-llama-stack dependencies found', file=sys.stderr)
 except Exception as e:
     print(f'Error getting provider spec for $package_name: {e}', file=sys.stderr)
 " | uv pip install -r -
