@@ -22,6 +22,10 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
+        VENV_NAME="github-actions-runner"
+        uv venv $VENV_NAME
+        source $VENV_NAME/bin/activate
+
         uv sync --all-groups
         uv pip install ollama faiss-cpu
 
