@@ -133,6 +133,10 @@ else
     EXTRA_PARAMS=""
 fi
 
+THIS_DIR=$(dirname "$0")
+ROOT_DIR="$THIS_DIR/.."
+cd $ROOT_DIR
+
 # Set recording directory
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings/vision"
@@ -140,26 +144,44 @@ else
     export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
 fi
 
+# check if "llama" and "pytest" are available. this script does not use `uv run` given
+# it can be used in a pre-release environment where we have not been able to tell
+# uv about pre-release dependencies properly (yet).
+if ! command -v llama &> /dev/null; then
+    echo "llama could not be found, ensure llama-stack is installed"
+    exit 1
+fi
+
+if ! command -v pytest &> /dev/null; then
+    echo "pytest could not be found, ensure pytest is installed"
+    exit 1
+fi
+
 # Start Llama Stack Server if needed
 if [[ "$STACK_CONFIG" == *"server:"* ]]; then
-    echo "=== Starting Llama Stack Server ==="
-    nohup uv run llama stack run ci-tests --image-type venv > server.log 2>&1 &
+    # check if server is already running
+    if curl -s http://localhost:8321/v1/health 2>/dev/null | grep -q "OK"; then
+        echo "Llama Stack Server is already running, skipping start"
+    else
+        echo "=== Starting Llama Stack Server ==="
+        nohup llama stack run ci-tests --image-type venv > server.log 2>&1 &
 
-    echo "Waiting for Llama Stack Server to start..."
-    for i in {1..30}; do
-        if curl -s http://localhost:8321/v1/health 2>/dev/null | grep -q "OK"; then
-            echo "✅ Llama Stack Server started successfully"
-            break
-        fi
-        if [[ $i -eq 30 ]]; then
-            echo "❌ Llama Stack Server failed to start"
-            echo "Server logs:"
-            cat server.log
-            exit 1
-        fi
-        sleep 1
-    done
-    echo ""
+        echo "Waiting for Llama Stack Server to start..."
+        for i in {1..30}; do
+            if curl -s http://localhost:8321/v1/health 2>/dev/null | grep -q "OK"; then
+                echo "✅ Llama Stack Server started successfully"
+                break
+            fi
+            if [[ $i -eq 30 ]]; then
+                echo "❌ Llama Stack Server failed to start"
+                echo "Server logs:"
+                cat server.log
+                exit 1
+            fi
+            sleep 1
+        done
+        echo ""
+    fi
 fi
 
 # Run tests
@@ -180,7 +202,7 @@ fi
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     echo "Running vision tests..."
     set +e
-    uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
+    pytest -s -v tests/integration/inference/test_vision_inference.py \
         --stack-config="$STACK_CONFIG" \
         -k "$PYTEST_PATTERN" \
         --vision-model=ollama/llama3.2-vision:11b \
@@ -248,7 +270,7 @@ echo "=== Running all collected tests in a single pytest command ==="
 echo "Total test files: $(echo $TEST_FILES | wc -w)"
 
 set +e
-uv run pytest -s -v $TEST_FILES \
+pytest -s -v $TEST_FILES \
     --stack-config="$STACK_CONFIG" \
     -k "$PYTEST_PATTERN" \
     --text-model="$TEXT_MODEL" \
