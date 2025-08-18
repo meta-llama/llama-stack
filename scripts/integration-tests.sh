@@ -112,6 +112,11 @@ echo "Test Pattern: $TEST_PATTERN"
 echo ""
 
 echo "Packages installed:"
+uv venv list
+echo "Packages installed in active venv:"
+uv run --active pip list
+
+echo "Packages installed in llama-stack venv:"
 uv pip list
 
 # Check storage and memory before tests
