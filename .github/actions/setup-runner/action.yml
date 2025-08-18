@@ -21,15 +21,11 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        VENV_NAME="github-actions-runner"
-        uv venv $VENV_NAME
-        source $VENV_NAME/bin/activate
-
+        echo "Updating project dependencies via uv sync"
         uv sync --all-groups
-        uv pip install ollama faiss-cpu
 
-        # You must install llama-stack first because otherwise it will overwrite llama-stack-client-python
-        uv pip install -e .
+        echo "Installing ad-hoc dependencies"
+        uv pip install ollama faiss-cpu
 
         # Install llama-stack-client-python based on the client-version input
         if [ "${{ inputs.client-version }}" = "latest" ]; then

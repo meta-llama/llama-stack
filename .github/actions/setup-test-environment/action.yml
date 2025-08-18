@@ -42,8 +42,8 @@ runs:
     - name: Build Llama Stack
       shell: bash
       run: |
-        echo $VIRTUAL_ENV
-        uv run --active llama stack build --template ci-tests --image-type venv
+        echo "Building Llama Stack"
+        uv run llama stack build --template ci-tests --image-type venv
 
     - name: Configure git for commits
       shell: bash
