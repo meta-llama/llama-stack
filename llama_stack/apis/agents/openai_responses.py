@@ -416,27 +416,27 @@ class OpenAIResponseObject(BaseModel):
     created_at: int
     error: Optional[OpenAIResponseError] = None
     id: str
-    incomplete_details: Optional[OpenAIResponseIncompleteDetails] = None # TODO: unimplemented
-    instructions: Optional[str | list[str]] = None # TODO: unimplemented
-    max_output_tokens: Optional[int] = None # TODO: unimplemented
-    max_tool_calls: Optional[int] = None # TODO: unimplemented
-    metadata: Optional[dict[str, str]] = None # TODO: unimplemented
+    incomplete_details: Optional[OpenAIResponseIncompleteDetails] = None
+    instructions: Optional[str | list[str]] = None
+    max_output_tokens: Optional[int] = None
+    max_tool_calls: Optional[int] = None 
+    metadata: Optional[dict[str, str]] = None 
     model: str
     object: Literal["response"] = "response"
     output: list[OpenAIResponseOutput]
     parallel_tool_calls: bool = False
-    previous_response_id: Optional[str] = None
-    prompt: Optional[OpenAIResponsePrompt] = None
-    prompt_cache_key: Optional[str] = None
-    reasoning: Optional[OpenAIResponseReasoning] = None
-    safety_identifier: Optional[str] = None
-    service_tier: Optional[str] = None # TODO: unimplemented
+    previous_response_id: Optional[str] = None 
+    prompt: Optional[OpenAIResponsePrompt] = None 
+    prompt_cache_key: Optional[str] = None 
+    reasoning: Optional[OpenAIResponseReasoning] = None 
+    safety_identifier: Optional[str] = None 
+    service_tier: Optional[str] = None 
     status: str
     temperature: float | None = None
     text: Optional[OpenAIResponseText] = None
-    tool_choice:  Optional[OpenAIResponsesToolChoice] = None # TODO: unimplemented
-    tools: Optional[list[OpenAIResponsesTool]] = None # TODO: unimplemented
-    top_logprobs: Optional[int] = None # TODO: unimplemented
+    tool_choice:  Optional[OpenAIResponsesToolChoice] = None 
+    tools: Optional[list[OpenAIResponsesTool]] = None 
+    top_logprobs: Optional[int] = None 
     top_p: Optional[float] = None
     user: Optional[str] = None # Deprecated: This field is being replaced by safety_identifier and prompt_cache_key
     truncation: Optional[str] = None
