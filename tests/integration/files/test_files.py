@@ -10,7 +10,6 @@ from unittest.mock import patch
 import pytest
 
 from llama_stack.core.datatypes import User
-from llama_stack.core.library_client import LlamaStackAsLibraryClient
 
 
 # a fixture to skip all these tests if a files provider is not available
@@ -20,20 +19,7 @@ def skip_if_no_files_provider(llama_stack_client):
         pytest.skip("No files providers found")
 
 
-@pytest.fixture(scope="session")
-def skip_if_no_server_running(llama_stack_client):
-    """
-    Skip test if no server is running.
-
-    We use the llama_stack_client to tell if a server was started or not.
-
-    We use this with openai_client because it relies on a running server.
-    """
-    if isinstance(llama_stack_client, LlamaStackAsLibraryClient):
-        pytest.skip("No server running")
-
-
-def test_openai_client_basic_operations(openai_client, skip_if_no_server_running):
+def test_openai_client_basic_operations(openai_client):
     """Test basic file operations through OpenAI client."""
     from openai import NotFoundError
 
