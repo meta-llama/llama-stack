@@ -193,6 +193,10 @@ run() {
         uv pip install $part
       done
     fi
+
+    echo "Checking llama packages"
+    uv pip list | grep llama
+
     if [ -n "$external_provider_deps" ]; then
       IFS='#' read -ra parts <<<"$external_provider_deps"
       for part in "${parts[@]}"; do

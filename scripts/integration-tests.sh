@@ -114,6 +114,7 @@ echo ""
 echo "VIRTUAL_ENV: $VIRTUAL_ENV"
 echo "Packages installed:"
 uv pip list
+uv pip list | grep llama
 
 # Check storage and memory before tests
 echo "=== System Resources Before Tests ==="
