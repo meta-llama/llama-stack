@@ -1856,7 +1856,7 @@ requires-dist = [
     { name = "llama-api-client", specifier = ">=0.1.2" },
     { name = "llama-stack-client", specifier = ">=0.2.17" },
     { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.17" },
-    { name = "openai", specifier = ">=1.99.6" },
+    { name = "openai", specifier = ">=1.99.6,<1.100.0" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.30.0" },
     { name = "opentelemetry-sdk", specifier = ">=1.30.0" },
     { name = "pandas", marker = "extra == 'ui'" },
