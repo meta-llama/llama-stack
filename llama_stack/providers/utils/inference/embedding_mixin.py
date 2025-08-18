@@ -103,6 +103,6 @@ class SentenceTransformerEmbeddingMixin:
         log.info(f"Loading sentence transformer for {model}...")
         from sentence_transformers import SentenceTransformer
 
-        loaded_model = SentenceTransformer(model)
+        loaded_model = SentenceTransformer(model, trust_remote_code=True)
         EMBEDDING_MODELS[model] = loaded_model
         return loaded_model

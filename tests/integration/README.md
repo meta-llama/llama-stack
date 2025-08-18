@@ -53,7 +53,7 @@ OLLAMA_URL=http://localhost:11434 \
   pytest -s -v tests/integration/inference/test_text_inference.py \
    --stack-config=server:starter \
    --text-model=ollama/llama3.2:3b-instruct-fp16 \
-   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
+   --embedding-model=nomic-embed-text-v1.5
 ```
 
 Run tests with auto-server startup on a custom port:
@@ -63,7 +63,7 @@ OLLAMA_URL=http://localhost:11434 \
   pytest -s -v tests/integration/inference/ \
    --stack-config=server:starter:8322 \
    --text-model=ollama/llama3.2:3b-instruct-fp16 \
-   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
+   --embedding-model=nomic-embed-text-v1.5
 ```
 
 ### Testing with Library Client
@@ -91,7 +91,7 @@ Another example: Running Vector IO tests for embedding models:
 ```bash
 pytest -s -v tests/integration/vector_io/ \
    --stack-config=inference=inline::sentence-transformers,vector_io=inline::sqlite-vec \
-   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
+   --embedding-model=nomic-embed-text-v1.5
 ```
 
 ## Recording Modes
