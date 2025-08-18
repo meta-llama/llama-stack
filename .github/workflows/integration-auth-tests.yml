@@ -10,6 +10,7 @@ on:
     paths:
       - 'distributions/**'
       - 'llama_stack/**'
+      - '!llama_stack/ui/**'
       - 'tests/integration/**'
       - 'uv.lock'
       - 'pyproject.toml'
