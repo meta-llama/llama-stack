@@ -7,7 +7,6 @@
 from typing import Any
 from uuid import uuid4
 
-import llama_stack_client as lsc_package
 import pytest
 import requests
 from llama_stack_client import Agent, AgentEventLogger, Document
