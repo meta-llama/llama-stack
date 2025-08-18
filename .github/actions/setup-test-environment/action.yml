@@ -42,9 +42,6 @@ runs:
     - name: Build Llama Stack
       shell: bash
       run: |
-        VIRTUAL_ENV=github-actions-runner
-        source $VIRTUAL_ENV/bin/activate
-
         # Install llama-stack-client-python based on the client-version input
         if [ "${{ inputs.client-version }}" = "latest" ]; then
           echo "Installing latest llama-stack-client-python from main branch"
@@ -60,7 +57,7 @@ runs:
         echo "Building Llama Stack"
 
         LLAMA_STACK_DIR=. \
-          uv run --active --no-sync llama stack build --template ci-tests --image-type venv
+          uv run --no-sync llama stack build --template ci-tests --image-type venv
 
     - name: Configure git for commits
       shell: bash

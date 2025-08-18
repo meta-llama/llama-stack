@@ -21,14 +21,8 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        # explicitly setup a virtual environment distinct from the project one because
-        # we are going to manipulate it via `llama stack build` among other things.
-        VIRTUAL_ENV=github-actions-runner
-        uv venv $VIRTUAL_ENV
-        source $VIRTUAL_ENV/bin/activate
-
         echo "Updating project dependencies via uv sync"
-        uv sync --active --all-groups
+        uv sync --all-groups
 
         echo "Installing ad-hoc dependencies"
         uv pip install faiss-cpu
