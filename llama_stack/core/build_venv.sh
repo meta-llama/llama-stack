@@ -157,7 +157,13 @@ run() {
         exit 1
       fi
       printf "Installing from LLAMA_STACK_DIR: %s\n"  "$LLAMA_STACK_DIR"
-      uv pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
+      # editable only if LLAMA_STACK_DIR does not start with "git+"
+      if [[ "$LLAMA_STACK_DIR" != git+* ]]; then
+        EDITABLE="-e"
+      else
+        EDITABLE=""
+      fi
+      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_DIR"
     else
       uv pip install --no-cache-dir llama-stack
     fi
@@ -169,7 +175,13 @@ run() {
         exit 1
       fi
       printf "Installing from LLAMA_STACK_CLIENT_DIR: %s\n" "$LLAMA_STACK_CLIENT_DIR"
-      uv pip install --no-cache-dir -e "$LLAMA_STACK_CLIENT_DIR"
+      # editable only if LLAMA_STACK_CLIENT_DIR does not start with "git+"
+      if [[ "$LLAMA_STACK_CLIENT_DIR" != git+* ]]; then
+        EDITABLE="-e"
+      else
+        EDITABLE=""
+      fi
+      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_CLIENT_DIR"
     fi
 
     printf "Installing pip dependencies\n"
