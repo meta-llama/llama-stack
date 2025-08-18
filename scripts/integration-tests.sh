@@ -111,6 +111,9 @@ echo "Inference Mode: $INFERENCE_MODE"
 echo "Test Pattern: $TEST_PATTERN"
 echo ""
 
+echo "Packages installed:"
+uv pip list
+
 # Check storage and memory before tests
 echo "=== System Resources Before Tests ==="
 free -h 2>/dev/null || echo "free command not available"
