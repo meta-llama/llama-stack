@@ -111,9 +111,7 @@ echo "Inference Mode: $INFERENCE_MODE"
 echo "Test Pattern: $TEST_PATTERN"
 echo ""
 
-echo "VIRTUAL_ENV: $VIRTUAL_ENV"
-echo "Packages installed:"
-uv pip list
+echo "Checking llama packages"
 uv pip list | grep llama
 
 # Check storage and memory before tests

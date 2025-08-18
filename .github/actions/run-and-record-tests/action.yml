@@ -40,7 +40,7 @@ runs:
         VIRTUAL_ENV=github-actions-runner
         source $VIRTUAL_ENV/bin/activate
 
-        uv run --verbose --active ./scripts/integration-tests.sh \
+        uv run --verbose --active --no-sync ./scripts/integration-tests.sh \
           --stack-config '${{ inputs.stack-config }}' \
           --provider '${{ inputs.provider }}' \
           --test-subdirs '${{ inputs.test-subdirs }}' \
