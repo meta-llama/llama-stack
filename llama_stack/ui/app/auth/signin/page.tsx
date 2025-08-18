@@ -51,9 +51,9 @@ export default function SignInPage() {
               onClick={() => {
                 console.log("Signing in with GitHub...");
                 signIn("github", { callbackUrl: "/auth/signin" }).catch(
-                  (error) => {
+                  error => {
                     console.error("Sign in error:", error);
-                  },
+                  }
                 );
               }}
               className="w-full"

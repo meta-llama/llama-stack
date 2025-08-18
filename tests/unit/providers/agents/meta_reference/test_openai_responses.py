@@ -41,7 +41,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
 from llama_stack.core.access_control.access_control import default_policy
-from llama_stack.providers.inline.agents.meta_reference.openai_responses import (
+from llama_stack.providers.inline.agents.meta_reference.responses.openai_responses import (
     OpenAIResponsesImpl,
 )
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore

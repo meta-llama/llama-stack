@@ -72,3 +72,10 @@ class ModelTypeError(TypeError):
             f"Model '{model_name}' is of type '{model_type}' rather than the expected type '{expected_model_type}'"
         )
         super().__init__(message)
+
+
+class ConflictError(ValueError):
+    """raised when an operation cannot be performed due to a conflict with the current state"""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)

@@ -1,6 +1,20 @@
-# Llama Stack Integration Tests
+# Integration Testing Guide
 
-We use `pytest` for parameterizing and running tests. You can see all options with:
+Integration tests verify complete workflows across different providers using Llama Stack's record-replay system.
+
+## Quick Start
+
+```bash
+# Run all integration tests with existing recordings
+LLAMA_STACK_TEST_INFERENCE_MODE=replay \
+  LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings \
+  uv run --group test \
+  pytest -sv tests/integration/ --stack-config=starter
+```
+
+## Configuration Options
+
+You can see all options with:
 ```bash
 cd tests/integration
 
@@ -10,11 +24,11 @@ pytest --help
 
 Here are the most important options:
 - `--stack-config`: specify the stack config to use. You have four ways to point to a stack:
-  - **`server:<config>`** - automatically start a server with the given config (e.g., `server:fireworks`). This provides one-step testing by auto-starting the server if the port is available, or reusing an existing server if already running.
-  - **`server:<config>:<port>`** - same as above but with a custom port (e.g., `server:together:8322`)
+  - **`server:<config>`** - automatically start a server with the given config (e.g., `server:starter`). This provides one-step testing by auto-starting the server if the port is available, or reusing an existing server if already running.
+  - **`server:<config>:<port>`** - same as above but with a custom port (e.g., `server:starter:8322`)
   - a URL which points to a Llama Stack distribution server
-  - a template (e.g., `starter`) or a path to a `run.yaml` file
-  - a comma-separated list of api=provider pairs, e.g. `inference=fireworks,safety=llama-guard,agents=meta-reference`. This is most useful for testing a single API surface.
+  - a distribution name (e.g., `starter`) or a path to a `run.yaml` file
+  - a comma-separated list of api=provider pairs, e.g. `inference=ollama,safety=llama-guard,agents=meta-reference`. This is most useful for testing a single API surface.
 - `--env`: set environment variables, e.g. --env KEY=value. this is a utility option to set environment variables required by various providers.
 
 Model parameters can be influenced by the following options:
@@ -32,85 +46,139 @@ if no model is specified.
 
 ### Testing against a Server
 
-Run all text inference tests by auto-starting a server with the `fireworks` config:
+Run all text inference tests by auto-starting a server with the `starter` config:
 
 ```bash
-pytest -s -v tests/integration/inference/test_text_inference.py \
-   --stack-config=server:fireworks \
-   --text-model=meta-llama/Llama-3.1-8B-Instruct
+OLLAMA_URL=http://localhost:11434 \
+  pytest -s -v tests/integration/inference/test_text_inference.py \
+   --stack-config=server:starter \
+   --text-model=ollama/llama3.2:3b-instruct-fp16 \
+   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
 ```
 
 Run tests with auto-server startup on a custom port:
 
 ```bash
-pytest -s -v tests/integration/inference/ \
-   --stack-config=server:together:8322 \
-   --text-model=meta-llama/Llama-3.1-8B-Instruct
-```
-
-Run multiple test suites with auto-server (eliminates manual server management):
-
-```bash
-# Auto-start server and run all integration tests
-export FIREWORKS_API_KEY=<your_key>
-
-pytest -s -v tests/integration/inference/ tests/integration/safety/ tests/integration/agents/ \
-   --stack-config=server:fireworks \
-   --text-model=meta-llama/Llama-3.1-8B-Instruct
+OLLAMA_URL=http://localhost:11434 \
+  pytest -s -v tests/integration/inference/ \
+   --stack-config=server:starter:8322 \
+   --text-model=ollama/llama3.2:3b-instruct-fp16 \
+   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
 ```
 
 ### Testing with Library Client
 
-Run all text inference tests with the `starter` distribution using the `together` provider:
+The library client constructs the Stack "in-process" instead of using a server. This is useful during the iterative development process since you don't need to constantly start and stop servers.
+
+
+You can do this by simply using `--stack-config=starter` instead of `--stack-config=server:starter`.
+
+
+### Using ad-hoc distributions
+
+Sometimes, you may want to make up a distribution on the fly. This is useful for testing a single provider or a single API or a small combination of providers. You can do so by specifying a comma-separated list of api=provider pairs to the `--stack-config` option, e.g. `inference=remote::ollama,safety=inline::llama-guard,agents=inline::meta-reference`.
 
 ```bash
-ENABLE_TOGETHER=together pytest -s -v tests/integration/inference/test_text_inference.py \
-   --stack-config=starter \
-   --text-model=meta-llama/Llama-3.1-8B-Instruct
-```
-
-Run all text inference tests with the `starter` distribution using the `together` provider and `meta-llama/Llama-3.1-8B-Instruct`:
-
-```bash
-ENABLE_TOGETHER=together pytest -s -v tests/integration/inference/test_text_inference.py \
-   --stack-config=starter \
-   --text-model=meta-llama/Llama-3.1-8B-Instruct
-```
-
-Running all inference tests for a number of models using the `together` provider:
-
-```bash
-TEXT_MODELS=meta-llama/Llama-3.1-8B-Instruct,meta-llama/Llama-3.1-70B-Instruct
-VISION_MODELS=meta-llama/Llama-3.2-11B-Vision-Instruct
-EMBEDDING_MODELS=all-MiniLM-L6-v2
-ENABLE_TOGETHER=together
-export TOGETHER_API_KEY=<together_api_key>
-
 pytest -s -v tests/integration/inference/ \
-   --stack-config=together \
+   --stack-config=inference=remote::ollama,safety=inline::llama-guard,agents=inline::meta-reference \
    --text-model=$TEXT_MODELS \
    --vision-model=$VISION_MODELS \
    --embedding-model=$EMBEDDING_MODELS
 ```
 
-Same thing but instead of using the distribution, use an adhoc stack with just one provider (`fireworks` for inference):
+Another example: Running Vector IO tests for embedding models:
 
 ```bash
-export FIREWORKS_API_KEY=<fireworks_api_key>
-
-pytest -s -v tests/integration/inference/ \
-   --stack-config=inference=fireworks \
-   --text-model=$TEXT_MODELS \
-   --vision-model=$VISION_MODELS \
-   --embedding-model=$EMBEDDING_MODELS
-```
-
-Running Vector IO tests for a number of embedding models:
-
-```bash
-EMBEDDING_MODELS=all-MiniLM-L6-v2
-
 pytest -s -v tests/integration/vector_io/ \
-   --stack-config=inference=sentence-transformers,vector_io=sqlite-vec \
-   --embedding-model=$EMBEDDING_MODELS
+   --stack-config=inference=inline::sentence-transformers,vector_io=inline::sqlite-vec \
+   --embedding-model=sentence-transformers/all-MiniLM-L6-v2
+```
+
+## Recording Modes
+
+The testing system supports three modes controlled by environment variables:
+
+### LIVE Mode (Default)
+Tests make real API calls:
+```bash
+LLAMA_STACK_TEST_INFERENCE_MODE=live pytest tests/integration/
+```
+
+### RECORD Mode
+Captures API interactions for later replay:
+```bash
+LLAMA_STACK_TEST_INFERENCE_MODE=record \
+LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings \
+pytest tests/integration/inference/test_new_feature.py
+```
+
+### REPLAY Mode
+Uses cached responses instead of making API calls:
+```bash
+LLAMA_STACK_TEST_INFERENCE_MODE=replay \
+LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings \
+pytest tests/integration/
+```
+
+Note that right now you must specify the recording directory. This is because different tests use different recording directories and we don't (yet) have a fool-proof way to map a test to a recording directory. We are working on this.
+
+## Managing Recordings
+
+### Viewing Recordings
+```bash
+# See what's recorded
+sqlite3 recordings/index.sqlite "SELECT endpoint, model, timestamp FROM recordings;"
+
+# Inspect specific response
+cat recordings/responses/abc123.json | jq '.'
+```
+
+### Re-recording Tests
+
+#### Remote Re-recording (Recommended)
+Use the automated workflow script for easier re-recording:
+```bash
+./scripts/github/schedule-record-workflow.sh --test-subdirs "inference,agents"
+```
+See the [main testing guide](../README.md#remote-re-recording-recommended) for full details.
+
+#### Local Re-recording
+```bash
+# Re-record specific tests
+LLAMA_STACK_TEST_INFERENCE_MODE=record \
+LLAMA_STACK_TEST_RECORDING_DIR=tests/integration/recordings \
+pytest -s -v --stack-config=server:starter tests/integration/inference/test_modified.py
+```
+
+Note that when re-recording tests, you must use a Stack pointing to a server (i.e., `server:starter`). This subtlety exists because the set of tests run in server are a superset of the set of tests run in the library client.
+
+## Writing Tests
+
+### Basic Test Pattern
+```python
+def test_basic_completion(llama_stack_client, text_model_id):
+    response = llama_stack_client.inference.completion(
+        model_id=text_model_id,
+        content=CompletionMessage(role="user", content="Hello"),
+    )
+
+    # Test structure, not AI output quality
+    assert response.completion_message is not None
+    assert isinstance(response.completion_message.content, str)
+    assert len(response.completion_message.content) > 0
+```
+
+### Provider-Specific Tests
+```python
+def test_asymmetric_embeddings(llama_stack_client, embedding_model_id):
+    if embedding_model_id not in MODELS_SUPPORTING_TASK_TYPE:
+        pytest.skip(f"Model {embedding_model_id} doesn't support task types")
+
+    query_response = llama_stack_client.inference.embeddings(
+        model_id=embedding_model_id,
+        contents=["What is machine learning?"],
+        task_type="query",
+    )
+
+    assert query_response.embeddings is not None
 ```

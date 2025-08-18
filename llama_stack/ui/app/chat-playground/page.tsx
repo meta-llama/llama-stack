@@ -29,14 +29,13 @@ export default function ChatPlaygroundPage() {
 
   const isModelsLoading = modelsLoading ?? true;
 
-
   useEffect(() => {
     const fetchModels = async () => {
       try {
         setModelsLoading(true);
         setModelsError(null);
         const modelList = await client.models.list();
-        const llmModels = modelList.filter(model => model.model_type === 'llm');
+        const llmModels = modelList.filter(model => model.model_type === "llm");
         setModels(llmModels);
         if (llmModels.length > 0) {
           setSelectedModel(llmModels[0].identifier);
@@ -53,103 +52,122 @@ export default function ChatPlaygroundPage() {
   }, [client]);
 
   const extractTextContent = (content: unknown): string => {
-    if (typeof content === 'string') {
+    if (typeof content === "string") {
       return content;
     }
     if (Array.isArray(content)) {
       return content
-        .filter(item => item && typeof item === 'object' && 'type' in item && item.type === 'text')
-        .map(item => (item && typeof item === 'object' && 'text' in item) ? String(item.text) : '')
-        .join('');
+        .filter(
+          item =>
+            item &&
+            typeof item === "object" &&
+            "type" in item &&
+            item.type === "text"
+        )
+        .map(item =>
+          item && typeof item === "object" && "text" in item
+            ? String(item.text)
+            : ""
+        )
+        .join("");
     }
-    if (content && typeof content === 'object' && 'type' in content && content.type === 'text' && 'text' in content) {
-      return String(content.text) || '';
+    if (
+      content &&
+      typeof content === "object" &&
+      "type" in content &&
+      content.type === "text" &&
+      "text" in content
+    ) {
+      return String(content.text) || "";
     }
-    return '';
+    return "";
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   };
 
-const handleSubmit = async (event?: { preventDefault?: () => void }) => {
-  event?.preventDefault?.();
-  if (!input.trim()) return;
+  const handleSubmit = async (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    if (!input.trim()) return;
 
-  // Add user message to chat
-  const userMessage: Message = {
-    id: Date.now().toString(),
-    role: "user",
-    content: input.trim(),
-    createdAt: new Date(),
-  };
-
-  setMessages(prev => [...prev, userMessage]);
-  setInput("");
-
-  // Use the helper function with the content
-  await handleSubmitWithContent(userMessage.content);
-};
-
-const handleSubmitWithContent = async (content: string) => {
-  setIsGenerating(true);
-  setError(null);
-
-  try {
-    const messageParams: CompletionCreateParams["messages"] = [
-      ...messages.map(msg => {
-        const msgContent = typeof msg.content === 'string' ? msg.content : extractTextContent(msg.content);
-        if (msg.role === "user") {
-          return { role: "user" as const, content: msgContent };
-        } else if (msg.role === "assistant") {
-          return { role: "assistant" as const, content: msgContent };
-        } else {
-          return { role: "system" as const, content: msgContent };
-        }
-      }),
-      { role: "user" as const, content }
-    ];
-
-    const response = await client.chat.completions.create({
-      model: selectedModel,
-      messages: messageParams,
-      stream: true,
-    });
-
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: "",
+    // Add user message to chat
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
       createdAt: new Date(),
     };
 
-    setMessages(prev => [...prev, assistantMessage]);
-    let fullContent = "";
-    for await (const chunk of response) {
-      if (chunk.choices && chunk.choices[0]?.delta?.content) {
-        const deltaContent = chunk.choices[0].delta.content;
-        fullContent += deltaContent;
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
 
-        flushSync(() => {
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage.role === "assistant") {
-              lastMessage.content = fullContent;
-            }
-            return newMessages;
+    // Use the helper function with the content
+    await handleSubmitWithContent(userMessage.content);
+  };
+
+  const handleSubmitWithContent = async (content: string) => {
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const messageParams: CompletionCreateParams["messages"] = [
+        ...messages.map(msg => {
+          const msgContent =
+            typeof msg.content === "string"
+              ? msg.content
+              : extractTextContent(msg.content);
+          if (msg.role === "user") {
+            return { role: "user" as const, content: msgContent };
+          } else if (msg.role === "assistant") {
+            return { role: "assistant" as const, content: msgContent };
+          } else {
+            return { role: "system" as const, content: msgContent };
+          }
+        }),
+        { role: "user" as const, content },
+      ];
+
+      const response = await client.chat.completions.create({
+        model: selectedModel,
+        messages: messageParams,
+        stream: true,
+      });
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "",
+        createdAt: new Date(),
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      let fullContent = "";
+      for await (const chunk of response) {
+        if (chunk.choices && chunk.choices[0]?.delta?.content) {
+          const deltaContent = chunk.choices[0].delta.content;
+          fullContent += deltaContent;
+
+          flushSync(() => {
+            setMessages(prev => {
+              const newMessages = [...prev];
+              const lastMessage = newMessages[newMessages.length - 1];
+              if (lastMessage.role === "assistant") {
+                lastMessage.content = fullContent;
+              }
+              return newMessages;
+            });
           });
-        });
+        }
       }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setError("Failed to send message. Please try again.");
+      setMessages(prev => prev.slice(0, -1));
+    } finally {
+      setIsGenerating(false);
     }
-  } catch (err) {
-    console.error("Error sending message:", err);
-    setError("Failed to send message. Please try again.");
-    setMessages(prev => prev.slice(0, -1));
-  } finally {
-    setIsGenerating(false);
-  }
-};
+  };
   const suggestions = [
     "Write a Python function that prints 'Hello, World!'",
     "Explain step-by-step how to solve this math problem: If x² + 6x + 9 = 25, what is x?",
@@ -163,7 +181,7 @@ const handleSubmitWithContent = async (content: string) => {
       content: message.content,
       createdAt: new Date(),
     };
-    setMessages(prev => [...prev, newMessage])
+    setMessages(prev => [...prev, newMessage]);
     handleSubmitWithContent(newMessage.content);
   };
 
@@ -177,12 +195,20 @@ const handleSubmitWithContent = async (content: string) => {
       <div className="mb-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Chat Playground (Completions)</h1>
         <div className="flex gap-2">
-          <Select value={selectedModel} onValueChange={setSelectedModel} disabled={isModelsLoading || isGenerating}>
+          <Select
+            value={selectedModel}
+            onValueChange={setSelectedModel}
+            disabled={isModelsLoading || isGenerating}
+          >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={isModelsLoading ? "Loading models..." : "Select Model"} />
+              <SelectValue
+                placeholder={
+                  isModelsLoading ? "Loading models..." : "Select Model"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {models.map((model) => (
+              {models.map(model => (
                 <SelectItem key={model.identifier} value={model.identifier}>
                   {model.identifier}
                 </SelectItem>
