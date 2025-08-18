@@ -23,12 +23,7 @@ new_vector_database
 ```{include} ../../../tests/README.md
 ```
 
-## Benchmarking
-
-```{include} ../../../docs/source/distributions/k8s-benchmark/README.md
-```
-
-### Advanced Topics
+## Advanced Topics
 
 For developers who need deeper understanding of the testing system internals:
 
@@ -36,4 +31,9 @@ For developers who need deeper understanding of the testing system internals:
 :maxdepth: 1
 
 testing/record-replay
+```
+
+### Benchmarking
+
+```{include} ../../../docs/source/distributions/k8s-benchmark/README.md
 ```
