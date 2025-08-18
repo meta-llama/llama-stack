@@ -11,6 +11,7 @@ from typing import Annotated
 
 from fastapi import File, Form, Response, UploadFile
 
+from llama_stack.apis.common.errors import ResourceNotFoundError
 from llama_stack.apis.common.responses import Order
 from llama_stack.apis.files import (
     Files,
@@ -162,7 +163,7 @@ class LocalfsFilesImpl(Files):
 
         row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
-            raise ValueError(f"File with id {file_id} not found")
+            raise ResourceNotFoundError(file_id, "files", "files.list()")
 
         return OpenAIFileObject(
             id=row["id"],
@@ -180,7 +181,7 @@ class LocalfsFilesImpl(Files):
 
         row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
-            raise ValueError(f"File with id {file_id} not found")
+            raise ResourceNotFoundError(file_id, "files", "files.list()")
 
         # Delete physical file
         file_path = Path(row["file_path"])
@@ -203,12 +204,12 @@ class LocalfsFilesImpl(Files):
         # Get file metadata
         row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
-            raise ValueError(f"File with id {file_id} not found")
+            raise ResourceNotFoundError(file_id, "files", "files.list()")
 
         # Read file content
         file_path = Path(row["file_path"])
         if not file_path.exists():
-            raise ValueError(f"File content not found on disk: {file_path}")
+            raise ResourceNotFoundError(file_id, "files content", "files.list()")
 
         with open(file_path, "rb") as f:
             content = f.read()
