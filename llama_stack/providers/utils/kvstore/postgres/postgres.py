@@ -31,7 +31,7 @@ class PostgresKVStoreImpl(KVStore):
                 user=self.config.user,
                 password=self.config.password,
                 sslmode=self.config.ssl_mode,
-                sslrootcert=self.config.ssl_root_cert,
+                sslrootcert=self.config.ca_cert_path,
             )
             self.conn.autocommit = True
             self.cursor = self.conn.cursor(cursor_factory=DictCursor)
