@@ -187,6 +187,7 @@ const COMPONENTS = {
   code: ({
     children,
     className,
+    ...rest
   }: {
     children: React.ReactNode;
     className?: string;
