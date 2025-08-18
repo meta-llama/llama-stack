@@ -135,9 +135,6 @@ def test_agent_simple(llama_stack_client, agent_config):
 
 
 def test_agent_name(llama_stack_client, text_model_id):
-    print(f"llama stack client package version: {lsc_package.__version__}")
-    print(f"llama stack client package location: {lsc_package.__file__}")
-
     agent_name = f"test-agent-{uuid4()}"
     agent = Agent(
         llama_stack_client,
