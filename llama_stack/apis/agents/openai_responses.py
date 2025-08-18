@@ -4,17 +4,22 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Optional, TypeAlias, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
+from llama_stack.apis.tools.openai_tool_choice import (
+    ToolChoiceAllowed,
+    ToolChoiceCustom,
+    ToolChoiceFunction,
+    ToolChoiceMcp,
+    ToolChoiceTypes
+)
 from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
-# NOTE(ashwin): this file is literally a copy of the OpenAI responses API schema. We should probably
-# take their YAML and generate this file automatically. Their YAML is available.
-
+OpenAIResponsesToolChoice: TypeAlias = Union[ToolChoiceTypes, ToolChoiceAllowed, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom]
 
 @json_schema_type
 class OpenAIResponseError(BaseModel):
@@ -316,21 +321,90 @@ class OpenAIResponseText(BaseModel):
     :param format: (Optional) Text format configuration specifying output format requirements
     """
 
-    format: OpenAIResponseTextFormat | None = None
+    # Default to text format to avoid breaking the loading of old responses
+    # before the field was added. New responses will have this set always.
+    format: OpenAIResponseTextFormat | None = Field(default_factory=lambda: OpenAIResponseTextFormat(type="text"))
+
+
+@json_schema_type
+class OpenAIResponseIncompleteDetails(BaseModel):
+    """Incomplete details for OpenAI responses.
+
+    :param reason: Reason for the response being incomplete
+    """
+
+    reason: str
+
+
+@json_schema_type
+class OpenAIResponsePrompt(BaseModel):
+    """Reference to a prompt template and its variables.
+
+    :param id: The unique identifier of the prompt template to use.
+    :param variables: (Optional) Map of values to substitute in for variables in your prompt. The substitution values can either be strings, or other Response input types like images or files.
+    :param version: (Optional) Version of the prompt template.
+    """
+
+    id: str
+    variables: Optional[dict[str, Any]] = None
+    version: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIResponseReasoning(BaseModel):
+    """Configuration options for reasoning models.
+
+    :param effort: (Optional) The effort level to use for reasoning.
+    :param generate_summary: Deprecated. Use the generate_summary_text field instead. (Optional) Whether to generate a summary of the reasoning process.
+    """
+
+    effort: Optional[Literal["low", "medium", "high", "minimal"]] = None
+    generate_summary: Optional[str] = None 
+    summary: Optional[str] = None
+
+
+@json_schema_type
+class OpenAIResponsesTool(BaseModel):
+    description: Optional[str] = None
+    """
+    The description of the function, including guidance on when and how to call it,
+    and guidance about what to tell the user when calling (if anything).
+    """
+
+    name: Optional[str] = None
+    """The name of the function."""
+
+    parameters: Optional[object] = None
+    """Parameters of the function in JSON Schema."""
+
+    type: Optional[Literal["function"]] = None
+    """The type of the tool, i.e. `function`."""
 
 
 @json_schema_type
 class OpenAIResponseObject(BaseModel):
     """Complete OpenAI response object containing generation results and metadata.
 
+    Based on OpenAI Responses API schema: https://github.com/openai/openai-python/blob/34014aedbb8946c03e97e5c8d72e03ad2259cd7c/src/openai/types/responses/response.py#L38
+
     :param created_at: Unix timestamp when the response was created
     :param error: (Optional) Error details if the response generation failed
     :param id: Unique identifier for this response
+    :param incomplete_details: (Optional) Incomplete details if the response is incomplete
+    :param instructions: (Optional) A system (or developer) message inserted into the model's context.
+    :param max_output_tokens: (Optional) An upper bound for the number of tokens that can be generated for a response, including visible output tokens and reasoning tokens.
+    :param max_tool_calls: (Optional) The maximum number of total calls to built-in tools that can be processed in a response.
+    :param metadata: (Optional) Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard.
     :param model: Model identifier used for generation
     :param object: Object type identifier, always "response"
     :param output: List of generated output items (messages, tool calls, etc.)
     :param parallel_tool_calls: Whether tool calls can be executed in parallel
     :param previous_response_id: (Optional) ID of the previous response in a conversation
+    :param prompt: (Optional) Reference to a prompt template and its variables.
+    :param prompt_cache_key: (Optional)Used to cache responses for similar requests to optimize your cache hit rates. Replaces the user field.
+    :param reasoning: (Optional) Configuration options for reasoning models.
+    :param safety_identifier: (Optional) A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies.
+    :param service_tier: (Optional) Specifies the processing type used for serving the request.
     :param status: Current status of the response generation
     :param temperature: (Optional) Sampling temperature used for generation
     :param text: Text formatting configuration for the response
@@ -340,21 +414,32 @@ class OpenAIResponseObject(BaseModel):
     """
 
     created_at: int
-    error: OpenAIResponseError | None = None
+    error: Optional[OpenAIResponseError] = None
     id: str
+    incomplete_details: Optional[OpenAIResponseIncompleteDetails] = None # TODO: unimplemented
+    instructions: Optional[str | list[str]] = None # TODO: unimplemented
+    max_output_tokens: Optional[int] = None # TODO: unimplemented
+    max_tool_calls: Optional[int] = None # TODO: unimplemented
+    metadata: Optional[dict[str, str]] = None # TODO: unimplemented
     model: str
     object: Literal["response"] = "response"
     output: list[OpenAIResponseOutput]
     parallel_tool_calls: bool = False
-    previous_response_id: str | None = None
+    previous_response_id: Optional[str] = None
+    prompt: Optional[OpenAIResponsePrompt] = None
+    prompt_cache_key: Optional[str] = None
+    reasoning: Optional[OpenAIResponseReasoning] = None
+    safety_identifier: Optional[str] = None
+    service_tier: Optional[str] = None # TODO: unimplemented
     status: str
     temperature: float | None = None
-    # Default to text format to avoid breaking the loading of old responses
-    # before the field was added. New responses will have this set always.
-    text: OpenAIResponseText = OpenAIResponseText(format=OpenAIResponseTextFormat(type="text"))
-    top_p: float | None = None
-    truncation: str | None = None
-    user: str | None = None
+    text: Optional[OpenAIResponseText] = None
+    tool_choice:  Optional[OpenAIResponsesToolChoice] = None # TODO: unimplemented
+    tools: Optional[list[OpenAIResponsesTool]] = None # TODO: unimplemented
+    top_logprobs: Optional[int] = None # TODO: unimplemented
+    top_p: Optional[float] = None
+    user: Optional[str] = None # Deprecated: This field is being replaced by safety_identifier and prompt_cache_key
+    truncation: Optional[str] = None
 
 
 @json_schema_type
