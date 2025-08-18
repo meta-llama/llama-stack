@@ -144,6 +144,19 @@ else
     export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings"
 fi
 
+# check if "llama" and "pytest" are available. this script does not use `uv run` given
+# it can be used in a pre-release environment where we have not been able to tell
+# uv about pre-release dependencies properly (yet).
+if ! command -v llama &> /dev/null; then
+    echo "llama could not be found, ensure llama-stack is installed"
+    exit 1
+fi
+
+if ! command -v pytest &> /dev/null; then
+    echo "pytest could not be found, ensure pytest is installed"
+    exit 1
+fi
+
 # Start Llama Stack Server if needed
 if [[ "$STACK_CONFIG" == *"server:"* ]]; then
     # check if server is already running
@@ -151,7 +164,7 @@ if [[ "$STACK_CONFIG" == *"server:"* ]]; then
         echo "Llama Stack Server is already running, skipping start"
     else
         echo "=== Starting Llama Stack Server ==="
-        nohup uv run llama stack run ci-tests --image-type venv > server.log 2>&1 &
+        nohup llama stack run ci-tests --image-type venv > server.log 2>&1 &
 
         echo "Waiting for Llama Stack Server to start..."
         for i in {1..30}; do
@@ -189,7 +202,7 @@ fi
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     echo "Running vision tests..."
     set +e
-    uv run pytest -s -v tests/integration/inference/test_vision_inference.py \
+    pytest -s -v tests/integration/inference/test_vision_inference.py \
         --stack-config="$STACK_CONFIG" \
         -k "$PYTEST_PATTERN" \
         --vision-model=ollama/llama3.2-vision:11b \
@@ -257,7 +270,7 @@ echo "=== Running all collected tests in a single pytest command ==="
 echo "Total test files: $(echo $TEST_FILES | wc -w)"
 
 set +e
-uv run pytest -s -v $TEST_FILES \
+pytest -s -v $TEST_FILES \
     --stack-config="$STACK_CONFIG" \
     -k "$PYTEST_PATTERN" \
     --text-model="$TEXT_MODEL" \
