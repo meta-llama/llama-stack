@@ -16,6 +16,7 @@ from urllib.parse import unquote
 import httpx
 import numpy as np
 from numpy.typing import NDArray
+from pydantic import BaseModel
 
 from llama_stack.apis.common.content_types import (
     URL,
@@ -33,6 +34,18 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
 log = logging.getLogger(__name__)
+
+
+class ChunkForDeletion(BaseModel):
+    """Information needed to delete a chunk from a vector store.
+
+    :param chunk_id: The ID of the chunk to delete
+    :param document_id: The ID of the document this chunk belongs to
+    """
+
+    chunk_id: str
+    document_id: str
+
 
 # Constants for reranker types
 RERANKER_TYPE_RRF = "rrf"
@@ -232,7 +245,7 @@ class EmbeddingIndex(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    async def delete_chunk(self, chunk_id: str):
+    async def delete_chunks(self, chunks_for_deletion: list[ChunkForDeletion]):
         raise NotImplementedError()
 
     @abstractmethod

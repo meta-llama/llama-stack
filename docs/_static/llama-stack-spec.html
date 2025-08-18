@@ -8293,28 +8293,60 @@
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "additionalProperties": {
-                                "oneOf": [
-                                    {
-                                        "type": "null"
+                            "properties": {
+                                "attributes": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "object"
+                                            }
+                                        ]
                                     },
-                                    {
-                                        "type": "boolean"
-                                    },
-                                    {
-                                        "type": "number"
-                                    },
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "type": "array"
-                                    },
-                                    {
-                                        "type": "object"
-                                    }
-                                ]
-                            }
+                                    "description": "(Optional) Key-value attributes associated with the file"
+                                },
+                                "file_id": {
+                                    "type": "string",
+                                    "description": "Unique identifier of the file containing the result"
+                                },
+                                "filename": {
+                                    "type": "string",
+                                    "description": "Name of the file containing the result"
+                                },
+                                "score": {
+                                    "type": "number",
+                                    "description": "Relevance score for this search result (between 0 and 1)"
+                                },
+                                "text": {
+                                    "type": "string",
+                                    "description": "Text content of the search result"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributes",
+                                "file_id",
+                                "filename",
+                                "score",
+                                "text"
+                            ],
+                            "title": "OpenAIResponseOutputMessageFileSearchToolCallResults",
+                            "description": "Search results returned by the file search operation."
                         },
                         "description": "(Optional) Search results returned by the file search operation"
                     }
@@ -8514,6 +8546,13 @@
                         "items": {
                             "$ref": "#/components/schemas/OpenAIResponseInputTool"
                         }
+                    },
+                    "include": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "(Optional) Additional fields to include in the response."
                     },
                     "max_infer_iters": {
                         "type": "integer"
@@ -8782,6 +8821,61 @@
                 "title": "OpenAIResponseOutputMessageMCPListTools",
                 "description": "MCP list tools output message containing available tools from an MCP server."
             },
+            "OpenAIResponseContentPart": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseContentPartOutputText"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseContentPartRefusal"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type",
+                    "mapping": {
+                        "output_text": "#/components/schemas/OpenAIResponseContentPartOutputText",
+                        "refusal": "#/components/schemas/OpenAIResponseContentPartRefusal"
+                    }
+                }
+            },
+            "OpenAIResponseContentPartOutputText": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "output_text",
+                        "default": "output_text"
+                    },
+                    "text": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "text"
+                ],
+                "title": "OpenAIResponseContentPartOutputText"
+            },
+            "OpenAIResponseContentPartRefusal": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "refusal",
+                        "default": "refusal"
+                    },
+                    "refusal": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type",
+                    "refusal"
+                ],
+                "title": "OpenAIResponseContentPartRefusal"
+            },
             "OpenAIResponseObjectStream": {
                 "oneOf": [
                     {
@@ -8839,6 +8933,12 @@
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted"
                     },
                     {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseContentPartAdded"
+                    },
+                    {
+                        "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseContentPartDone"
+                    },
+                    {
                         "$ref": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
                     }
                 ],
@@ -8863,6 +8963,8 @@
                         "response.mcp_call.in_progress": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallInProgress",
                         "response.mcp_call.failed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallFailed",
                         "response.mcp_call.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseMcpCallCompleted",
+                        "response.content_part.added": "#/components/schemas/OpenAIResponseObjectStreamResponseContentPartAdded",
+                        "response.content_part.done": "#/components/schemas/OpenAIResponseObjectStreamResponseContentPartDone",
                         "response.completed": "#/components/schemas/OpenAIResponseObjectStreamResponseCompleted"
                     }
                 }
@@ -8888,6 +8990,80 @@
                 ],
                 "title": "OpenAIResponseObjectStreamResponseCompleted",
                 "description": "Streaming event indicating a response has been completed."
+            },
+            "OpenAIResponseObjectStreamResponseContentPartAdded": {
+                "type": "object",
+                "properties": {
+                    "response_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the response containing this content"
+                    },
+                    "item_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the output item containing this content part"
+                    },
+                    "part": {
+                        "$ref": "#/components/schemas/OpenAIResponseContentPart",
+                        "description": "The content part that was added"
+                    },
+                    "sequence_number": {
+                        "type": "integer",
+                        "description": "Sequential number for ordering streaming events"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.content_part.added",
+                        "default": "response.content_part.added",
+                        "description": "Event type identifier, always \"response.content_part.added\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response_id",
+                    "item_id",
+                    "part",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseContentPartAdded",
+                "description": "Streaming event for when a new content part is added to a response item."
+            },
+            "OpenAIResponseObjectStreamResponseContentPartDone": {
+                "type": "object",
+                "properties": {
+                    "response_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the response containing this content"
+                    },
+                    "item_id": {
+                        "type": "string",
+                        "description": "Unique identifier of the output item containing this content part"
+                    },
+                    "part": {
+                        "$ref": "#/components/schemas/OpenAIResponseContentPart",
+                        "description": "The completed content part"
+                    },
+                    "sequence_number": {
+                        "type": "integer",
+                        "description": "Sequential number for ordering streaming events"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "response.content_part.done",
+                        "default": "response.content_part.done",
+                        "description": "Event type identifier, always \"response.content_part.done\""
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "response_id",
+                    "item_id",
+                    "part",
+                    "sequence_number",
+                    "type"
+                ],
+                "title": "OpenAIResponseObjectStreamResponseContentPartDone",
+                "description": "Streaming event for when a content part is completed."
             },
             "OpenAIResponseObjectStreamResponseCreated": {
                 "type": "object",
@@ -14591,7 +14767,8 @@
             "OpenAIFilePurpose": {
                 "type": "string",
                 "enum": [
-                    "assistants"
+                    "assistants",
+                    "batch"
                 ],
                 "title": "OpenAIFilePurpose",
                 "description": "Valid purpose values for OpenAI Files API."
@@ -14668,7 +14845,8 @@
                     "purpose": {
                         "type": "string",
                         "enum": [
-                            "assistants"
+                            "assistants",
+                            "batch"
                         ],
                         "description": "The intended purpose of the file"
                     }
@@ -16530,7 +16708,7 @@
                         "additionalProperties": {
                             "type": "number"
                         },
-                        "description": "A list of the categories along with their scores as predicted by model. Required set of categories that need to be in response - violence - violence/graphic - harassment - harassment/threatening - hate - hate/threatening - illicit - illicit/violent - sexual - sexual/minors - self-harm - self-harm/intent - self-harm/instructions"
+                        "description": "A list of the categories along with their scores as predicted by model."
                     },
                     "user_message": {
                         "type": "string"

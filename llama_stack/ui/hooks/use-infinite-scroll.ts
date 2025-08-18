@@ -20,7 +20,7 @@ interface UseInfiniteScrollOptions {
  */
 export function useInfiniteScroll(
   onLoadMore: (() => void) | undefined,
-  options: UseInfiniteScrollOptions = {},
+  options: UseInfiniteScrollOptions = {}
 ) {
   const { enabled = true, threshold = 0.1, rootMargin = "100px" } = options;
   const sentinelRef = useRef<HTMLTableRowElement>(null);
@@ -29,7 +29,7 @@ export function useInfiniteScroll(
     if (!onLoadMore || !enabled) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries;
         if (entry.isIntersecting) {
           onLoadMore();
@@ -38,7 +38,7 @@ export function useInfiniteScroll(
       {
         threshold,
         rootMargin,
-      },
+      }
     );
 
     const sentinel = sentinelRef.current;

@@ -2,18 +2,18 @@ import {
   ChatMessage,
   type ChatMessageProps,
   type Message,
-} from "@/components/chat-playground/chat-message"
-import { TypingIndicator } from "@/components/chat-playground/typing-indicator"
+} from "@/components/chat-playground/chat-message";
+import { TypingIndicator } from "@/components/chat-playground/typing-indicator";
 
-type AdditionalMessageOptions = Omit<ChatMessageProps, keyof Message>
+type AdditionalMessageOptions = Omit<ChatMessageProps, keyof Message>;
 
 interface MessageListProps {
-  messages: Message[]
-  showTimeStamps?: boolean
-  isTyping?: boolean
+  messages: Message[];
+  showTimeStamps?: boolean;
+  isTyping?: boolean;
   messageOptions?:
     | AdditionalMessageOptions
-    | ((message: Message) => AdditionalMessageOptions)
+    | ((message: Message) => AdditionalMessageOptions);
 }
 
 export function MessageList({
@@ -28,7 +28,7 @@ export function MessageList({
         const additionalOptions =
           typeof messageOptions === "function"
             ? messageOptions(message)
-            : messageOptions
+            : messageOptions;
 
         return (
           <ChatMessage
@@ -37,9 +37,9 @@ export function MessageList({
             {...message}
             {...additionalOptions}
           />
-        )
+        );
       })}
       {isTyping && <TypingIndicator />}
     </div>
-  )
+  );
 }
