@@ -4,6 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 import asyncio
+import heapq
 import json
 import logging
 from typing import Any
@@ -30,6 +31,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     EmbeddingIndex,
     VectorDBWithIndex,
 )
+from llama_stack.providers.utils.vector_io.vector_utils import Reranker
 
 from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
@@ -161,7 +163,55 @@ class ChromaIndex(EmbeddingIndex):
         reranker_type: str,
         reranker_params: dict[str, Any] | None = None,
     ) -> QueryChunksResponse:
-        raise NotImplementedError("Hybrid search is not supported in Chroma")
+        """
+        Hybrid search combining vector similarity and keyword search using configurable reranking.
+        Args:
+            embedding: The query embedding vector
+            query_string: The text query for keyword search
+            k: Number of results to return
+            score_threshold: Minimum similarity score threshold
+            reranker_type: Type of reranker to use ("rrf" or "weighted")
+            reranker_params: Parameters for the reranker
+        Returns:
+            QueryChunksResponse with combined results
+        """
+        if reranker_params is None:
+            reranker_params = {}
+
+        # Get results from both search methods
+        vector_response = await self.query_vector(embedding, k, score_threshold)
+        keyword_response = await self.query_keyword(query_string, k, score_threshold)
+
+        # Convert responses to score dictionaries using chunk_id
+        vector_scores = {
+            chunk.chunk_id: score for chunk, score in zip(vector_response.chunks, vector_response.scores, strict=False)
+        }
+        keyword_scores = {
+            chunk.chunk_id: score
+            for chunk, score in zip(keyword_response.chunks, keyword_response.scores, strict=False)
+        }
+
+        # Combine scores using the reranking utility
+        combined_scores = Reranker.combine_search_results(vector_scores, keyword_scores, reranker_type, reranker_params)
+
+        # Efficient top-k selection because it only tracks the k best candidates it's seen so far
+        top_k_items = heapq.nlargest(k, combined_scores.items(), key=lambda x: x[1])
+
+        # Filter by score threshold
+        filtered_items = [(doc_id, score) for doc_id, score in top_k_items if score >= score_threshold]
+
+        # Create a map of chunk_id to chunk for both responses
+        chunk_map = {c.chunk_id: c for c in vector_response.chunks + keyword_response.chunks}
+
+        # Use the map to look up chunks by their IDs
+        chunks = []
+        scores = []
+        for doc_id, score in filtered_items:
+            if doc_id in chunk_map:
+                chunks.append(chunk_map[doc_id])
+                scores.append(score)
+
+        return QueryChunksResponse(chunks=chunks, scores=scores)
 
 
 class ChromaVectorIOAdapter(OpenAIVectorStoreMixin, VectorIO, VectorDBsProtocolPrivate):
