@@ -11,11 +11,7 @@ from string import Template
 from typing import Any
 
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
-from llama_stack.apis.inference import (
-    Inference,
-    Message,
-    UserMessage,
-)
+from llama_stack.apis.inference import Inference, Message, UserMessage
 from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
@@ -71,7 +67,6 @@ SAFETY_CATEGORIES_TO_CODE_MAP = {
     CAT_CODE_INTERPRETER_ABUSE: "S14",
 }
 SAFETY_CODE_TO_CATEGORIES_MAP = {v: k for k, v in SAFETY_CATEGORIES_TO_CODE_MAP.items()}
-
 
 DEFAULT_LG_V3_SAFETY_CATEGORIES = [
     CAT_VIOLENT_CRIMES,
@@ -460,7 +455,7 @@ class LlamaGuardShield:
 
     def is_content_safe(self, response: str, unsafe_code: str | None = None) -> bool:
         """Check if content is safe based on response and unsafe code."""
-        if response.strip() == SAFE_RESPONSE:
+        if response.strip().lower().startswith(SAFE_RESPONSE):
             return True
 
         if unsafe_code:
