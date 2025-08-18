@@ -133,6 +133,10 @@ else
     EXTRA_PARAMS=""
 fi
 
+THIS_DIR=$(dirname "$0")
+ROOT_DIR="$THIS_DIR/.."
+cd $ROOT_DIR
+
 # Set recording directory
 if [[ "$RUN_VISION_TESTS" == "true" ]]; then
     export LLAMA_STACK_TEST_RECORDING_DIR="tests/integration/recordings/vision"
