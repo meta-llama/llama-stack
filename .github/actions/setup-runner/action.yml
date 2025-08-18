@@ -39,3 +39,5 @@ runs:
           exit 1
         fi
 
+        echo "Installed llama packages"
+        uv pip list | grep llama

@@ -151,7 +151,8 @@ run() {
     fi
   else
     if [ -n "$LLAMA_STACK_DIR" ]; then
-      if [ ! -d "$LLAMA_STACK_DIR" ]; then
+      # only warn if DIR does not start with "git+"
+      if [ ! -d "$LLAMA_STACK_DIR" ] && [[ "$LLAMA_STACK_DIR" != git+* ]]; then
         printf "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_STACK_DIR" >&2
         exit 1
       fi
@@ -162,7 +163,8 @@ run() {
     fi
 
     if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-      if [ ! -d "$LLAMA_STACK_CLIENT_DIR" ]; then
+      # only warn if DIR does not start with "git+"
+      if [ ! -d "$LLAMA_STACK_CLIENT_DIR" ] && [[ "$LLAMA_STACK_CLIENT_DIR" != git+* ]]; then
         printf "${RED}Warning: LLAMA_STACK_CLIENT_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_STACK_CLIENT_DIR" >&2
         exit 1
       fi
