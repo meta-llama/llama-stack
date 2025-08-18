@@ -92,7 +92,15 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             )
             sys.exit(1)
         build_config = available_distros[distro_name]
-        build_config.image_type = args.image_type
+        if args.image_type:
+            build_config.image_type = args.image_type
+        else:
+            cprint(
+                f"Please specify a image-type ({' | '.join(e.value for e in ImageType)}) for {distro_name}",
+                color="red",
+                file=sys.stderr,
+            )
+            sys.exit(1)
     elif args.providers:
         provider_list: dict[str, list[BuildProvider]] = dict()
         for api_provider in args.providers.split(","):
@@ -129,6 +137,13 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
             providers=provider_list,
             description=",".join(args.providers),
         )
+        if not args.image_type:
+            cprint(
+                f"Please specify a image-type (container | venv) for {args.template}",
+                color="red",
+                file=sys.stderr,
+            )
+            sys.exit(1)
 
         build_config = BuildConfig(image_type=args.image_type, distribution_spec=distribution_spec)
     elif not args.config and not distro_name:
@@ -202,7 +217,8 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
                 contents = yaml.safe_load(f)
                 contents = replace_env_vars(contents)
                 build_config = BuildConfig(**contents)
-                build_config.image_type = args.image_type
+                if args.image_type:
+                    build_config.image_type = args.image_type
             except Exception as e:
                 cprint(
                     f"Could not parse config file {args.config}: {e}",
