@@ -31,7 +31,7 @@ runs:
         uv sync --active --all-groups
 
         echo "Installing ad-hoc dependencies"
-        uv pip install ollama faiss-cpu
+        uv pip install faiss-cpu
 
         # Install llama-stack-client-python based on the client-version input
         if [ "${{ inputs.client-version }}" = "latest" ]; then

@@ -36,6 +36,10 @@ runs:
     - name: Run Integration Tests
       shell: bash
       run: |
+        # TODO: make sure this virtual environment is the same as the one used in the setup-runner action
+        VIRTUAL_ENV=github-actions-runner
+        source $VIRTUAL_ENV/bin/activate
+
         uv run --verbose --active ./scripts/integration-tests.sh \
           --stack-config '${{ inputs.stack-config }}' \
           --provider '${{ inputs.provider }}' \
