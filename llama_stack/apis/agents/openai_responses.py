@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, Any, Literal, Optional, TypeAlias, Union
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
@@ -14,12 +14,16 @@ from llama_stack.apis.tools.openai_tool_choice import (
     ToolChoiceCustom,
     ToolChoiceFunction,
     ToolChoiceMcp,
-    ToolChoiceTypes
+    ToolChoiceTypes,
 )
 from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
-OpenAIResponsesToolChoice: TypeAlias = Union[ToolChoiceTypes, ToolChoiceAllowed, ToolChoiceFunction, ToolChoiceMcp, ToolChoiceCustom]
+type OpenAIResponsesToolChoice = (
+    ToolChoiceTypes | ToolChoiceAllowed | ToolChoiceFunction | ToolChoiceMcp | ToolChoiceCustom
+)
+register_schema(OpenAIResponsesToolChoice, name="OpenAIResponsesToolChoice")
+
 
 @json_schema_type
 class OpenAIResponseError(BaseModel):
@@ -346,8 +350,8 @@ class OpenAIResponsePrompt(BaseModel):
     """
 
     id: str
-    variables: Optional[dict[str, Any]] = None
-    version: Optional[str] = None
+    variables: dict[str, Any] | None = None
+    version: str | None = None
 
 
 @json_schema_type
@@ -358,26 +362,26 @@ class OpenAIResponseReasoning(BaseModel):
     :param generate_summary: Deprecated. Use the generate_summary_text field instead. (Optional) Whether to generate a summary of the reasoning process.
     """
 
-    effort: Optional[Literal["low", "medium", "high", "minimal"]] = None
-    generate_summary: Optional[str] = None 
-    summary: Optional[str] = None
+    effort: Literal["low", "medium", "high", "minimal"] | None = None
+    generate_summary: str | None = None
+    summary: str | None = None
 
 
 @json_schema_type
 class OpenAIResponsesTool(BaseModel):
-    description: Optional[str] = None
+    description: str | None = None
     """
     The description of the function, including guidance on when and how to call it,
     and guidance about what to tell the user when calling (if anything).
     """
 
-    name: Optional[str] = None
+    name: str | None = None
     """The name of the function."""
 
-    parameters: Optional[object] = None
+    parameters: object | None = None
     """Parameters of the function in JSON Schema."""
 
-    type: Optional[Literal["function"]] = None
+    type: Literal["function"] | None = None
     """The type of the tool, i.e. `function`."""
 
 
@@ -414,7 +418,7 @@ class OpenAIResponseObject(BaseModel):
     """
 
     created_at: int
-    error: Optional[OpenAIResponseError] = None
+    error: OpenAIResponseError | None = None
     id: str
     incomplete_details: Optional[OpenAIResponseIncompleteDetails] = None
     instructions: Optional[str | list[str]] = None

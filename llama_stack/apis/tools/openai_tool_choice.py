@@ -1,10 +1,20 @@
-from typing import Dict, List, Literal, Optional, TypeAlias
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+#
+# This source code is licensed under the terms described in the LICENSE file in
+# the root directory of this source tree.
+
+from typing import Literal
 
 from pydantic import BaseModel
 
-ToolChoiceOptions: TypeAlias = Literal["none", "auto", "required"]
+from llama_stack.schema_utils import json_schema_type, register_schema
+
+type ToolChoiceOptions = Literal["none", "auto", "required"]
+register_schema(ToolChoiceOptions, name="ToolChoiceOptions")
 
 
+@json_schema_type
 class ToolChoiceTypes(BaseModel):
     type: Literal[
         "file_search",
@@ -26,6 +36,7 @@ class ToolChoiceTypes(BaseModel):
     """
 
 
+@json_schema_type
 class ToolChoiceAllowed(BaseModel):
     mode: Literal["auto", "required"]
     """Constrains the tools available to the model to a pre-defined set.
@@ -36,7 +47,7 @@ class ToolChoiceAllowed(BaseModel):
     `required` requires the model to call one or more of the allowed tools.
     """
 
-    tools: List[Dict[str, object]]
+    tools: list[dict[str, object]]
     """A list of tool definitions that the model should be allowed to call.
 
     For the Responses API, the list of tool definitions might look like:
@@ -54,6 +65,7 @@ class ToolChoiceAllowed(BaseModel):
     """Allowed tool configuration type. Always `allowed_tools`."""
 
 
+@json_schema_type
 class ToolChoiceFunction(BaseModel):
     name: str
     """The name of the function to call."""
@@ -62,6 +74,7 @@ class ToolChoiceFunction(BaseModel):
     """For function calling, the type is always `function`."""
 
 
+@json_schema_type
 class ToolChoiceMcp(BaseModel):
     server_label: str
     """The label of the MCP server to use."""
@@ -69,10 +82,11 @@ class ToolChoiceMcp(BaseModel):
     type: Literal["mcp"]
     """For MCP tools, the type is always `mcp`."""
 
-    name: Optional[str] = None
+    name: str | None = None
     """The name of the tool to call on the server."""
 
 
+@json_schema_type
 class ToolChoiceCustom(BaseModel):
     name: str
     """The name of the custom tool to call."""

@@ -93,7 +93,14 @@ def get_class_property_docstrings(
     """
 
     result = {}
-    for base in inspect.getmro(data_type):
+    # Check if the type has __mro__ (method resolution order)
+    if hasattr(data_type, "__mro__"):
+        bases = inspect.getmro(data_type)
+    else:
+        # For TypeAliasType or other types without __mro__, just use the type itself
+        bases = [data_type] if hasattr(data_type, "__doc__") else []
+
+    for base in bases:
         docstr = docstring.parse_type(base)
         for param in docstr.params.values():
             if param.name in result:
@@ -479,12 +486,25 @@ class JsonSchemaGenerator:
                 }
             return ret
         elif origin_type is Literal:
-            if len(typing.get_args(typ)) != 1:
-                raise ValueError(f"Literal type {typ} has {len(typing.get_args(typ))} arguments")
-            (literal_value,) = typing.get_args(typ)  # unpack value of literal type
-            schema = self.type_to_schema(type(literal_value))
-            schema["const"] = literal_value
-            return schema
+            literal_values = typing.get_args(typ)
+            if len(literal_values) == 1:
+                # Single literal value - use const
+                (literal_value,) = literal_values
+                schema = self.type_to_schema(type(literal_value))
+                schema["const"] = literal_value
+                return schema
+            else:
+                # Multiple literal values - use enum
+                # Check that all literal values have the same type
+                literal_types = {type(value) for value in literal_values}
+                if len(literal_types) != 1:
+                    raise ValueError(f"Literal type {typ} has inconsistent value types: {literal_types}")
+
+                # Create schema based on the common type of all literal values
+                common_type = literal_types.pop()
+                schema = self.type_to_schema(common_type)
+                schema["enum"] = list(literal_values)
+                return schema
         elif origin_type is type:
             (concrete_type,) = typing.get_args(typ)  # unpack single tuple element
             return {"const": self.type_to_schema(concrete_type, force_expand=True)}
@@ -492,13 +512,24 @@ class JsonSchemaGenerator:
             (concrete_type,) = typing.get_args(typ)
             return self.type_to_schema(concrete_type)
 
-        # dictionary of class attributes
-        members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))
-
-        property_docstrings = get_class_property_docstrings(typ, self.options.property_description_fun)
+        # Check if this is a TypeAliasType (Python 3.12+) which doesn't have __mro__
+        if hasattr(typ, "__mro__"):
+            # dictionary of class attributes
+            members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))
+            property_docstrings = get_class_property_docstrings(typ, self.options.property_description_fun)
+        else:
+            # TypeAliasType or other types without __mro__
+            members = {}
+            property_docstrings = {}
         properties: Dict[str, Schema] = {}
         required: List[str] = []
-        for property_name, property_type in get_class_properties(typ):
+        # Only process properties if the type supports class properties
+        if hasattr(typ, "__mro__"):
+            class_properties = get_class_properties(typ)
+        else:
+            class_properties = []
+
+        for property_name, property_type in class_properties:
             # rename property if an alias name is specified
             alias = get_annotation(property_type, Alias)
             if alias:
