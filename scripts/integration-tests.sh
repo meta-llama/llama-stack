@@ -111,6 +111,9 @@ echo "Inference Mode: $INFERENCE_MODE"
 echo "Test Pattern: $TEST_PATTERN"
 echo ""
 
+echo "Checking llama packages"
+uv pip list | grep llama
+
 # Check storage and memory before tests
 echo "=== System Resources Before Tests ==="
 free -h 2>/dev/null || echo "free command not available"

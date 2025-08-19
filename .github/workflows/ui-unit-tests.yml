@@ -1,0 +1,55 @@
+name: UI Tests
+
+run-name: Run the UI test suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'llama_stack/ui/**'
+      - '.github/workflows/ui-unit-tests.yml' # This workflow
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'llama_stack/ui/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: llama_stack/ui
+        run: npm ci
+
+      - name: Run linting
+        working-directory: llama_stack/ui
+        run: npm run lint
+
+      - name: Run format check
+        working-directory: llama_stack/ui
+        run: npm run format:check
+
+      - name: Run unit tests
+        working-directory: llama_stack/ui
+        env:
+          CI: true
+
+        run: npm test -- --coverage --watchAll=false --passWithNoTests

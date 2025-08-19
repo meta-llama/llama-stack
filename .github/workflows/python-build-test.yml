@@ -9,6 +9,8 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+        - 'llama_stack/ui/**'
 
 jobs:
   build:
