@@ -318,6 +318,53 @@ class QuotaConfig(BaseModel):
     period: QuotaPeriod = Field(default=QuotaPeriod.DAY, description="Quota period to set")
 
 
+class CORSConfig(BaseModel):
+    allow_origins: list[str] = Field(default=["*"])
+    allow_origin_regex: str | None = Field(default=None)
+    allow_methods: list[str] = Field(default=["*"])
+    allow_headers: list[str] = Field(default=["*"])
+    allow_credentials: bool = Field(default=False)
+    expose_headers: list[str] = Field(default_factory=list)
+    max_age: int = Field(default=600, ge=0)
+
+    @model_validator(mode="after")
+    def _validate_credentials_with_wildcard(self) -> Self:
+        if self.allow_credentials and (self.allow_origins == ["*"] or "*" in self.allow_origins):
+            raise ValueError("CORS: allow_credentials=True requires explicit origins")
+        return self
+
+
+# Union type for flexible CORS configuration
+CORSConfiguration = bool | CORSConfig
+
+
+def process_cors_config(cors_config: CORSConfiguration | None) -> CORSConfig | None:
+    """Process CORS config: bool -> dev defaults, object -> passthrough."""
+    if cors_config is None:
+        return None
+
+    if cors_config is False:
+        return None
+
+    if cors_config is True:
+        # Dev mode: localhost with any port
+        return CORSConfig(
+            allow_origins=[],
+            allow_origin_regex=r"https?://localhost:\d+",
+            allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+            allow_credentials=False,
+            expose_headers=[],
+            max_age=600,
+        )
+
+    elif isinstance(cors_config, CORSConfig):
+        return cors_config
+
+    else:
+        raise ValueError(f"Invalid CORS configuration type: {type(cors_config)}")
+
+
 class ServerConfig(BaseModel):
     port: int = Field(
         default=8321,
@@ -348,6 +395,12 @@ class ServerConfig(BaseModel):
     quota: QuotaConfig | None = Field(
         default=None,
         description="Per client quota request configuration",
+    )
+    cors: CORSConfiguration | None = Field(
+        default=None,
+        description="CORS configuration for cross-origin requests. Can be:\n"
+        "- true: Enable localhost CORS for development\n"
+        "- {allow_origins: [...], allow_methods: [...], ...}: Full configuration",
     )
 
 

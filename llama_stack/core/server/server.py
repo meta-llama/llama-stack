@@ -28,6 +28,7 @@ from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
@@ -40,6 +41,7 @@ from llama_stack.core.datatypes import (
     AuthenticationRequiredError,
     LoggingConfig,
     StackRunConfig,
+    process_cors_config,
 )
 from llama_stack.core.distribution import builtin_automatically_routed_apis
 from llama_stack.core.external import ExternalApiSpec, load_external_apis
@@ -482,6 +484,12 @@ def main(args: argparse.Namespace | None = None):
             authenticated_max_requests=authenticated_max_requests,
             window_seconds=window_seconds,
         )
+
+    if config.server.cors:
+        logger.info("Enabling CORS")
+        cors_config = process_cors_config(config.server.cors)
+        if cors_config:
+            app.add_middleware(CORSMiddleware, **cors_config.model_dump())
 
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])
