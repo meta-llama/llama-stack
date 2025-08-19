@@ -2,9 +2,13 @@ name: 'Run and Record Tests'
 description: 'Run integration tests and handle recording/artifact upload'
 
 inputs:
-  test-types:
-    description: 'JSON array of test types to run'
+  test-subdirs:
+    description: 'Comma-separated list of test subdirectories to run'
     required: true
+  test-pattern:
+    description: 'Regex pattern to pass to pytest -k'
+    required: false
+    default: ''
   stack-config:
     description: 'Stack configuration to use'
     required: true
@@ -32,12 +36,14 @@ runs:
     - name: Run Integration Tests
       shell: bash
       run: |
-        ./scripts/integration-tests.sh \
+        uv run --no-sync ./scripts/integration-tests.sh \
           --stack-config '${{ inputs.stack-config }}' \
           --provider '${{ inputs.provider }}' \
-          --test-types '${{ inputs.test-types }}' \
+          --test-subdirs '${{ inputs.test-subdirs }}' \
+          --test-pattern '${{ inputs.test-pattern }}' \
           --inference-mode '${{ inputs.inference-mode }}' \
-          ${{ inputs.run-vision-tests == 'true' && '--run-vision-tests' || '' }}
+          ${{ inputs.run-vision-tests == 'true' && '--run-vision-tests' || '' }} \
+          | tee pytest-${{ inputs.inference-mode }}.log
 
 
     - name: Commit and push recordings
@@ -57,10 +63,10 @@ runs:
             git commit -m "Recordings update from CI"
           fi
 
-          git fetch origin ${{ github.event.pull_request.head.ref }}
-          git rebase origin/${{ github.event.pull_request.head.ref }}
+          git fetch origin ${{ github.ref_name }}
+          git rebase origin/${{ github.ref_name }}
           echo "Rebased successfully"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${{ github.ref_name }}
           echo "Pushed successfully"
         else
           echo "No recording changes"

@@ -26,13 +26,6 @@ data:
           max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
           api_token: ${env.VLLM_API_TOKEN:=fake}
           tls_verify: ${env.VLLM_TLS_VERIFY:=true}
-      - provider_id: mock-vllm-inference
-        provider_type: remote::vllm
-        config:
-          url: http://openai-mock-service:${env.MOCK_INFERENCE_PORT}
-          max_tokens: 4096
-          api_token: fake
-          tls_verify: false
       - provider_id: sentence-transformers
         provider_type: inline::sentence-transformers
         config: {}
@@ -120,9 +113,6 @@ data:
       model_type: llm
     - model_id: ${env.SAFETY_MODEL}
       provider_id: vllm-safety
-      model_type: llm
-    - model_id: ${env.MOCK_INFERENCE_MODEL}
-      provider_id: mock-vllm-inference
       model_type: llm
     shields:
     - shield_id: ${env.SAFETY_MODEL:=meta-llama/Llama-Guard-3-1B}

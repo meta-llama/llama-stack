@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthClient } from "@/hooks/use-auth-client";
 import type { VectorStore } from "llama-stack-client/resources/vector-stores/vector-stores";
-import type { VectorStoreFile, FileContentResponse } from "llama-stack-client/resources/vector-stores/files";
+import type {
+  VectorStoreFile,
+  FileContentResponse,
+} from "llama-stack-client/resources/vector-stores/files";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { List } from "lucide-react";
 import {
@@ -17,7 +20,10 @@ import {
   PropertiesCard,
   PropertyItem,
 } from "@/components/layout/detail-layout";
-import { PageBreadcrumb, BreadcrumbSegment } from "@/components/layout/page-breadcrumb";
+import {
+  PageBreadcrumb,
+  BreadcrumbSegment,
+} from "@/components/layout/page-breadcrumb";
 
 export default function FileDetailPage() {
   const params = useParams();
@@ -46,7 +52,9 @@ export default function FileDetailPage() {
         const response = await client.vectorStores.retrieve(vectorStoreId);
         setStore(response as VectorStore);
       } catch (err) {
-        setErrorStore(err instanceof Error ? err : new Error("Failed to load vector store."));
+        setErrorStore(
+          err instanceof Error ? err : new Error("Failed to load vector store.")
+        );
       } finally {
         setIsLoadingStore(false);
       }
@@ -61,10 +69,15 @@ export default function FileDetailPage() {
       setIsLoadingFile(true);
       setErrorFile(null);
       try {
-        const response = await client.vectorStores.files.retrieve(vectorStoreId, fileId);
+        const response = await client.vectorStores.files.retrieve(
+          vectorStoreId,
+          fileId
+        );
         setFile(response as VectorStoreFile);
       } catch (err) {
-        setErrorFile(err instanceof Error ? err : new Error("Failed to load file."));
+        setErrorFile(
+          err instanceof Error ? err : new Error("Failed to load file.")
+        );
       } finally {
         setIsLoadingFile(false);
       }
@@ -79,10 +92,15 @@ export default function FileDetailPage() {
       setIsLoadingContents(true);
       setErrorContents(null);
       try {
-        const response = await client.vectorStores.files.content(vectorStoreId, fileId);
+        const response = await client.vectorStores.files.content(
+          vectorStoreId,
+          fileId
+        );
         setContents(response);
       } catch (err) {
-        setErrorContents(err instanceof Error ? err : new Error("Failed to load contents."));
+        setErrorContents(
+          err instanceof Error ? err : new Error("Failed to load contents.")
+        );
       } finally {
         setIsLoadingContents(false);
       }
@@ -91,20 +109,27 @@ export default function FileDetailPage() {
   }, [vectorStoreId, fileId, client]);
 
   const handleViewContents = () => {
-    router.push(`/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents`);
+    router.push(
+      `/logs/vector-stores/${vectorStoreId}/files/${fileId}/contents`
+    );
   };
 
   const title = `File: ${fileId}`;
 
   const breadcrumbSegments: BreadcrumbSegment[] = [
     { label: "Vector Stores", href: "/logs/vector-stores" },
-    { label: store?.name || vectorStoreId, href: `/logs/vector-stores/${vectorStoreId}` },
+    {
+      label: store?.name || vectorStoreId,
+      href: `/logs/vector-stores/${vectorStoreId}`,
+    },
     { label: "Files", href: `/logs/vector-stores/${vectorStoreId}` },
     { label: fileId },
   ];
 
   if (errorStore) {
-    return <DetailErrorView title={title} id={vectorStoreId} error={errorStore} />;
+    return (
+      <DetailErrorView title={title} id={vectorStoreId} error={errorStore} />
+    );
   }
   if (isLoadingStore) {
     return <DetailLoadingView title={title} />;
@@ -136,19 +161,29 @@ export default function FileDetailPage() {
                 <h3 className="text-lg font-medium mb-2">File Details</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Status:</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Status:
+                    </span>
                     <span className="ml-2">{file.status}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Size:</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Size:
+                    </span>
                     <span className="ml-2">{file.usage_bytes} bytes</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Created:</span>
-                    <span className="ml-2">{new Date(file.created_at * 1000).toLocaleString()}</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Created:
+                    </span>
+                    <span className="ml-2">
+                      {new Date(file.created_at * 1000).toLocaleString()}
+                    </span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-600 dark:text-gray-400">Content Strategy:</span>
+                    <span className="font-medium text-gray-600 dark:text-gray-400">
+                      Content Strategy:
+                    </span>
                     <span className="ml-2">{file.chunking_strategy.type}</span>
                   </div>
                 </div>
@@ -166,9 +201,7 @@ export default function FileDetailPage() {
               </div>
             </div>
           ) : (
-            <p className="text-gray-500 italic text-sm">
-              File not found.
-            </p>
+            <p className="text-gray-500 italic text-sm">File not found.</p>
           )}
         </CardContent>
       </Card>
@@ -192,16 +225,27 @@ export default function FileDetailPage() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Content Items:</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Content Items:
+                  </span>
                   <span className="ml-2">{contents.content.length}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-600 dark:text-gray-400">Total Characters:</span>
-                  <span className="ml-2">{contents.content.reduce((total, item) => total + item.text.length, 0)}</span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Total Characters:
+                  </span>
+                  <span className="ml-2">
+                    {contents.content.reduce(
+                      (total, item) => total + item.text.length,
+                      0
+                    )}
+                  </span>
                 </div>
               </div>
               <div className="pt-2">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Preview:</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Preview:
+                </span>
                 <div className="mt-1 bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                   <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-3">
                     {contents.content[0]?.text.substring(0, 200)}...

@@ -70,7 +70,7 @@ describe("LogsTable", () => {
   describe("Loading State", () => {
     test("renders skeleton UI when isLoading is true", () => {
       const { container } = render(
-        <LogsTable {...defaultProps} status="loading" />,
+        <LogsTable {...defaultProps} status="loading" />
       );
 
       // Check for skeleton in the table caption
@@ -78,7 +78,7 @@ describe("LogsTable", () => {
       expect(tableCaption).toBeInTheDocument();
       if (tableCaption) {
         const captionSkeleton = tableCaption.querySelector(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(captionSkeleton).toBeInTheDocument();
       }
@@ -88,7 +88,7 @@ describe("LogsTable", () => {
       expect(tableBody).toBeInTheDocument();
       if (tableBody) {
         const bodySkeletons = tableBody.querySelectorAll(
-          '[data-slot="skeleton"]',
+          '[data-slot="skeleton"]'
         );
         expect(bodySkeletons.length).toBeGreaterThan(0);
       }
@@ -102,7 +102,7 @@ describe("LogsTable", () => {
 
     test("renders correct number of skeleton rows", () => {
       const { container } = render(
-        <LogsTable {...defaultProps} status="loading" />,
+        <LogsTable {...defaultProps} status="loading" />
       );
 
       const skeletonRows = container.querySelectorAll("tbody tr");
@@ -118,10 +118,10 @@ describe("LogsTable", () => {
           {...defaultProps}
           status="error"
           error={{ name: "Error", message: errorMessage } as Error}
-        />,
+        />
       );
       expect(
-        screen.getByText("Unable to load chat completions"),
+        screen.getByText("Unable to load chat completions")
       ).toBeInTheDocument();
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
@@ -132,29 +132,25 @@ describe("LogsTable", () => {
           {...defaultProps}
           status="error"
           error={{ name: "Error", message: "" } as Error}
-        />,
+        />
       );
       expect(
-        screen.getByText("Unable to load chat completions"),
+        screen.getByText("Unable to load chat completions")
       ).toBeInTheDocument();
       expect(
-        screen.getByText(
-          "An unexpected error occurred while loading the data.",
-        ),
+        screen.getByText("An unexpected error occurred while loading the data.")
       ).toBeInTheDocument();
     });
 
     test("renders default error message when error prop is an object without message", () => {
       render(
-        <LogsTable {...defaultProps} status="error" error={{} as Error} />,
+        <LogsTable {...defaultProps} status="error" error={{} as Error} />
       );
       expect(
-        screen.getByText("Unable to load chat completions"),
+        screen.getByText("Unable to load chat completions")
       ).toBeInTheDocument();
       expect(
-        screen.getByText(
-          "An unexpected error occurred while loading the data.",
-        ),
+        screen.getByText("An unexpected error occurred while loading the data.")
       ).toBeInTheDocument();
     });
 
@@ -164,7 +160,7 @@ describe("LogsTable", () => {
           {...defaultProps}
           status="error"
           error={{ name: "Error", message: "Test error" } as Error}
-        />,
+        />
       );
       const table = screen.queryByRole("table");
       expect(table).not.toBeInTheDocument();
@@ -178,7 +174,7 @@ describe("LogsTable", () => {
           {...defaultProps}
           data={[]}
           emptyMessage="Custom empty message"
-        />,
+        />
       );
       expect(screen.getByText("Custom empty message")).toBeInTheDocument();
 
@@ -214,7 +210,7 @@ describe("LogsTable", () => {
           {...defaultProps}
           data={mockData}
           caption="Custom table caption"
-        />,
+        />
       );
 
       // Table caption
@@ -311,8 +307,8 @@ describe("LogsTable", () => {
       // Verify truncated text is displayed
       const truncatedTexts = screen.getAllByText("This is a ...");
       expect(truncatedTexts).toHaveLength(2); // one for input, one for output
-      truncatedTexts.forEach((textElement) =>
-        expect(textElement).toBeInTheDocument(),
+      truncatedTexts.forEach(textElement =>
+        expect(textElement).toBeInTheDocument()
       );
     });
 
@@ -332,12 +328,12 @@ describe("LogsTable", () => {
 
       // Model name should not be passed to truncateText
       expect(truncateText).not.toHaveBeenCalledWith(
-        "very-long-model-name-that-should-not-be-truncated",
+        "very-long-model-name-that-should-not-be-truncated"
       );
 
       // Full model name should be displayed
       expect(
-        screen.getByText("very-long-model-name-that-should-not-be-truncated"),
+        screen.getByText("very-long-model-name-that-should-not-be-truncated")
       ).toBeInTheDocument();
     });
   });

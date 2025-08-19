@@ -1,4 +1,4 @@
-import { Dot } from "lucide-react"
+import { Dot } from "lucide-react";
 
 export function TypingIndicator() {
   return (
@@ -11,5 +11,5 @@ export function TypingIndicator() {
         </div>
       </div>
     </div>
-  )
+  );
 }

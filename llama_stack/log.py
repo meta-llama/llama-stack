@@ -7,13 +7,11 @@
 import logging
 import os
 import re
-import sys
 from logging.config import dictConfig
 
 from rich.console import Console
 from rich.errors import MarkupError
 from rich.logging import RichHandler
-from termcolor import cprint
 
 from llama_stack.core.datatypes import LoggingConfig
 
@@ -66,7 +64,6 @@ def config_to_category_levels(category: str, level: str):
         category_levels["root"] = level_value
     elif category in CATEGORIES:
         category_levels[category] = level_value
-        logging.info(f"Setting '{category}' category to level '{level}'.")
     else:
         logging.warning(f"Unknown logging category: {category}. No changes made.")
     return category_levels
@@ -256,7 +253,6 @@ def get_logger(
 
 env_config = os.environ.get("LLAMA_STACK_LOGGING", "")
 if env_config:
-    cprint(f"Environment variable LLAMA_STACK_LOGGING found: {env_config}", color="yellow", file=sys.stderr)
     _category_levels.update(parse_environment_config(env_config))
 
 log_file = os.environ.get("LLAMA_STACK_LOG_FILE")
