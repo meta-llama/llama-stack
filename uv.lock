@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "(python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')",
@@ -1719,7 +1719,7 @@ wheels = [
 
 [[package]]
 name = "llama-stack"
-version = "0.2.17"
+version = "0.2.18"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -1856,8 +1856,8 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "jsonschema" },
     { name = "llama-api-client", specifier = ">=0.1.2" },
-    { name = "llama-stack-client", specifier = ">=0.2.17" },
-    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.17" },
+    { name = "llama-stack-client", specifier = ">=0.2.18" },
+    { name = "llama-stack-client", marker = "extra == 'ui'", specifier = ">=0.2.18" },
     { name = "openai", specifier = ">=1.99.6,<1.100.0" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = ">=1.30.0" },
     { name = "opentelemetry-sdk", specifier = ">=1.30.0" },
@@ -1963,7 +1963,7 @@ unit = [
 
 [[package]]
 name = "llama-stack-client"
-version = "0.2.17"
+version = "0.2.18"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1982,9 +1982,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/2a/bb2949d6a5c494d21da0c185d426e25eaa8016f8287b689249afc6c96fb5/llama_stack_client-0.2.17.tar.gz", hash = "sha256:1fe2070133c6356761e394fa346045e9b6b567d4c63157b9bc6be89b9a6e7a41", size = 257636, upload-time = "2025-08-05T01:42:55.911Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/da/5e5a745495f8a2b8ef24fc4d01fe9031aa2277c36447cb22192ec8c8cc1e/llama_stack_client-0.2.18.tar.gz", hash = "sha256:860c885c9e549445178ac55cc9422e6e2a91215ac7aff5aaccfb42f3ce07e79e", size = 277284, upload-time = "2025-08-19T22:12:09.106Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/81/fc/5eccc86b83c5ced3a3bca071d250a86ccafa4ff17546cf781deb7758ab74/llama_stack_client-0.2.17-py3-none-any.whl", hash = "sha256:336c32f8688700ff64717b8109f405dc87a990fbe310c2027ac9ed6d39d67d16", size = 350329, upload-time = "2025-08-05T01:42:54.381Z" },
+    { url = "https://files.pythonhosted.org/packages/0a/e4/e97f8fdd8a07aa1efc7f7e37b5657d84357b664bf70dd1885a437edc0699/llama_stack_client-0.2.18-py3-none-any.whl", hash = "sha256:90f827d5476f7fc15fd993f1863af6a6e72bd064646bf6a99435eb43a1327f70", size = 367586, upload-time = "2025-08-19T22:12:07.899Z" },
 ]
 
 [[package]]
