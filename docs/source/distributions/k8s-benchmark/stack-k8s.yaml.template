@@ -44,8 +44,6 @@ spec:
           value: "${SAFETY_MODEL}"
         - name: TAVILY_SEARCH_API_KEY
           value: "${TAVILY_SEARCH_API_KEY}"
-        - name: MOCK_INFERENCE_PORT
-          value: "${MOCK_INFERENCE_PORT}"
         - name: VLLM_URL
           value: http://vllm-server.default.svc.cluster.local:8000/v1
         - name: VLLM_MAX_TOKENS
@@ -54,8 +52,6 @@ spec:
           value: http://vllm-server-safety.default.svc.cluster.local:8001/v1
         - name: VLLM_TLS_VERIFY
           value: "false"
-        - name: MOCK_INFERENCE_MODEL
-          value: "${MOCK_INFERENCE_MODEL}"
         command: ["python", "-m", "llama_stack.core.server.server", "/etc/config/stack_run_config.yaml", "--port", "8323"]
         ports:
           - containerPort: 8323

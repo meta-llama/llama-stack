@@ -77,6 +77,8 @@ class PostgresKVStoreConfig(CommonConfig):
     db: str = "llamastack"
     user: str
     password: str | None = None
+    ssl_mode: str | None = None
+    ca_cert_path: str | None = None
     table_name: str = "llamastack_kvstore"
 
     @classmethod

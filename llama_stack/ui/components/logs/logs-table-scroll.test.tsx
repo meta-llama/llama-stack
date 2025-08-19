@@ -67,7 +67,7 @@ describe("LogsTable Viewport Loading", () => {
       () => {
         expect(mockLoadMore).toHaveBeenCalled();
       },
-      { timeout: 300 },
+      { timeout: 300 }
     );
 
     expect(mockLoadMore).toHaveBeenCalledTimes(1);
@@ -81,11 +81,11 @@ describe("LogsTable Viewport Loading", () => {
         {...defaultProps}
         status="loading-more"
         onLoadMore={mockLoadMore}
-      />,
+      />
     );
 
     // Wait for possible triggers
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     expect(mockLoadMore).not.toHaveBeenCalled();
   });
@@ -94,15 +94,11 @@ describe("LogsTable Viewport Loading", () => {
     const mockLoadMore = jest.fn();
 
     render(
-      <LogsTable
-        {...defaultProps}
-        status="loading"
-        onLoadMore={mockLoadMore}
-      />,
+      <LogsTable {...defaultProps} status="loading" onLoadMore={mockLoadMore} />
     );
 
     // Wait for possible triggers
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     expect(mockLoadMore).not.toHaveBeenCalled();
   });
@@ -111,18 +107,18 @@ describe("LogsTable Viewport Loading", () => {
     const mockLoadMore = jest.fn();
 
     render(
-      <LogsTable {...defaultProps} hasMore={false} onLoadMore={mockLoadMore} />,
+      <LogsTable {...defaultProps} hasMore={false} onLoadMore={mockLoadMore} />
     );
 
     // Wait for possible triggers
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     expect(mockLoadMore).not.toHaveBeenCalled();
   });
 
   test("sentinel element should not be rendered when loading", () => {
     const { container } = render(
-      <LogsTable {...defaultProps} status="loading-more" />,
+      <LogsTable {...defaultProps} status="loading-more" />
     );
 
     // Check that no sentinel row with height: 1 exists
@@ -132,7 +128,7 @@ describe("LogsTable Viewport Loading", () => {
 
   test("sentinel element should be rendered when not loading and hasMore", () => {
     const { container } = render(
-      <LogsTable {...defaultProps} hasMore={true} status="idle" />,
+      <LogsTable {...defaultProps} hasMore={true} status="idle" />
     );
 
     // Check that sentinel row exists
