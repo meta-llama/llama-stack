@@ -48,8 +48,8 @@ from llama_stack.providers.utils.responses.responses_store import ResponsesStore
 
 from .agent_instance import ChatAgent
 from .config import MetaReferenceAgentsImplConfig
-from .openai_responses import OpenAIResponsesImpl
 from .persistence import AgentInfo
+from .responses.openai_responses import OpenAIResponsesImpl
 
 logger = logging.getLogger()
 

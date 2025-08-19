@@ -2,6 +2,7 @@ version: 2
 image_name: ci-tests
 apis:
 - agents
+- batches
 - datasetio
 - eval
 - files
@@ -134,6 +135,8 @@ providers:
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+  - provider_id: code-scanner
+    provider_type: inline::code-scanner
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -204,6 +207,13 @@ providers:
     provider_type: inline::rag-runtime
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
+  batches:
+  - provider_id: reference
+    provider_type: inline::reference
+    config:
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/batches.db
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/registry.db
@@ -215,6 +225,9 @@ shields:
 - shield_id: llama-guard
   provider_id: ${env.SAFETY_MODEL:+llama-guard}
   provider_shield_id: ${env.SAFETY_MODEL:=}
+- shield_id: code-scanner
+  provider_id: ${env.CODE_SCANNER_MODEL:+code-scanner}
+  provider_shield_id: ${env.CODE_SCANNER_MODEL:=}
 vector_dbs: []
 datasets: []
 scoring_fns: []
