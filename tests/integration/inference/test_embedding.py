@@ -55,7 +55,6 @@
 #
 
 import pytest
-from llama_stack_client import BadRequestError
 from llama_stack_client.types import EmbeddingsResponse
 from llama_stack_client.types.shared.interleaved_content import (
     ImageContentItem,
@@ -203,7 +202,10 @@ def test_embedding_truncation_error(
 ):
     if inference_provider_type not in SUPPORTED_PROVIDERS:
         pytest.xfail(f"{inference_provider_type} doesn't support embedding model yet")
-    with pytest.raises(BadRequestError):
+    # Using LlamaStackClient from llama_stack_client will raise llama_stack_client.BadRequestError
+    # While using LlamaStackAsLibraryClient from llama_stack.distribution.library_client will raise the error that the backend raises
+    # Here we are using the LlamaStackAsLibraryClient, so the error raised is the same as what the backend raises
+    with pytest.raises(ValueError):
         llama_stack_client.inference.embeddings(
             model_id=embedding_model_id,
             contents=[DUMMY_LONG_TEXT],
@@ -283,7 +285,7 @@ def test_embedding_text_truncation_error(
 ):
     if inference_provider_type not in SUPPORTED_PROVIDERS:
         pytest.xfail(f"{inference_provider_type} doesn't support embedding model yet")
-    with pytest.raises(BadRequestError):
+    with pytest.raises(ValueError):
         llama_stack_client.inference.embeddings(
             model_id=embedding_model_id,
             contents=[DUMMY_STRING],
