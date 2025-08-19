@@ -194,9 +194,9 @@ export default function ChatPlaygroundPage() {
     );
     setInput("");
 
-  // Use the helper function with the content
-  await handleSubmitWithContent(userMessage.content);
-};
+    // Use the helper function with the content
+    await handleSubmitWithContent(userMessage.content);
+  };
 
   const handleSubmitWithContent = async (content: string) => {
     setIsGenerating(true);
@@ -264,11 +264,15 @@ export default function ChatPlaygroundPage() {
         createdAt: new Date(),
       };
 
-    setCurrentSession(prev => prev ? {
-      ...prev,
-      messages: [...prev.messages, assistantMessage],
-      updatedAt: Date.now()
-    } : null);
+      setCurrentSession(prev =>
+        prev
+          ? {
+              ...prev,
+              messages: [...prev.messages, assistantMessage],
+              updatedAt: Date.now(),
+            }
+          : null
+      );
 
       let fullContent = "";
       for await (const chunk of response) {
