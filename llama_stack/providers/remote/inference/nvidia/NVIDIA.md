@@ -77,6 +77,10 @@ print(f"Response: {response.completion_message.content}")
 ```
 
 ### Create Embeddings
+> Note on OpenAI embeddings compatibility
+>
+> NVIDIA asymmetric embedding models (e.g., `nvidia/llama-3.2-nv-embedqa-1b-v2`) require an `input_type` parameter not present in the standard OpenAI embeddings API. The NVIDIA Inference Adapter automatically sets `input_type="query"` when using the OpenAI-compatible embeddings endpoint for NVIDIA. For passage embeddings, use the `embeddings` API with `task_type="document"`.
+
 ```python
 response = client.inference.embeddings(
     model_id="nvidia/llama-3.2-nv-embedqa-1b-v2",
