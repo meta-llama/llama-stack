@@ -148,14 +148,14 @@ repos:
         files: ^.github/workflows/.*$
       - id: ui-prettier
         name: Format UI code with Prettier
-        entry: bash -c 'cd llama_stack/ui && npm run format'
+        entry: bash -c 'cd llama_stack/ui && npm ci && npm run format'
         language: system
         files: ^llama_stack/ui/.*\.(ts|tsx)$
         pass_filenames: false
         require_serial: true
       - id: ui-eslint
         name: Lint UI code with ESLint
-        entry: bash -c 'cd llama_stack/ui && npm run lint -- --fix --quiet'
+        entry: bash -c 'cd llama_stack/ui && npm ci && npm run lint -- --fix --quiet'
         language: system
         files: ^llama_stack/ui/.*\.(ts|tsx)$
         pass_filenames: false
