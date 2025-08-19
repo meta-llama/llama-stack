@@ -36,6 +36,17 @@ jobs:
             **/requirements*.txt
             .pre-commit-config.yaml
 
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'llama_stack/ui/'
+
+      - name: Install npm dependencies
+        run: npm ci
+        working-directory: llama_stack/ui
+
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         continue-on-error: true
         env:
