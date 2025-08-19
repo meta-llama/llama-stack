@@ -137,15 +137,15 @@ class ReferenceBatchesImpl(Batches):
         endpoint: str,
         completion_window: Literal["24h"],
         metadata: dict[str, str] | None = None,
-        idem_tok: str | None = None,
+        idempotency_key: str | None = None,
     ) -> BatchObject:
         """
         Create a new batch for processing multiple API requests.
 
-        This implementation provides optional idempotency: when an idempotency token
-        (idem_tok) is provided, a deterministic ID is generated based on the input
+        This implementation provides optional idempotency: when an idempotency key
+        (idempotency_key) is provided, a deterministic ID is generated based on the input
         parameters. If a batch with the same parameters already exists, it will be
-        returned instead of creating a duplicate. Without an idempotency token,
+        returned instead of creating a duplicate. Without an idempotency key,
         each request creates a new batch with a unique ID.
 
         Args:
@@ -153,7 +153,7 @@ class ReferenceBatchesImpl(Batches):
             endpoint: The endpoint to be used for all requests in the batch.
             completion_window: The time window within which the batch should be processed.
             metadata: Optional metadata for the batch.
-            idem_tok: Optional idempotency token for enabling idempotent behavior.
+            idempotency_key: Optional idempotency key for enabling idempotent behavior.
 
         Returns:
             The created or existing batch object.
@@ -190,11 +190,11 @@ class ReferenceBatchesImpl(Batches):
 
         batch_id = f"batch_{uuid.uuid4().hex[:16]}"
 
-        # For idempotent requests, use the idempotency token for the batch ID
-        # This ensures the same token always maps to the same batch ID,
+        # For idempotent requests, use the idempotency key for the batch ID
+        # This ensures the same key always maps to the same batch ID,
         # allowing us to detect parameter conflicts
-        if idem_tok is not None:
-            hash_input = idem_tok.encode("utf-8")
+        if idempotency_key is not None:
+            hash_input = idempotency_key.encode("utf-8")
             hash_digest = hashlib.sha256(hash_input).hexdigest()[:24]
             batch_id = f"batch_{hash_digest}"
 
@@ -208,8 +208,8 @@ class ReferenceBatchesImpl(Batches):
                     or existing_batch.metadata != metadata
                 ):
                     raise ConflictError(
-                        f"Idempotency token '{idem_tok}' was previously used with different parameters. "
-                        "Either use a new idempotency token or ensure all parameters match the original request."
+                        f"Idempotency key '{idempotency_key}' was previously used with different parameters. "
+                        "Either use a new idempotency key or ensure all parameters match the original request."
                     )
 
                 logger.info(f"Returning existing batch with ID: {batch_id}")

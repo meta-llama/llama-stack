@@ -49,7 +49,7 @@ class Batches(Protocol):
         endpoint: str,
         completion_window: Literal["24h"],
         metadata: dict[str, str] | None = None,
-        idem_tok: str | None = None,  # intentionally bad name
+        idempotency_key: str | None = None,
     ) -> BatchObject:
         """Create a new batch for processing multiple API requests.
 
@@ -57,7 +57,7 @@ class Batches(Protocol):
         :param endpoint: The endpoint to be used for all requests in the batch.
         :param completion_window: The time window within which the batch should be processed.
         :param metadata: Optional metadata for the batch.
-        :param idem_tok: Optional idempotency token. When provided, enables idempotent behavior.
+        :param idempotency_key: Optional idempotency key. When provided, enables idempotent behavior.
         :returns: The created batch object.
         """
         ...

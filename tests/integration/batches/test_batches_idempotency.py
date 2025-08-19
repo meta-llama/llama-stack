@@ -8,16 +8,16 @@
 Integration tests for batch idempotency functionality using the OpenAI client library.
 
 This module tests the idempotency feature in the batches API using the OpenAI-compatible
-client interface. These tests verify that the idempotency token (idem_tok) works correctly
+client interface. These tests verify that the idempotency key (idempotency_key) works correctly
 in a real client-server environment.
 
 Test Categories:
-1. Successful Idempotency: Same token returns same batch with identical parameters
+1. Successful Idempotency: Same key returns same batch with identical parameters
    - test_idempotent_batch_creation_successful: Verifies that requests with the same
-     idempotency token return identical batches, even with different metadata order
+     idempotency key return identical batches, even with different metadata order
 
-2. Conflict Detection: Same token with conflicting parameters raises HTTP 409 errors
-   - test_idempotency_conflict_with_different_params: Verifies that reusing an idempotency token
+2. Conflict Detection: Same key with conflicting parameters raises HTTP 409 errors
+   - test_idempotency_conflict_with_different_params: Verifies that reusing an idempotency key
      with truly conflicting parameters (both file ID and metadata values) raises ConflictError
 """
 
@@ -31,7 +31,7 @@ class TestBatchesIdempotencyIntegration:
     """Integration tests for batch idempotency using OpenAI client."""
 
     def test_idempotent_batch_creation_successful(self, openai_client):
-        """Test that identical requests with same idempotency token return the same batch."""
+        """Test that identical requests with same idempotency key return the same batch."""
         batch1 = openai_client.batches.create(
             input_file_id="bogus-id",
             endpoint="/v1/chat/completions",
@@ -40,7 +40,7 @@ class TestBatchesIdempotencyIntegration:
                 "test_type": "idempotency_success",
                 "purpose": "integration_test",
             },
-            extra_body={"idem_tok": "test-idempotency-token-1"},
+            extra_body={"idempotency_key": "test-idempotency-token-1"},
         )
 
         # sleep to ensure different timestamps
@@ -54,7 +54,7 @@ class TestBatchesIdempotencyIntegration:
                 "purpose": "integration_test",
                 "test_type": "idempotency_success",
             },  # Different order
-            extra_body={"idem_tok": "test-idempotency-token-1"},
+            extra_body={"idempotency_key": "test-idempotency-token-1"},
         )
 
         assert batch1.id == batch2.id
@@ -65,13 +65,13 @@ class TestBatchesIdempotencyIntegration:
         assert batch1.created_at == batch2.created_at
 
     def test_idempotency_conflict_with_different_params(self, openai_client):
-        """Test that using same idempotency token with different params raises conflict error."""
+        """Test that using same idempotency key with different params raises conflict error."""
         batch1 = openai_client.batches.create(
             input_file_id="bogus-id-1",
             endpoint="/v1/chat/completions",
             completion_window="24h",
             metadata={"test_type": "conflict_test_1"},
-            extra_body={"idem_tok": "conflict-token"},
+            extra_body={"idempotency_key": "conflict-token"},
         )
 
         with pytest.raises(ConflictError) as exc_info:
@@ -80,7 +80,7 @@ class TestBatchesIdempotencyIntegration:
                 endpoint="/v1/chat/completions",
                 completion_window="24h",
                 metadata={"test_type": "conflict_test_2"},  # Different metadata
-                extra_body={"idem_tok": "conflict-token"},  # Same token
+                extra_body={"idempotency_key": "conflict-token"},  # Same token
             )
 
         assert exc_info.value.status_code == 409
