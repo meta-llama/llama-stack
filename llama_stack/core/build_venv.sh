@@ -151,23 +151,37 @@ run() {
     fi
   else
     if [ -n "$LLAMA_STACK_DIR" ]; then
-      if [ ! -d "$LLAMA_STACK_DIR" ]; then
+      # only warn if DIR does not start with "git+"
+      if [ ! -d "$LLAMA_STACK_DIR" ] && [[ "$LLAMA_STACK_DIR" != git+* ]]; then
         printf "${RED}Warning: LLAMA_STACK_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_STACK_DIR" >&2
         exit 1
       fi
       printf "Installing from LLAMA_STACK_DIR: %s\n"  "$LLAMA_STACK_DIR"
-      uv pip install --no-cache-dir -e "$LLAMA_STACK_DIR"
+      # editable only if LLAMA_STACK_DIR does not start with "git+"
+      if [[ "$LLAMA_STACK_DIR" != git+* ]]; then
+        EDITABLE="-e"
+      else
+        EDITABLE=""
+      fi
+      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_DIR"
     else
       uv pip install --no-cache-dir llama-stack
     fi
 
     if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
-      if [ ! -d "$LLAMA_STACK_CLIENT_DIR" ]; then
+      # only warn if DIR does not start with "git+"
+      if [ ! -d "$LLAMA_STACK_CLIENT_DIR" ] && [[ "$LLAMA_STACK_CLIENT_DIR" != git+* ]]; then
         printf "${RED}Warning: LLAMA_STACK_CLIENT_DIR is set but directory does not exist: %s${NC}\n" "$LLAMA_STACK_CLIENT_DIR" >&2
         exit 1
       fi
       printf "Installing from LLAMA_STACK_CLIENT_DIR: %s\n" "$LLAMA_STACK_CLIENT_DIR"
-      uv pip install --no-cache-dir -e "$LLAMA_STACK_CLIENT_DIR"
+      # editable only if LLAMA_STACK_CLIENT_DIR does not start with "git+"
+      if [[ "$LLAMA_STACK_CLIENT_DIR" != git+* ]]; then
+        EDITABLE="-e"
+      else
+        EDITABLE=""
+      fi
+      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_CLIENT_DIR"
     fi
 
     printf "Installing pip dependencies\n"
