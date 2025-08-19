@@ -45,7 +45,6 @@ from llama_stack.providers.inline.agents.meta_reference.responses.utils import (
 
 
 class TestConvertChatChoiceToResponseMessage:
-    @pytest.mark.asyncio
     async def test_convert_string_content(self):
         choice = OpenAIChoice(
             message=OpenAIAssistantMessageParam(content="Test message"),
@@ -61,7 +60,6 @@ class TestConvertChatChoiceToResponseMessage:
         assert isinstance(result.content[0], OpenAIResponseOutputMessageContentOutputText)
         assert result.content[0].text == "Test message"
 
-    @pytest.mark.asyncio
     async def test_convert_text_param_content(self):
         choice = OpenAIChoice(
             message=OpenAIAssistantMessageParam(
@@ -78,12 +76,10 @@ class TestConvertChatChoiceToResponseMessage:
 
 
 class TestConvertResponseContentToChatContent:
-    @pytest.mark.asyncio
     async def test_convert_string_content(self):
         result = await convert_response_content_to_chat_content("Simple string")
         assert result == "Simple string"
 
-    @pytest.mark.asyncio
     async def test_convert_text_content_parts(self):
         content = [
             OpenAIResponseInputMessageContentText(text="First part"),
@@ -98,7 +94,6 @@ class TestConvertResponseContentToChatContent:
         assert isinstance(result[1], OpenAIChatCompletionContentPartTextParam)
         assert result[1].text == "Second part"
 
-    @pytest.mark.asyncio
     async def test_convert_image_content(self):
         content = [OpenAIResponseInputMessageContentImage(image_url="https://example.com/image.jpg", detail="high")]
 
@@ -111,7 +106,6 @@ class TestConvertResponseContentToChatContent:
 
 
 class TestConvertResponseInputToChatMessages:
-    @pytest.mark.asyncio
     async def test_convert_string_input(self):
         result = await convert_response_input_to_chat_messages("User message")
 
@@ -119,7 +113,6 @@ class TestConvertResponseInputToChatMessages:
         assert isinstance(result[0], OpenAIUserMessageParam)
         assert result[0].content == "User message"
 
-    @pytest.mark.asyncio
     async def test_convert_function_tool_call_output(self):
         input_items = [
             OpenAIResponseInputFunctionToolCallOutput(
@@ -135,7 +128,6 @@ class TestConvertResponseInputToChatMessages:
         assert result[0].content == "Tool output"
         assert result[0].tool_call_id == "call_123"
 
-    @pytest.mark.asyncio
     async def test_convert_function_tool_call(self):
         input_items = [
             OpenAIResponseOutputMessageFunctionToolCall(
@@ -154,7 +146,6 @@ class TestConvertResponseInputToChatMessages:
         assert result[0].tool_calls[0].function.name == "test_function"
         assert result[0].tool_calls[0].function.arguments == '{"param": "value"}'
 
-    @pytest.mark.asyncio
     async def test_convert_response_message(self):
         input_items = [
             OpenAIResponseMessage(
@@ -173,7 +164,6 @@ class TestConvertResponseInputToChatMessages:
 
 
 class TestConvertResponseTextToChatResponseFormat:
-    @pytest.mark.asyncio
     async def test_convert_text_format(self):
         text = OpenAIResponseText(format=OpenAIResponseTextFormat(type="text"))
         result = await convert_response_text_to_chat_response_format(text)
@@ -181,14 +171,12 @@ class TestConvertResponseTextToChatResponseFormat:
         assert isinstance(result, OpenAIResponseFormatText)
         assert result.type == "text"
 
-    @pytest.mark.asyncio
     async def test_convert_json_object_format(self):
         text = OpenAIResponseText(format={"type": "json_object"})
         result = await convert_response_text_to_chat_response_format(text)
 
         assert isinstance(result, OpenAIResponseFormatJSONObject)
 
-    @pytest.mark.asyncio
     async def test_convert_json_schema_format(self):
         schema_def = {"type": "object", "properties": {"test": {"type": "string"}}}
         text = OpenAIResponseText(
@@ -204,7 +192,6 @@ class TestConvertResponseTextToChatResponseFormat:
         assert result.json_schema["name"] == "test_schema"
         assert result.json_schema["schema"] == schema_def
 
-    @pytest.mark.asyncio
     async def test_default_text_format(self):
         text = OpenAIResponseText()
         result = await convert_response_text_to_chat_response_format(text)
@@ -214,27 +201,22 @@ class TestConvertResponseTextToChatResponseFormat:
 
 
 class TestGetMessageTypeByRole:
-    @pytest.mark.asyncio
     async def test_user_role(self):
         result = await get_message_type_by_role("user")
         assert result == OpenAIUserMessageParam
 
-    @pytest.mark.asyncio
     async def test_system_role(self):
         result = await get_message_type_by_role("system")
         assert result == OpenAISystemMessageParam
 
-    @pytest.mark.asyncio
     async def test_assistant_role(self):
         result = await get_message_type_by_role("assistant")
         assert result == OpenAIAssistantMessageParam
 
-    @pytest.mark.asyncio
     async def test_developer_role(self):
         result = await get_message_type_by_role("developer")
         assert result == OpenAIDeveloperMessageParam
 
-    @pytest.mark.asyncio
     async def test_unknown_role(self):
         result = await get_message_type_by_role("unknown")
         assert result is None
