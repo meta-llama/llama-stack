@@ -318,11 +318,13 @@ class QuotaConfig(BaseModel):
     period: QuotaPeriod = Field(default=QuotaPeriod.DAY, description="Quota period to set")
 
 
-class CORSConfig(BaseModel):
-    allow_origins: list[str] = Field(default=["*"])
+class CORSSpec(BaseModel):
+    """CORS configuration with strict defaults (minimal permissions)."""
+
+    allow_origins: list[str] = Field(default_factory=list)
     allow_origin_regex: str | None = Field(default=None)
-    allow_methods: list[str] = Field(default=["*"])
-    allow_headers: list[str] = Field(default=["*"])
+    allow_methods: list[str] = Field(default=["OPTIONS"])
+    allow_headers: list[str] = Field(default_factory=list)
     allow_credentials: bool = Field(default=False)
     expose_headers: list[str] = Field(default_factory=list)
     max_age: int = Field(default=600, ge=0)
@@ -334,21 +336,19 @@ class CORSConfig(BaseModel):
         return self
 
 
-# Union type for flexible CORS configuration
-CORSConfiguration = bool | CORSConfig
+# Union type for flexible CORS configuration input
+# Accepts: bool (dev shortcuts) or CORSSpec (explicit config)
+CORSConfig = bool | CORSSpec
 
 
-def process_cors_config(cors_config: CORSConfiguration | None) -> CORSConfig | None:
-    """Process CORS config: bool -> dev defaults, object -> passthrough."""
-    if cors_config is None:
-        return None
-
+def process_cors_config(cors_config: CORSConfig) -> CORSSpec | None:
+    """Process CORS config: bool -> dev defaults, CORSSpec -> passthrough."""
     if cors_config is False:
         return None
 
     if cors_config is True:
         # Dev mode: localhost with any port
-        return CORSConfig(
+        return CORSSpec(
             allow_origins=[],
             allow_origin_regex=r"https?://localhost:\d+",
             allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -358,7 +358,7 @@ def process_cors_config(cors_config: CORSConfiguration | None) -> CORSConfig | N
             max_age=600,
         )
 
-    elif isinstance(cors_config, CORSConfig):
+    elif isinstance(cors_config, CORSSpec):
         return cors_config
 
     else:
@@ -396,7 +396,7 @@ class ServerConfig(BaseModel):
         default=None,
         description="Per client quota request configuration",
     )
-    cors: CORSConfiguration | None = Field(
+    cors: CORSConfig | None = Field(
         default=None,
         description="CORS configuration for cross-origin requests. Can be:\n"
         "- true: Enable localhost CORS for development\n"

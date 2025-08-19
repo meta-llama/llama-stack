@@ -228,6 +228,29 @@ server:
   cors: true  # Optional: Enable CORS (dev mode) or full config object
 ```
 
+### CORS Configuration
+
+CORS (Cross-Origin Resource Sharing) can be configured in two ways:
+
+**Local development** (allows localhost origins only):
+```yaml
+server:
+  cors: true
+```
+
+**Explicit configuration** (custom origins and settings):
+```yaml
+server:
+  cors:
+    allow_origins: ["https://myapp.com", "https://app.example.com"]
+    allow_methods: ["GET", "POST", "PUT", "DELETE"]
+    allow_headers: ["Content-Type", "Authorization"]
+    allow_credentials: true
+    max_age: 3600
+```
+
+When `cors: true`, the server enables secure localhost-only access for local development. For production, specify exact origins to maintain security.
+
 ### Authentication Configuration
 
 > **Breaking Change (v0.2.14)**: The authentication configuration structure has changed. The previous format with `provider_type` and `config` fields has been replaced with a unified `provider_config` field that includes the `type` field. Update your configuration files accordingly.
