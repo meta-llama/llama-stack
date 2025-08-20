@@ -31,9 +31,15 @@ from openai.types.chat import (
 from openai.types.chat import (
     ChatCompletionContentPartTextParam as OpenAIChatCompletionContentPartTextParam,
 )
-from openai.types.chat import (
-    ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
-)
+
+try:
+    from openai.types.chat import (
+        ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
+except ImportError:
+    from openai.types.chat.chat_completion_message_tool_call import (
+        ChatCompletionMessageToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
 from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )

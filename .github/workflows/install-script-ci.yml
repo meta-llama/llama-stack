@@ -30,7 +30,8 @@ jobs:
 
       - name: Build a single provider
         run: |
-          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run llama stack build --template starter --image-type container --image-name test
+          USE_COPY_NOT_MOUNT=true LLAMA_STACK_DIR=. uv run --no-sync \
+            llama stack build --template starter --image-type container --image-name test
 
       - name: Run installer end-to-end
         run: |

@@ -148,7 +148,7 @@ repos:
         files: ^.github/workflows/.*$
       - id: ui-prettier
         name: Format UI code with Prettier
-        entry: bash -c 'cd llama_stack/ui && npm run format'
+        entry: bash -c 'cd llama_stack/ui && npm ci && npm run format'
         language: system
         files: ^llama_stack/ui/.*\.(ts|tsx)$
         pass_filenames: false

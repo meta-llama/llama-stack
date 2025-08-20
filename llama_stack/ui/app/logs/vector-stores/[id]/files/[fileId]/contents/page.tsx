@@ -52,8 +52,10 @@ export default function ContentsListPage() {
   const [file, setFile] = useState<VectorStoreFile | null>(null);
   const [contents, setContents] = useState<VectorStoreContentItem[]>([]);
   const [isLoadingStore, setIsLoadingStore] = useState(true);
+  const [isLoadingFile, setIsLoadingFile] = useState(true);
   const [isLoadingContents, setIsLoadingContents] = useState(true);
   const [errorStore, setErrorStore] = useState<Error | null>(null);
+  const [errorFile, setErrorFile] = useState<Error | null>(null);
   const [errorContents, setErrorContents] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -175,7 +177,13 @@ export default function ContentsListPage() {
           <CardTitle>Content Chunks ({contents.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoadingContents ? (
+          {isLoadingFile ? (
+            <Skeleton className="h-4 w-full" />
+          ) : errorFile ? (
+            <div className="text-destructive text-sm">
+              Error loading file: {errorFile.message}
+            </div>
+          ) : isLoadingContents ? (
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
