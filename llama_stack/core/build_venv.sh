@@ -27,7 +27,7 @@ source "$SCRIPT_DIR/common.sh"
 # Usage function
 usage() {
   echo "Usage: $0 --env-name <env_name> --normal-deps <pip_dependencies> [--external-provider-deps <external_provider_deps>] [--optional-deps <special_pip_deps>]"
-  echo "Example: $0 --env-name mybuild --normal-deps 'numpy pandas scipy' --external-provider-deps 'foo' --optional-deps 'bar'"
+  echo "Example: $0 --env-name mybuild --normal-deps '{\"default\": [\"numpy\", \"pandas\"]}' --external-provider-deps '{\"vector_db\": [\"chromadb\"]}' --optional-deps '{\"special\": [\"bar\"]}'"
   exit 1
 }
 
@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --normal-deps)
       if [[ -z "$2" || "$2" == --* ]]; then
-        echo "Error: --normal-deps requires a string value" >&2
+        echo "Error: --normal-deps requires a JSON object" >&2
         usage
       fi
       normal_deps="$2"
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --external-provider-deps)
       if [[ -z "$2" || "$2" == --* ]]; then
-        echo "Error: --external-provider-deps requires a string value" >&2
+        echo "Error: --external-provider-deps requires a JSON object" >&2
         usage
       fi
       external_provider_deps="$2"
@@ -66,7 +66,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --optional-deps)
       if [[ -z "$2" || "$2" == --* ]]; then
-        echo "Error: --optional-deps requires a string value" >&2
+        echo "Error: --optional-deps requires a JSON object" >&2
         usage
       fi
       optional_deps="$2"
@@ -116,6 +116,36 @@ pre_run_checks() {
   fi
 }
 
+# Function to install dependencies from JSON object
+install_deps_from_json() {
+  local json_deps="$1"
+  local dep_type="$2"
+
+  if [ -n "$json_deps" ]; then
+    if [ "$dep_type" = "optional" ]; then
+      # For optional deps, process each spec separately to preserve flags like --no-deps
+      local last_provider=""
+      echo "$json_deps" | jq -r 'to_entries[] | .key as $k | .value[] | "\($k)\t\(.)"' | while IFS=$'\t' read -r provider spec; do
+        if [ -n "$spec" ]; then
+          if [ "$provider" != "$last_provider" ]; then
+            echo "Installing $dep_type dependencies for provider '$provider'"
+            last_provider="$provider"
+          fi
+          uv pip install $spec
+        fi
+      done
+    else
+      # For normal deps, install all at once (no special flags)
+      echo "$json_deps" | jq -r 'to_entries[] | "\(.key)\t\(.value | join(" "))"' | while IFS=$'\t' read -r provider deps; do
+        if [ -n "$deps" ]; then
+          echo "Installing $dep_type dependencies for provider '$provider'"
+          uv pip install $deps
+        fi
+      done
+    fi
+  fi
+}
+
 run() {
   # Use only global variables set by flag parser
   if [ -n "$UV_SYSTEM_PYTHON" ] || [ "$env_name" == "__system__" ]; then
@@ -136,17 +166,29 @@ run() {
       llama-stack=="$TEST_PYPI_VERSION" \
       $normal_deps
     if [ -n "$optional_deps" ]; then
-      IFS='#' read -ra parts <<<"$optional_deps"
-      for part in "${parts[@]}"; do
-        echo "$part"
-        uv pip install $part
-      done
+      install_deps_from_json "$optional_deps" "optional"
     fi
     if [ -n "$external_provider_deps" ]; then
-      IFS='#' read -ra parts <<<"$external_provider_deps"
-      for part in "${parts[@]}"; do
-        echo "$part"
-        uv pip install "$part"
+      # Install external provider modules (no special flags supported)
+      echo "Installing external provider modules"
+      echo "$external_provider_deps" | jq -r 'to_entries[] | .value[]' | while read -r part; do
+        if [ -n "$part" ]; then
+          echo "Installing external provider module: $part"
+          uv pip install "$part"
+          echo "Getting provider spec for module: $part and installing dependencies"
+          package_name=$(echo "$part" | sed 's/[<>=!].*//')
+          python3 -c "
+import importlib
+import sys
+try:
+    module = importlib.import_module(f'$package_name.provider')
+    spec = module.get_provider_spec()
+    if hasattr(spec, 'pip_packages') and spec.pip_packages:
+        print('\\n'.join(spec.pip_packages))
+except Exception as e:
+    print(f'Error getting provider spec for $package_name: {e}', file=sys.stderr)
+" | uv pip install -r -
+        fi
       done
     fi
   else
@@ -163,9 +205,9 @@ run() {
       else
         EDITABLE=""
       fi
-      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_DIR"
+      uv pip install --no-cache-dir --quiet $EDITABLE "$LLAMA_STACK_DIR"
     else
-      uv pip install --no-cache-dir llama-stack
+      uv pip install --no-cache-dir --quiet llama-stack
     fi
 
     if [ -n "$LLAMA_STACK_CLIENT_DIR" ]; then
@@ -181,26 +223,26 @@ run() {
       else
         EDITABLE=""
       fi
-      uv pip install --no-cache-dir $EDITABLE "$LLAMA_STACK_CLIENT_DIR"
+      uv pip install --no-cache-dir --quiet $EDITABLE "$LLAMA_STACK_CLIENT_DIR"
     fi
 
     printf "Installing pip dependencies\n"
-    uv pip install $normal_deps
+    install_deps_from_json "$normal_deps" "normal"
     if [ -n "$optional_deps" ]; then
-      IFS='#' read -ra parts <<<"$optional_deps"
-      for part in "${parts[@]}"; do
-        echo "Installing special provider module: $part"
-        uv pip install $part
-      done
+      install_deps_from_json "$optional_deps" "optional"
     fi
     if [ -n "$external_provider_deps" ]; then
-      IFS='#' read -ra parts <<<"$external_provider_deps"
-      for part in "${parts[@]}"; do
-        echo "Installing external provider module: $part"
-        uv pip install "$part"
-        echo "Getting provider spec for module: $part and installing dependencies"
-        package_name=$(echo "$part" | sed 's/[<>=!].*//')
-        python3 -c "
+      install_deps_from_json "$external_provider_deps" "external provider"
+
+      # For external provider deps, also get and install their dependencies
+      echo "Getting provider specs and installing dependencies for external providers"
+      echo "$external_provider_deps" | jq -r 'to_entries[] | "\(.key) \(.value | join(" "))"' | while read -r provider deps; do
+        if [ -n "$deps" ]; then
+          echo "Getting provider specs for provider '$provider' dependencies: $deps"
+          for dep in $deps; do
+            package_name=$(echo "$dep" | sed 's/[<>=!].*//')
+            echo "Getting provider spec for module: $package_name"
+            python3 -c "
 import importlib
 import sys
 try:
@@ -211,6 +253,8 @@ try:
 except Exception as e:
     print(f'Error getting provider spec for $package_name: {e}', file=sys.stderr)
 " | uv pip install -r -
+          done
+        fi
       done
     fi
   fi
