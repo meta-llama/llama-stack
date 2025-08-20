@@ -27,6 +27,8 @@ def test_openai_client_basic_operations(openai_client):
 
     test_content = b"files test content"
 
+    uploaded_file = None
+
     try:
         # Upload file using OpenAI client
         with BytesIO(test_content) as file_buffer:
@@ -70,7 +72,7 @@ def test_openai_client_basic_operations(openai_client):
 
     finally:
         # Cleanup in case of failure
-        if "uploaded_file" in locals():  # maybe create fails
+        if uploaded_file is not None:
             try:
                 client.files.delete(uploaded_file.id)
             except NotFoundError:
