@@ -1989,7 +1989,7 @@ wheels = [
 
 [[package]]
 name = "locust"
-version = "2.38.0"
+version = "2.39.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "configargparse" },
@@ -2001,15 +2001,16 @@ dependencies = [
     { name = "locust-cloud" },
     { name = "msgpack" },
     { name = "psutil" },
+    { name = "python-socketio", extra = ["client"] },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pyzmq" },
     { name = "requests" },
     { name = "setuptools" },
     { name = "werkzeug" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/93/ecd79dde28e24bdc99488d4e2c0ad4117252257d5cbdd61e3b14d1f03786/locust-2.38.0.tar.gz", hash = "sha256:5bd6c29d8423733cb5d9a265548c9fef7b731f2254aa91885d6c98d0d39f90f0", size = 1406518, upload-time = "2025-08-07T10:18:52.584Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/6f/d6ca4483f4795747fbbd610d28e798ca4f5d4358e03f309343eb5bab128f/locust-2.39.0.tar.gz", hash = "sha256:71e82a68324f9d63d4b800035288488c08eab12811fa4c24ff07f031643b7b39", size = 1409879, upload-time = "2025-08-20T13:39:55.233Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ae/be/57ca67b95c45e69c173e86fe5c934d789effc2ec203d3e3ec2a0b32aa707/locust-2.38.0-py3-none-any.whl", hash = "sha256:b92c937e8659e9ffd6d6d1cab2f63f70aa98c87975911938d1f473534f46fd78", size = 1424083, upload-time = "2025-08-07T10:18:50.499Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/94/7dc9a2b4ccb18a5b0c4be4bfadfa79b6c0fd860267a7114641402627e7db/locust-2.39.0-py3-none-any.whl", hash = "sha256:3817c4d7cca387b4b871da779c9e145c2a95fbb0b5602be5833976902b967a8f", size = 1428138, upload-time = "2025-08-20T13:39:52.549Z" },
 ]
 
 [[package]]
