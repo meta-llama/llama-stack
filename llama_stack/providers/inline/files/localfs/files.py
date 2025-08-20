@@ -21,11 +21,14 @@ from llama_stack.apis.files import (
     OpenAIFilePurpose,
 )
 from llama_stack.core.datatypes import AccessRule
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.sqlstore.api import ColumnDefinition, ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from llama_stack.providers.utils.sqlstore.sqlstore import sqlstore_impl
 
 from .config import LocalfsFilesImplConfig
+
+logger = get_logger(name=__name__, category="files")
 
 
 class LocalfsFilesImpl(Files):
@@ -195,12 +198,14 @@ class LocalfsFilesImpl(Files):
         # Read file content
         file_obj, file_path = await self._lookup_file_id(file_id)
 
-        with open(file_path, "rb") as f:  # this may fail and result in 500 Internal Server Error
-            content = f.read()
+        if not file_path.exists():
+            logger.warning(f"File '{file_id}'s underlying '{file_path}' is missing, deleting metadata.")
+            await self.openai_delete_file(file_id)
+            raise ResourceNotFoundError(file_id, "File", "client.files.list()")
 
         # Return as binary response with appropriate content type
         return Response(
-            content=content,
+            content=file_path.read_bytes(),
             media_type="application/octet-stream",
             headers={"Content-Disposition": f'attachment; filename="{file_obj.filename}"'},
         )
