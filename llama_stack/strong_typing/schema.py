@@ -93,14 +93,7 @@ def get_class_property_docstrings(
     """
 
     result = {}
-    # Check if the type has __mro__ (method resolution order)
-    if hasattr(data_type, "__mro__"):
-        bases = inspect.getmro(data_type)
-    else:
-        # For TypeAliasType or other types without __mro__, just use the type itself
-        bases = [data_type] if hasattr(data_type, "__doc__") else []
-
-    for base in bases:
+    for base in inspect.getmro(data_type):
         docstr = docstring.parse_type(base)
         for param in docstr.params.values():
             if param.name in result:
@@ -512,24 +505,13 @@ class JsonSchemaGenerator:
             (concrete_type,) = typing.get_args(typ)
             return self.type_to_schema(concrete_type)
 
-        # Check if this is a TypeAliasType (Python 3.12+) which doesn't have __mro__
-        if hasattr(typ, "__mro__"):
-            # dictionary of class attributes
-            members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))
-            property_docstrings = get_class_property_docstrings(typ, self.options.property_description_fun)
-        else:
-            # TypeAliasType or other types without __mro__
-            members = {}
-            property_docstrings = {}
+        # dictionary of class attributes
+        members = dict(inspect.getmembers(typ, lambda a: not inspect.isroutine(a)))
+
+        property_docstrings = get_class_property_docstrings(typ, self.options.property_description_fun)
         properties: Dict[str, Schema] = {}
         required: List[str] = []
-        # Only process properties if the type supports class properties
-        if hasattr(typ, "__mro__"):
-            class_properties = get_class_properties(typ)
-        else:
-            class_properties = []
-
-        for property_name, property_type in class_properties:
+        for property_name, property_type in get_class_properties(typ):
             # rename property if an alias name is specified
             alias = get_annotation(property_type, Alias)
             if alias:

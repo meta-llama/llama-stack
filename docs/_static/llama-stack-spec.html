@@ -8993,9 +8993,163 @@
                 "title": "OpenAIResponsesTool"
             },
             "OpenAIResponsesToolChoice": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/ToolChoiceOptions"
+                    },
+                    {
+                        "$ref": "#/components/schemas/ToolChoiceTypes"
+                    },
+                    {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ToolChoiceAllowed"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolChoiceFunction"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolChoiceMcp"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ToolChoiceCustom"
+                            }
+                        ],
+                        "discriminator": {
+                            "propertyName": "type",
+                            "mapping": {
+                                "allowed_tools": "#/components/schemas/ToolChoiceAllowed",
+                                "function": "#/components/schemas/ToolChoiceFunction",
+                                "mcp": "#/components/schemas/ToolChoiceMcp",
+                                "custom": "#/components/schemas/ToolChoiceCustom"
+                            }
+                        }
+                    }
+                ]
+            },
+            "ToolChoiceAllowed": {
                 "type": "object",
-                "title": "OpenAIResponsesToolChoice",
-                "description": "Type alias.\nType aliases are created through the type statement::\n\n    type Alias = int\n\nIn this example, Alias and int will be treated equivalently by static\ntype checkers.\n\nAt runtime, Alias is an instance of TypeAliasType. The __name__\nattribute holds the name of the type alias. The value of the type alias\nis stored in the __value__ attribute. It is evaluated lazily, so the\nvalue is computed only if the attribute is accessed.\n\nType aliases can also be generic::\n\n    type ListOrSet[T] = list[T] | set[T]\n\nIn this case, the type parameters of the alias are stored in the\n__type_params__ attribute.\n\nSee PEP 695 for more information."
+                "properties": {
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "required"
+                        ]
+                    },
+                    "tools": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "object",
+                                "title": "object",
+                                "description": "The base class of the class hierarchy.\nWhen called, it accepts no arguments and returns a new featureless\ninstance that has no instance attributes and cannot be given any."
+                            }
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "allowed_tools",
+                        "default": "allowed_tools"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "mode",
+                    "tools",
+                    "type"
+                ],
+                "title": "ToolChoiceAllowed"
+            },
+            "ToolChoiceCustom": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "custom",
+                        "default": "custom"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "type"
+                ],
+                "title": "ToolChoiceCustom"
+            },
+            "ToolChoiceFunction": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "function",
+                        "default": "function"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "type"
+                ],
+                "title": "ToolChoiceFunction"
+            },
+            "ToolChoiceMcp": {
+                "type": "object",
+                "properties": {
+                    "server_label": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "mcp",
+                        "default": "mcp"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "server_label",
+                    "type"
+                ],
+                "title": "ToolChoiceMcp"
+            },
+            "ToolChoiceOptions": {
+                "type": "string",
+                "enum": [
+                    "none",
+                    "auto",
+                    "required"
+                ]
+            },
+            "ToolChoiceTypes": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "file_search",
+                            "web_search_preview",
+                            "computer_use_preview",
+                            "web_search_preview_2025_03_11",
+                            "image_generation",
+                            "code_interpreter"
+                        ]
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "type"
+                ],
+                "title": "ToolChoiceTypes"
             },
             "OpenAIResponseContentPart": {
                 "oneOf": [

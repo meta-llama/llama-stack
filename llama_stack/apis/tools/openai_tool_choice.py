@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from llama_stack.schema_utils import json_schema_type, register_schema
 
-type ToolChoiceOptions = Literal["none", "auto", "required"]
+ToolChoiceOptions = Literal["none", "auto", "required"]
 register_schema(ToolChoiceOptions, name="ToolChoiceOptions")
 
 
@@ -24,7 +24,7 @@ class ToolChoiceTypes(BaseModel):
         "image_generation",
         "code_interpreter",
     ]
-    """The type of hosted tool the model should to use.
+    """The type of hosted tool the model should use.
 
     Allowed values are:
 
@@ -61,7 +61,7 @@ class ToolChoiceAllowed(BaseModel):
     ```
     """
 
-    type: Literal["allowed_tools"]
+    type: Literal["allowed_tools"] = "allowed_tools"
     """Allowed tool configuration type. Always `allowed_tools`."""
 
 
@@ -70,7 +70,7 @@ class ToolChoiceFunction(BaseModel):
     name: str
     """The name of the function to call."""
 
-    type: Literal["function"]
+    type: Literal["function"] = "function"
     """For function calling, the type is always `function`."""
 
 
@@ -79,7 +79,7 @@ class ToolChoiceMcp(BaseModel):
     server_label: str
     """The label of the MCP server to use."""
 
-    type: Literal["mcp"]
+    type: Literal["mcp"] = "mcp"
     """For MCP tools, the type is always `mcp`."""
 
     name: str | None = None
@@ -91,5 +91,5 @@ class ToolChoiceCustom(BaseModel):
     name: str
     """The name of the custom tool to call."""
 
-    type: Literal["custom"]
+    type: Literal["custom"] = "custom"
     """For custom tool calling, the type is always `custom`."""

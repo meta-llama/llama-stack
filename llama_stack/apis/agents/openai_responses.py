@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
@@ -14,21 +14,20 @@ from llama_stack.apis.tools.openai_tool_choice import (
     ToolChoiceCustom,
     ToolChoiceFunction,
     ToolChoiceMcp,
+    ToolChoiceOptions,
     ToolChoiceTypes,
 )
 from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
-type OpenAIResponsesToolChoice = Annotated[
-    Union[
-        ToolChoiceTypes,
-        ToolChoiceAllowed,
-        ToolChoiceFunction,
-        ToolChoiceMcp,
-        ToolChoiceCustom
-    ],
-    Field(discriminator="type"),
-]
+OpenAIResponsesToolChoice = (
+    ToolChoiceOptions
+    | ToolChoiceTypes  # Multiple type values - can't use a discriminator here
+    | Annotated[
+        ToolChoiceAllowed | ToolChoiceFunction | ToolChoiceMcp | ToolChoiceCustom,
+        Field(discriminator="type"),
+    ]
+)
 register_schema(OpenAIResponsesToolChoice, name="OpenAIResponsesToolChoice")
 
 
