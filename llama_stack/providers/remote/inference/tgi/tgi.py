@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 
-import logging
 from collections.abc import AsyncGenerator
 
 from huggingface_hub import AsyncInferenceClient, HfApi
@@ -34,6 +33,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import Model
+from llama_stack.log import get_logger
 from llama_stack.models.llama.sku_list import all_registered_models
 from llama_stack.providers.datatypes import ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.model_registry import (
@@ -58,7 +58,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import InferenceAPIImplConfig, InferenceEndpointImplConfig, TGIImplConfig
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 def build_hf_repo_model_entries():

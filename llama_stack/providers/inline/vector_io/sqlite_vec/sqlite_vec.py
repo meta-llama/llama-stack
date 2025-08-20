@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import re
 import sqlite3
 import struct
@@ -24,6 +23,7 @@ from llama_stack.apis.vector_io import (
     QueryChunksResponse,
     VectorIO,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import VectorDBsProtocolPrivate
 from llama_stack.providers.utils.kvstore import kvstore_impl
 from llama_stack.providers.utils.kvstore.api import KVStore
@@ -36,7 +36,7 @@ from llama_stack.providers.utils.memory.vector_store import (
     VectorDBWithIndex,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="vector_io")
 
 # Specifying search mode is dependent on the VectorIO provider.
 VECTOR_SEARCH = "vector"

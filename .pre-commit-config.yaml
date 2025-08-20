@@ -172,6 +172,25 @@ repos:
       #   pass_filenames: false
       #   require_serial: true
 
+      - id: check-log-usage
+        name: Ensure 'llama_stack.log' usage for logging
+        entry: bash
+        language: system
+        types: [python]
+        pass_filenames: true
+        args:
+          - -c
+          - |
+            matches=$(grep -EnH '^[^#]*\b(import\s+logging|from\s+logging\b)' "$@" | grep -v -e '#\s*allow-direct-logging' || true)
+            if [ -n "$matches" ]; then
+              # GitHub Actions annotation format
+              while IFS=: read -r file line_num rest; do
+                echo "::error file=$file,line=$line_num::Do not use 'import logging' or 'from logging import' in $file. Use the custom log instead: from llama_stack.log import get_logger; logger = get_logger(). If direct logging is truly needed, add: # allow-direct-logging"
+              done <<< "$matches"
+              exit 1
+            fi
+            exit 0
+
 ci:
     autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks
     autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
