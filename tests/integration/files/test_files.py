@@ -79,7 +79,7 @@ def test_openai_client_basic_operations(openai_client):
                 pass  # ignore 404
 
 
-@pytest.mark.xfail(message="Not all providers support user isolation")
+@pytest.mark.xfail(message="User isolation broken for current providers, must be fixed.")
 @patch("llama_stack.providers.utils.sqlstore.authorized_sqlstore.get_authenticated_user")
 def test_files_authentication_isolation(mock_get_authenticated_user, llama_stack_client):
     """Test that users can only access their own files."""
