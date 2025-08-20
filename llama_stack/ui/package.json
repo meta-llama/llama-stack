@@ -35,7 +35,7 @@
     "remeda": "^2.26.1",
     "shiki": "^1.29.2",
     "sonner": "^2.0.6",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
