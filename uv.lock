@@ -1236,19 +1236,6 @@ wheels = [
 ]
 
 [[package]]
-name = "grpcio-health-checking"
-version = "1.67.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "grpcio" },
-    { name = "protobuf" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/64/dd/e3b339fa44dc75b501a1a22cb88f1af5b1f8c964488f19c4de4cfbbf05ba/grpcio_health_checking-1.67.1.tar.gz", hash = "sha256:ca90fa76a6afbb4fda71d734cb9767819bba14928b91e308cffbb0c311eb941e", size = 16775, upload-time = "2024-10-29T06:30:16.487Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/8d/7a9878dca6616b48093d71c52d0bc79cb2dd1a2698ff6f5ce7406306de12/grpcio_health_checking-1.67.1-py3-none-any.whl", hash = "sha256:93753da5062152660aef2286c9b261e07dd87124a65e4dc9fbd47d1ce966b39d", size = 18924, upload-time = "2024-10-29T06:26:25.535Z" },
-]
-
-[[package]]
 name = "h11"
 version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
@@ -5039,20 +5026,20 @@ wheels = [
 
 [[package]]
 name = "weaviate-client"
-version = "4.16.5"
+version = "4.16.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib" },
     { name = "deprecation" },
     { name = "grpcio" },
-    { name = "grpcio-health-checking" },
     { name = "httpx" },
+    { name = "protobuf" },
     { name = "pydantic" },
     { name = "validators" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ad/d1/9f51e3bfea67ec8afaaed175b4d8d22a8bbba0622f9bcd8b064d53a57f91/weaviate_client-4.16.5.tar.gz", hash = "sha256:3359d7bc77aa4a27e6ecfed82017fc32ddfdda6299a6ffd4cf1f09c33023b147", size = 779506, upload-time = "2025-08-01T09:29:06.183Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/e4/6a0b1501645f17a851067fc7bd0d5b53dc9777f2818be9c43debe06eda19/weaviate_client-4.16.9.tar.gz", hash = "sha256:d461071f1ff5ebddd0fc697959628a1d8caa12af1da071401ef25583c3084eba", size = 766390, upload-time = "2025-08-20T15:00:03.924Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/4c/e5b3c67fa2b735a572d06095f524f6e2e0f9b47bb99f3c91b9fe3e291a88/weaviate_client-4.16.5-py3-none-any.whl", hash = "sha256:1c5002ea72ba285c3c000a01d498267f8c3da51acf19d0f321f3f8ecbb58411a", size = 597199, upload-time = "2025-08-01T09:29:04.385Z" },
+    { url = "https://files.pythonhosted.org/packages/10/1a/fc66f5f33961351c759d56453d18176849da8f64186c941183bb574b808b/weaviate_client-4.16.9-py3-none-any.whl", hash = "sha256:8b4adabaec0d513edef94c8c1de61c89a86eba3b63a4dc1acdfc9580e80199f4", size = 579098, upload-time = "2025-08-20T15:00:01.882Z" },
 ]
 
 [[package]]
