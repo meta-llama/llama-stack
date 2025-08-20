@@ -36,6 +36,21 @@ jobs:
             **/requirements*.txt
             .pre-commit-config.yaml
 
+      # npm ci may fail -
+      #   npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+      #   npm error Invalid: lock file's llama-stack-client@0.2.17 does not satisfy llama-stack-client@0.2.18
+
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      #   with:
+      #     node-version: '20'
+      #     cache: 'npm'
+      #     cache-dependency-path: 'llama_stack/ui/'
+
+      # - name: Install npm dependencies
+      #   run: npm ci
+      #   working-directory: llama_stack/ui
+
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         continue-on-error: true
         env:

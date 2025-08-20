@@ -4,7 +4,7 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Any, Literal, Union
 
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
@@ -19,9 +19,16 @@ from llama_stack.apis.tools.openai_tool_choice import (
 from llama_stack.apis.vector_io import SearchRankingOptions as FileSearchRankingOptions
 from llama_stack.schema_utils import json_schema_type, register_schema
 
-type OpenAIResponsesToolChoice = (
-    ToolChoiceTypes | ToolChoiceAllowed | ToolChoiceFunction | ToolChoiceMcp | ToolChoiceCustom
-)
+type OpenAIResponsesToolChoice = Annotated[
+    Union[
+        ToolChoiceTypes,
+        ToolChoiceAllowed,
+        ToolChoiceFunction,
+        ToolChoiceMcp,
+        ToolChoiceCustom
+    ],
+    Field(discriminator="type"),
+]
 register_schema(OpenAIResponsesToolChoice, name="OpenAIResponsesToolChoice")
 
 
@@ -420,30 +427,30 @@ class OpenAIResponseObject(BaseModel):
     created_at: int
     error: OpenAIResponseError | None = None
     id: str
-    incomplete_details: Optional[OpenAIResponseIncompleteDetails] = None
-    instructions: Optional[str | list[str]] = None
-    max_output_tokens: Optional[int] = None
-    max_tool_calls: Optional[int] = None 
-    metadata: Optional[dict[str, str]] = None 
+    incomplete_details: OpenAIResponseIncompleteDetails | None = None
+    instructions: str | list[str] | None = None
+    max_output_tokens: int | None = None
+    max_tool_calls: int | None = None
+    metadata: dict[str, str] | None = None
     model: str
     object: Literal["response"] = "response"
     output: list[OpenAIResponseOutput]
     parallel_tool_calls: bool = False
-    previous_response_id: Optional[str] = None 
-    prompt: Optional[OpenAIResponsePrompt] = None 
-    prompt_cache_key: Optional[str] = None 
-    reasoning: Optional[OpenAIResponseReasoning] = None 
-    safety_identifier: Optional[str] = None 
-    service_tier: Optional[str] = None 
+    previous_response_id: str | None = None
+    prompt: OpenAIResponsePrompt | None = None
+    prompt_cache_key: str | None = None
+    reasoning: OpenAIResponseReasoning | None = None
+    safety_identifier: str | None = None
+    service_tier: str | None = None
     status: str
     temperature: float | None = None
-    text: Optional[OpenAIResponseText] = None
-    tool_choice:  Optional[OpenAIResponsesToolChoice] = None 
-    tools: Optional[list[OpenAIResponsesTool]] = None 
-    top_logprobs: Optional[int] = None 
-    top_p: Optional[float] = None
-    user: Optional[str] = None # Deprecated: This field is being replaced by safety_identifier and prompt_cache_key
-    truncation: Optional[str] = None
+    text: OpenAIResponseText | None = None
+    tool_choice: OpenAIResponsesToolChoice | None = None
+    tools: list[OpenAIResponsesTool] | None = None
+    top_logprobs: int | None = None
+    top_p: float | None = None
+    user: str | None = None  # Deprecated: This field is being replaced by safety_identifier and prompt_cache_key
+    truncation: str | None = None
 
 
 @json_schema_type
