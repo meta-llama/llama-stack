@@ -11,6 +11,7 @@ from typing import Annotated
 
 from fastapi import File, Form, Response, UploadFile
 
+from llama_stack.apis.common.errors import ResourceNotFoundError
 from llama_stack.apis.common.responses import Order
 from llama_stack.apis.files import (
     Files,
@@ -20,11 +21,14 @@ from llama_stack.apis.files import (
     OpenAIFilePurpose,
 )
 from llama_stack.core.datatypes import AccessRule
+from llama_stack.log import get_logger
 from llama_stack.providers.utils.sqlstore.api import ColumnDefinition, ColumnType
 from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
 from llama_stack.providers.utils.sqlstore.sqlstore import sqlstore_impl
 
 from .config import LocalfsFilesImplConfig
+
+logger = get_logger(name=__name__, category="files")
 
 
 class LocalfsFilesImpl(Files):
@@ -64,6 +68,18 @@ class LocalfsFilesImpl(Files):
     def _get_file_path(self, file_id: str) -> Path:
         """Get the filesystem path for a file ID."""
         return Path(self.config.storage_dir) / file_id
+
+    async def _lookup_file_id(self, file_id: str) -> tuple[OpenAIFileObject, Path]:
+        """Look up a OpenAIFileObject and filesystem path from its ID."""
+        if not self.sql_store:
+            raise RuntimeError("Files provider not initialized")
+
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
+        if not row:
+            raise ResourceNotFoundError(file_id, "File", "client.files.list()")
+
+        file_path = Path(row.pop("file_path"))
+        return OpenAIFileObject(**row), file_path
 
     # OpenAI Files API Implementation
     async def openai_upload_file(
@@ -157,37 +173,19 @@ class LocalfsFilesImpl(Files):
 
     async def openai_retrieve_file(self, file_id: str) -> OpenAIFileObject:
         """Returns information about a specific file."""
-        if not self.sql_store:
-            raise RuntimeError("Files provider not initialized")
+        file_obj, _ = await self._lookup_file_id(file_id)
 
-        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
-        if not row:
-            raise ValueError(f"File with id {file_id} not found")
-
-        return OpenAIFileObject(
-            id=row["id"],
-            filename=row["filename"],
-            purpose=OpenAIFilePurpose(row["purpose"]),
-            bytes=row["bytes"],
-            created_at=row["created_at"],
-            expires_at=row["expires_at"],
-        )
+        return file_obj
 
     async def openai_delete_file(self, file_id: str) -> OpenAIFileDeleteResponse:
         """Delete a file."""
-        if not self.sql_store:
-            raise RuntimeError("Files provider not initialized")
-
-        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
-        if not row:
-            raise ValueError(f"File with id {file_id} not found")
-
         # Delete physical file
-        file_path = Path(row["file_path"])
+        _, file_path = await self._lookup_file_id(file_id)
         if file_path.exists():
             file_path.unlink()
 
         # Delete metadata from database
+        assert self.sql_store is not None, "Files provider not initialized"
         await self.sql_store.delete("openai_files", where={"id": file_id})
 
         return OpenAIFileDeleteResponse(
@@ -197,25 +195,17 @@ class LocalfsFilesImpl(Files):
 
     async def openai_retrieve_file_content(self, file_id: str) -> Response:
         """Returns the contents of the specified file."""
-        if not self.sql_store:
-            raise RuntimeError("Files provider not initialized")
-
-        # Get file metadata
-        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
-        if not row:
-            raise ValueError(f"File with id {file_id} not found")
-
         # Read file content
-        file_path = Path(row["file_path"])
-        if not file_path.exists():
-            raise ValueError(f"File content not found on disk: {file_path}")
+        file_obj, file_path = await self._lookup_file_id(file_id)
 
-        with open(file_path, "rb") as f:
-            content = f.read()
+        if not file_path.exists():
+            logger.warning(f"File '{file_id}'s underlying '{file_path}' is missing, deleting metadata.")
+            await self.openai_delete_file(file_id)
+            raise ResourceNotFoundError(file_id, "File", "client.files.list()")
 
         # Return as binary response with appropriate content type
         return Response(
-            content=content,
+            content=file_path.read_bytes(),
             media_type="application/octet-stream",
-            headers={"Content-Disposition": f'attachment; filename="{row["filename"]}"'},
+            headers={"Content-Disposition": f'attachment; filename="{file_obj.filename}"'},
         )
