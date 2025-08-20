@@ -9,6 +9,7 @@ updates:
       day: "saturday"
     commit-message:
       prefix: chore(github-deps)
+
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
@@ -30,4 +31,3 @@ updates:
       - javascript
     commit-message:
       prefix: chore(ui-deps)
-      versioning-strategy: increase
