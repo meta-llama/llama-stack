@@ -666,7 +666,7 @@ describe("ResponseDetailView", () => {
             role: "assistant",
             call_id: "call_123",
             content: "sunny and warm",
-          } as unknown, // Using any to bypass the type restriction for this test
+          } as unknown, // Using unknown to bypass the type restriction for this test
         ],
         input: [],
       };
@@ -706,7 +706,7 @@ describe("ResponseDetailView", () => {
             status: "completed",
             call_id: "call_123",
             output: "sunny and warm",
-          } as unknown,
+          } as unknown, // Using unknown to bypass the type restriction for this test
         ],
         input: [],
       };

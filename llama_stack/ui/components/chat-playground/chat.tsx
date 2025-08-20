@@ -201,11 +201,13 @@ export function Chat({
       <div className="flex-1 flex flex-col">
         {isEmpty && append && suggestions ? (
           <div className="flex-1 flex items-center justify-center">
-            <PromptSuggestions
-              label="Try these prompts ✨"
-              append={append}
-              suggestions={suggestions}
-            />
+            <div className="max-w-4xl mx-auto w-full">
+              <PromptSuggestions
+                label="Try asking a question ✨"
+                append={append}
+                suggestions={suggestions}
+              />
+            </div>
           </div>
         ) : null}
 
