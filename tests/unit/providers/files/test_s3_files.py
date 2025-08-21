@@ -4,38 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-"""
-Test suite for S3 Files Provider
-
-This test suite covers the S3 implementation of the Llama Stack Files API, organized into the following categories:
-
-CORE FILE OPERATIONS (Positive Tests):
-- test_upload_file: Basic file upload functionality
-- test_retrieve_file: File metadata retrieval
-- test_retrieve_file_content: File content download with proper headers
-- test_delete_file: File deletion with S3 backend verification
-- test_upload_file_without_filename: Upload handling when filename is missing (edge case)
-
-FILE LISTING AND FILTERING (Positive Tests):
-- test_list_files_empty: Listing behavior when no files exist (boundary case)
-- test_list_files: Listing multiple uploaded files
-- test_list_files_with_purpose_filter: Filtering files by OpenAI purpose
-
-ERROR HANDLING (Negative Tests):
-- test_nonexistent_file_retrieval: Proper HTTP errors for missing file metadata
-- test_nonexistent_file_content_retrieval: Proper HTTP errors for missing file content
-- test_nonexistent_file_deletion: Proper HTTP errors for deleting non-existent files
-- test_file_operations_when_s3_object_deleted: File operations when underlying S3 object is deleted
-
-INFRASTRUCTURE:
-- Uses moto library with mock_aws for S3 backend mocking
-- Includes S3 backend verification to ensure actual S3 operations occur
-- Tests use get_adapter_impl for realistic provider initialization
-- Fixtures provide shared S3 client and proper test isolation
-
-All tests verify both the Files API contract and the underlying S3 storage operations.
-"""
-
 import boto3
 import pytest
 from botocore.exceptions import ClientError
