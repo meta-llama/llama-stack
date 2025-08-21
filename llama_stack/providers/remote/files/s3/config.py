@@ -21,6 +21,9 @@ class S3FilesImplConfig(BaseModel):
         default=None, description="AWS secret access key (optional if using IAM roles)"
     )
     endpoint_url: str | None = Field(default=None, description="Custom S3 endpoint URL (for MinIO, LocalStack, etc.)")
+    auto_create_bucket: bool = Field(
+        default=False, description="Automatically create the S3 bucket if it doesn't exist"
+    )
     metadata_store: SqlStoreConfig = Field(description="SQL store configuration for file metadata")
 
     @classmethod
@@ -31,6 +34,7 @@ class S3FilesImplConfig(BaseModel):
             "aws_access_key_id": "${env.AWS_ACCESS_KEY_ID:=}",
             "aws_secret_access_key": "${env.AWS_SECRET_ACCESS_KEY:=}",
             "endpoint_url": "${env.S3_ENDPOINT_URL:=}",
+            "auto_create_bucket": "${env.S3_AUTO_CREATE_BUCKET:=false}",
             "metadata_store": SqliteSqlStoreConfig.sample_run_config(
                 __distro_dir__=__distro_dir__,
                 db_name="s3_files_metadata.db",

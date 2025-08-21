@@ -37,6 +37,7 @@ def s3_config(tmp_path):
     return S3FilesImplConfig(
         bucket_name="test-bucket",
         region="not-a-region",
+        auto_create_bucket=True,
         metadata_store=SqliteSqlStoreConfig(db_path=db_path.as_posix()),
     )
 

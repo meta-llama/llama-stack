@@ -59,6 +59,11 @@ async def _create_bucket_if_not_exists(client: boto3.client, config: S3FilesImpl
     except ClientError as e:
         error_code = e.response["Error"]["Code"]
         if error_code == "404":
+            if not config.auto_create_bucket:
+                raise RuntimeError(
+                    f"S3 bucket '{config.bucket_name}' does not exist. "
+                    f"Either create the bucket manually or set 'auto_create_bucket: true' in your configuration."
+                ) from e
             try:
                 # For us-east-1, we can't specify LocationConstraint
                 if config.region == "us-east-1":

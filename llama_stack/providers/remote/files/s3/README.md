@@ -108,6 +108,41 @@ The S3 provider requires the following permissions:
 }
 ```
 
+### Automatic Bucket Creation
+
+By default, the S3 provider expects the bucket to already exist. If you want the provider to automatically create the bucket when it doesn't exist, set `auto_create_bucket: true` in your configuration:
+
+```yaml
+config:
+  bucket_name: my-bucket
+  auto_create_bucket: true  # Will create bucket if it doesn't exist
+  region: us-east-1
+```
+
+**Note**: When `auto_create_bucket` is enabled, the provider will need additional permissions:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket",
+        "s3:CreateBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::your-bucket-name",
+        "arn:aws:s3:::your-bucket-name/*"
+      ]
+    }
+  ]
+}
+```
+
 ### Bucket Policy (Optional)
 
 For additional security, you can add a bucket policy:
