@@ -129,20 +129,10 @@ class S3FilesImpl(Files):
 
         filename = getattr(file, "filename", None) or "uploaded_file"
 
-        try:
-            content = await file.read()
-            file_size = len(content)
-            self.client.put_object(
-                Bucket=self._config.bucket_name,
-                Key=file_id,
-                Body=content,
-                # TODO: enable server-side encryption
-            )
-        except ClientError as e:
-            raise RuntimeError(f"Failed to upload file to S3: {e}") from e
-
         created_at = int(time.time())
         expires_at = created_at + self._SILLY_EXPIRATION_OFFSET
+        content = await file.read()
+        file_size = len(content)
 
         await self.sql_store.insert(
             "openai_files",
@@ -155,6 +145,16 @@ class S3FilesImpl(Files):
                 "expires_at": expires_at,
             },
         )
+
+        try:
+            self.client.put_object(
+                Bucket=self._config.bucket_name,
+                Key=file_id,
+                Body=content,
+                # TODO: enable server-side encryption
+            )
+        except ClientError as e:
+            raise RuntimeError(f"Failed to upload file to S3: {e}") from e
 
         return OpenAIFileObject(
             id=file_id,
