@@ -37,6 +37,8 @@ spec:
             git clone https://github.com/meta-llama/llama-stack.git /app
             git checkout k8s_demo
             # Navigate to the playground directory
+            cd /app
+            pip install -e .
             cd /app/llama_stack/distribution/ui
 
             # Install requirements

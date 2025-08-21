@@ -60,11 +60,11 @@ spec:
         resources:
           requests:
             memory: "2Gi"
-            cpu: "8000m"
+            cpu: "4000m"
             ephemeral-storage: "6Gi"
           limits:
             memory: "2Gi"
-            cpu: "8000m"
+            cpu: "4000m"
             ephemeral-storage: "6Gi"
         env:
         - name: ENABLE_CHROMADB
@@ -106,7 +106,7 @@ spec:
             apt-get update && apt-get install -y git
             # Clone the repository
             git clone https://github.com/meta-llama/llama-stack.git /app
-            git checkout k8s_demo
+            git checkout 7f83433
 
             cd /app/llama_stack/
             # Install llama-stack

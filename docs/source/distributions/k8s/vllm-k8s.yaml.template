@@ -39,7 +39,7 @@ spec:
         image: vllm/vllm-openai:latest
         command: ["/bin/sh", "-c"]
         args:
-        - "vllm serve ${INFERENCE_MODEL} --enforce-eager -tp 4 --max-model-len 80000 --gpu-memory-utilization 0.92 --enable-auto-tool-choice --tool-call-parser llama3_json --max-num-seqs 1 --port 8001"
+        - "vllm serve ${INFERENCE_MODEL} --enforce-eager -tp 1 --max-model-len 80000 --gpu-memory-utilization 0.92 --enable-auto-tool-choice --tool-call-parser llama3_json --max-num-seqs 1 --port 8001"
         env:
         - name: NCCL_DEBUG
           value: "INFO"
@@ -55,9 +55,9 @@ spec:
             name: http
         resources:
           limits:
-            nvidia.com/gpu: 4
+            nvidia.com/gpu: 1
           requests:
-            nvidia.com/gpu: 4
+            nvidia.com/gpu: 1
         volumeMounts:
           - name: llama-storage
             mountPath: /root/.cache/huggingface
