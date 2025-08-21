@@ -223,17 +223,12 @@ class TestS3FilesImpl:
         # Directly delete the S3 object from the backend
         s3_client.delete_object(Bucket=s3_config.bucket_name, Key=uploaded.id)
 
-        retrieved_metadata_after = await s3_provider.openai_retrieve_file(uploaded.id)  # TODO: this should fail
-        assert retrieved_metadata_after.id == uploaded.id
-
-        listed_files = await s3_provider.openai_list_files()
-        assert uploaded.id in [file.id for file in listed_files.data]
-
         with pytest.raises(ResourceNotFoundError, match="not found") as exc_info:
             await s3_provider.openai_retrieve_file_content(uploaded.id)
-
-        assert "content" in str(exc_info).lower()
         assert uploaded.id in str(exc_info).lower()
+
+        listed_files = await s3_provider.openai_list_files()
+        assert uploaded.id not in [file.id for file in listed_files.data]
 
     async def test_upload_file_s3_put_object_failure(self, s3_provider, sample_text_file, s3_config, s3_client):
         """Test that put_object failure results in exception and no orphaned metadata."""

@@ -256,7 +256,8 @@ class S3FilesImpl(Files):
             content = response["Body"].read()
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                raise ResourceNotFoundError(row["id"], "File content", "files.list()") from e
+                await self.sql_store.delete("openai_files", where={"id": file_id})
+                raise ResourceNotFoundError(file_id, "File", "files.list()") from e
             raise RuntimeError(f"Failed to download file from S3: {e}") from e
 
         return Response(
