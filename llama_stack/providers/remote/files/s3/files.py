@@ -154,6 +154,8 @@ class S3FilesImpl(Files):
                 # TODO: enable server-side encryption
             )
         except ClientError as e:
+            await self.sql_store.delete("openai_files", where={"id": file_id})
+
             raise RuntimeError(f"Failed to upload file to S3: {e}") from e
 
         return OpenAIFileObject(

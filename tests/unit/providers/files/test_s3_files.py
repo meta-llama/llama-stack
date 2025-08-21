@@ -4,6 +4,8 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from unittest.mock import patch
+
 import boto3
 import pytest
 from botocore.exceptions import ClientError
@@ -232,3 +234,22 @@ class TestS3FilesImpl:
 
         assert "content" in str(exc_info).lower()
         assert uploaded.id in str(exc_info).lower()
+
+    async def test_upload_file_s3_put_object_failure(self, s3_provider, sample_text_file, s3_config, s3_client):
+        """Test that put_object failure results in exception and no orphaned metadata."""
+        sample_text_file.filename = "test_s3_put_object_failure"
+
+        def failing_put_object(*args, **kwargs):
+            raise ClientError(
+                error_response={"Error": {"Code": "SolarRadiation", "Message": "Bloop"}}, operation_name="PutObject"
+            )
+
+        with patch.object(s3_provider.client, "put_object", side_effect=failing_put_object):
+            with pytest.raises(RuntimeError, match="Failed to upload file to S3"):
+                await s3_provider.openai_upload_file(
+                    file=sample_text_file,
+                    purpose=OpenAIFilePurpose.ASSISTANTS,
+                )
+
+        files_list = await s3_provider.openai_list_files()
+        assert len(files_list.data) == 0, "No file metadata should remain after failed upload"
