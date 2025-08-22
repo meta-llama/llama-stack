@@ -10,4 +10,5 @@ This section contains documentation for all available providers for the **files*
 :maxdepth: 1
 
 inline_localfs
+remote_s3
 ```
