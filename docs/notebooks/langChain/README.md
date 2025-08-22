@@ -1,6 +1,6 @@
 # LangChain + Llama Stack Document Processing
 
-1. **`langchain-llamastack.py`** - Interactive CLI version
+1. **`langchain-llama-stack.py`** - Interactive CLI version
 ---
 
 ## 📋 Prerequisites
@@ -39,7 +39,7 @@ llama stack run your-config --port 8321
 
 ---
 
-## 📖 Option 1: Interactive CLI Version (`langchain_llamastack_updated.py`)
+## 📖 Option 1: Interactive CLI Version (`langchain-llama-stack.py`)
 
 ### Features
 - ✅ Interactive command-line interface
@@ -55,7 +55,7 @@ source llama-env-py312/bin/activate
 
 # Run the interactive CLI
 cd /home/omara/langchain_llamastack
-python langchain_llamastack_updated.py
+python langchain-llama-stack.py
 ```
 
 ### Usage Commands
@@ -210,7 +210,7 @@ logging.basicConfig(level=logging.DEBUG)
 ## 📝 Examples
 
 ### CLI Workflow
-1. Start: `python langchain_llamastack_updated.py`
+1. Start: `python langchain-llama-stack.py`
 2. Load document: `load https://arxiv.org/pdf/2103.00020.pdf`
 3. Get summary: `summary`
 4. Ask questions: `ask What are the main contributions?`
