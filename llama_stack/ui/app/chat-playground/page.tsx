@@ -21,7 +21,7 @@ import type { TurnCreateParams } from "llama-stack-client/resources/agents/turn"
 import {
   SessionUtils,
   type ChatSession,
-} from "@/components/chat-playground/session-manager";
+} from "@/components/chat-playground/conversations";
 export default function ChatPlaygroundPage() {
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(
     null

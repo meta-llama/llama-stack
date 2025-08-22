@@ -73,7 +73,7 @@ const generateSessionId = (): string => {
   return globalThis.crypto.randomUUID();
 };
 
-export function SessionManager({
+export function Conversations({
   currentSession,
   onSessionChange,
   selectedAgentId,

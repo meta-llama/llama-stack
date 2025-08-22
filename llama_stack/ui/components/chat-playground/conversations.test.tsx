@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { SessionManager, SessionUtils } from "./session-manager";
+import { Conversations, SessionUtils } from "./conversations";
 import type { Message } from "@/components/chat-playground/chat-message";
 
 interface ChatSession {
@@ -36,8 +36,8 @@ jest.mock("@/hooks/use-auth-client", () => ({
 }));
 
 // Mock additional SessionUtils methods that are now being used
-jest.mock("./session-manager", () => {
-  const actual = jest.requireActual("./session-manager");
+jest.mock("./conversations", () => {
+  const actual = jest.requireActual("./conversations");
   return {
     ...actual,
     SessionUtils: {
@@ -130,7 +130,7 @@ describe("SessionManager", () => {
     test("does not render when no agent is selected", async () => {
       const { container } = await act(async () => {
         return render(
-          <SessionManager
+          <Conversations
             selectedAgentId=""
             currentSession={null}
             onSessionChange={mockOnSessionChange}
@@ -149,7 +149,7 @@ describe("SessionManager", () => {
 
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={null}
             onSessionChange={mockOnSessionChange}
@@ -166,7 +166,7 @@ describe("SessionManager", () => {
     test("renders session selector when agent sessions are loaded", async () => {
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={null}
             onSessionChange={mockOnSessionChange}
@@ -183,7 +183,7 @@ describe("SessionManager", () => {
     test("renders current session name when session is selected", async () => {
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={mockSession}
             onSessionChange={mockOnSessionChange}
@@ -202,7 +202,7 @@ describe("SessionManager", () => {
     test("loads sessions from agent API on mount", async () => {
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={mockSession}
             onSessionChange={mockOnSessionChange}
@@ -226,7 +226,7 @@ describe("SessionManager", () => {
 
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={mockSession}
             onSessionChange={mockOnSessionChange}
@@ -257,7 +257,7 @@ describe("SessionManager", () => {
 
       await act(async () => {
         render(
-          <SessionManager
+          <Conversations
             selectedAgentId="agent_123"
             currentSession={mockSession}
             onSessionChange={mockOnSessionChange}

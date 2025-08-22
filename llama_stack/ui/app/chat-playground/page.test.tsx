@@ -74,7 +74,7 @@ jest.mock("@/components/chat-playground/chat", () => ({
   ),
 }));
 
-jest.mock("@/components/chat-playground/session-manager", () => ({
+jest.mock("@/components/chat-playground/conversations", () => ({
   SessionManager: jest.fn(({ selectedAgentId, onNewSession }) => (
     <div data-testid="session-manager">
       {selectedAgentId && (
