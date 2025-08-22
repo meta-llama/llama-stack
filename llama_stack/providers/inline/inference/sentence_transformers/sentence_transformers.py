@@ -4,7 +4,6 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 from collections.abc import AsyncGenerator
 
 from llama_stack.apis.inference import (
@@ -24,6 +23,7 @@ from llama_stack.apis.inference import (
     ToolPromptFormat,
 )
 from llama_stack.apis.models import ModelType
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Model, ModelsProtocolPrivate
 from llama_stack.providers.utils.inference.embedding_mixin import (
     SentenceTransformerEmbeddingMixin,
@@ -35,7 +35,7 @@ from llama_stack.providers.utils.inference.openai_compat import (
 
 from .config import SentenceTransformersInferenceConfig
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="inference")
 
 
 class SentenceTransformersInferenceImpl(

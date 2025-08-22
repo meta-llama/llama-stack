@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import asyncio
-import logging
 import uuid
 from typing import Any
 
@@ -24,6 +23,7 @@ from llama_stack.apis.vector_io import (
     VectorStoreChunkingStrategy,
     VectorStoreFileObject,
 )
+from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import Api, VectorDBsProtocolPrivate
 from llama_stack.providers.inline.vector_io.qdrant import QdrantVectorIOConfig as InlineQdrantVectorIOConfig
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
@@ -36,7 +36,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
-log = logging.getLogger(__name__)
+log = get_logger(name=__name__, category="vector_io::qdrant")
 CHUNK_ID_KEY = "_chunk_id"
 
 # KV store prefixes for vector databases

@@ -10982,6 +10982,7 @@ components:
       type: string
       enum:
         - assistants
+        - batch
       title: OpenAIFilePurpose
       description: >-
         Valid purpose values for OpenAI Files API.
@@ -11050,6 +11051,7 @@ components:
           type: string
           enum:
             - assistants
+            - batch
           description: The intended purpose of the file
       additionalProperties: false
       required:

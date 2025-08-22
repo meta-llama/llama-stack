@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import os
-import re
 from pathlib import Path
 
 import pytest
@@ -46,19 +45,6 @@ def _load_all_verification_configs():
             raise OSError(f"Error loading config file {config_path}: {e}") from e
 
     return {"providers": all_provider_configs}
-
-
-def case_id_generator(case):
-    """Generate a test ID from the case's 'case_id' field, or use a default."""
-    case_id = case.get("case_id")
-    if isinstance(case_id, str | int):
-        return re.sub(r"\\W|^(?=\\d)", "_", str(case_id))
-    return None
-
-
-# Helper to get the base test name from the request object
-def get_base_test_name(request):
-    return request.node.originalname
 
 
 # --- End Helper Functions ---
@@ -127,8 +113,6 @@ def openai_client(base_url, api_key, provider):
             raise ValueError(f"Invalid config for Llama Stack: {provider}, it must be of the form 'stack:<config>'")
         config = parts[1]
         client = LlamaStackAsLibraryClient(config, skip_logger_removal=True)
-        if not client.initialize():
-            raise RuntimeError("Initialization failed")
         return client
 
     return OpenAI(

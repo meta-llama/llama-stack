@@ -88,7 +88,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import VLLMInferenceAdapterConfig
 
-log = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference::vllm")
 
 
 def build_hf_repo_model_entries():
