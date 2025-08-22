@@ -619,28 +619,6 @@ class OllamaInferenceAdapter(
             response.id = id
             return response
 
-    async def batch_completion(
-        self,
-        model_id: str,
-        content_batch: list[InterleavedContent],
-        sampling_params: SamplingParams | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch completion is not supported for Ollama")
-
-    async def batch_chat_completion(
-        self,
-        model_id: str,
-        messages_batch: list[list[Message]],
-        sampling_params: SamplingParams | None = None,
-        tools: list[ToolDefinition] | None = None,
-        tool_config: ToolConfig | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch chat completion is not supported for Ollama")
-
 
 async def convert_message_to_openai_dict_for_ollama(message: Message) -> list[dict]:
     async def _convert_content(content) -> dict:
