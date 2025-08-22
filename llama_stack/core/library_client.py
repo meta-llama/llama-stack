@@ -146,39 +146,26 @@ class LlamaStackAsLibraryClient(LlamaStackClient):
     ):
         super().__init__()
         self.async_client = AsyncLlamaStackAsLibraryClient(
-            config_path_or_distro_name, custom_provider_registry, provider_data
+            config_path_or_distro_name, custom_provider_registry, provider_data, skip_logger_removal
         )
         self.pool_executor = ThreadPoolExecutor(max_workers=4)
-        self.skip_logger_removal = skip_logger_removal
         self.provider_data = provider_data
 
         self.loop = asyncio.new_event_loop()
-
-    def initialize(self):
-        if in_notebook():
-            import nest_asyncio
-
-            nest_asyncio.apply()
-            if not self.skip_logger_removal:
-                self._remove_root_logger_handlers()
 
         # use a new event loop to avoid interfering with the main event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            return loop.run_until_complete(self.async_client.initialize())
+            loop.run_until_complete(self.async_client.initialize())
         finally:
             asyncio.set_event_loop(None)
 
-    def _remove_root_logger_handlers(self):
+    def initialize(self):
         """
-        Remove all handlers from the root logger. Needed to avoid polluting the console with logs.
+        Deprecated method for backward compatibility.
         """
-        root_logger = logging.getLogger()
-
-        for handler in root_logger.handlers[:]:
-            root_logger.removeHandler(handler)
-            logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
+        pass
 
     def request(self, *args, **kwargs):
         loop = self.loop
@@ -216,12 +203,20 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         config_path_or_distro_name: str,
         custom_provider_registry: ProviderRegistry | None = None,
         provider_data: dict[str, Any] | None = None,
+        skip_logger_removal: bool = False,
     ):
         super().__init__()
         # when using the library client, we should not log to console since many
         # of our logs are intended for server-side usage
         current_sinks = os.environ.get("TELEMETRY_SINKS", "sqlite").split(",")
         os.environ["TELEMETRY_SINKS"] = ",".join(sink for sink in current_sinks if sink != "console")
+
+        if in_notebook():
+            import nest_asyncio
+
+            nest_asyncio.apply()
+            if not skip_logger_removal:
+                self._remove_root_logger_handlers()
 
         if config_path_or_distro_name.endswith(".yaml"):
             config_path = Path(config_path_or_distro_name)
@@ -239,7 +234,24 @@ class AsyncLlamaStackAsLibraryClient(AsyncLlamaStackClient):
         self.provider_data = provider_data
         self.route_impls: RouteImpls | None = None  # Initialize to None to prevent AttributeError
 
+    def _remove_root_logger_handlers(self):
+        """
+        Remove all handlers from the root logger. Needed to avoid polluting the console with logs.
+        """
+        root_logger = logging.getLogger()
+
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+            logger.info(f"Removed handler {handler.__class__.__name__} from root logger")
+
     async def initialize(self) -> bool:
+        """
+        Initialize the async client.
+
+        Returns:
+            bool: True if initialization was successful
+        """
+
         try:
             self.route_impls = None
             self.impls = await construct_stack(self.config, self.custom_provider_registry)

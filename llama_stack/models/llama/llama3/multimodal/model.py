@@ -36,7 +36,7 @@ from .utils import get_negative_inf_value, to_2tuple
 
 MP_SCALE = 8
 
-logger = get_logger(name=__name__, category="models")
+logger = get_logger(name=__name__, category="models::llama")
 
 
 def reduce_from_tensor_model_parallel_region(input_):

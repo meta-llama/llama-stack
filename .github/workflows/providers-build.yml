@@ -26,7 +26,7 @@ on:
       - 'pyproject.toml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -106,6 +106,10 @@ jobs:
       - name: Inspect the container image entrypoint
         run: |
           IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          if [ -z "$IMAGE_ID" ]; then
+            echo "No image found"
+            exit 1
+          fi
           entrypoint=$(docker inspect --format '{{ .Config.Entrypoint }}' $IMAGE_ID)
           echo "Entrypoint: $entrypoint"
           if [ "$entrypoint" != "[python -m llama_stack.core.server.server /app/run.yaml]" ]; then
@@ -140,6 +144,10 @@ jobs:
       - name: Inspect UBI9 image
         run: |
           IMAGE_ID=$(docker images --format "{{.Repository}}:{{.Tag}}" | head -n 1)
+          if [ -z "$IMAGE_ID" ]; then
+            echo "No image found"
+            exit 1
+          fi
           entrypoint=$(docker inspect --format '{{ .Config.Entrypoint }}' $IMAGE_ID)
           echo "Entrypoint: $entrypoint"
           if [ "$entrypoint" != "[python -m llama_stack.core.server.server /app/run.yaml]" ]; then

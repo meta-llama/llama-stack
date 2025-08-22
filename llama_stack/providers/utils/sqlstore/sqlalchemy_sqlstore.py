@@ -30,7 +30,7 @@ from llama_stack.log import get_logger
 from .api import ColumnDefinition, ColumnType, SqlStore
 from .sqlstore import SqlAlchemySqlStoreConfig
 
-logger = get_logger(name=__name__, category="sqlstore")
+logger = get_logger(name=__name__, category="providers::utils")
 
 TYPE_MAPPING: dict[ColumnType, Any] = {
     ColumnType.INTEGER: Integer,
