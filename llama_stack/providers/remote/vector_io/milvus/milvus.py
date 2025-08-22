@@ -36,7 +36,7 @@ from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collecti
 
 from .config import MilvusVectorIOConfig as RemoteMilvusVectorIOConfig
 
-logger = get_logger(name=__name__, category="vector_io")
+logger = get_logger(name=__name__, category="vector_io::milvus")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:milvus:{VERSION}::"

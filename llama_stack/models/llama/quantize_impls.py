@@ -9,7 +9,7 @@ import collections
 
 from llama_stack.log import get_logger
 
-log = get_logger(name=__name__, category="llama")
+log = get_logger(name=__name__, category="models::llama")
 
 try:
     import fbgemm_gpu.experimental.gen_ai  # noqa: F401

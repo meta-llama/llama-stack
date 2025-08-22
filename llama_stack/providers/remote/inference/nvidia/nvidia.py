@@ -57,7 +57,7 @@ from .openai_utils import (
 )
 from .utils import _is_nvidia_hosted
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::nvidia")
 
 
 class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper):
