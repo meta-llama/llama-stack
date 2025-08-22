@@ -157,8 +157,10 @@ async def convert_response_input_to_chat_messages(
                         f"Llama Stack OpenAI Responses does not yet support message role '{input_item.role}' in this context"
                     )
                 messages.append(message_type(content=content))
-        for result in tool_call_results.values():
-            messages.append(result)
+        if len(tool_call_results):
+            raise ValueError(
+                f"Received function_call_output(s) with call_id(s) {tool_call_results.keys()}, but no corresponding function_call"
+            )
     else:
         messages.append(OpenAIUserMessageParam(content=input))
     return messages
