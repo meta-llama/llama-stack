@@ -84,7 +84,7 @@ from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = get_logger(name=__name__, category="server")
+logger = get_logger(name=__name__, category="core::server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -415,7 +415,7 @@ def main(args: argparse.Namespace | None = None):
         config_contents = yaml.safe_load(fp)
         if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
             logger_config = LoggingConfig(**cfg)
-        logger = get_logger(name=__name__, category="server", config=logger_config)
+        logger = get_logger(name=__name__, category="core::server", config=logger_config)
         if args.env:
             for env_pair in args.env:
                 try:

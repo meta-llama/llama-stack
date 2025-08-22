@@ -15,7 +15,7 @@ from llama_stack.providers.remote.post_training.nvidia.config import SFTLoRADefa
 
 from .config import NvidiaPostTrainingConfig
 
-logger = get_logger(name=__name__, category="integration")
+logger = get_logger(name=__name__, category="post_training::nvidia")
 
 
 def warn_unsupported_params(config_dict: Any, supported_keys: set[str], config_name: str) -> None:

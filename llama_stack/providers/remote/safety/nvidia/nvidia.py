@@ -17,7 +17,7 @@ from llama_stack.providers.utils.inference.openai_compat import convert_message_
 
 from .config import NVIDIASafetyConfig
 
-logger = get_logger(name=__name__, category="safety")
+logger = get_logger(name=__name__, category="safety::nvidia")
 
 
 class NVIDIASafetyAdapter(Safety, ShieldsProtocolPrivate):

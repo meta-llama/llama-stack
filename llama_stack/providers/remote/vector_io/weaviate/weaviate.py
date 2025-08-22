@@ -34,7 +34,7 @@ from llama_stack.providers.utils.vector_io.vector_utils import sanitize_collecti
 
 from .config import WeaviateVectorIOConfig
 
-log = get_logger(name=__name__, category="vector_io")
+log = get_logger(name=__name__, category="vector_io::weaviate")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:weaviate:{VERSION}::"
