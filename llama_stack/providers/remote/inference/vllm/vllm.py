@@ -39,15 +39,12 @@ from llama_stack.apis.inference import (
     Message,
     ModelStore,
     OpenAIChatCompletion,
-    OpenAIChatCompletionContentPartImageParam,
-    OpenAIChatCompletionContentPartTextParam,
     OpenAICompletion,
     OpenAIEmbeddingData,
     OpenAIEmbeddingsResponse,
     OpenAIEmbeddingUsage,
     OpenAIMessageParam,
     OpenAIResponseFormatParam,
-    RerankResponse,
     ResponseFormat,
     SamplingParams,
     TextTruncation,
@@ -736,12 +733,3 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
         logprobs: LogProbConfig | None = None,
     ):
         raise NotImplementedError("Batch chat completion is not supported for vLLM")
-
-    async def rerank(
-        self,
-        model: str,
-        query: str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam,
-        items: list[str | OpenAIChatCompletionContentPartTextParam | OpenAIChatCompletionContentPartImageParam],
-        max_num_results: int | None = None,
-    ) -> RerankResponse:
-        raise NotImplementedError("Reranking is not supported for vLLM")
