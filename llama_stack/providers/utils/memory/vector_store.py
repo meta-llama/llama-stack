@@ -33,7 +33,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 )
 from llama_stack.providers.utils.vector_io.vector_utils import generate_chunk_id
 
-log = get_logger(name=__name__, category="memory")
+log = get_logger(name=__name__, category="providers::utils")
 
 
 class ChunkForDeletion(BaseModel):

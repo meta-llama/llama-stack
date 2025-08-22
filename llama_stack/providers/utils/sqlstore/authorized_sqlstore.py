@@ -17,7 +17,7 @@ from llama_stack.log import get_logger
 from .api import ColumnDefinition, ColumnType, PaginatedResponse, SqlStore
 from .sqlstore import SqlStoreType
 
-logger = get_logger(name=__name__, category="authorized_sqlstore")
+logger = get_logger(name=__name__, category="providers::utils")
 
 # Hardcoded copy of the default policy that our SQL filtering implements
 # WARNING: If default_policy() changes, this constant must be updated accordingly

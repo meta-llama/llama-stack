@@ -21,7 +21,7 @@ from llama_stack.providers.utils.bedrock.client import create_bedrock_client
 
 from .config import BedrockSafetyConfig
 
-logger = get_logger(name=__name__, category="safety")
+logger = get_logger(name=__name__, category="safety::bedrock")
 
 
 class BedrockSafetyAdapter(Safety, ShieldsProtocolPrivate):

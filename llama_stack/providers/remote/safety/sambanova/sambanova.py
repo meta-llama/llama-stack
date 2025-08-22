@@ -25,7 +25,7 @@ from llama_stack.providers.utils.inference.openai_compat import convert_message_
 
 from .config import SambaNovaSafetyConfig
 
-logger = get_logger(name=__name__, category="safety")
+logger = get_logger(name=__name__, category="safety::sambanova")
 
 CANNED_RESPONSE_TEXT = "I can't answer that. Can I help with something else?"
 

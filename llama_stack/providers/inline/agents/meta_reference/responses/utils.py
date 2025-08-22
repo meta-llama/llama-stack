@@ -17,6 +17,8 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseOutputMessageContent,
     OpenAIResponseOutputMessageContentOutputText,
     OpenAIResponseOutputMessageFunctionToolCall,
+    OpenAIResponseOutputMessageMCPCall,
+    OpenAIResponseOutputMessageMCPListTools,
     OpenAIResponseText,
 )
 from llama_stack.apis.inference import (
@@ -117,6 +119,25 @@ async def convert_response_input_to_chat_messages(
                     ),
                 )
                 messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
+            elif isinstance(input_item, OpenAIResponseOutputMessageMCPCall):
+                tool_call = OpenAIChatCompletionToolCall(
+                    index=0,
+                    id=input_item.id,
+                    function=OpenAIChatCompletionToolCallFunction(
+                        name=input_item.name,
+                        arguments=input_item.arguments,
+                    ),
+                )
+                messages.append(OpenAIAssistantMessageParam(tool_calls=[tool_call]))
+                messages.append(
+                    OpenAIToolMessageParam(
+                        content=input_item.output,
+                        tool_call_id=input_item.id,
+                    )
+                )
+            elif isinstance(input_item, OpenAIResponseOutputMessageMCPListTools):
+                # the tool list will be handled separately
+                pass
             else:
                 content = await convert_response_content_to_chat_content(input_item.content)
                 message_type = await get_message_type_by_role(input_item.role)
