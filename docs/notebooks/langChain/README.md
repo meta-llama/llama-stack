@@ -1,19 +1,12 @@
 # LangChain + Llama Stack Document Processing
 
-This repository contains two different implementations of document processing using LangChain and Llama Stack:
-
-1. **`langchain_llamastack.py`** - Interactive CLI version
-2. **`langchain_llamastack_ray.py`** - Ray Serve API version
-
-Both versions provide AI-powered document processing capabilities including summarization, fact extraction, and question-answering.
-
+1. **`langchain-llamastack.py`** - Interactive CLI version
 ---
 
 ## 📋 Prerequisites
 
 ### System Requirements
 - Python 3.12+
-- Ray Serve (for API version)
 - Llama Stack server running on `http://localhost:8321/`
 - Ollama or compatible model server
 
@@ -21,7 +14,6 @@ Both versions provide AI-powered document processing capabilities including summ
 ```bash
 pip install llama-stack-client langchain langchain-core langchain-community
 pip install beautifulsoup4 markdownify readability-lxml requests
-pip install ray[serve] starlette  # For Ray Serve version only
 ```
 
 ### Environment Setup
@@ -31,7 +23,7 @@ python3.12 -m venv llama-env-py312
 source llama-env-py312/bin/activate
 
 # Install dependencies
-pip install llama-stack-client langchain langchain-core langchain-community beautifulsoup4 markdownify readability-lxml requests ray[serve] starlette
+pip install llama-stack-client langchain langchain-core langchain-community beautifulsoup4 markdownify readability-lxml requests
 ```
 
 ---
@@ -106,39 +98,6 @@ Artificial intelligence (AI) is the simulation of human intelligence...
 👋 Thanks for exploring LangChain chains!
 ```
 
----
-
-## 🌐 Option 2: Ray Serve API Version (`langchain_llamastack_ray.py`)
-
-### Features
-- ✅ RESTful HTTP API
-- ✅ Persistent service (runs indefinitely)
-- ✅ Multiple endpoints for different operations
-- ✅ JSON request/response format
-- ✅ Concurrent request handling
-
-### How to Run
-```bash
-# Activate environment
-source llama-env-py312/bin/activate
-
-# Start the Ray Serve API
-cd /home/omara/langchain_llamastack
-python langchain_llamastack_ray.py
-```
-
-### Service Endpoints
-
-| Method | Endpoint | Description | Parameters |
-|--------|----------|-------------|------------|
-| GET | `/` | Service status | None |
-| POST | `/process` | Process document | `{"source": "url_or_path"}` |
-| POST | `/ask` | Ask question | `{"question": "text", "source": "optional"}` |
-| GET | `/summary` | Get summary | `?source=url` (optional) |
-| GET | `/facts` | Get facts | `?source=url` (optional) |
-| GET | `/docs` | List documents | None |
-
-### API Usage Examples
 
 #### Using curl:
 ```bash
@@ -223,23 +182,8 @@ To change the model, edit the `model_id` parameter in the respective files.
 - Check available models: `curl http://localhost:8321/models/list`
 - Update `model_id` in the code to match available models
 
-#### 3. Ray Serve Port Already in Use
-**Error**: `Port 8000 already in use`
-**Solution**:
-```bash
-# Kill process using port 8000
-lsof -ti :8000 | xargs kill -9
-
-# Or use a different port by modifying the code
-```
 
 #### 4. Missing Dependencies
-**Error**: `ModuleNotFoundError: No module named 'ray'`
-**Solution**:
-```bash
-pip install ray[serve] starlette
-```
-
 ### Debug Mode
 To enable verbose logging, add this to the beginning of either file:
 ```python
@@ -255,23 +199,12 @@ logging.basicConfig(level=logging.DEBUG)
 - **Pros**: Simple to use, interactive, good for testing
 - **Cons**: Single-threaded, session-based only
 - **Best for**: Development, testing, manual document analysis
-
-### Ray Serve Version
-- **Pros**: Concurrent requests, persistent service, API integration
-- **Cons**: More complex setup, requires Ray
-- **Best for**: Production, integration with other services, high throughput
-
 ---
 
 ## 🛑 Stopping Services
 
 ### CLI Version
 - Press `Ctrl+C` or type `quit` in the interactive prompt
-
-### Ray Serve Version
-- Press `Ctrl+C` in the terminal running the service
-- The service will gracefully shutdown and clean up resources
-
 ---
 
 ## 📝 Examples
@@ -282,12 +215,6 @@ logging.basicConfig(level=logging.DEBUG)
 3. Get summary: `summary`
 4. Ask questions: `ask What are the main contributions?`
 5. Exit: `quit`
-
-### API Workflow
-1. Start: `python langchain_llamastack_ray.py`
-2. Process: `curl -X POST http://localhost:8000/process -d '{"source": "https://example.com"}'`
-3. Query: `curl -X POST http://localhost:8000/ask -d '{"question": "What is this about?"}'`
-4. Stop: `Ctrl+C`
 
 ---
 
