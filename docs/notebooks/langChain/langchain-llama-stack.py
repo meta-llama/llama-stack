@@ -61,8 +61,6 @@ class LlamaStackLLM(LLM):
 
     # Pydantic model fields
     client: Any = None
-    #model_id: str = "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
-    # model_id: str = "meta-llama/Llama-3.3-70B-Instruct"
     model_id: str = "llama3:70b-instruct"
 
     def __init__(self, client, model_id: str = "llama3:70b-instruct"):
