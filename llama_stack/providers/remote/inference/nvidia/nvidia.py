@@ -7,7 +7,7 @@
 import warnings
 from collections.abc import AsyncIterator
 
-from openai import NOT_GIVEN, APIConnectionError, BadRequestError
+from openai import NOT_GIVEN, APIConnectionError
 
 from llama_stack.apis.common.content_types import (
     InterleavedContent,
@@ -57,7 +57,7 @@ from .openai_utils import (
 )
 from .utils import _is_nvidia_hosted
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::nvidia")
 
 
 class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper):
@@ -197,15 +197,11 @@ class NVIDIAInferenceAdapter(OpenAIMixin, Inference, ModelRegistryHelper):
             }
             extra_body["input_type"] = task_type_options[task_type]
 
-        try:
-            response = await self.client.embeddings.create(
-                model=provider_model_id,
-                input=input,
-                extra_body=extra_body,
-            )
-        except BadRequestError as e:
-            raise ValueError(f"Failed to get embeddings: {e}") from e
-
+        response = await self.client.embeddings.create(
+            model=provider_model_id,
+            input=input,
+            extra_body=extra_body,
+        )
         #
         # OpenAI: CreateEmbeddingResponse(data=[Embedding(embedding=list[float], ...)], ...)
         #  ->

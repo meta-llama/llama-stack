@@ -225,7 +225,31 @@ server:
   port: 8321  # Port to listen on (default: 8321)
   tls_certfile: "/path/to/cert.pem"  # Optional: Path to TLS certificate for HTTPS
   tls_keyfile: "/path/to/key.pem"    # Optional: Path to TLS key for HTTPS
+  cors: true  # Optional: Enable CORS (dev mode) or full config object
 ```
+
+### CORS Configuration
+
+CORS (Cross-Origin Resource Sharing) can be configured in two ways:
+
+**Local development** (allows localhost origins only):
+```yaml
+server:
+  cors: true
+```
+
+**Explicit configuration** (custom origins and settings):
+```yaml
+server:
+  cors:
+    allow_origins: ["https://myapp.com", "https://app.example.com"]
+    allow_methods: ["GET", "POST", "PUT", "DELETE"]
+    allow_headers: ["Content-Type", "Authorization"]
+    allow_credentials: true
+    max_age: 3600
+```
+
+When `cors: true`, the server enables secure localhost-only access for local development. For production, specify exact origins to maintain security.
 
 ### Authentication Configuration
 
@@ -617,6 +641,54 @@ Content-Type: application/json
   }
 }
 ```
+
+### CORS Configuration
+
+Configure CORS to allow web browsers to make requests from different domains. Disabled by default.
+
+#### Quick Setup
+
+For development, use the simple boolean flag:
+
+```yaml
+server:
+  cors: true  # Auto-enables localhost with any port
+```
+
+This automatically allows `http://localhost:*` and `https://localhost:*` with secure defaults.
+
+#### Custom Configuration
+
+For specific origins and full control:
+
+```yaml
+server:
+  cors:
+    allow_origins: ["https://myapp.com", "https://staging.myapp.com"]
+    allow_credentials: true
+    allow_methods: ["GET", "POST", "PUT", "DELETE"]
+    allow_headers: ["Content-Type", "Authorization"]
+    allow_origin_regex: "https://.*\\.example\\.com"  # Optional regex pattern
+    expose_headers: ["X-Total-Count"]
+    max_age: 86400
+```
+
+#### Configuration Options
+
+| Field                | Description                                    | Default |
+| -------------------- | ---------------------------------------------- | ------- |
+| `allow_origins`      | List of allowed origins. Use `["*"]` for any. | `["*"]` |
+| `allow_origin_regex` | Regex pattern for allowed origins (optional). | `None`  |
+| `allow_methods`      | Allowed HTTP methods.                          | `["*"]` |
+| `allow_headers`      | Allowed headers.                               | `["*"]` |
+| `allow_credentials`  | Allow credentials (cookies, auth headers).    | `false` |
+| `expose_headers`     | Headers exposed to browser.                   | `[]`    |
+| `max_age`            | Preflight cache time (seconds).               | `600`   |
+
+**Security Notes**:
+- `allow_credentials: true` requires explicit origins (no wildcards)
+- `cors: true` enables localhost access only (secure for development)
+- For public APIs, always specify exact allowed origins
 
 ## Extending to handle Safety
 

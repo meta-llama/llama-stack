@@ -10,7 +10,7 @@ from llama_stack.log import get_logger
 
 from . import NVIDIAConfig
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::nvidia")
 
 
 def _is_nvidia_hosted(config: NVIDIAConfig) -> bool:

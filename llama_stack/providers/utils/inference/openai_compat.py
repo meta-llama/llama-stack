@@ -134,7 +134,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     decode_assistant_message,
 )
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):

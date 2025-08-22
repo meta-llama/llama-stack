@@ -33,7 +33,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import ChromaVectorIOConfig as RemoteChromaVectorIOConfig
 
-log = get_logger(name=__name__, category="vector_io")
+log = get_logger(name=__name__, category="vector_io::chroma")
 
 ChromaClientType = chromadb.api.AsyncClientAPI | chromadb.api.ClientAPI
 

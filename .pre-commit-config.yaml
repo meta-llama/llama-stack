@@ -146,31 +146,13 @@ repos:
         pass_filenames: false
         require_serial: true
         files: ^.github/workflows/.*$
-      # ui-prettier and ui-eslint are disabled until we can avoid `npm ci`, which is slow and may fail -
-      #   npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
-      #   npm error Invalid: lock file's llama-stack-client@0.2.17 does not satisfy llama-stack-client@0.2.18
-      # and until we have infra for installing prettier and next via npm -
-      #   Lint UI code with ESLint.....................................................Failed
-      #   - hook id: ui-eslint
-      #   - exit code: 127
-      #   > ui@0.1.0 lint
-      #   > next lint --fix --quiet
-      #   sh: line 1: next: command not found
-      #
-      # - id: ui-prettier
-      #   name: Format UI code with Prettier
-      #   entry: bash -c 'cd llama_stack/ui && npm ci && npm run format'
-      #   language: system
-      #   files: ^llama_stack/ui/.*\.(ts|tsx)$
-      #   pass_filenames: false
-      #   require_serial: true
-      # - id: ui-eslint
-      #   name: Lint UI code with ESLint
-      #   entry: bash -c 'cd llama_stack/ui && npm run lint -- --fix --quiet'
-      #   language: system
-      #   files: ^llama_stack/ui/.*\.(ts|tsx)$
-      #   pass_filenames: false
-      #   require_serial: true
+      - id: ui-linter
+        name: Format & Lint UI
+        entry: bash ./scripts/run-ui-linter.sh
+        language: system
+        files: ^llama_stack/ui/.*\.(ts|tsx)$
+        pass_filenames: false
+        require_serial: true
 
       - id: check-log-usage
         name: Ensure 'llama_stack.log' usage for logging

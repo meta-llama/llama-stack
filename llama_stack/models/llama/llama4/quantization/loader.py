@@ -18,7 +18,7 @@ from ...datatypes import QuantizationMode
 from ..model import Transformer, TransformerBlock
 from ..moe import MoE
 
-log = get_logger(name=__name__, category="models")
+log = get_logger(name=__name__, category="models::llama")
 
 
 def swiglu_wrapper_no_reduce(

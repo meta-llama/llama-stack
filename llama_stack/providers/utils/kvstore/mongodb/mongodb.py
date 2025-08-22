@@ -13,7 +13,7 @@ from llama_stack.providers.utils.kvstore import KVStore
 
 from ..config import MongoDBKVStoreConfig
 
-log = get_logger(name=__name__, category="kvstore")
+log = get_logger(name=__name__, category="providers::utils")
 
 
 class MongoDBKVStoreImpl(KVStore):

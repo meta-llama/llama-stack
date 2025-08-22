@@ -7,8 +7,9 @@
 import time
 
 import pytest
-from fixtures.test_cases import basic_test_cases, image_test_cases, multi_turn_image_test_cases, multi_turn_test_cases
-from streaming_assertions import StreamingValidator
+
+from .fixtures.test_cases import basic_test_cases, image_test_cases, multi_turn_image_test_cases, multi_turn_test_cases
+from .streaming_assertions import StreamingValidator
 
 
 @pytest.mark.parametrize("case", basic_test_cases)
