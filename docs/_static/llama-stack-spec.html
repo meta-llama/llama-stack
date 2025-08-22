@@ -16067,12 +16067,16 @@
                     "value": {
                         "type": "number",
                         "description": "The numeric value of the metric at this timestamp"
+                    },
+                    "unit": {
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false,
                 "required": [
                     "timestamp",
-                    "value"
+                    "value",
+                    "unit"
                 ],
                 "title": "MetricDataPoint",
                 "description": "A single data point in a metric time series."
