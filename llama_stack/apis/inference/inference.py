@@ -1170,6 +1170,7 @@ class InferenceProvider(Protocol):
         :returns: RerankResponse with indices sorted by relevance score (descending).
         """
         raise NotImplementedError("Reranking is not implemented")
+        return  # this is so mypy's safe-super rule will consider the method concrete
 
     @webmethod(route="/openai/v1/completions", method="POST")
     async def openai_completion(
