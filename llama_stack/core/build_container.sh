@@ -32,7 +32,7 @@ NC='\033[0m' # No Color
 # Usage function
 usage() {
   echo "Usage: $0 --image-name <image_name> --container-base <container_base> --normal-deps <pip_dependencies> [--run-config <run_config>] [--external-provider-deps <external_provider_deps>] [--optional-deps <special_pip_deps>]"
-  echo "Example: $0 --image-name llama-stack-img --container-base python:3.12-slim --normal-deps 'numpy pandas' --run-config ./run.yaml --external-provider-deps 'foo' --optional-deps 'bar'"
+  echo "Example: $0 --image-name llama-stack-img --container-base python:3.12-slim --normal-deps '{\"default\": [\"numpy\", \"pandas\"]}' --run-config ./run.yaml --external-provider-deps '{\"vector_db\": [\"chromadb\"]}' --optional-deps '{\"special\": [\"bar\"]}'"
   exit 1
 }
 
@@ -74,7 +74,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --external-provider-deps)
       if [[ -z "$2" || "$2" == --* ]]; then
-        echo "Error: --external-provider-deps requires a string value" >&2
+        echo "Error: --external-provider-deps requires a JSON object" >&2
         usage
       fi
       external_provider_deps="$2"
@@ -175,33 +175,30 @@ fi
 # Add pip dependencies first since llama-stack is what will change most often
 # so we can reuse layers.
 if [ -n "$normal_deps" ]; then
-  read -ra pip_args <<<  "$normal_deps"
-  quoted_deps=$(printf " %q" "${pip_args[@]}")
-  add_to_container << EOF
+  # Parse JSON and install dependencies for each provider
+  echo "$normal_deps" | jq -r 'to_entries[] | "\(.key)\t\(.value | join(" "))"' | while IFS=$'\t' read -r provider deps; do
+    if [ -n "$deps" ]; then
+      echo "Installing normal dependencies for provider '$provider'"
+      read -ra pip_args <<< "$deps"
+      quoted_deps=$(printf " %q" "${pip_args[@]}")
+      add_to_container <<EOF
 RUN uv pip install --no-cache $quoted_deps
 EOF
-fi
-
-if [ -n "$optional_deps" ]; then
-  IFS='#' read -ra parts <<<"$optional_deps"
-  for part in "${parts[@]}"; do
-    read -ra pip_args <<< "$part"
-    quoted_deps=$(printf " %q" "${pip_args[@]}")
-    add_to_container <<EOF
-RUN uv pip install --no-cache $quoted_deps
-EOF
+    fi
   done
 fi
 
 if [ -n "$external_provider_deps" ]; then
-  IFS='#' read -ra parts <<<"$external_provider_deps"
-  for part in "${parts[@]}"; do
-    read -ra pip_args <<< "$part"
-    quoted_deps=$(printf " %q" "${pip_args[@]}")
-    add_to_container <<EOF
-RUN uv pip install --no-cache $quoted_deps
+  echo "Installing external provider dependencies from JSON: $external_provider_deps"
+  # Parse JSON and iterate packages only (no flags or URLs assumed)
+  echo "$external_provider_deps" | jq -r 'to_entries[] | .value[]' | while read -r part; do
+    if [ -n "$part" ]; then
+      echo "Installing external provider module: $part"
+      add_to_container <<EOF
+RUN uv pip install --no-cache $part
 EOF
-    add_to_container <<EOF
+      echo "Getting provider spec for module: $part"
+      add_to_container <<EOF
 RUN python3 - <<PYTHON | uv pip install --no-cache -r -
 import importlib
 import sys
@@ -217,6 +214,28 @@ except Exception as e:
     print(f'Error getting provider spec for {package_name}: {e}', file=sys.stderr)
 PYTHON
 EOF
+    fi
+  done
+fi
+
+if [ -n "$optional_deps" ]; then
+  echo "Installing optional dependencies from JSON: $optional_deps"
+  # For optional deps, process each spec separately to preserve flags like --no-deps
+  last_provider=""
+  echo "$optional_deps" | jq -r 'to_entries[] | .key as $k | .value[] | "\($k)\t\(.)"' | while IFS=$'\t' read -r provider spec; do
+    if [ -n "$spec" ]; then
+      if [ "$provider" != "$last_provider" ]; then
+        echo "Installing optional dependencies for provider '$provider'"
+        last_provider="$provider"
+      fi
+      echo "Installing dependency: $spec"
+      # Split spec into args and install
+      read -r -a pip_args <<< "$spec"
+      quoted_deps=$(printf " %q" "${pip_args[@]}")
+      add_to_container <<EOF
+RUN uv pip install --no-cache $quoted_deps
+EOF
+    fi
   done
 fi
 

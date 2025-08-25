@@ -230,12 +230,31 @@ def run_stack_build_command(args: argparse.Namespace) -> None:
     if args.print_deps_only:
         print(f"# Dependencies for {distro_name or args.config or image_name}")
         normal_deps, special_deps, external_provider_dependencies = get_provider_dependencies(build_config)
-        normal_deps += SERVER_DEPENDENCIES
-        print(f"uv pip install {' '.join(normal_deps)}")
-        for special_dep in special_deps:
-            print(f"uv pip install {special_dep}")
-        for external_dep in external_provider_dependencies:
-            print(f"uv pip install {external_dep}")
+        normal_deps["default"] += SERVER_DEPENDENCIES
+        cprint(
+            "Please install needed dependencies using the following commands:",
+            color="yellow",
+            file=sys.stderr,
+        )
+
+        for prov, deps in normal_deps.items():
+            if len(deps) == 0:
+                continue
+            cprint(f"# Normal Dependencies for {prov}", color="yellow")
+            cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+
+        for prov, deps in special_deps.items():
+            if len(deps) == 0:
+                continue
+            cprint(f"# Special Dependencies for {prov}", color="yellow")
+            cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+
+        for prov, deps in external_provider_dependencies.items():
+            if len(deps) == 0:
+                continue
+            cprint(f"# External Provider Dependencies for {prov}", color="yellow")
+            cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+        print()
         return
 
     try:

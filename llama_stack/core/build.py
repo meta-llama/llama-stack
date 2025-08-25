@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import importlib.resources
+import json
 import sys
 
 from pydantic import BaseModel
@@ -41,7 +42,7 @@ class ApiInput(BaseModel):
 
 def get_provider_dependencies(
     config: BuildConfig | DistributionTemplate,
-) -> tuple[list[str], list[str], list[str]]:
+) -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str, list[str]]]:
     """Get normal and special dependencies from provider configuration."""
     if isinstance(config, DistributionTemplate):
         config = config.build_config()
@@ -49,8 +50,8 @@ def get_provider_dependencies(
     providers = config.distribution_spec.providers
     additional_pip_packages = config.additional_pip_packages
 
-    deps = []
-    external_provider_deps = []
+    deps = {}
+    external_provider_deps = {}
     registry = get_provider_registry(config)
     for api_str, provider_or_providers in providers.items():
         providers_for_api = registry[Api(api_str)]
@@ -69,37 +70,86 @@ def get_provider_dependencies(
                 # this ensures we install the top level module for our external providers
                 if provider_spec.module:
                     if isinstance(provider_spec.module, str):
-                        external_provider_deps.append(provider_spec.module)
+                        external_provider_deps.setdefault(provider_spec.provider_type, []).append(provider_spec.module)
                     else:
-                        external_provider_deps.extend(provider_spec.module)
+                        external_provider_deps.setdefault(provider_spec.provider_type, []).extend(provider_spec.module)
             if hasattr(provider_spec, "pip_packages"):
-                deps.extend(provider_spec.pip_packages)
+                deps.setdefault(provider_spec.provider_type, []).extend(provider_spec.pip_packages)
             if hasattr(provider_spec, "container_image") and provider_spec.container_image:
                 raise ValueError("A stack's dependencies cannot have a container image")
 
-    normal_deps = []
-    special_deps = []
-    for package in deps:
-        if "--no-deps" in package or "--index-url" in package:
-            special_deps.append(package)
+    normal_deps = {}
+    special_deps = {}
+    for provider, package in deps.items():
+        if any("--no-deps" in s for s in package) or any("--index-url" in s for s in package):
+            special_deps.setdefault(provider, []).append(package)
         else:
-            normal_deps.append(package)
+            normal_deps.setdefault(provider, []).append(package)
 
-    normal_deps.extend(additional_pip_packages or [])
+    normal_deps["default"] = additional_pip_packages or []
 
-    return list(set(normal_deps)), list(set(special_deps)), list(set(external_provider_deps))
+    # Helper function to flatten and deduplicate dependencies
+    def flatten_and_dedup(deps_list):
+        flattened = []
+        for item in deps_list:
+            if isinstance(item, list):
+                flattened.extend(item)
+            else:
+                flattened.append(item)
+        return list(set(flattened))
+
+    for key in normal_deps.keys():
+        normal_deps[key] = flatten_and_dedup(normal_deps[key])
+    for key in special_deps.keys():
+        special_deps[key] = flatten_and_dedup(special_deps[key])
+    for key in external_provider_deps.keys():
+        external_provider_deps[key] = flatten_and_dedup(external_provider_deps[key])
+
+    return normal_deps, special_deps, external_provider_deps
 
 
 def print_pip_install_help(config: BuildConfig):
-    normal_deps, special_deps, _ = get_provider_dependencies(config)
-
+    normal_deps, special_deps, external_provider_dependencies = get_provider_dependencies(config)
+    normal_deps["default"] += SERVER_DEPENDENCIES
     cprint(
-        f"Please install needed dependencies using the following commands:\n\nuv pip install {' '.join(normal_deps)}",
+        "Please install needed dependencies using the following commands:",
         color="yellow",
         file=sys.stderr,
     )
-    for special_dep in special_deps:
-        cprint(f"uv pip install {special_dep}", color="yellow", file=sys.stderr)
+
+    for provider, deps in normal_deps.items():
+        if len(deps) == 0:
+            continue
+        cprint(f"# Normal Dependencies for {provider}", color="yellow")
+        cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+
+    for provider, deps in special_deps.items():
+        if len(deps) == 0:
+            continue
+        cprint(f"# Special Dependencies for {provider}", color="yellow")
+        cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+
+    for provider, deps in external_provider_dependencies.items():
+        if len(deps) == 0:
+            continue
+        cprint(f"# External Provider Dependencies for {provider}", color="yellow")
+        cprint(f"uv pip install {' '.join(deps)}", file=sys.stderr)
+    print()
+    return
+
+    cprint(
+        "Please install needed dependencies using the following commands:",
+        color="yellow",
+        file=sys.stderr,
+    )
+
+    for provider, deps in normal_deps.items():
+        cprint(f"# Normal Dependencies for {provider}")
+        cprint(f"uv pip install {deps}", color="yellow", file=sys.stderr)
+
+    for provider, deps in special_deps.items():
+        cprint(f"# Special Dependencies for {provider}")
+        cprint(f"uv pip install {deps}", color="yellow", file=sys.stderr)
     print()
 
 
@@ -112,12 +162,12 @@ def build_image(
     container_base = build_config.distribution_spec.container_image or "python:3.12-slim"
 
     normal_deps, special_deps, external_provider_deps = get_provider_dependencies(build_config)
-    normal_deps += SERVER_DEPENDENCIES
+    normal_deps["default"] += SERVER_DEPENDENCIES
     if build_config.external_apis_dir:
         external_apis = load_external_apis(build_config)
         if external_apis:
             for _, api_spec in external_apis.items():
-                normal_deps.extend(api_spec.pip_packages)
+                normal_deps["default"].extend(api_spec.pip_packages)
 
     if build_config.image_type == LlamaStackImageType.CONTAINER.value:
         script = str(importlib.resources.files("llama_stack") / "core/build_container.sh")
@@ -130,7 +180,7 @@ def build_image(
             "--container-base",
             container_base,
             "--normal-deps",
-            " ".join(normal_deps),
+            json.dumps(normal_deps),
         ]
         # When building from a config file (not a template), include the run config path in the
         # build arguments
@@ -143,15 +193,15 @@ def build_image(
             "--env-name",
             str(image_name),
             "--normal-deps",
-            " ".join(normal_deps),
+            json.dumps(normal_deps),
         ]
 
     # Always pass both arguments, even if empty, to maintain consistent positional arguments
     if special_deps:
-        args.extend(["--optional-deps", "#".join(special_deps)])
+        args.extend(["--optional-deps", json.dumps(special_deps)])
     if external_provider_deps:
         args.extend(
-            ["--external-provider-deps", "#".join(external_provider_deps)]
+            ["--external-provider-deps", json.dumps(external_provider_deps)]
         )  # the script will install external provider module, get its deps, and install those too.
 
     return_code = run_command(args)
