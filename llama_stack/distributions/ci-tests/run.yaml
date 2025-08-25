@@ -156,8 +156,8 @@ providers:
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/ci-tests}/trace_store.db
       otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
   post_training:
-  - provider_id: huggingface
-    provider_type: inline::huggingface
+  - provider_id: huggingface-cpu
+    provider_type: inline::huggingface-cpu
     config:
       checkpoint_format: huggingface
       distributed_backend: null
