@@ -16,9 +16,9 @@
             "model": "llama3.2:3b-instruct-fp16",
             "name": "llama3.2:3b-instruct-fp16",
             "digest": "195a8c01d91ec3cb1e0aad4624a51f2602c51fa7d96110f8ab5a20c84081804d",
-            "expires_at": "2025-08-18T13:47:44.262256-07:00",
-            "size": 7919570944,
-            "size_vram": 7919570944,
+            "expires_at": "2025-08-25T09:49:37.238698Z",
+            "size": 7382700032,
+            "size_vram": 0,
             "details": {
               "parent_model": "",
               "format": "gguf",

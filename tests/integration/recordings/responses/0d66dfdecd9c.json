@@ -8,7 +8,7 @@
       "messages": [
         {
           "role": "user",
-          "content": "Hello, world!"
+          "content": "Which planet do humans live on, starting with letter E?"
         }
       ],
       "stream": false
@@ -20,14 +20,14 @@
     "body": {
       "__type__": "openai.types.chat.chat_completion.ChatCompletion",
       "__data__": {
-        "id": "chatcmpl-35",
+        "id": "chatcmpl-120",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "Hello! It's nice to meet you. How can I assist you today?",
+              "content": "To answer your question, there is no planet in our solar system that starts with the letter E. The planets in our solar system, listed in order of their distance from the Sun, are:\n\n1. Mercury\n2. Venus\n3. Earth (your home planet!)\n4. Mars\n5. Jupiter\n6. Saturn\n7. Uranus\n8. Neptune\n\nSo, while humans do live on our planet \"Earth\", it doesn't start with the letter E.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
@@ -37,15 +37,15 @@
             }
           }
         ],
-        "created": 1756115077,
+        "created": 1756115034,
         "model": "llama3.2:3b-instruct-fp16",
         "object": "chat.completion",
         "service_tier": null,
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 17,
-          "prompt_tokens": 29,
-          "total_tokens": 46,
+          "completion_tokens": 98,
+          "prompt_tokens": 37,
+          "total_tokens": 135,
           "completion_tokens_details": null,
           "prompt_tokens_details": null
         }

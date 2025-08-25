@@ -1,7 +1,7 @@
 {
   "non_streaming_01": {
     "data": {
-      "question": "Which planet do humans live on?",
+      "question": "Which planet do humans live on, starting with letter E?",
       "expected": "Earth"
     }
   },
