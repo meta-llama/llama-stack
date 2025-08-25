@@ -2,6 +2,7 @@ version: 2
 image_name: starter
 apis:
 - agents
+- batches
 - datasetio
 - eval
 - files
@@ -134,6 +135,8 @@ providers:
     provider_type: inline::llama-guard
     config:
       excluded_categories: []
+  - provider_id: code-scanner
+    provider_type: inline::code-scanner
   agents:
   - provider_id: meta-reference
     provider_type: inline::meta-reference
@@ -153,8 +156,8 @@ providers:
       sqlite_db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/trace_store.db
       otel_exporter_otlp_endpoint: ${env.OTEL_EXPORTER_OTLP_ENDPOINT:=}
   post_training:
-  - provider_id: huggingface
-    provider_type: inline::huggingface
+  - provider_id: huggingface-cpu
+    provider_type: inline::huggingface-cpu
     config:
       checkpoint_format: huggingface
       distributed_backend: null
@@ -204,6 +207,13 @@ providers:
     provider_type: inline::rag-runtime
   - provider_id: model-context-protocol
     provider_type: remote::model-context-protocol
+  batches:
+  - provider_id: reference
+    provider_type: inline::reference
+    config:
+      kvstore:
+        type: sqlite
+        db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/batches.db
 metadata_store:
   type: sqlite
   db_path: ${env.SQLITE_STORE_DIR:=~/.llama/distributions/starter}/registry.db
@@ -215,6 +225,9 @@ shields:
 - shield_id: llama-guard
   provider_id: ${env.SAFETY_MODEL:+llama-guard}
   provider_shield_id: ${env.SAFETY_MODEL:=}
+- shield_id: code-scanner
+  provider_id: ${env.CODE_SCANNER_MODEL:+code-scanner}
+  provider_shield_id: ${env.CODE_SCANNER_MODEL:=}
 vector_dbs: []
 datasets: []
 scoring_fns: []

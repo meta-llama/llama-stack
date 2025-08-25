@@ -6,16 +6,14 @@
 
 from typing import Any
 
-from llama_stack.apis.inference import (
-    Message,
-)
+from llama_stack.apis.inference import Message
 from llama_stack.apis.safety import RunShieldResponse, Safety
 from llama_stack.apis.safety.safety import ModerationObject
 from llama_stack.apis.shields import Shield
 from llama_stack.log import get_logger
 from llama_stack.providers.datatypes import RoutingTable
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="core::routers")
 
 
 class SafetyRouter(Safety):
@@ -68,6 +66,7 @@ class SafetyRouter(Safety):
             list_shields_response = await self.routing_table.list_shields()
 
             matches = [s.identifier for s in list_shields_response.data if model == s.provider_resource_id]
+
             if not matches:
                 raise ValueError(f"No shield associated with provider_resource id {model}")
             if len(matches) > 1:

@@ -1,93 +1,53 @@
+# This workflow should be run manually when needing to re-record tests. This happens when you have
+#  - added a new test
+#  - or changed an existing test such that a new inference call is made
+# You should make a PR and then run this workflow on that PR branch. The workflow will re-record the
+# tests and commit the recordings to the PR branch.
 name: Integration Tests (Record)
 
 run-name: Run the integration test suite from tests/integration
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, labeled]
-    paths:
-      - 'llama_stack/**'
-      - 'tests/**'
-      - 'uv.lock'
-      - 'pyproject.toml'
-      - '.github/workflows/record-integration-tests.yml' # This workflow
-      - '.github/actions/setup-ollama/action.yml'
-      - '.github/actions/setup-test-environment/action.yml'
-      - '.github/actions/run-and-record-tests/action.yml'
   workflow_dispatch:
     inputs:
+      test-subdirs:
+        description: 'Comma-separated list of test subdirectories to run'
+        type: string
+        default: ''
       test-provider:
         description: 'Test against a specific provider'
         type: string
         default: 'ollama'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+      run-vision-tests:
+        description: 'Whether to run vision tests'
+        type: boolean
+        default: false
+      test-pattern:
+        description: 'Regex pattern to pass to pytest -k'
+        type: string
+        default: ''
 
 jobs:
-  discover-tests:
-    if: contains(github.event.pull_request.labels.*.name, 're-record-tests') ||
-      contains(github.event.pull_request.labels.*.name, 're-record-vision-tests')
-    runs-on: ubuntu-latest
-    outputs:
-      test-types: ${{ steps.generate-test-types.outputs.test-types }}
-      matrix-modes: ${{ steps.generate-test-types.outputs.matrix-modes }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Generate test types
-        id: generate-test-types
-        run: |
-          # Get test directories dynamically, excluding non-test directories
-          TEST_TYPES=$(find tests/integration -maxdepth 1 -mindepth 1 -type d -printf "%f\n" |
-            grep -Ev "^(__pycache__|fixtures|test_cases|recordings|post_training)$" |
-            sort | jq -R -s -c 'split("\n")[:-1]')
-          echo "test-types=$TEST_TYPES" >> $GITHUB_OUTPUT
-
-          labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels --jq '.labels[].name')
-          echo "labels=$labels"
-
-          modes_array=()
-          if [[ $labels == *"re-record-vision-tests"* ]]; then
-            modes_array+=("vision")
-          fi
-          if [[ $labels == *"re-record-tests"* ]]; then
-            modes_array+=("non-vision")
-          fi
-
-          # Convert to JSON array
-          if [ ${#modes_array[@]} -eq 0 ]; then
-            matrix_modes="[]"
-          else
-            matrix_modes=$(printf '%s\n' "${modes_array[@]}" | jq -R -s -c 'split("\n")[:-1]')
-          fi
-          echo "matrix_modes=$matrix_modes"
-          echo "matrix-modes=$matrix_modes" >> $GITHUB_OUTPUT
-
-        env:
-          GH_TOKEN: ${{ github.token }}
-
   record-tests:
-    needs: discover-tests
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: ${{ fromJSON(needs.discover-tests.outputs.matrix-modes) }}
-
     steps:
+      - name: Echo workflow inputs
+        run: |
+          echo "::group::Workflow Inputs"
+          echo "test-subdirs: ${{ inputs.test-subdirs }}"
+          echo "test-provider: ${{ inputs.test-provider }}"
+          echo "run-vision-tests: ${{ inputs.run-vision-tests }}"
+          echo "test-pattern: ${{ inputs.test-pattern }}"
+          echo "branch: ${{ github.ref_name }}"
+          echo "::endgroup::"
+
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Setup test environment
@@ -96,14 +56,15 @@ jobs:
           python-version: "3.12"  # Use single Python version for recording
           client-version: "latest"
           provider: ${{ inputs.test-provider || 'ollama' }}
-          run-vision-tests: ${{ matrix.mode == 'vision' && 'true' || 'false' }}
+          run-vision-tests: ${{ inputs.run-vision-tests }}
           inference-mode: 'record'
 
       - name: Run and record tests
         uses: ./.github/actions/run-and-record-tests
         with:
-          test-types: ${{ needs.discover-tests.outputs.test-types }}
+          test-pattern: ${{ inputs.test-pattern }}
+          test-subdirs: ${{ inputs.test-subdirs }}
           stack-config: 'server:ci-tests'  # recording must be done with server since more tests are run
           provider: ${{ inputs.test-provider || 'ollama' }}
           inference-mode: 'record'
-          run-vision-tests: ${{ matrix.mode == 'vision' && 'true' || 'false' }}
+          run-vision-tests: ${{ inputs.run-vision-tests }}

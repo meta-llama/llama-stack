@@ -24,6 +24,7 @@ from llama_stack.apis.agents.openai_responses import (
     OpenAIResponseMessage,
     OpenAIResponseObjectWithInput,
     OpenAIResponseOutputMessageContentOutputText,
+    OpenAIResponseOutputMessageMCPCall,
     OpenAIResponseOutputMessageWebSearchToolCall,
     OpenAIResponseText,
     OpenAIResponseTextFormat,
@@ -41,7 +42,7 @@ from llama_stack.apis.inference import (
 )
 from llama_stack.apis.tools.tools import Tool, ToolGroups, ToolInvocationResult, ToolParameter, ToolRuntime
 from llama_stack.core.access_control.access_control import default_policy
-from llama_stack.providers.inline.agents.meta_reference.openai_responses import (
+from llama_stack.providers.inline.agents.meta_reference.responses.openai_responses import (
     OpenAIResponsesImpl,
 )
 from llama_stack.providers.utils.responses.responses_store import ResponsesStore
@@ -136,9 +137,12 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         input=input_text,
         model=model,
         temperature=0.1,
+        stream=True,  # Enable streaming to test content part events
     )
 
-    # Verify
+    # For streaming response, collect all chunks
+    chunks = [chunk async for chunk in result]
+
     mock_inference_api.openai_chat_completion.assert_called_once_with(
         model=model,
         messages=[OpenAIUserMessageParam(role="user", content="What is the capital of Ireland?", name=None)],
@@ -147,11 +151,32 @@ async def test_create_openai_response_with_string_input(openai_responses_impl, m
         stream=True,
         temperature=0.1,
     )
+
+    # Should have content part events for text streaming
+    # Expected: response.created, content_part.added, output_text.delta, content_part.done, response.completed
+    assert len(chunks) >= 4
+    assert chunks[0].type == "response.created"
+
+    # Check for content part events
+    content_part_added_events = [c for c in chunks if c.type == "response.content_part.added"]
+    content_part_done_events = [c for c in chunks if c.type == "response.content_part.done"]
+    text_delta_events = [c for c in chunks if c.type == "response.output_text.delta"]
+
+    assert len(content_part_added_events) >= 1, "Should have content_part.added event for text"
+    assert len(content_part_done_events) >= 1, "Should have content_part.done event for text"
+    assert len(text_delta_events) >= 1, "Should have text delta events"
+
+    # Verify final event is completion
+    assert chunks[-1].type == "response.completed"
+
+    # When streaming, the final response is in the last chunk
+    final_response = chunks[-1].response
+    assert final_response.model == model
+    assert len(final_response.output) == 1
+    assert isinstance(final_response.output[0], OpenAIResponseMessage)
+
     openai_responses_impl.responses_store.store_response_object.assert_called_once()
-    assert result.model == model
-    assert len(result.output) == 1
-    assert isinstance(result.output[0], OpenAIResponseMessage)
-    assert result.output[0].content[0].text == "Dublin"
+    assert final_response.output[0].content[0].text == "Dublin"
 
 
 async def test_create_openai_response_with_string_input_with_tools(openai_responses_impl, mock_inference_api):
@@ -272,6 +297,8 @@ async def test_create_openai_response_with_tool_call_type_none(openai_responses_
 
     # Check that we got the content from our mocked tool execution result
     chunks = [chunk async for chunk in result]
+
+    # Verify event types
     # Should have: response.created, output_item.added, function_call_arguments.delta,
     # function_call_arguments.done, output_item.done, response.completed
     assert len(chunks) == 6
@@ -430,6 +457,53 @@ async def test_prepend_previous_response_web_search(openai_responses_impl, mock_
     # Check for previous output web search response
     assert isinstance(input[2], OpenAIResponseMessage)
     assert input[2].content[0].text == "fake_web_search_response"
+    # Check for new input
+    assert isinstance(input[3], OpenAIResponseMessage)
+    assert input[3].content == "fake_input"
+
+
+async def test_prepend_previous_response_mcp_tool_call(openai_responses_impl, mock_responses_store):
+    """Test prepending a previous response which included an mcp tool call to a new response."""
+    input_item_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseInputMessageContentText(text="fake_previous_input")],
+        role="user",
+    )
+    output_tool_call = OpenAIResponseOutputMessageMCPCall(
+        id="ws_123",
+        name="fake-tool",
+        arguments="fake-arguments",
+        server_label="fake-label",
+    )
+    output_message = OpenAIResponseMessage(
+        id="123",
+        content=[OpenAIResponseOutputMessageContentOutputText(text="fake_tool_call_response")],
+        status="completed",
+        role="assistant",
+    )
+    response = OpenAIResponseObjectWithInput(
+        created_at=1,
+        id="resp_123",
+        model="fake_model",
+        output=[output_tool_call, output_message],
+        status="completed",
+        text=OpenAIResponseText(format=OpenAIResponseTextFormat(type="text")),
+        input=[input_item_message],
+    )
+    mock_responses_store.get_response_object.return_value = response
+
+    input_messages = [OpenAIResponseMessage(content="fake_input", role="user")]
+    input = await openai_responses_impl._prepend_previous_response(input_messages, "resp_123")
+
+    assert len(input) == 4
+    # Check for previous input
+    assert isinstance(input[0], OpenAIResponseMessage)
+    assert input[0].content[0].text == "fake_previous_input"
+    # Check for previous output MCP tool call
+    assert isinstance(input[1], OpenAIResponseOutputMessageMCPCall)
+    # Check for previous output web search response
+    assert isinstance(input[2], OpenAIResponseMessage)
+    assert input[2].content[0].text == "fake_tool_call_response"
     # Check for new input
     assert isinstance(input[3], OpenAIResponseMessage)
     assert input[3].content == "fake_input"

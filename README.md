@@ -1,8 +1,5 @@
 # Llama Stack
 
-<a href="https://trendshift.io/repositories/11824" target="_blank"><img src="https://trendshift.io/api/badge/repositories/11824" alt="meta-llama%2Fllama-stack | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
------
 [![PyPI version](https://img.shields.io/pypi/v/llama_stack.svg)](https://pypi.org/project/llama_stack/)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/llama-stack)](https://pypi.org/project/llama-stack/)
 [![License](https://img.shields.io/pypi/l/llama_stack.svg)](https://github.com/meta-llama/llama-stack/blob/main/LICENSE)

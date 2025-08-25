@@ -4,18 +4,13 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
-import logging
 import re
 import uuid
 from string import Template
 from typing import Any
 
 from llama_stack.apis.common.content_types import ImageContentItem, TextContentItem
-from llama_stack.apis.inference import (
-    Inference,
-    Message,
-    UserMessage,
-)
+from llama_stack.apis.inference import Inference, Message, UserMessage
 from llama_stack.apis.safety import (
     RunShieldResponse,
     Safety,
@@ -25,6 +20,7 @@ from llama_stack.apis.safety import (
 from llama_stack.apis.safety.safety import ModerationObject, ModerationObjectResults
 from llama_stack.apis.shields import Shield
 from llama_stack.core.datatypes import Api
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import Role
 from llama_stack.models.llama.sku_types import CoreModelId
 from llama_stack.providers.datatypes import ShieldsProtocolPrivate
@@ -71,7 +67,6 @@ SAFETY_CATEGORIES_TO_CODE_MAP = {
     CAT_CODE_INTERPRETER_ABUSE: "S14",
 }
 SAFETY_CODE_TO_CATEGORIES_MAP = {v: k for k, v in SAFETY_CATEGORIES_TO_CODE_MAP.items()}
-
 
 DEFAULT_LG_V3_SAFETY_CATEGORIES = [
     CAT_VIOLENT_CRIMES,
@@ -136,6 +131,8 @@ Provide your safety assessment for ONLY THE LAST $agent_type message in the abov
 
 
 PROMPT_TEMPLATE = Template(f"{PROMPT_TASK}{SAFETY_CATEGORIES}{PROMPT_CONVERSATION}{PROMPT_INSTRUCTIONS}")
+
+logger = get_logger(name=__name__, category="safety")
 
 
 class LlamaGuardSafetyImpl(Safety, ShieldsProtocolPrivate):
@@ -412,7 +409,7 @@ class LlamaGuardShield:
             unsafe_code_list = [code.strip() for code in unsafe_code.split(",")]
             invalid_codes = [code for code in unsafe_code_list if code not in SAFETY_CODE_TO_CATEGORIES_MAP]
             if invalid_codes:
-                logging.warning(f"Invalid safety codes returned: {invalid_codes}")
+                logger.warning(f"Invalid safety codes returned: {invalid_codes}")
                 # just returning safe object, as we don't know what the invalid codes can map to
                 return ModerationObject(
                     id=f"modr-{uuid.uuid4()}",
@@ -460,7 +457,7 @@ class LlamaGuardShield:
 
     def is_content_safe(self, response: str, unsafe_code: str | None = None) -> bool:
         """Check if content is safe based on response and unsafe code."""
-        if response.strip() == SAFE_RESPONSE:
+        if response.strip().lower().startswith(SAFE_RESPONSE):
             return True
 
         if unsafe_code:

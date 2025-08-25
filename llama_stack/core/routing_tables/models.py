@@ -17,7 +17,7 @@ from llama_stack.log import get_logger
 
 from .common import CommonRoutingTableImpl, lookup_model
 
-logger = get_logger(name=__name__, category="core")
+logger = get_logger(name=__name__, category="core::routing_tables")
 
 
 class ModelsRoutingTable(CommonRoutingTableImpl, Models):

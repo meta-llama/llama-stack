@@ -1,6 +1,7 @@
 version: 2
 distribution_spec:
-  description: Quick start template for running Llama Stack with several popular providers
+  description: Quick start template for running Llama Stack with several popular providers.
+    This distribution is intended for CPU-only environments.
   providers:
     inference:
     - provider_type: remote::cerebras
@@ -28,12 +29,13 @@ distribution_spec:
     - provider_type: inline::localfs
     safety:
     - provider_type: inline::llama-guard
+    - provider_type: inline::code-scanner
     agents:
     - provider_type: inline::meta-reference
     telemetry:
     - provider_type: inline::meta-reference
     post_training:
-    - provider_type: inline::huggingface
+    - provider_type: inline::huggingface-cpu
     eval:
     - provider_type: inline::meta-reference
     datasetio:
@@ -48,6 +50,8 @@ distribution_spec:
     - provider_type: remote::tavily-search
     - provider_type: inline::rag-runtime
     - provider_type: remote::model-context-protocol
+    batches:
+    - provider_type: inline::reference
 image_type: venv
 additional_pip_packages:
 - aiosqlite

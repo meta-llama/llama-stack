@@ -18,6 +18,23 @@ from llama_stack.core.distribution import get_provider_registry
 REPO_ROOT = Path(__file__).parent.parent
 
 
+def get_api_docstring(api_name: str) -> str | None:
+    """Extract docstring from the API protocol class."""
+    try:
+        # Import the API module dynamically
+        api_module = __import__(f"llama_stack.apis.{api_name}", fromlist=[api_name.title()])
+
+        # Get the main protocol class (usually capitalized API name)
+        protocol_class_name = api_name.title()
+        if hasattr(api_module, protocol_class_name):
+            protocol_class = getattr(api_module, protocol_class_name)
+            return protocol_class.__doc__
+    except (ImportError, AttributeError):
+        pass
+
+    return None
+
+
 class ChangedPathTracker:
     """Track a list of paths we may have changed."""
 
@@ -140,12 +157,14 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
         }
 
 
-def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
+def generate_provider_docs(progress, provider_spec: Any, api_name: str) -> str:
     """Generate markdown documentation for a provider."""
     provider_type = provider_spec.provider_type
     config_class = provider_spec.config_class
 
     config_info = get_config_class_info(config_class)
+    if "error" in config_info:
+        progress.print(config_info["error"])
 
     md_lines = []
     md_lines.append(f"# {provider_type}")
@@ -261,6 +280,11 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
             index_content.append(f"# {api_name.title()}\n")
             index_content.append("## Overview\n")
 
+            api_docstring = get_api_docstring(api_name)
+            if api_docstring:
+                cleaned_docstring = api_docstring.strip()
+                index_content.append(f"{cleaned_docstring}\n")
+
             index_content.append(
                 f"This section contains documentation for all available providers for the **{api_name}** API.\n"
             )
@@ -273,7 +297,7 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
                 filename = provider_type.replace("::", "_").replace(":", "_")
                 provider_doc_file = doc_output_dir / f"{filename}.md"
 
-                provider_docs = generate_provider_docs(provider, api_name)
+                provider_docs = generate_provider_docs(progress, provider, api_name)
 
                 provider_doc_file.write_text(provider_docs)
                 change_tracker.add_paths(provider_doc_file)

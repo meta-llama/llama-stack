@@ -9,7 +9,7 @@ import asyncio
 import functools
 import inspect
 import json
-import logging
+import logging  # allow-direct-logging
 import os
 import ssl
 import sys
@@ -28,10 +28,12 @@ from aiohttp import hdrs
 from fastapi import Body, FastAPI, HTTPException, Request, Response
 from fastapi import Path as FastapiPath
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import BadRequestError
 from pydantic import BaseModel, ValidationError
 
+from llama_stack.apis.common.errors import ConflictError, ResourceNotFoundError
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.cli.utils import add_config_distro_args, get_config_from_args
 from llama_stack.core.access_control.access_control import AccessDeniedError
@@ -39,6 +41,7 @@ from llama_stack.core.datatypes import (
     AuthenticationRequiredError,
     LoggingConfig,
     StackRunConfig,
+    process_cors_config,
 )
 from llama_stack.core.distribution import builtin_automatically_routed_apis
 from llama_stack.core.external import ExternalApiSpec, load_external_apis
@@ -81,7 +84,7 @@ from .quota import QuotaMiddleware
 
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-logger = get_logger(name=__name__, category="server")
+logger = get_logger(name=__name__, category="core::server")
 
 
 def warn_with_traceback(message, category, filename, lineno, file=None, line=None):
@@ -128,6 +131,10 @@ def translate_exception(exc: Exception) -> HTTPException | RequestValidationErro
                 ]
             },
         )
+    elif isinstance(exc, ConflictError):
+        return HTTPException(status_code=409, detail=str(exc))
+    elif isinstance(exc, ResourceNotFoundError):
+        return HTTPException(status_code=404, detail=str(exc))
     elif isinstance(exc, ValueError):
         return HTTPException(status_code=httpx.codes.BAD_REQUEST, detail=f"Invalid value: {str(exc)}")
     elif isinstance(exc, BadRequestError):
@@ -408,7 +415,7 @@ def main(args: argparse.Namespace | None = None):
         config_contents = yaml.safe_load(fp)
         if isinstance(config_contents, dict) and (cfg := config_contents.get("logging_config")):
             logger_config = LoggingConfig(**cfg)
-        logger = get_logger(name=__name__, category="server", config=logger_config)
+        logger = get_logger(name=__name__, category="core::server", config=logger_config)
         if args.env:
             for env_pair in args.env:
                 try:
@@ -477,6 +484,12 @@ def main(args: argparse.Namespace | None = None):
             authenticated_max_requests=authenticated_max_requests,
             window_seconds=window_seconds,
         )
+
+    if config.server.cors:
+        logger.info("Enabling CORS")
+        cors_config = process_cors_config(config.server.cors)
+        if cors_config:
+            app.add_middleware(CORSMiddleware, **cors_config.model_dump())
 
     if Api.telemetry in impls:
         setup_logger(impls[Api.telemetry])

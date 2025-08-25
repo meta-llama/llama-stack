@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import base64
 import json
-import logging
 import struct
 import time
 import uuid
@@ -31,14 +30,20 @@ from openai.types.chat import (
 from openai.types.chat import (
     ChatCompletionContentPartTextParam as OpenAIChatCompletionContentPartTextParam,
 )
+
+try:
+    from openai.types.chat import (
+        ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
+except ImportError:
+    from openai.types.chat.chat_completion_message_tool_call import (
+        ChatCompletionMessageToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
 from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
 from openai.types.chat import (
     ChatCompletionMessageToolCall,
-)
-from openai.types.chat import (
-    ChatCompletionMessageToolCallParam as OpenAIChatCompletionMessageToolCall,
 )
 from openai.types.chat import (
     ChatCompletionSystemMessageParam as OpenAIChatCompletionSystemMessage,
@@ -116,6 +121,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.inference import (
     OpenAIChoice as OpenAIChatCompletionChoice,
 )
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,
@@ -128,7 +134,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     decode_assistant_message,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):
@@ -633,7 +639,7 @@ async def convert_message_to_openai_dict_new(
         )
     elif isinstance(message, CompletionMessage):
         tool_calls = [
-            OpenAIChatCompletionMessageToolCall(
+            OpenAIChatCompletionMessageFunctionToolCall(
                 id=tool.call_id,
                 function=OpenAIFunction(
                     name=(tool.tool_name if not isinstance(tool.tool_name, BuiltinTool) else tool.tool_name.value),
@@ -903,7 +909,7 @@ def _convert_openai_request_response_format(
 
 
 def _convert_openai_tool_calls(
-    tool_calls: list[OpenAIChatCompletionMessageToolCall],
+    tool_calls: list[OpenAIChatCompletionMessageFunctionToolCall],
 ) -> list[ToolCall]:
     """
     Convert an OpenAI ChatCompletionMessageToolCall list into a list of ToolCall.
