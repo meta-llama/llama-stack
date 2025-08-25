@@ -1,0 +1,62 @@
+# API Conformance Tests
+# This workflow ensures that API changes maintain backward compatibility and don't break existing integrations
+# It runs schema validation and OpenAPI diff checks to catch breaking changes early
+
+name: API Conformance Tests
+
+run-name: Run the API Conformance test suite on the changes.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'llama_stack/**'
+      - '!llama_stack/ui/**'
+      - 'tests/**'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - '.github/workflows/conformance.yml' # This workflow itself
+  schedule:
+    # If changing the cron schedule, update the provider in the test-matrix job
+    - cron: '0 0 * * *'  # Daily at 12 AM UTC - test latest client to catch breaking changes in dependencies
+    - cron: '1 0 * * 0'  # Weekly on Sunday at 1 AM UTC - test vllm provider specifically
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
+  # Cancel in-progress runs when new commits are pushed to avoid wasting CI resources
+  cancel-in-progress: true
+
+jobs:
+  # Job to check if API schema changes maintain backward compatibility
+  check-schema-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      # Using specific version 4.1.7 because 5.0.0 fails when trying to run this locally using `act`
+      # This ensures consistent behavior between local testing and CI
+      - name: Checkout PR Code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      # Checkout the base branch to compare against (usually main)
+      # This allows us to diff the current changes against the previous state
+      - name: Checkout Base Branch
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: 'base'
+
+      # Build a custom container that includes both openapi-diff and yq tools
+      # The default openapi-diff container doesn't have yq, which we need for advanced YAML filtering
+      - name: Build OpenAPI Diff container
+        run: |
+          docker build -t openapi-diff-yq -f ./.github/images/Containerfile .
+
+      # Run the OpenAPI diff tool to detect breaking changes in the API specification
+      # This step will fail if incompatible changes are detected, preventing breaking changes from being merged
+      - name: Run OpenAPI Diff
+        run: |
+          docker run --rm \
+            -v "$(pwd):/workspace" \
+            openapi-diff-yq
