@@ -36,7 +36,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import QdrantVectorIOConfig as RemoteQdrantVectorIOConfig
 
-log = get_logger(name=__name__, category="vector_io")
+log = get_logger(name=__name__, category="vector_io::qdrant")
 CHUNK_ID_KEY = "_chunk_id"
 
 # KV store prefixes for vector databases

@@ -14,7 +14,7 @@ from llama_stack.log import get_logger
 from ..api import KVStore
 from ..config import PostgresKVStoreConfig
 
-log = get_logger(name=__name__, category="kvstore")
+log = get_logger(name=__name__, category="providers::utils")
 
 
 class PostgresKVStoreImpl(KVStore):

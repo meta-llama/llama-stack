@@ -61,7 +61,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import TogetherImplConfig
 from .models import MODEL_ENTRIES
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::together")
 
 
 class TogetherInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):

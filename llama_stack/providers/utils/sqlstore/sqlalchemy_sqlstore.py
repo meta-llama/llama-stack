@@ -22,6 +22,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio.engine import AsyncEngine
 
 from llama_stack.apis.common.responses import PaginatedResponse
 from llama_stack.log import get_logger
@@ -29,7 +30,7 @@ from llama_stack.log import get_logger
 from .api import ColumnDefinition, ColumnType, SqlStore
 from .sqlstore import SqlAlchemySqlStoreConfig
 
-logger = get_logger(name=__name__, category="sqlstore")
+logger = get_logger(name=__name__, category="providers::utils")
 
 TYPE_MAPPING: dict[ColumnType, Any] = {
     ColumnType.INTEGER: Integer,
@@ -45,8 +46,11 @@ TYPE_MAPPING: dict[ColumnType, Any] = {
 class SqlAlchemySqlStoreImpl(SqlStore):
     def __init__(self, config: SqlAlchemySqlStoreConfig):
         self.config = config
-        self.async_session = async_sessionmaker(create_async_engine(config.engine_str))
+        self.async_session = async_sessionmaker(self.create_engine())
         self.metadata = MetaData()
+
+    def create_engine(self) -> AsyncEngine:
+        return create_async_engine(self.config.engine_str, pool_pre_ping=True)
 
     async def create_table(
         self,
@@ -83,7 +87,7 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         else:
             sqlalchemy_table = self.metadata.tables[table]
 
-        engine = create_async_engine(self.config.engine_str)
+        engine = self.create_engine()
         async with engine.begin() as conn:
             await conn.run_sync(self.metadata.create_all, tables=[sqlalchemy_table], checkfirst=True)
 
@@ -241,7 +245,7 @@ class SqlAlchemySqlStoreImpl(SqlStore):
         nullable: bool = True,
     ) -> None:
         """Add a column to an existing table if the column doesn't already exist."""
-        engine = create_async_engine(self.config.engine_str)
+        engine = self.create_engine()
 
         try:
             async with engine.begin() as conn:

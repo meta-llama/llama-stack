@@ -54,59 +54,16 @@ dependencies like inference, files, and models APIs.
 """
 
 import json
-import tempfile
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from llama_stack.apis.batches import BatchObject
 from llama_stack.apis.common.errors import ConflictError, ResourceNotFoundError
-from llama_stack.providers.inline.batches.reference.batches import ReferenceBatchesImpl
-from llama_stack.providers.inline.batches.reference.config import ReferenceBatchesImplConfig
-from llama_stack.providers.utils.kvstore.config import SqliteKVStoreConfig
 
 
 class TestReferenceBatchesImpl:
     """Test the reference implementation of the Batches API."""
-
-    @pytest.fixture
-    async def provider(self):
-        """Create a test provider instance with temporary database."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "test_batches.db"
-            kvstore_config = SqliteKVStoreConfig(db_path=str(db_path))
-            config = ReferenceBatchesImplConfig(kvstore=kvstore_config)
-
-            # Create kvstore and mock APIs
-            from unittest.mock import AsyncMock
-
-            from llama_stack.providers.utils.kvstore import kvstore_impl
-
-            kvstore = await kvstore_impl(config.kvstore)
-            mock_inference = AsyncMock()
-            mock_files = AsyncMock()
-            mock_models = AsyncMock()
-
-            provider = ReferenceBatchesImpl(config, mock_inference, mock_files, mock_models, kvstore)
-            await provider.initialize()
-
-            # unit tests should not require background processing
-            provider.process_batches = False
-
-            yield provider
-
-            await provider.shutdown()
-
-    @pytest.fixture
-    def sample_batch_data(self):
-        """Sample batch data for testing."""
-        return {
-            "input_file_id": "file_abc123",
-            "endpoint": "/v1/chat/completions",
-            "completion_window": "24h",
-            "metadata": {"test": "true", "priority": "high"},
-        }
 
     def _validate_batch_type(self, batch, expected_metadata=None):
         """

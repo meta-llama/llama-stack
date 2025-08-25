@@ -17,7 +17,7 @@ from llama_stack.core.request_headers import get_authenticated_user
 from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore
 
-log = get_logger(name=__name__, category="agents")
+log = get_logger(name=__name__, category="agents::meta_reference")
 
 
 class AgentSessionInfo(Session):

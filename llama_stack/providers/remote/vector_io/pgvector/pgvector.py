@@ -34,7 +34,7 @@ from llama_stack.providers.utils.memory.vector_store import (
 
 from .config import PGVectorVectorIOConfig
 
-log = get_logger(name=__name__, category="vector_io")
+log = get_logger(name=__name__, category="vector_io::pgvector")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"
