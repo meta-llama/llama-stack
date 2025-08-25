@@ -2,6 +2,21 @@
 We want to make contributing to this project as easy and transparent as
 possible.
 
+## AI Assistance Best Practices
+
+AI-assisted coding has changed the nature of contributions. AI tools can now generate large volumes of (typically) low-quality code quickly, increasing the burden on reviewers and reducing opportunities for meaningful feedback. As a result, we urge contributors to disclose _how_ they used AI assistance and follow the best practices below.
+
+Contributors could attest to:
+
+- "I've reviewed and understood all code before submitting."
+- "I've tested the changes and ensured they address only the issue at hand."
+- "I've asked an AI system to review this code."
+- "I've refined any AI-generated output to meet our standards."
+- "I've looked at generated tests and ensured they are meaningful. e.g., they avoid using fragile mocks."
+
+> [!IMPORTANT]
+> We would like to move the emphasis from whether AI was used to _how_ it was used and what human oversight was applied.
+
 ## Set up your development environment
 
 We use [uv](https://github.com/astral-sh/uv) to manage python dependencies and virtual environments.
