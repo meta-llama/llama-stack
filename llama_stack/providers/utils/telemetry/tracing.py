@@ -6,7 +6,7 @@
 
 import asyncio
 import contextvars
-import logging
+import logging  # allow-direct-logging
 import queue
 import random
 import sys

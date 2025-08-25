@@ -157,12 +157,14 @@ def get_config_class_info(config_class_path: str) -> dict[str, Any]:
         }
 
 
-def generate_provider_docs(provider_spec: Any, api_name: str) -> str:
+def generate_provider_docs(progress, provider_spec: Any, api_name: str) -> str:
     """Generate markdown documentation for a provider."""
     provider_type = provider_spec.provider_type
     config_class = provider_spec.config_class
 
     config_info = get_config_class_info(config_class)
+    if "error" in config_info:
+        progress.print(config_info["error"])
 
     md_lines = []
     md_lines.append(f"# {provider_type}")
@@ -295,7 +297,7 @@ def process_provider_registry(progress, change_tracker: ChangedPathTracker) -> N
                 filename = provider_type.replace("::", "_").replace(":", "_")
                 provider_doc_file = doc_output_dir / f"{filename}.md"
 
-                provider_docs = generate_provider_docs(provider, api_name)
+                provider_docs = generate_provider_docs(progress, provider, api_name)
 
                 provider_doc_file.write_text(provider_docs)
                 change_tracker.add_paths(provider_doc_file)

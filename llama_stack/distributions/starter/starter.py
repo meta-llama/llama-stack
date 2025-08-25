@@ -120,7 +120,7 @@ def get_distribution_template() -> DistributionTemplate:
         ],
         "agents": [BuildProvider(provider_type="inline::meta-reference")],
         "telemetry": [BuildProvider(provider_type="inline::meta-reference")],
-        "post_training": [BuildProvider(provider_type="inline::huggingface")],
+        "post_training": [BuildProvider(provider_type="inline::huggingface-cpu")],
         "eval": [BuildProvider(provider_type="inline::meta-reference")],
         "datasetio": [
             BuildProvider(provider_type="remote::huggingface"),
@@ -178,7 +178,7 @@ def get_distribution_template() -> DistributionTemplate:
     return DistributionTemplate(
         name=name,
         distro_type="self_hosted",
-        description="Quick start template for running Llama Stack with several popular providers",
+        description="Quick start template for running Llama Stack with several popular providers. This distribution is intended for CPU-only environments.",
         container_image=None,
         template_path=None,
         providers=providers,
