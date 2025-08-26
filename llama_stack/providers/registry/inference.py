@@ -42,7 +42,7 @@ def available_providers() -> list[ProviderSpec]:
             provider_type="inline::sentence-transformers",
             # CrossEncoder depends on torchao.quantization
             pip_packages=[
-                "torch torchvision torchao --index-url https://download.pytorch.org/whl/cpu",
+                "torch torchvision torchao>=0.12.0 --index-url https://download.pytorch.org/whl/cpu",
                 "sentence-transformers --no-deps",
             ],
             module="llama_stack.providers.inline.inference.sentence_transformers",
