@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 import base64
 import json
-import logging
 import struct
 import time
 import uuid
@@ -31,9 +30,15 @@ from openai.types.chat import (
 from openai.types.chat import (
     ChatCompletionContentPartTextParam as OpenAIChatCompletionContentPartTextParam,
 )
-from openai.types.chat import (
-    ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
-)
+
+try:
+    from openai.types.chat import (
+        ChatCompletionMessageFunctionToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
+except ImportError:
+    from openai.types.chat.chat_completion_message_tool_call import (
+        ChatCompletionMessageToolCall as OpenAIChatCompletionMessageFunctionToolCall,
+    )
 from openai.types.chat import (
     ChatCompletionMessageParam as OpenAIChatCompletionMessage,
 )
@@ -116,6 +121,7 @@ from llama_stack.apis.inference import (
 from llama_stack.apis.inference import (
     OpenAIChoice as OpenAIChatCompletionChoice,
 )
+from llama_stack.log import get_logger
 from llama_stack.models.llama.datatypes import (
     BuiltinTool,
     StopReason,
@@ -128,7 +134,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
     decode_assistant_message,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(name=__name__, category="providers::utils")
 
 
 class OpenAICompatCompletionChoiceDelta(BaseModel):

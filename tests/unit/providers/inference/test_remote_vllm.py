@@ -6,7 +6,7 @@
 
 import asyncio
 import json
-import logging
+import logging  # allow-direct-logging
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer

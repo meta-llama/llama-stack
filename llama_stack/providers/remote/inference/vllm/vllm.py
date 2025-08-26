@@ -85,7 +85,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 
 from .config import VLLMInferenceAdapterConfig
 
-log = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="inference::vllm")
 
 
 def build_hf_repo_model_entries():
@@ -711,25 +711,3 @@ class VLLMInferenceAdapter(Inference, ModelsProtocolPrivate):
             user=user,
         )
         return await self.client.chat.completions.create(**params)  # type: ignore
-
-    async def batch_completion(
-        self,
-        model_id: str,
-        content_batch: list[InterleavedContent],
-        sampling_params: SamplingParams | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch completion is not supported for Ollama")
-
-    async def batch_chat_completion(
-        self,
-        model_id: str,
-        messages_batch: list[list[Message]],
-        sampling_params: SamplingParams | None = None,
-        tools: list[ToolDefinition] | None = None,
-        tool_config: ToolConfig | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch chat completion is not supported for Ollama")

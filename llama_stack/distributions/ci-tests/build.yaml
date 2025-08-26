@@ -28,12 +28,13 @@ distribution_spec:
     - provider_type: inline::localfs
     safety:
     - provider_type: inline::llama-guard
+    - provider_type: inline::code-scanner
     agents:
     - provider_type: inline::meta-reference
     telemetry:
     - provider_type: inline::meta-reference
     post_training:
-    - provider_type: inline::huggingface
+    - provider_type: inline::huggingface-cpu
     eval:
     - provider_type: inline::meta-reference
     datasetio:

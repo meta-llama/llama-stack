@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'llama_stack/**'
+      - '!llama_stack/ui/**'
       - 'tests/integration/vector_io/**'
       - 'uv.lock'
       - 'pyproject.toml'
@@ -32,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Install dependencies
         uses: ./.github/actions/setup-runner
@@ -143,7 +144,7 @@ jobs:
 
       - name: Build Llama Stack
         run: |
-          uv run llama stack build --template ci-tests --image-type venv
+          uv run --no-sync llama stack build --template ci-tests --image-type venv
 
       - name: Check Storage and Memory Available Before Tests
         if: ${{ always() }}
@@ -166,7 +167,8 @@ jobs:
           ENABLE_WEAVIATE: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'true' || '' }}
           WEAVIATE_CLUSTER_URL: ${{ matrix.vector-io-provider == 'remote::weaviate' && 'localhost:8080' || '' }}
         run: |
-          uv run pytest -sv --stack-config="files=inline::localfs,inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
+          uv run --no-sync \
+            pytest -sv --stack-config="files=inline::localfs,inference=inline::sentence-transformers,vector_io=${{ matrix.vector-io-provider }}" \
             tests/integration/vector_io \
             --embedding-model inline::sentence-transformers/all-MiniLM-L6-v2
 
