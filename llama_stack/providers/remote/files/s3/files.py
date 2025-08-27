@@ -21,8 +21,10 @@ from llama_stack.apis.files import (
     OpenAIFileObject,
     OpenAIFilePurpose,
 )
+from llama_stack.core.datatypes import AccessRule
 from llama_stack.providers.utils.sqlstore.api import ColumnDefinition, ColumnType
-from llama_stack.providers.utils.sqlstore.sqlstore import SqlStore, sqlstore_impl
+from llama_stack.providers.utils.sqlstore.authorized_sqlstore import AuthorizedSqlStore
+from llama_stack.providers.utils.sqlstore.sqlstore import sqlstore_impl
 
 from .config import S3FilesImplConfig
 
@@ -89,16 +91,17 @@ class S3FilesImpl(Files):
     # TODO: implement expiration, for now a silly offset
     _SILLY_EXPIRATION_OFFSET = 100 * 365 * 24 * 60 * 60
 
-    def __init__(self, config: S3FilesImplConfig) -> None:
+    def __init__(self, config: S3FilesImplConfig, policy: list[AccessRule]) -> None:
         self._config = config
+        self.policy = policy
         self._client: boto3.client | None = None
-        self._sql_store: SqlStore | None = None
+        self._sql_store: AuthorizedSqlStore | None = None
 
     async def initialize(self) -> None:
         self._client = _create_s3_client(self._config)
         await _create_bucket_if_not_exists(self._client, self._config)
 
-        self._sql_store = sqlstore_impl(self._config.metadata_store)
+        self._sql_store = AuthorizedSqlStore(sqlstore_impl(self._config.metadata_store))
         await self._sql_store.create_table(
             "openai_files",
             {
@@ -121,7 +124,7 @@ class S3FilesImpl(Files):
         return self._client
 
     @property
-    def sql_store(self) -> SqlStore:
+    def sql_store(self) -> AuthorizedSqlStore:
         assert self._sql_store is not None, "Provider not initialized"
         return self._sql_store
 
@@ -189,6 +192,7 @@ class S3FilesImpl(Files):
 
         paginated_result = await self.sql_store.fetch_all(
             table="openai_files",
+            policy=self.policy,
             where=where_conditions if where_conditions else None,
             order_by=[("created_at", order.value)],
             cursor=("id", after) if after else None,
@@ -216,7 +220,7 @@ class S3FilesImpl(Files):
         )
 
     async def openai_retrieve_file(self, file_id: str) -> OpenAIFileObject:
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ResourceNotFoundError(file_id, "File", "files.list()")
 
@@ -230,7 +234,7 @@ class S3FilesImpl(Files):
         )
 
     async def openai_delete_file(self, file_id: str) -> OpenAIFileDeleteResponse:
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ResourceNotFoundError(file_id, "File", "files.list()")
 
@@ -248,7 +252,7 @@ class S3FilesImpl(Files):
         return OpenAIFileDeleteResponse(id=file_id, deleted=True)
 
     async def openai_retrieve_file_content(self, file_id: str) -> Response:
-        row = await self.sql_store.fetch_one("openai_files", where={"id": file_id})
+        row = await self.sql_store.fetch_one("openai_files", policy=self.policy, where={"id": file_id})
         if not row:
             raise ResourceNotFoundError(file_id, "File", "files.list()")
 
