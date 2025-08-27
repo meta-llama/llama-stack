@@ -4,6 +4,7 @@ distribution_spec:
   providers:
     inference:
     - remote::vllm
+    - remote::bedrock
     - inline::sentence-transformers
     vector_io:
     - inline::milvus
