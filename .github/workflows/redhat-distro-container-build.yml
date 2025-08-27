@@ -1,0 +1,55 @@
+name: Build and Publish Redhat Distribution Container for Multi-Arch
+
+on:
+  pull_request:
+    branches:
+      - rhoai-v*
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - rhoai-v*
+
+env:
+  REGISTRY: quay.io
+  # TODO: change the tag to whatever downstream needs
+  # IMAGE_NAME: quay.io/opendatahub/llama-stack:odh
+  # For now, use the commit SHA that triggered the workflow.
+  IMAGE_NAME: quay.io/opendatahub/llama-stack:${{ github.sha }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Container
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64] # TODO: enable other arch once all pip packages are available.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@18ce135bb5112fa8ce4ed6c17ab05699d7f3a5e0 # v3.11.0
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push'
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build image and push to quay.io only on push event
+        id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: redhat-distribution/Containerfile
+          platforms: ${{ matrix.platform }}
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ env.IMAGE_NAME }}

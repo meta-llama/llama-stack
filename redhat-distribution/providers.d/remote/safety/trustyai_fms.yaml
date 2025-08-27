@@ -1,0 +1,7 @@
+adapter:
+  adapter_type: trustyai_fms
+  pip_packages: ["llama_stack_provider_trustyai_fms==0.1.2"]
+  config_class: llama_stack_provider_trustyai_fms.config.FMSSafetyProviderConfig
+  module: llama_stack_provider_trustyai_fms
+api_dependencies: ["safety"]
+optional_api_dependencies: ["shields"]
