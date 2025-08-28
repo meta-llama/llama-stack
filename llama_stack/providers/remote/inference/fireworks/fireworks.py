@@ -65,7 +65,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import (
 from .config import FireworksImplConfig
 from .models import MODEL_ENTRIES
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::fireworks")
 
 
 class FireworksInferenceAdapter(ModelRegistryHelper, Inference, NeedsRequestProviderData):

@@ -256,9 +256,6 @@ def instantiate_llama_stack_client(session):
         provider_data=get_provider_data(),
         skip_logger_removal=True,
     )
-    if not client.initialize():
-        raise RuntimeError("Initialization failed")
-
     return client
 
 
