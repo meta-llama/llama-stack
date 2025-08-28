@@ -54,7 +54,7 @@ llama stack run your-config --port 8321
 source llama-env-py312/bin/activate
 
 # Run the interactive CLI
-cd /home/omara/langchain_llamastack
+cd /langchain_llamastack
 python langchain-llama-stack.py
 ```
 
