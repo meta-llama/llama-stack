@@ -6,9 +6,7 @@
 
 from typing import Any
 
-from openai.types.chat import ChatCompletionContentPartImageParam, ChatCompletionContentPartTextParam
-
-from llama_stack.apis.inference import ChatCompletionRequest, RerankResponse
+from llama_stack.apis.inference import ChatCompletionRequest
 from llama_stack.providers.utils.inference.litellm_openai_mixin import (
     LiteLLMOpenAIMixin,
 )
@@ -52,12 +50,3 @@ class VertexAIInferenceAdapter(LiteLLMOpenAIMixin):
         params.pop("api_key", None)
 
         return params
-
-    async def rerank(
-        self,
-        model: str,
-        query: str | ChatCompletionContentPartTextParam | ChatCompletionContentPartImageParam,
-        items: list[str | ChatCompletionContentPartTextParam | ChatCompletionContentPartImageParam],
-        max_num_results: int | None = None,
-    ) -> RerankResponse:
-        raise NotImplementedError("Reranking is not supported for Vertex AI")
