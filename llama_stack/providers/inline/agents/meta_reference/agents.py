@@ -51,7 +51,7 @@ from .config import MetaReferenceAgentsImplConfig
 from .persistence import AgentInfo
 from .responses.openai_responses import OpenAIResponsesImpl
 
-logger = get_logger(name=__name__, category="agents")
+logger = get_logger(name=__name__, category="agents::meta_reference")
 
 
 class MetaReferenceAgentsImpl(Agents):

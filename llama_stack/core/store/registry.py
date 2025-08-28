@@ -16,7 +16,7 @@ from llama_stack.log import get_logger
 from llama_stack.providers.utils.kvstore import KVStore, kvstore_impl
 from llama_stack.providers.utils.kvstore.config import KVStoreConfig, SqliteKVStoreConfig
 
-logger = get_logger(__name__, category="core")
+logger = get_logger(__name__, category="core::registry")
 
 
 class DistributionRegistry(Protocol):

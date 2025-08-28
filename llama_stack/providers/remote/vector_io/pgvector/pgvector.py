@@ -39,7 +39,7 @@ from llama_stack.providers.utils.vector_io.vector_utils import WeightedInMemoryA
 
 from .config import PGVectorVectorIOConfig
 
-log = get_logger(name=__name__, category="vector_io")
+log = get_logger(name=__name__, category="vector_io::pgvector")
 
 VERSION = "v3"
 VECTOR_DBS_PREFIX = f"vector_dbs:pgvector:{VERSION}::"

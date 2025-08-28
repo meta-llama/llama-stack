@@ -28,7 +28,7 @@ from llama_stack.providers.utils.inference.prompt_adapter import interleaved_con
 EMBEDDING_MODELS = {}
 
 
-log = get_logger(name=__name__, category="inference")
+log = get_logger(name=__name__, category="providers::utils")
 
 
 class SentenceTransformerEmbeddingMixin:

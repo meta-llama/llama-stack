@@ -225,7 +225,10 @@ def replace_env_vars(config: Any, path: str = "") -> Any:
 
         try:
             result = re.sub(pattern, get_env_var, config)
-            return _convert_string_to_proper_type(result)
+            # Only apply type conversion if substitution actually happened
+            if result != config:
+                return _convert_string_to_proper_type(result)
+            return result
         except EnvVarError as e:
             raise EnvVarError(e.var_name, e.path) from None
 

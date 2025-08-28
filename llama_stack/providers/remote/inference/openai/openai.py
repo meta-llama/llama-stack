@@ -11,7 +11,7 @@ from llama_stack.providers.utils.inference.openai_mixin import OpenAIMixin
 from .config import OpenAIConfig
 from .models import MODEL_ENTRIES
 
-logger = get_logger(name=__name__, category="inference")
+logger = get_logger(name=__name__, category="inference::openai")
 
 
 #

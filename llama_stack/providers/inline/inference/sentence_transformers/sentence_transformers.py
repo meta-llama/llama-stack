@@ -9,7 +9,6 @@ from collections.abc import AsyncGenerator
 from llama_stack.apis.inference import (
     CompletionResponse,
     InferenceProvider,
-    InterleavedContent,
     LogProbConfig,
     Message,
     ResponseFormat,
@@ -100,25 +99,3 @@ class SentenceTransformersInferenceImpl(
         tool_config: ToolConfig | None = None,
     ) -> AsyncGenerator:
         raise ValueError("Sentence transformers don't support chat completion")
-
-    async def batch_completion(
-        self,
-        model_id: str,
-        content_batch: list[InterleavedContent],
-        sampling_params: SamplingParams | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch completion is not supported for Sentence Transformers")
-
-    async def batch_chat_completion(
-        self,
-        model_id: str,
-        messages_batch: list[list[Message]],
-        sampling_params: SamplingParams | None = None,
-        tools: list[ToolDefinition] | None = None,
-        tool_config: ToolConfig | None = None,
-        response_format: ResponseFormat | None = None,
-        logprobs: LogProbConfig | None = None,
-    ):
-        raise NotImplementedError("Batch chat completion is not supported for Sentence Transformers")

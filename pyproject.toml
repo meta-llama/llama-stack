@@ -7,7 +7,7 @@ required-version = ">=0.7.0"
 
 [project]
 name = "llama_stack"
-version = "0.2.18"
+version = "0.2.19"
 authors = [{ name = "Meta Llama", email = "llama-oss@meta.com" }]
 description = "Llama Stack"
 readme = "README.md"
@@ -31,7 +31,7 @@ dependencies = [
     "huggingface-hub>=0.34.0,<1.0",
     "jinja2>=3.1.6",
     "jsonschema",
-    "llama-stack-client>=0.2.18",
+    "llama-stack-client>=0.2.19",
     "llama-api-client>=0.1.2",
     "openai>=1.99.6,<1.100.0",
     "prompt-toolkit",
@@ -56,7 +56,7 @@ dependencies = [
 ui = [
     "streamlit",
     "pandas",
-    "llama-stack-client>=0.2.18",
+    "llama-stack-client>=0.2.19",
     "streamlit-option-menu",
 ]
 
@@ -99,6 +99,7 @@ unit = [
     "together",
     "coverage",
     "chromadb>=1.0.15",
+    "moto[s3]>=5.1.10",
 ]
 # These are the core dependencies required for running integration tests. They are shared across all
 # providers. If a provider requires additional dependencies, please add them to your environment
