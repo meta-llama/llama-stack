@@ -43,7 +43,7 @@ def get_inference_providers() -> tuple[list[Provider], dict[str, list[ProviderMo
             "openai",
             [
                 ProviderModelEntry(
-                    provider_model_id="openai/gpt-4o",
+                    provider_model_id="gpt-4o",
                     model_type=ModelType.llm,
                 )
             ],
