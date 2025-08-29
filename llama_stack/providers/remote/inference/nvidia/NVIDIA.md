@@ -174,7 +174,7 @@ print(f"Embeddings: {response.embeddings}")
 
 ### Vision Language Models Example
 
-The following example shows how to run vision inference using an NVIDIA NIM.
+The following example shows how to run vision inference by using an NVIDIA NIM.
 
 ```python
 def load_image_as_base64(image_path):
