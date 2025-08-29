@@ -10,12 +10,6 @@
 - Llama Stack server running on `http://localhost:8321/`
 - Ollama or compatible model server
 
-### Required Python Packages
-```bash
-pip install llama-stack-client langchain langchain-core langchain-community
-pip install beautifulsoup4 markdownify readability-lxml requests
-```
-
 ### Environment Setup
 ```bash
 # Create and activate virtual environment
@@ -50,11 +44,9 @@ llama stack run your-config --port 8321
 
 ### How to Run
 ```bash
-# Activate environment
-source llama-env-py312/bin/activate
 
 # Run the interactive CLI
-cd /langchain_llamastack
+cd /docs/notebooks/langchain/
 python langchain-llama-stack.py
 ```
 
