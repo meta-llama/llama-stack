@@ -40,11 +40,8 @@ from llama_stack import LlamaStackClient
 client = LlamaStackClient("http://localhost:8000")
 
 # Upload a document
-with open('document.pdf', 'rb') as f:
-    file_info = await client.files.upload(
-        file=f,
-        purpose="assistants"
-    )
+with open("document.pdf", "rb") as f:
+    file_info = await client.files.upload(file=f, purpose="assistants")
 ```
 
 ### 2. Attach to Vector Store
@@ -55,8 +52,7 @@ vector_store = client.vector_stores.create(name="my_documents")
 
 # Attach the file to the vector store
 file_attach_response = await client.vector_stores.files.create(
-    vector_store_id=vector_store.id,
-    file_id=file_info.id
+    vector_store_id=vector_store.id, file_id=file_info.id
 )
 ```
 
@@ -76,7 +72,7 @@ The system automatically:
 search_results = await client.vector_stores.search(
     vector_store_id=vector_store.id,
     query="What is the main topic discussed?",
-    max_num_results=5
+    max_num_results=5,
 )
 
 # Process results
@@ -114,16 +110,14 @@ from llama_stack.apis.vector_io import VectorStoreChunkingStrategy
 
 # Custom chunking strategy
 chunking_strategy = VectorStoreChunkingStrategy(
-    type="custom",
-    max_chunk_size_tokens=1000,
-    chunk_overlap_tokens=200
+    type="custom", max_chunk_size_tokens=1000, chunk_overlap_tokens=200
 )
 
 # Attach file with custom chunking
 file_attach_response = await client.vector_stores.files.create(
     vector_store_id=vector_store.id,
     file_id=file_info.id,
-    chunking_strategy=chunking_strategy
+    chunking_strategy=chunking_strategy,
 )
 ```
 
@@ -133,9 +127,7 @@ file_attach_response = await client.vector_stores.files.create(
 
 ```python
 # List all files in a vector store
-files = await client.vector_stores.files.list(
-    vector_store_id=vector_store.id
-)
+files = await client.vector_stores.files.list(vector_store_id=vector_store.id)
 
 for file in files:
     print(f"File: {file.filename}, Status: {file.status}")
@@ -154,8 +146,7 @@ Files go through several statuses:
 ```python
 # Get chunked content from vector store
 content_response = await client.vector_stores.files.retrieve_content(
-    vector_store_id=vector_store.id,
-    file_id=file_info.id
+    vector_store_id=vector_store.id, file_id=file_info.id
 )
 
 for chunk in content_response.content:
@@ -172,7 +163,7 @@ Pure similarity search using embeddings:
 results = await client.vector_stores.search(
     vector_store_id=vector_store.id,
     query="machine learning algorithms",
-    max_num_results=10
+    max_num_results=10,
 )
 ```
 
@@ -184,11 +175,8 @@ Combine vector search with metadata filtering:
 results = await client.vector_stores.search(
     vector_store_id=vector_store.id,
     query="machine learning algorithms",
-    filters={
-        "file_type": "pdf",
-        "upload_date": "2024-01-01"
-    },
-    max_num_results=10
+    filters={"file_type": "pdf", "upload_date": "2024-01-01"},
+    max_num_results=10,
 )
 ```
 
@@ -203,8 +191,8 @@ results = await client.vector_io.query_chunks(
     params={
         "mode": "hybrid",
         "max_chunks": 10,
-        "ranker": {"type": "rrf", "impact_factor": 60.0}
-    }
+        "ranker": {"type": "rrf", "impact_factor": 60.0},
+    },
 )
 ```
 
@@ -245,25 +233,23 @@ results = await client.vector_io.query_chunks(
 async def build_rag_system():
     # Create vector store
     vector_store = client.vector_stores.create(name="knowledge_base")
-    
+
     # Upload and process documents
     documents = ["doc1.pdf", "doc2.pdf", "doc3.pdf"]
     for doc in documents:
-        with open(doc, 'rb') as f:
+        with open(doc, "rb") as f:
             file_info = await client.files.upload(file=f, purpose="assistants")
             await client.vector_stores.files.create(
-                vector_store_id=vector_store.id,
-                file_id=file_info.id
+                vector_store_id=vector_store.id, file_id=file_info.id
             )
-    
+
     return vector_store
+
 
 # Query the RAG system
 async def query_rag(vector_store_id, question):
     results = await client.vector_stores.search(
-        vector_store_id=vector_store_id,
-        query=question,
-        max_num_results=5
+        vector_store_id=vector_store_id, query=question, max_num_results=5
     )
     return results
 ```
@@ -275,22 +261,19 @@ async def query_rag(vector_store_id, question):
 async def analyze_document(vector_store_id, file_id):
     # Get document content
     content = await client.vector_stores.files.retrieve_content(
-        vector_store_id=vector_store_id,
-        file_id=file_id
+        vector_store_id=vector_store_id, file_id=file_id
     )
-    
+
     # Search for specific topics
     topics = ["introduction", "methodology", "conclusion"]
     analysis = {}
-    
+
     for topic in topics:
         results = await client.vector_stores.search(
-            vector_store_id=vector_store_id,
-            query=topic,
-            max_num_results=3
+            vector_store_id=vector_store_id, query=topic, max_num_results=3
         )
         analysis[topic] = results.data
-    
+
     return analysis
 ```
 

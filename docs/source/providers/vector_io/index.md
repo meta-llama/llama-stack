@@ -4,8 +4,6 @@
 
 This section contains documentation for all available providers for the **vector_io** API.
 
-> **Note**: For OpenAI-compatible file operations and vector store integration documentation, see [Files API and Vector Store Integration](../files/index.md).
-
 ## Providers
 
 ```{toctree}

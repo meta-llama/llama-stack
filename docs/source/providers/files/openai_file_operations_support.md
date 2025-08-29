@@ -171,20 +171,17 @@ client = LlamaStackClient("http://localhost:8000")
 vector_store = client.vector_stores.create(name="documents")
 
 # Upload and process file
-with open('document.pdf', 'rb') as f:
+with open("document.pdf", "rb") as f:
     file_info = await client.files.upload(file=f, purpose="assistants")
 
 # Attach to vector store
 await client.vector_stores.files.create(
-    vector_store_id=vector_store.id,
-    file_id=file_info.id
+    vector_store_id=vector_store.id, file_id=file_info.id
 )
 
 # Search
 results = await client.vector_stores.search(
-    vector_store_id=vector_store.id,
-    query="What is the main topic?",
-    max_num_results=5
+    vector_store_id=vector_store.id, query="What is the main topic?", max_num_results=5
 )
 ```
 
@@ -257,8 +254,7 @@ curl -X POST http://localhost:8000/v1/openai/v1/vector_stores/{store_id}/search 
 ```python
 # Check file processing status
 file_status = await client.vector_stores.files.retrieve(
-    vector_store_id=vector_store.id,
-    file_id=file_info.id
+    vector_store_id=vector_store.id, file_id=file_info.id
 )
 
 if file_status.status == "failed":

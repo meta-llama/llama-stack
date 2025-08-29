@@ -45,13 +45,11 @@ Upload a file that can be used across various endpoints.
 ```python
 import requests
 
-with open('data.jsonl', 'rb') as f:
-    files = {'file': f}
-    data = {'purpose': 'fine-tune'}
+with open("data.jsonl", "rb") as f:
+    files = {"file": f}
+    data = {"purpose": "fine-tune"}
     response = requests.post(
-        'http://localhost:8000/v1/openai/v1/files',
-        files=files,
-        data=data
+        "http://localhost:8000/v1/openai/v1/files", files=files, data=data
     )
     file_info = response.json()
 ```
@@ -91,20 +89,19 @@ Returns a list of files that belong to the user's organization.
 import requests
 
 # List all files
-response = requests.get('http://localhost:8000/v1/openai/v1/files')
+response = requests.get("http://localhost:8000/v1/openai/v1/files")
 files = response.json()
 
 # List files with pagination
 response = requests.get(
-    'http://localhost:8000/v1/openai/v1/files',
-    params={'limit': 10, 'after': 'file-abc123'}
+    "http://localhost:8000/v1/openai/v1/files",
+    params={"limit": 10, "after": "file-abc123"},
 )
 files = response.json()
 
 # Filter by purpose
 response = requests.get(
-    'http://localhost:8000/v1/openai/v1/files',
-    params={'purpose': 'fine-tune'}
+    "http://localhost:8000/v1/openai/v1/files", params={"purpose": "fine-tune"}
 )
 files = response.json()
 ```
@@ -135,7 +132,7 @@ Returns information about a specific file.
 import requests
 
 file_id = "file-abc123"
-response = requests.get(f'http://localhost:8000/v1/openai/v1/files/{file_id}')
+response = requests.get(f"http://localhost:8000/v1/openai/v1/files/{file_id}")
 file_info = response.json()
 ```
 
@@ -162,7 +159,7 @@ Delete a file.
 import requests
 
 file_id = "file-abc123"
-response = requests.delete(f'http://localhost:8000/v1/openai/v1/files/{file_id}')
+response = requests.delete(f"http://localhost:8000/v1/openai/v1/files/{file_id}")
 result = response.json()
 ```
 
@@ -185,10 +182,10 @@ Binary file content with appropriate headers:
 import requests
 
 file_id = "file-abc123"
-response = requests.get(f'http://localhost:8000/v1/openai/v1/files/{file_id}/content')
+response = requests.get(f"http://localhost:8000/v1/openai/v1/files/{file_id}/content")
 
 # Save content to file
-with open('downloaded_file.jsonl', 'wb') as f:
+with open("downloaded_file.jsonl", "wb") as f:
     f.write(response.content)
 
 # Or process content directly
@@ -255,11 +252,8 @@ from llama_stack import LlamaStackClient
 client = LlamaStackClient("http://localhost:8000")
 
 # Upload a file
-with open('data.jsonl', 'rb') as f:
-    file_info = await client.files.upload(
-        file=f,
-        purpose="fine-tune"
-    )
+with open("data.jsonl", "rb") as f:
+    file_info = await client.files.upload(file=f, purpose="fine-tune")
 
 # List files
 files = await client.files.list(purpose="fine-tune")

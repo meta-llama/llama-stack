@@ -10,7 +10,7 @@ As of release 0.2.14, Llama Stack provides comprehensive OpenAI-compatible file 
 
 > **Note**: For complete provider details and features, see [Supported Providers](../openai_file_operations_support.md#supported-providers) in the full documentation.
 
-**Inline Providers**: FAISS, SQLite-vec, Milvus  
+**Inline Providers**: FAISS, SQLite-vec, Milvus
 **Remote Providers**: ChromaDB, Qdrant, Weaviate, PGVector
 
 ## Quick Start
@@ -18,8 +18,7 @@ As of release 0.2.14, Llama Stack provides comprehensive OpenAI-compatible file 
 ### 1. Upload File
 ```python
 file_info = await client.files.upload(
-    file=open('document.pdf', 'rb'),
-    purpose="assistants"
+    file=open("document.pdf", "rb"), purpose="assistants"
 )
 ```
 
@@ -31,24 +30,21 @@ vector_store = client.vector_stores.create(name="my_docs")
 ### 3. Attach File
 ```python
 await client.vector_stores.files.create(
-    vector_store_id=vector_store.id,
-    file_id=file_info.id
+    vector_store_id=vector_store.id, file_id=file_info.id
 )
 ```
 
 ### 4. Search
 ```python
 results = await client.vector_stores.search(
-    vector_store_id=vector_store.id,
-    query="What is the main topic?",
-    max_num_results=5
+    vector_store_id=vector_store.id, query="What is the main topic?", max_num_results=5
 )
 ```
 
 ## File Processing & Search
 
-**Processing**: 800 tokens default chunk size, 400 token overlap  
-**Formats**: PDF, DOCX, TXT, Code files, etc.  
+**Processing**: 800 tokens default chunk size, 400 token overlap
+**Formats**: PDF, DOCX, TXT, Code files, etc.
 **Search**: Vector similarity, Hybrid (SQLite-vec), Filtered with metadata
 
 ## Configuration
