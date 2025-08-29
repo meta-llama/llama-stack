@@ -12,6 +12,8 @@ That means you're not limited to storing vectors in memory or in a separate serv
 - Lightweight and easy to use
 - Fully integrated with Llama Stacks
 - Uses disk-based storage for persistence, allowing for larger vector storage
+- **FileResponse Support**: Full integration with Llama Stack Files API for document processing
+- **OpenAI Vector Store Compatibility**: Support for attaching files to vector stores with automatic chunking
 
 ### Comparison to Faiss
 
@@ -122,6 +124,15 @@ response = await vector_io.query_chunks(
     params={"mode": "keyword", "max_chunks": 3, "score_threshold": 0.7},
 )
 ```
+
+## OpenAI-Compatible File Operations
+
+SQLite-vec supports OpenAI-compatible file operations, allowing you to:
+
+- **Attach files to vector stores**: Upload documents and automatically process them into searchable chunks
+- **File management**: List, retrieve, and manage files within vector stores
+- **Automatic chunking**: Files are automatically split into optimal chunks for vector search
+- **Metadata preservation**: File attributes and metadata are preserved during processing
 
 ## Supported Search Modes
 

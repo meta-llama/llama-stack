@@ -83,6 +83,23 @@ A number of "adapters" are available for some popular Inference and Vector Store
 |  Weaviate | Hosted |
 |  Qdrant  | Hosted and Single Node |
 
+**Files API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  Local Filesystem | Single Node |
+|  S3 | Hosted |
+
+**Vector Store Files API**
+|  **Provider** |  **Environments** |
+| :----: | :----: |
+|  FAISS | Single Node |
+|  SQLite-vec | Single Node |
+|  Milvus | Single Node |
+|  ChromaDB | Hosted and Single Node |
+|  Qdrant | Hosted and Single Node |
+|  Weaviate | Hosted |
+|  Postgres (PGVector) | Hosted and Single Node |
+
 **Safety API**
 |  **Provider** |  **Environments** |
 | :----: | :----: |
