@@ -33,7 +33,7 @@ dependencies = [
     "jsonschema",
     "llama-stack-client>=0.2.20",
     "llama-api-client>=0.1.2",
-    "openai>=1.99.6,<1.100.0",
+    "openai>=1.99.6",
     "prompt-toolkit",
     "python-dotenv",
     "python-jose[cryptography]",
@@ -106,7 +106,7 @@ unit = [
 # separately. If you are using "uv" to execute your tests, you can use the "--group" flag to specify extra
 # dependencies.
 test = [
-    "openai",
+    "openai>=1.100.0",  # for expires_after support
     "aiosqlite",
     "aiohttp",
     "torch>=2.6.0",
