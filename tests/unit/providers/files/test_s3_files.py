@@ -6,63 +6,11 @@
 
 from unittest.mock import patch
 
-import boto3
 import pytest
 from botocore.exceptions import ClientError
-from moto import mock_aws
 
 from llama_stack.apis.common.errors import ResourceNotFoundError
 from llama_stack.apis.files import OpenAIFilePurpose
-from llama_stack.providers.remote.files.s3 import (
-    S3FilesImplConfig,
-    get_adapter_impl,
-)
-from llama_stack.providers.utils.sqlstore.sqlstore import SqliteSqlStoreConfig
-
-
-class MockUploadFile:
-    def __init__(self, content: bytes, filename: str, content_type: str = "text/plain"):
-        self.content = content
-        self.filename = filename
-        self.content_type = content_type
-
-    async def read(self):
-        return self.content
-
-
-@pytest.fixture
-def s3_config(tmp_path):
-    db_path = tmp_path / "s3_files_metadata.db"
-
-    return S3FilesImplConfig(
-        bucket_name="test-bucket",
-        region="not-a-region",
-        auto_create_bucket=True,
-        metadata_store=SqliteSqlStoreConfig(db_path=db_path.as_posix()),
-    )
-
-
-@pytest.fixture
-def s3_client():
-    """Create a mocked S3 client for testing."""
-    # we use `with mock_aws()` because @mock_aws decorator does not support being a generator
-    with mock_aws():
-        # must yield or the mock will be reset before it is used
-        yield boto3.client("s3")
-
-
-@pytest.fixture
-async def s3_provider(s3_config, s3_client):
-    """Create an S3 files provider with mocked S3 for testing."""
-    provider = await get_adapter_impl(s3_config, {})
-    yield provider
-    await provider.shutdown()
-
-
-@pytest.fixture
-def sample_text_file():
-    content = b"Hello, this is a test file for the S3 Files API!"
-    return MockUploadFile(content, "sample_text_file.txt")
 
 
 class TestS3FilesImpl:
@@ -143,7 +91,7 @@ class TestS3FilesImpl:
             s3_client.head_object(Bucket=s3_config.bucket_name, Key=uploaded.id)
         assert exc_info.value.response["Error"]["Code"] == "404"
 
-    async def test_list_files(self, s3_provider, sample_text_file):
+    async def test_list_files(self, s3_provider, sample_text_file, sample_text_file2):
         """Test listing files after uploading some."""
         sample_text_file.filename = "test_list_files_with_content_file1"
         file1 = await s3_provider.openai_upload_file(
@@ -151,9 +99,9 @@ class TestS3FilesImpl:
             purpose=OpenAIFilePurpose.ASSISTANTS,
         )
 
-        file2_content = MockUploadFile(b"Second file content", "test_list_files_with_content_file2")
+        sample_text_file2.filename = "test_list_files_with_content_file2"
         file2 = await s3_provider.openai_upload_file(
-            file=file2_content,
+            file=sample_text_file2,
             purpose=OpenAIFilePurpose.BATCH,
         )
 
@@ -164,7 +112,7 @@ class TestS3FilesImpl:
         assert file1.id in file_ids
         assert file2.id in file_ids
 
-    async def test_list_files_with_purpose_filter(self, s3_provider, sample_text_file):
+    async def test_list_files_with_purpose_filter(self, s3_provider, sample_text_file, sample_text_file2):
         """Test listing files with purpose filter."""
         sample_text_file.filename = "test_list_files_with_purpose_filter_file1"
         file1 = await s3_provider.openai_upload_file(
@@ -172,9 +120,9 @@ class TestS3FilesImpl:
             purpose=OpenAIFilePurpose.ASSISTANTS,
         )
 
-        file2_content = MockUploadFile(b"Batch file content", "test_list_files_with_purpose_filter_file2")
+        sample_text_file2.filename = "test_list_files_with_purpose_filter_file2"
         await s3_provider.openai_upload_file(
-            file=file2_content,
+            file=sample_text_file2,
             purpose=OpenAIFilePurpose.BATCH,
         )
 
