@@ -17,7 +17,7 @@ python3.12 -m venv llama-env-py312
 source llama-env-py312/bin/activate
 
 # Install dependencies
-pip install llama-stack-client langchain langchain-core langchain-community beautifulsoup4 markdownify readability-lxml requests
+pip install llama-stack-client langchain langchain-core langchain-community beautifulsoup4 markdownify readability-lxml requests langchain_openai
 ```
 
 ---
