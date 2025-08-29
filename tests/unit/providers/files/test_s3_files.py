@@ -249,3 +249,104 @@ class TestS3FilesImpl:
 
         files_list = await s3_provider.openai_list_files()
         assert len(files_list.data) == 0, "No file metadata should remain after failed upload"
+
+    @pytest.mark.parametrize("purpose", [p for p in OpenAIFilePurpose if p != OpenAIFilePurpose.BATCH])
+    async def test_default_no_expiration(self, s3_provider, sample_text_file, purpose):
+        """Test that by default files have no expiration."""
+        sample_text_file.filename = "test_default_no_expiration"
+        uploaded = await s3_provider.openai_upload_file(
+            file=sample_text_file,
+            purpose=purpose,
+        )
+        assert uploaded.expires_at is None, "By default files should have no expiration"
+
+    async def test_default_batch_expiration(self, s3_provider, sample_text_file):
+        """Test that by default batch files have an expiration."""
+        sample_text_file.filename = "test_default_batch_an_expiration"
+        uploaded = await s3_provider.openai_upload_file(
+            file=sample_text_file,
+            purpose=OpenAIFilePurpose.BATCH,
+        )
+        assert uploaded.expires_at is not None, "By default batch files should have an expiration"
+        thirty_days_seconds = 30 * 24 * 3600
+        assert uploaded.expires_at == uploaded.created_at + thirty_days_seconds, (
+            "Batch default expiration should be 30 days"
+        )
+
+    async def test_expired_file_is_unavailable(self, s3_provider, sample_text_file, s3_config, s3_client):
+        """Uploaded file that has expired should not be listed or retrievable/deletable."""
+        with patch.object(s3_provider, "_now") as mock_now:  # control time
+            two_hours = 2 * 60 * 60
+
+            mock_now.return_value = 0
+
+            sample_text_file.filename = "test_expired_file"
+            uploaded = await s3_provider.openai_upload_file(
+                file=sample_text_file,
+                purpose=OpenAIFilePurpose.ASSISTANTS,
+                expires_after_anchor="created_at",
+                expires_after_seconds=two_hours,
+            )
+
+            mock_now.return_value = two_hours * 2  # fast forward 4 hours
+
+            listed = await s3_provider.openai_list_files()
+            assert uploaded.id not in [f.id for f in listed.data]
+
+            with pytest.raises(ResourceNotFoundError, match="not found"):
+                await s3_provider.openai_retrieve_file(uploaded.id)
+
+            with pytest.raises(ResourceNotFoundError, match="not found"):
+                await s3_provider.openai_retrieve_file_content(uploaded.id)
+
+            with pytest.raises(ResourceNotFoundError, match="not found"):
+                await s3_provider.openai_delete_file(uploaded.id)
+
+        with pytest.raises(ClientError) as exc_info:
+            s3_client.head_object(Bucket=s3_config.bucket_name, Key=uploaded.id)
+        assert exc_info.value.response["Error"]["Code"] == "404"
+
+        with pytest.raises(ResourceNotFoundError, match="not found"):
+            await s3_provider._get_file(uploaded.id, return_expired=True)
+
+    async def test_unsupported_expires_after_anchor(self, s3_provider, sample_text_file):
+        """Unsupported anchor value should raise ValueError."""
+        sample_text_file.filename = "test_unsupported_expires_after_anchor"
+
+        with pytest.raises(ValueError, match="Input should be 'created_at'"):
+            await s3_provider.openai_upload_file(
+                file=sample_text_file,
+                purpose=OpenAIFilePurpose.ASSISTANTS,
+                expires_after_anchor="now",
+                expires_after_seconds=3600,
+            )
+
+    async def test_nonint_expires_after_seconds(self, s3_provider, sample_text_file):
+        """Non-integer seconds in expires_after should raise ValueError."""
+        sample_text_file.filename = "test_nonint_expires_after_seconds"
+
+        with pytest.raises(ValueError, match="should be a valid integer"):
+            await s3_provider.openai_upload_file(
+                file=sample_text_file,
+                purpose=OpenAIFilePurpose.ASSISTANTS,
+                expires_after_anchor="created_at",
+                expires_after_seconds="many",
+            )
+
+    async def test_expires_after_seconds_out_of_bounds(self, s3_provider, sample_text_file):
+        """Seconds outside allowed range should raise ValueError."""
+        with pytest.raises(ValueError, match="greater than or equal to 3600"):
+            await s3_provider.openai_upload_file(
+                file=sample_text_file,
+                purpose=OpenAIFilePurpose.ASSISTANTS,
+                expires_after_anchor="created_at",
+                expires_after_seconds=3599,
+            )
+
+        with pytest.raises(ValueError, match="less than or equal to 2592000"):
+            await s3_provider.openai_upload_file(
+                file=sample_text_file,
+                purpose=OpenAIFilePurpose.ASSISTANTS,
+                expires_after_anchor="created_at",
+                expires_after_seconds=2592001,
+            )
