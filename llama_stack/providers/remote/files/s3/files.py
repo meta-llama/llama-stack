@@ -94,6 +94,7 @@ def _make_file_object(
     bytes: int,
     created_at: int,
     expires_at: int,
+    **kwargs: Any,  # here to ignore any additional fields, e.g. extra fields from AuthorizedSqlStore
 ) -> OpenAIFileObject:
     """
     Construct an OpenAIFileObject and normalize expires_at.
