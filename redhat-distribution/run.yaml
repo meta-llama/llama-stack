@@ -19,6 +19,19 @@ providers:
       max_tokens: ${env.VLLM_MAX_TOKENS:=4096}
       api_token: ${env.VLLM_API_TOKEN:=fake}
       tls_verify: ${env.VLLM_TLS_VERIFY:=true}
+  - provider_id: bedrock-inference
+    provider_type: remote::bedrock
+    config:
+      aws_access_key_id: ${env.AWS_ACCESS_KEY_ID:=}
+      aws_secret_access_key: ${env.AWS_SECRET_ACCESS_KEY:=}
+      aws_session_token: ${env.AWS_SESSION_TOKEN:=}
+      region_name: ${env.AWS_DEFAULT_REGION:=}
+      profile_name: ${env.AWS_PROFILE:=}
+      total_max_attempts: ${env.AWS_MAX_ATTEMPTS:=}
+      retry_mode: ${env.AWS_RETRY_MODE:=}
+      connect_timeout: ${env.AWS_CONNECT_TIMEOUT:=}
+      read_timeout: ${env.AWS_READ_TIMEOUT:=}
+      session_ttl: ${env.AWS_SESSION_TTL:=}
   - provider_id: sentence-transformers
     provider_type: inline::sentence-transformers
     config: {}

@@ -1,7 +1,0 @@
-adapter:
-  adapter_type: bedrock
-  pip_packages: ["boto3>=1.26.137", "botocore"]
-  config_class: llama_stack.providers.remote.inference.bedrock.config.BedrockConfig
-  module: llama_stack.providers.remote.inference.bedrock
-api_dependencies: ["inference"]
-optional_api_dependencies: []
