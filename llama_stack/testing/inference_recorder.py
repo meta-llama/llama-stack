@@ -9,11 +9,15 @@ from __future__ import annotations  # for forward references
 import hashlib
 import json
 import os
+import uuid
 from collections.abc import Generator
 from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal, cast
+
+from openai.pagination import AsyncPage
+from openai.types.chat import ChatCompletion, ChatCompletionChunk
 
 from llama_stack.log import get_logger
 
@@ -207,6 +211,20 @@ async def _patched_inference_method(original_method, self, client_type, endpoint
         recording = _current_storage.find_recording(request_hash)
         if recording:
             response_body = recording["response"]["body"]
+            if (
+                isinstance(response_body, list)
+                and len(response_body) > 0
+                and isinstance(response_body[0], ChatCompletionChunk)
+            ):
+                # We can't replay chatcompletions with the same id and we store them in a sqlite database with a unique constraint on the id.
+                # So we generate a new id and replace the old one.
+                newid = uuid.uuid4().hex
+                response_body[0].id = "chatcmpl-" + newid
+            elif isinstance(response_body, ChatCompletion):
+                # We can't replay chatcompletions with the same id and we store them in a sqlite database with a unique constraint on the id.
+                # So we generate a new id and replace the old one.
+                newid = uuid.uuid4().hex
+                response_body.id = "chatcmpl-" + newid
 
             if recording["response"].get("is_streaming", False):
 
@@ -238,7 +256,8 @@ async def _patched_inference_method(original_method, self, client_type, endpoint
         }
 
         # Determine if this is a streaming request based on request parameters
-        is_streaming = body.get("stream", False)
+        # or if the response is an AsyncPage (like models.list returns)
+        is_streaming = body.get("stream", False) or isinstance(response, AsyncPage)
 
         if is_streaming:
             # For streaming responses, we need to collect all chunks immediately before yielding
@@ -274,9 +293,11 @@ def patch_inference_clients():
     from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
     from openai.resources.completions import AsyncCompletions
     from openai.resources.embeddings import AsyncEmbeddings
+    from openai.resources.models import AsyncModels
 
     # Store original methods for both OpenAI and Ollama clients
     _original_methods = {
+        "models_list": AsyncModels.list,
         "chat_completions_create": AsyncChatCompletions.create,
         "completions_create": AsyncCompletions.create,
         "embeddings_create": AsyncEmbeddings.create,
@@ -288,7 +309,38 @@ def patch_inference_clients():
         "ollama_list": OllamaAsyncClient.list,
     }
 
-    # Create patched methods for OpenAI client
+    # Special handling for models.list which needs to return something directly async-iterable
+    # Direct iteration: async for m in client.models.list()
+    # Await then iterate: res = await client.models.list(); async for m in res
+    def patched_models_list(self, *args, **kwargs):
+        class AsyncIterableModelsWrapper:
+            def __init__(self, original_method, client_self, args, kwargs):
+                self.original_method = original_method
+                self.client_self = client_self
+                self.args = args
+                self.kwargs = kwargs
+                self._result = None
+
+            def __aiter__(self):
+                return self._async_iter()
+
+            async def _async_iter(self):
+                # Get the result from the patched method
+                result = await _patched_inference_method(
+                    self.original_method, self.client_self, "openai", "/v1/models", *self.args, **self.kwargs
+                )
+                async for item in result:
+                    yield item
+
+            def __await__(self):
+                # When awaited, return self (since we're already async-iterable)
+                async def _return_self():
+                    return self
+
+                return _return_self().__await__()
+
+        return AsyncIterableModelsWrapper(_original_methods["models_list"], self, args, kwargs)
+
     async def patched_chat_completions_create(self, *args, **kwargs):
         return await _patched_inference_method(
             _original_methods["chat_completions_create"], self, "openai", "/v1/chat/completions", *args, **kwargs
@@ -305,6 +357,7 @@ def patch_inference_clients():
         )
 
     # Apply OpenAI patches
+    AsyncModels.list = patched_models_list
     AsyncChatCompletions.create = patched_chat_completions_create
     AsyncCompletions.create = patched_completions_create
     AsyncEmbeddings.create = patched_embeddings_create
@@ -361,8 +414,10 @@ def unpatch_inference_clients():
     from openai.resources.chat.completions import AsyncCompletions as AsyncChatCompletions
     from openai.resources.completions import AsyncCompletions
     from openai.resources.embeddings import AsyncEmbeddings
+    from openai.resources.models import AsyncModels
 
     # Restore OpenAI client methods
+    AsyncModels.list = _original_methods["models_list"]
     AsyncChatCompletions.create = _original_methods["chat_completions_create"]
     AsyncCompletions.create = _original_methods["completions_create"]
     AsyncEmbeddings.create = _original_methods["embeddings_create"]
