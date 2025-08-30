@@ -13,20 +13,20 @@
       "__data__": {
         "models": [
           {
-            "model": "llama3.2:3b-instruct-fp16",
-            "name": "llama3.2:3b-instruct-fp16",
-            "digest": "195a8c01d91ec3cb1e0aad4624a51f2602c51fa7d96110f8ab5a20c84081804d",
-            "expires_at": "2025-08-18T13:47:44.262256-07:00",
-            "size": 7919570944,
-            "size_vram": 7919570944,
+            "model": "nomic-embed-text:latest",
+            "name": "nomic-embed-text:latest",
+            "digest": "0a109f422b47e3a30ba2b10eca18548e944e8a23073ee3f3e947efcf3c45e59f",
+            "expires_at": "2025-08-25T10:52:47.491686Z",
+            "size": 311806976,
+            "size_vram": 0,
             "details": {
               "parent_model": "",
               "format": "gguf",
-              "family": "llama",
+              "family": "nomic-bert",
               "families": [
-                "llama"
+                "nomic-bert"
               ],
-              "parameter_size": "3.2B",
+              "parameter_size": "137M",
               "quantization_level": "F16"
             }
           }
