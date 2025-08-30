@@ -1,0 +1,50 @@
+# Multi-stage container for OpenAPI schema comparison
+# This container combines openapi-diff tool with yq for advanced YAML filtering
+
+# Stage 1: Download and prepare yq binary
+# We need a custom yq binary because the base openapi-diff container doesn't include it
+FROM debian:bullseye-slim AS downloader
+
+WORKDIR /tmp
+
+RUN apt-get update && apt-get install -y curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /yq && \
+    chmod +x /yq
+
+# Stage 2: Final container with both openapi-diff and yq tools
+# Start from the official openapi-diff container which provides the core comparison functionality
+FROM openapitools/openapi-diff:2.1.2
+
+WORKDIR /workspace
+
+# Copy the yq binary from the downloader stage to the final container
+# This gives us both tools in one container: openapi-diff for comparison and yq for filtering
+COPY --from=downloader /yq /usr/bin/yq
+
+WORKDIR /workspace
+
+# Environment variable containing the YAML filter condition
+# This filter focuses the comparison on only the most critical API endpoints:
+# - paths: Only specific API paths that are most critical for compatibility:
+#   - /v1/inference: Core inference endpoints
+#   - /v1/vector-io: Vector input/output operations
+#   - /v1/vector-dbs: Vector database operations
+#   - /v1/openai/v1/responses: OpenAI-compatible response formats
+#   - /v1/openai/v1/chat: OpenAI-compatible chat endpoints
+# anything else (openapi, info, servers, is just there to make openapi-diff happy)
+ENV FILTER_CONDITION='{ "openapi": .openapi, "info": .info, "servers": .servers, "tags": .tags, "x-tagGroups": .["x-tagGroups"], "components": .components, "paths": (.paths | with_entries(select(.key | test("^/(v1/inference|v1/vector-io|v1/vector-dbs|v1/openai/v1/responses|v1/openai/v1/chat)")))) }'
+
+# Custom entrypoint that combines yq filtering with openapi-diff comparison
+# This allows us to compare only the filtered, relevant parts of the API spec
+ENTRYPOINT ["/bin/sh", "-c", "\
+  echo '=== Running yq filter ===' && \
+  # Filter the base branch OpenAPI spec to only relevant endpoints and save to base.yaml
+  yq eval \"$FILTER_CONDITION\" /workspace/base/docs/_static/llama-stack-spec.yaml > /workspace/base.yaml && \
+  # Filter the current revision OpenAPI spec to only relevant endpoints and save to revision.yaml
+  yq eval \"$FILTER_CONDITION\" /workspace/docs/_static/llama-stack-spec.yaml > /workspace/revision.yaml && \
+  echo '=== Running original openapi-diff entrypoint ===' && \
+  # Run the OpenAPI diff tool on the filtered specs
+  exec java -jar /app/openapi-diff.jar /workspace/base.yaml /workspace/revision.yaml --fail-on-incompatible \
+"]
