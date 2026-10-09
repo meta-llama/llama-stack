@@ -111,7 +111,6 @@ CATEGORIES = [
     "connectors",
     "messages",
     "interactions",
-    "systemone",
 ]
 UNCATEGORIZED = "uncategorized"
 

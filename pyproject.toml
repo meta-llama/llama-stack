@@ -187,6 +187,7 @@ dev = [
     "torchvision>=0.29.0",
     "transformers",
     "trl>=1.13.0",
+    "typesafe-sdk>=0.7.2",
     "unstructured-client>=0.46.2",
     "weaviate-client>=4.23.1",
     # Type stubs and optional runtime dependencies for complete mypy coverage

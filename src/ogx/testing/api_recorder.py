@@ -1217,6 +1217,106 @@ def _patched_httpx_async_stream(original_stream, self, method, url, **kwargs):
     raise AssertionError(f"Invalid mode: {_current_mode}")
 
 
+# The TypeSafe SDK stamps every request with this header (typesafe_sdk._core.transport), so it
+# is the reliable way to tell a TypeSafe .request() apart from the .post/.get/.stream delegates
+# that also funnel through .request() in record mode. Matching the header -- rather than the
+# host -- means any base_url (default, env, or provider-configured) is handled correctly.
+_TYPESAFE_SDK_HEADER = "x-typesafe-sdk"
+
+
+def _has_typesafe_sdk_header(headers: Any) -> bool:
+    if not headers:
+        return False
+    if isinstance(headers, dict):
+        # Plain dicts have a case-sensitive .get, so scan keys case-insensitively.
+        return any(str(key).lower() == _TYPESAFE_SDK_HEADER for key in headers)
+    # httpx2.Headers.get is case-insensitive.
+    get = getattr(headers, "get", None)
+    return bool(callable(get) and get(_TYPESAFE_SDK_HEADER) is not None)
+
+
+def _is_typesafe_request(headers: Any) -> bool:
+    """Whether an httpx2 .request() call is one the TypeSafe SDK issued (record/replay it).
+
+    The SDK always sends via the generic .request() with a JSON bytes body, bypassing the
+    .post/.get/.stream patches, and stamps every request with X-TypeSafe-SDK. The header alone
+    identifies it, independent of the configured base_url.
+    """
+    return _has_typesafe_sdk_header(headers)
+
+
+def _typesafe_request_hash(url: str, method: str, payload: Any) -> str:
+    request_hash = normalize_http_request(url, method, payload)
+    # Model discovery is shared (no test_id) so the session-setup lookup and any test-scoped
+    # lookup resolve the same recording; judgment calls stay test-scoped. normalize_http_request
+    # bakes in the current test_id, so recompute it for the models endpoint.
+    if urlparse(url).path.rstrip("/") == "/v1/models" and get_test_context() is not None:
+        normalized = {
+            "test_id": None,
+            "url": url,
+            "method": method.upper(),
+            "payload": _normalize_body_for_hash(payload),
+        }
+        request_hash = hashlib.sha256(json.dumps(normalized, sort_keys=True).encode()).hexdigest()
+    return request_hash
+
+
+async def _patched_httpx_async_request(original_request, self, method, url, **kwargs):
+    """Patched version of httpx2.AsyncClient.request for recording/replay of the TypeSafe SDK.
+
+    The SDK sends via the generic .request() with the body as JSON bytes in ``content``
+    (typesafe_sdk._core.transport.send_async), not .post/.get/.stream, so this is the only
+    seam that reaches it. Non-TypeSafe .request() calls (including the .post/.get/.stream
+    delegates, which land here in record mode) pass straight through.
+    """
+    global _current_mode, _current_storage
+
+    url_str = str(url)
+    headers = kwargs.get("headers")
+    if not _is_typesafe_request(headers) or _current_mode == APIRecordingMode.LIVE or _current_storage is None:
+        return await original_request(self, method, url, **kwargs)
+
+    content = kwargs.get("content")
+    if content:
+        payload: Any = json.loads(content) if isinstance(content, str | bytes | bytearray) else content
+    else:
+        payload = kwargs.get("json") or {}
+
+    request_hash = _typesafe_request_hash(url_str, method, payload)
+
+    if _current_mode in (APIRecordingMode.REPLAY, APIRecordingMode.RECORD_IF_MISSING):
+        recording = _current_storage.find_recording(request_hash)
+        if recording:
+            import httpx2 as _httpx
+
+            body_bytes = json.dumps(recording["response"]["body"]).encode()
+            mock_response = _httpx.Response(
+                status_code=recording["response"].get("status", 200),
+                headers={"content-type": "application/json", "x-typesafe-request-id": "recording"},
+                content=body_bytes,
+                request=_httpx.Request(method, url_str),
+            )
+            return mock_response
+        elif _current_mode == APIRecordingMode.REPLAY:
+            raise RuntimeError(
+                f"Recording not found for TypeSafe request | Method: {method} URL: {url_str}\n"
+                f"\n"
+                f"Run './scripts/integration-tests.sh --inference-mode record-if-missing' with a "
+                f"TYPESAFE_API_KEY to generate."
+            )
+
+    if _current_mode in (APIRecordingMode.RECORD, APIRecordingMode.RECORD_IF_MISSING):
+        response = await original_request(self, method, url, **kwargs)
+        _current_storage.store_recording(
+            request_hash,
+            {"test_id": get_test_context(), "url": url_str, "method": method, "payload": payload},
+            {"status": response.status_code, "body": response.json(), "is_streaming": False},
+        )
+        return response
+
+    raise AssertionError(f"Invalid mode: {_current_mode}")
+
+
 _cached_provider_metadata: dict[str, dict[str, str]] = {}
 
 
@@ -1672,6 +1772,7 @@ def patch_inference_clients():
         "httpx_async_post": httpx2.AsyncClient.post,
         "httpx_async_stream": httpx2.AsyncClient.stream,
         "httpx_async_get": httpx2.AsyncClient.get,
+        "httpx_async_request": httpx2.AsyncClient.request,
     }
 
     # Google genai patching (optional - only if google-genai is installed)
@@ -1757,10 +1858,15 @@ def patch_inference_clients():
     async def patched_httpx_async_get(self, url, **kwargs):
         return await _patched_httpx_async_get(_original_methods["httpx_async_get"], self, url, **kwargs)
 
+    # Create patched method for httpx2 AsyncClient.request (TypeSafe SDK)
+    async def patched_httpx_async_request(self, method, url, **kwargs):
+        return await _patched_httpx_async_request(_original_methods["httpx_async_request"], self, method, url, **kwargs)
+
     # Apply httpx2 patches
     httpx2.AsyncClient.post = patched_httpx_async_post
     httpx2.AsyncClient.stream = patched_httpx_async_stream
     httpx2.AsyncClient.get = patched_httpx_async_get
+    httpx2.AsyncClient.request = patched_httpx_async_request
 
     # Apply google-genai patches (if available)
     if "genai_generate_content" in _original_methods:
@@ -1829,6 +1935,7 @@ def unpatch_inference_clients():
     httpx2.AsyncClient.post = _original_methods["httpx_async_post"]
     httpx2.AsyncClient.stream = _original_methods["httpx_async_stream"]
     httpx2.AsyncClient.get = _original_methods["httpx_async_get"]
+    httpx2.AsyncClient.request = _original_methods["httpx_async_request"]
 
     # Restore google-genai methods (if they were patched)
     if "genai_generate_content" in _original_methods:

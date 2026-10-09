@@ -291,6 +291,17 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "typesafe": Setup(
+        name="typesafe",
+        description=(
+            "TypeSafe SystemOne (judgment) models, replayed from recordings. Set "
+            "TYPESAFE_API_KEY to record against the live API; without it the recorded "
+            "responses are replayed."
+        ),
+        defaults={
+            "judge_model": "typesafe/jev-latest",
+        },
+    ),
 }
 
 

@@ -283,7 +283,7 @@ providers:
   - provider_id: typesafe
     provider_type: remote::typesafe
     config:
-      base_url: https://api.typesafe.ai
+      base_url: ${env.TYPESAFE_BASE_URL:=https://api.typesafe.ai}
       api_key: ${env.TYPESAFE_API_KEY:=}
 storage:
   backends:

@@ -57,8 +57,6 @@ async def register_object_with_provider(obj: RoutableObject, p: Any) -> Routable
         return await p.register_vector_store(obj)
     elif api == Api.tool_runtime:
         return await p.register_toolgroup(obj)
-    elif api == Api.systemone:
-        return await p.register_model(obj)
     else:
         raise ValueError(f"Unknown API {api} for registering object with provider")
 
@@ -80,8 +78,6 @@ async def unregister_object_from_provider(obj: RoutableObject, p: Any) -> None:
         return await p.unregister_model(obj.identifier)
     elif api == Api.tool_runtime:
         return await p.unregister_toolgroup(obj.identifier)
-    elif api == Api.systemone:
-        return await p.unregister_model(obj.identifier)
     else:
         raise ValueError(f"Unregister not supported for {api}")
 
@@ -123,8 +119,6 @@ class CommonRoutingTableImpl(RoutingTable):
                 p.vector_store_store = self
             elif api == Api.tool_runtime:
                 p.tool_store = self
-            elif api == Api.systemone:
-                p.model_store = self
 
     async def shutdown(self) -> None:
         for p in self.impls_by_provider_id.values():

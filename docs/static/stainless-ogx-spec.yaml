@@ -1272,6 +1272,14 @@ paths:
           - type: string
           - type: 'null'
           title: X-Goog-Api-Client
+      - name: x-typesafe-sdk
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Typesafe-Sdk
       x-codeSamples:
       - lang: OpenAI
         label: OpenAI
@@ -3693,6 +3701,38 @@ paths:
 
           messages = client.chat.completions.messages.list(completion_id="completion_id")
           print(messages.data)
+  /v1/systemone:
+    post:
+      responses:
+        '200':
+          description: SystemOneResponse with one answer per question.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemOneResponse'
+        '400':
+          description: Bad Request
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          description: Too Many Requests
+          $ref: '#/components/responses/TooManyRequests429'
+        '500':
+          description: Internal Server Error
+          $ref: '#/components/responses/InternalServerError500'
+        default:
+          description: Default Response
+          $ref: '#/components/responses/DefaultError'
+      tags:
+      - Inference
+      summary: Answer SystemOne judgment questions about a piece of state.
+      description: Run a decision model's questions against `state` and return calibrated answers.
+      operationId: systemone_v1_systemone_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SystemOneRequest'
+        required: true
   /v1alpha/file-processors/process:
     post:
       responses:
@@ -4625,38 +4665,6 @@ paths:
         schema:
           type: string
           title: Version
-  /v1/systemone:
-    post:
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SystemOneResponse'
-        '400':
-          description: Bad Request
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          description: Too Many Requests
-          $ref: '#/components/responses/TooManyRequests429'
-        '500':
-          description: Internal Server Error
-          $ref: '#/components/responses/InternalServerError500'
-        default:
-          description: Default Response
-          $ref: '#/components/responses/DefaultError'
-      tags:
-      - SystemOne
-      summary: Answer judgment questions about a piece of state.
-      description: Run a decision model's questions against `state` and return calibrated answers.
-      operationId: judge_v1_systemone_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SystemOneRequest'
-        required: true
 components:
   schemas:
     Error:
@@ -14235,7 +14243,7 @@ components:
           minimum: 0.0
           title: Confidence
           description: Overall confidence in `choice`.
-      additionalProperties: true
+      additionalProperties: false
       type: object
       required:
       - choice
@@ -14258,18 +14266,27 @@ components:
           - items: {}
             type: array
             title: array
+          - type: 'null'
           title: string | object | array
           description: The question to answer about `state`.
         criteria:
           additionalProperties:
-            type: string
+            anyOf:
+            - type: string
+            - additionalProperties: true
+              type: object
+            - items: {}
+              type: array
+              title: array
+            - type: 'null'
+            title: string | object | array
           type: object
+          maxProperties: 255
           title: Criteria
-          description: Option name -> description, up to 255 options.
-      additionalProperties: true
+          description: Option name -> description (string, object, array, or null). Up to 255 options.
+      additionalProperties: false
       type: object
       required:
-      - instructions
       - criteria
       title: SystemOneChoiceQuestion
       description: A question answered by picking one of up to 255 named options.
@@ -14286,12 +14303,40 @@ components:
           minimum: 0.0
           title: Noul
           description: Calibrated probability that the answer is true.
-      additionalProperties: true
+      additionalProperties: false
       type: object
       required:
       - noul
       title: SystemOneNoulAnswer
       description: Answer to a `noul` question.
+    SystemOneNoulCriteria:
+      properties:
+        'true':
+          anyOf:
+          - type: string
+          - additionalProperties: true
+            type: object
+          - items: {}
+            type: array
+            title: array
+          - type: 'null'
+          title: string | object | array
+          description: What a yes (value near 1) means.
+        'false':
+          anyOf:
+          - type: string
+          - additionalProperties: true
+            type: object
+          - items: {}
+            type: array
+            title: array
+          - type: 'null'
+          title: string | object | array
+          description: What a no (value near 0) means.
+      additionalProperties: false
+      type: object
+      title: SystemOneNoulCriteria
+      description: Optional descriptions of the yes and no outcomes of a `noul` question.
     SystemOneNoulQuestion:
       properties:
         type:
@@ -14307,19 +14352,18 @@ components:
           - items: {}
             type: array
             title: array
+          - type: 'null'
           title: string | object | array
           description: The question to answer about `state`.
         criteria:
           anyOf:
-          - additionalProperties:
-              type: string
-            type: object
+          - $ref: '#/components/schemas/SystemOneNoulCriteria'
+            title: SystemOneNoulCriteria
           - type: 'null'
-          description: Optional labels for the true/false outcomes.
-      additionalProperties: true
+          description: Optional descriptions of the true/false outcomes.
+          title: SystemOneNoulCriteria
+      additionalProperties: false
       type: object
-      required:
-      - instructions
       title: SystemOneNoulQuestion
       description: A yes/no question, answered with a calibrated probability.
     SystemOneRequest:
@@ -14355,9 +14399,10 @@ components:
                 score: '#/components/schemas/SystemOneScoreQuestion'
             title: SystemOneNoulQuestion | SystemOneChoiceQuestion | SystemOneScoreQuestion
           type: object
+          minProperties: 1
           title: Questions
           description: Questions to answer about `state`, keyed by caller-chosen name.
-      additionalProperties: true
+      additionalProperties: false
       type: object
       required:
       - model
@@ -14393,7 +14438,7 @@ components:
         usage:
           $ref: '#/components/schemas/SystemOneUsage'
           description: Token usage for this call.
-      additionalProperties: true
+      additionalProperties: false
       type: object
       required:
       - model
@@ -14410,30 +14455,39 @@ components:
         score:
           type: number
           title: Score
-          description: Weighted score across the rubric's ordered levels.
+          description: Probability-weighted score across the rubric's ordered levels; can land between levels.
         legend:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Human-readable description of what `score` means.
+          additionalProperties:
+            anyOf:
+            - type: string
+            - additionalProperties: true
+              type: object
+            - items: {}
+              type: array
+              title: array
+            title: string | object | array
+          type: object
+          title: Legend
+          description: Each level (string key) mapped back to its description.
         probabilities:
-          anyOf:
-          - additionalProperties:
-              type: number
-            type: object
-          - type: 'null'
+          additionalProperties:
+            type: number
+          type: object
+          title: Probabilities
           description: Probability assigned to each rubric level.
         confidence:
-          anyOf:
-          - type: number
-            maximum: 1.0
-            minimum: 0.0
-          - type: 'null'
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
           description: Overall confidence in `score`.
-      additionalProperties: true
+      additionalProperties: false
       type: object
       required:
       - score
+      - legend
+      - probabilities
+      - confidence
       title: SystemOneScoreAnswer
       description: Answer to a `score` question.
     SystemOneScoreQuestion:
@@ -14451,21 +14505,30 @@ components:
           - items: {}
             type: array
             title: array
+          - type: 'null'
           title: string | object | array
           description: The question to answer about `state`.
         criteria:
-          additionalProperties:
-            type: string
-          type: object
+          items:
+            anyOf:
+            - type: string
+            - additionalProperties: true
+              type: object
+            - items: {}
+              type: array
+              title: array
+            title: string | object | array
+          type: array
+          maxItems: 10
+          minItems: 1
           title: Criteria
-          description: Ordered rubric level name -> description (2-10 levels).
-      additionalProperties: true
+          description: Ordered list of level descriptions, one per score from zero.
+      additionalProperties: false
       type: object
       required:
-      - instructions
       - criteria
       title: SystemOneScoreQuestion
-      description: A question answered against an ordered rubric of 2-10 levels.
+      description: A question answered against an ordered rubric of 1-10 levels.
     SystemOneUsage:
       properties:
         input_tokens:
@@ -14480,7 +14543,7 @@ components:
           title: Output Tokens
           description: Number of tokens used to produce the answers.
           default: 0
-      additionalProperties: true
+      additionalProperties: false
       type: object
       title: SystemOneUsage
       description: Token usage for a SystemOne judgment call.
@@ -15417,6 +15480,45 @@ components:
       - models
       title: GoogleListModelsResponse
       type: object
+    TypeSafeModelInfo:
+      description: |-
+        A model in TypeSafe's ``GET /v1/models`` response shape.
+
+        :name: Model name or alias accepted by the ``model`` field of a SystemOne request
+        :description: Human-readable description of the model and its capabilities
+        :release_date: Model release date, formatted as YYYY-MM-DD
+      properties:
+        name:
+          description: Model name or alias accepted by a SystemOne request's model field.
+          title: Name
+          type: string
+        description:
+          default: ''
+          description: Human-readable description of the model and its capabilities.
+          title: Description
+          type: string
+        release_date:
+          default: ''
+          description: Model release date, formatted as YYYY-MM-DD.
+          title: Release Date
+          type: string
+      required:
+      - name
+      title: TypeSafeModelInfo
+      type: object
+    TypeSafeListModelsResponse:
+      description: Response containing a list of TypeSafe model objects (SystemOne judgment models).
+      properties:
+        models:
+          description: List of SystemOne (judgment) model objects.
+          items:
+            $ref: '#/components/schemas/TypeSafeModelInfo'
+          title: Models
+          type: array
+      required:
+      - models
+      title: TypeSafeListModelsResponse
+      type: object
     GetModelRequest:
       description: Request model for getting a model by ID.
       properties:
@@ -15463,8 +15565,6 @@ components:
       - skills
       - inspect
       - admin
-      - systemone
-      - systemone_models
       title: Api
       type: string
     ProviderSpec:

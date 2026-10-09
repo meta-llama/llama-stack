@@ -10,11 +10,11 @@ from .config import TypeSafeConfig
 
 
 async def get_adapter_impl(config: TypeSafeConfig, _deps: Any = None):
-    from .typesafe import TypeSafeSystemOneAdapter
+    from .typesafe import TypeSafeInferenceAdapter
 
     if not isinstance(config, TypeSafeConfig):
         raise RuntimeError(f"Unexpected config type: {type(config)}")
-    adapter = TypeSafeSystemOneAdapter(config=config)
+    adapter = TypeSafeInferenceAdapter(config=config)
     await adapter.initialize()
     return adapter
 
