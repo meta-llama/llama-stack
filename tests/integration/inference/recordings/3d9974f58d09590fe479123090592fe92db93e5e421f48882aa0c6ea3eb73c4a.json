@@ -1,7 +1,7 @@
 {
-  "test_id": "tests/integration/inference/test_systemone.py::test_systemone_model_is_listed",
+  "test_id": "tests/integration/inference/test_systemone.py::test_systemone_model_is_listed[judge=typesafe/jev-latest]",
   "request": {
-    "test_id": "tests/integration/inference/test_systemone.py::test_systemone_model_is_listed",
+    "test_id": "tests/integration/inference/test_systemone.py::test_systemone_model_is_listed[judge=typesafe/jev-latest]",
     "url": "https://api.typesafe.ai/v1/models",
     "method": "GET",
     "payload": {}

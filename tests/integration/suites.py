@@ -338,6 +338,14 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=["tests/integration/inference/test_openai_embeddings.py"],
         default_setup="text-embeddings-inference",
     ),
+    # TypeSafe SystemOne (judgment) backend. The typesafe setup only provides a
+    # judge model (no chat/completion or embedding model), so this suite is scoped
+    # to the SystemOne tests only, mirroring text-embeddings-inference.
+    "systemone": Suite(
+        name="systemone",
+        roots=["tests/integration/inference/test_systemone.py"],
+        default_setup="typesafe",
+    ),
     "responses": Suite(
         name="responses",
         roots=["tests/integration/responses"],
