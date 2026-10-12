@@ -12,7 +12,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Download llama.cpp b11147 (CPU x64) and models
+    - name: Download llama.cpp b11429 (CPU x64) and models
       shell: bash
       run: |
         set -euo pipefail
@@ -32,22 +32,22 @@ runs:
         # tee "$dest" | sha256sum`) to fold that read into the write; a possible
         # future optimization, skipped for now since the read is a page-cache hit.
 
-        # Pinned sha256: GitHub release asset digest (b11147) and HuggingFace LFS oid
+        # Pinned sha256: GitHub release asset digest (b11429) and HuggingFace LFS oid
         # (= content sha256) for the three models.
-        LLAMA_TARBALL_SHA=e595f4cf393b3c9846a19bea6cf4bc24ae97982aecd7042de92de99c0ed320bd
+        LLAMA_TARBALL_SHA=f6d25dde8f51133143d1453da4fd5f73b145127177612a283bf7995957af3392
         QWEN_SHA=361cc68159042c36ebff7715dc5a2e4612153e88f3e9c9c234820849d6dc9e1d
         NOMIC_SHA=3e24342164b3d94991ba9692fdc0dd08e3fd7362e0aacc396a9a5c54a544c3b7
         RERANKER_SHA=a43c7c9b11a4c1517e5bf95151960e1621d1b72f7a493364b01e386cf1aaa1d3
 
-        # 1. llama.cpp CPU binary, pinned to build b11147. bXXXX builds are published
+        # 1. llama.cpp CPU binary, pinned to build b11429. bXXXX builds are published
         #    as GitHub prereleases; pinning to one build keeps CI reproducible. Verify
         #    the tarball hash BEFORE extracting so we never unpack unauthenticated bytes.
         TARBALL="$WORKDIR/llama.tar.gz"
         [ -f "$TARBALL" ] || curl -fsSL --retry 3 -o "$TARBALL" \
-          "https://github.com/ggml-org/llama.cpp/releases/download/b11147/llama-b11147-bin-ubuntu-x64.tar.gz"
+          "https://github.com/ggml-org/llama.cpp/releases/download/b11429/llama-b11429-bin-ubuntu-x64.tar.gz"
         verify "$TARBALL" "$LLAMA_TARBALL_SHA"
-        [ -x "$WORKDIR/llama-b11147/llama-server" ] || tar xzf "$TARBALL" -C "$WORKDIR"
-        "$WORKDIR/llama-b11147/llama-server" --version
+        [ -x "$WORKDIR/llama-b11429/llama-server" ] || tar xzf "$TARBALL" -C "$WORKDIR"
+        "$WORKDIR/llama-b11429/llama-server" --version
 
         # 2. Q8_0 weights for the text and embedding models. Download if missing, but
         #    always re-verify the on-disk file (catches a corrupt cached copy).
@@ -93,7 +93,7 @@ runs:
 
         # setsid + nohup fully detach the router from this step's process group so it
         # keeps running after the step's shell exits (unlike a plain `&`).
-        setsid nohup "$WORKDIR/llama-b11147/llama-server" \
+        setsid nohup "$WORKDIR/llama-b11429/llama-server" \
           --models-preset "$WORKDIR/preset.ini" \
           --host 127.0.0.1 \
           --port "$PORT" \
