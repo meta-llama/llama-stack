@@ -7,6 +7,8 @@
 
 from ogx.core.datatypes import Provider
 from ogx.distributions.template import DistributionTemplate
+from ogx.providers.remote.inference.deepseek.config import DEFAULT_ANTHROPIC_BASE_URL as DEEPSEEK_ANTHROPIC_BASE_URL
+from ogx.providers.remote.inference.deepseek.config import DEFAULT_BASE_URL as DEEPSEEK_BASE_URL
 from ogx.providers.remote.inference.llama_cpp_server.config import LlamaCppServerConfig
 from ogx.providers.remote.inference.text_embeddings_inference.config import TextEmbeddingsInferenceConfig
 from ogx.providers.remote.inference.watsonx.config import WatsonXConfig
@@ -122,6 +124,19 @@ def get_distribution_template() -> DistributionTemplate:
         config=TextEmbeddingsInferenceConfig.sample_run_config(),
     )
 
+    # DeepSeek is not in the starter distribution; it is added here, env-gated on
+    # DEEPSEEK_API_KEY, so the messages suite can run against its native /v1/messages
+    # endpoint, which lives at anthropic_base_url rather than under base_url.
+    deepseek_provider = Provider(
+        provider_id="${env.DEEPSEEK_API_KEY:+deepseek}",
+        provider_type="remote::deepseek",
+        config={
+            "base_url": f"${{env.DEEPSEEK_BASE_URL:={DEEPSEEK_BASE_URL}}}",
+            "anthropic_base_url": f"${{env.DEEPSEEK_ANTHROPIC_BASE_URL:={DEEPSEEK_ANTHROPIC_BASE_URL}}}",
+            "api_key": "${env.DEEPSEEK_API_KEY:=}",
+        },
+    )
+
     for run_config in template.run_configs.values():
         if run_config.default_connectors is None:
             run_config.default_connectors = []
@@ -142,6 +157,9 @@ def get_distribution_template() -> DistributionTemplate:
 
         # Add the CI-only text-embeddings-inference inference provider
         run_config.provider_overrides["inference"].append(text_embeddings_inference_provider)
+
+        # Add the env-gated DeepSeek inference provider
+        run_config.provider_overrides["inference"].append(deepseek_provider)
 
         # Add conditional auth config
         run_config.auth_config = auth_config
