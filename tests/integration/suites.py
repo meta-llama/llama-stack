@@ -107,6 +107,16 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "ollama/nomic-embed-text:v1.5",
         },
     ),
+    "ollama-systemone": Setup(
+        name="ollama",
+        description="Local Ollama provider with a SystemOne decision model (tev1:0.8b)",
+        env={
+            "OLLAMA_URL": "http://0.0.0.0:11434/v1",
+        },
+        defaults={
+            "judge_model": "ollama/tev1:0.8b",
+        },
+    ),
     "bedrock": Setup(
         name="bedrock",
         description=(

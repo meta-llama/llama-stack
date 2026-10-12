@@ -41,6 +41,10 @@ runs:
         if [ "$SUITE" == "vision" ]; then
           pull_model "qwen3-vl:2b"
           pull_model "nomic-embed-text:v1.5"
+        elif [ "$SUITE" == "systemone" ]; then
+          # Decision model for the SystemOne judgment suite (text-only, ~0.8 GB;
+          # requires Ollama >= 0.35.0).
+          pull_model "tev1:0.8b"
         elif [ "$SETUP" == "ollama-reasoning" ]; then
           pull_model "deepseek-r1:1.5b"
           pull_model "nomic-embed-text:v1.5"
