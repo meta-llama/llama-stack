@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 import tiktoken
 from pydantic import TypeAdapter
 
+from ogx.core.conversations.item_sync import SyncableConversations
 from ogx.core.conversations.validation import CONVERSATION_ID_PATTERN
 from ogx.core.datatypes import VectorStoresConfig
 from ogx.core.task import (
@@ -42,7 +43,6 @@ from ogx_api import (
     ConflictError,
     Connectors,
     ConversationItem,
-    Conversations,
     CreateResponseRequest,
     Files,
     GetPromptRequest,
@@ -133,7 +133,7 @@ class OpenAIResponsesImpl:
         responses_store: ResponsesStore,
         vector_io_api: VectorIO,  # VectorIO
         moderation_endpoint: str | None,
-        conversations_api: Conversations,
+        conversations_api: SyncableConversations,
         prompts_api: Prompts,
         files_api: Files,
         connectors_api: Connectors,
@@ -1817,4 +1817,4 @@ class OpenAIResponsesImpl:
 
         adapter = TypeAdapter(list[ConversationItem])
         validated_items = adapter.validate_python(conversation_items)
-        await self.conversations_api.add_items(conversation_id, AddItemsRequest(items=validated_items))
+        await self.conversations_api.sync_items(conversation_id, AddItemsRequest(items=validated_items))
