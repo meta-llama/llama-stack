@@ -38,7 +38,7 @@ Options:
     --suite STRING           Test suite to run (default: 'base')
     --setup STRING           Test setup (models, env) to use (e.g., 'ollama', 'ollama-vision', 'gpt', 'vllm')
     --text-model STRING      Override text model (e.g. 'ollama/llama3.2:3b', 'openai/gpt-4o')
-    --vision-model STRING    Override vision model (e.g. 'ollama/llama3.2-vision:11b')
+    --vision-model STRING    Override vision model (e.g. 'ollama/qwen3-vl:2b')
     --rerank-model STRING    Override rerank model (e.g. 'vllm/Qwen/Qwen3-Reranker-0.6B')
     --inference-mode STRING  Inference mode: replay, record-if-missing or record (default: replay)
     --subdirs STRING         Comma-separated list of test subdirectories to run (overrides suite)

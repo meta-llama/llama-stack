@@ -1,11 +1,11 @@
 {
-  "test_id": "tests/integration/inference/test_vision_inference.py::test_image_chat_completion_base64[vis=ollama/llama3.2-vision:11b]",
+  "test_id": "tests/integration/inference/test_vision_inference.py::test_image_chat_completion_base64[vis=ollama/qwen3-vl:2b]",
   "request": {
     "method": "POST",
     "url": "http://0.0.0.0:11434/v1/v1/chat/completions",
     "headers": {},
     "body": {
-      "model": "llama3.2-vision:11b",
+      "model": "qwen3-vl:2b",
       "messages": [
         {
           "role": "user",
@@ -26,43 +26,56 @@
       "stream": false
     },
     "endpoint": "/v1/chat/completions",
-    "model": "llama3.2-vision:11b"
+    "model": "qwen3-vl:2b",
+    "provider_metadata": {
+      "openai_sdk_version": "3.17.0"
+    }
   },
   "response": {
     "body": {
       "__type__": "openai.types.chat.chat_completion.ChatCompletion",
       "__data__": {
-        "id": "rec-91e1f4c91ab3",
+        "id": "rec-df2f46e984f8",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "The image depicts a small puppy of an undefined dog breed, with a short, light tan coat, and a wide, open mouth that allows its tongue to be seen protruding. The puppy appears to be in a seated position, with its front paws tucked in front and its rear paws pushed back. The puppy's head is tilted slightly to the left, with its mouth open as if it is laughing or barking.\n\nThere is no background in the image aside from some grass, which suggests that the puppy is sitting in a field or grassy area. The overall mood and atmosphere of the image is one of playfulness and happiness, as the puppy's open mouth and tilted head convey a sense of joy and excitement. The image may be used to capture the playfulness of a pet or to celebrate a special moment or event.",
+              "content": "The image features a **young golden retriever puppy** as the central subject, captured in a close-up shot.  \n\n### Key Details:  \n- **Appearance**: The puppy has a soft, creamy light golden coat with gentle, fluffy fur. Its ears are floppy and characteristic of the breed, while its dark eyes (slightly glossy) gaze directly at the viewer. The nose is dark brown or black, and its mouth is open with a pink tongue visible, conveying a happy, playful, or excited expression.  \n- **Pose/Expression**: The puppy appears energetic and joyful, with its body slightly angled forward, suggesting movement or playfulness.  \n- **Background**: The backdrop is softly blurred in warm, earthy tones (likely a natural outdoor setting like a field or park), creating a gentle contrast that emphasizes the puppy as the focal point.  \n- **Additional Elements**: A collar with a small greenish accent (possibly a leash or tag) is visible around the puppy\u2019s neck, adding a subtle detail to its appearance.  \n\nThe composition highlights the puppy\u2019s cuteness and vitality, with the blurred background drawing attention to the subject and evoking a warm, inviting atmosphere.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
-              "tool_calls": null
+              "tool_calls": null,
+              "reasoning": "So, let's see. The image is of a young golden retriever puppy. First, I need to describe the main elements. The puppy is light golden color, fluffy fur. Its face is expressive, mouth is open with tongue out, so it looks happy or maybe excited. Eyes are dark brown or black, big and looking directly at the camera. Nose is dark brown or black. The background is blurred, so it's a bokeh effect, which makes the puppy stand out. The puppy is in the center of the image, close-up view. Also, there's a collar with a leash or something? Wait, the collar has a greenish part, maybe a leash attached to it. Let me check again.\n\nWait, the puppy's fur is soft and creamy yellow. The ears are floppy, typical of golden retrievers. The expression is cheerful, maybe playful. The background is a soft, blurred greenish color, so probably outdoors. The focus is on the puppy, making it the main subject.\n\nLet me structure this. Start with the main subject: a young golden retriever puppy. Describe its physical features: light coat color, fluffy fur, floppy ears, happy expression (mouth open, tongue out), dark eyes, dark nose. The background is blurred with soft tones, indicating an outdoor setting. Maybe mention the collar with a greenish leash or tag hanging down.\n\nWait, the image shows a close-up of the puppy, with the background out of focus. So details: size is small, young age (puppy), breed is golden retriever (since it's a light coat color, typical of that breed). Fur is soft, light golden. Eyes are bright, looking directly at the camera. Mouth is open, tongue is pink, so it's showing a happy or excited demeanor. Left and right ears are floppy. The background is a blurred greenish hue, suggesting a natural environment like a park or field.\n\nWait, maybe it's a golden retriever puppy, so the breed is golden retriever. The image is a close-up, centered on the puppy, with the background blurred to emphasize the subject. The puppy looks energetic and playful.\n\nLet me put this together clearly:\n\nThe image features a young golden retriever puppy as the central subject, captured in a close-up shot. The puppy has a soft, creamy light brown coat and expressive dark eyes that gaze directly at the viewer. Its mouth is open with a pink tongue visible, suggesting a happy or excited expression. The ears are floppy, typical of the breed, and the nose is dark brown. The background is blurred with soft, warm tones, likely indicating an outdoor environment, possibly a grassy field or park, which creates a bokeh effect to keep the focus on the puppy. The puppy appears playful and energetic, with a collar that has a small greenish piece attached, possibly a tag or part of the leash.\n\nWait, maybe the collar is visible. Looking at the image, there's a collar with a greenish part, so maybe a leash or tag. Let me confirm. The description should be accurate.\n\nSo, the key points:\n\n- Subject: Young golden retriever puppy\n- Physical attributes: soft light golden fur, floppy ears, dark eyes, dark nose, mouth open with tongue out (happy expression)\n- Background: blurred, soft greenish tones, likely outdoor\n- Composition: close-up, central focus on the puppy, background out of focus\n- Additional details: collar with a small greenish part (maybe leash tag)\n\nI need to make sure all these points are included. Let me check if there's any other details. The puppy's body is muscular yet soft in the fur, the overall vibe is cheerful and cute."
             }
           }
         ],
         "created": 0,
-        "model": "llama3.2-vision:11b",
+        "model": "qwen3-vl:2b",
         "object": "chat.completion",
+        "metadata": null,
+        "moderation": null,
         "service_tier": null,
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 169,
-          "prompt_tokens": 18,
-          "total_tokens": 187,
+          "completion_tokens": 999,
+          "prompt_tokens": 1104,
+          "total_tokens": 2103,
           "completion_tokens_details": null,
-          "prompt_tokens_details": null
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 1103,
+            "image_tokens": null,
+            "text_tokens": null
+          }
         }
       }
     },
     "is_streaming": false
-  }
+  },
+  "id_normalization_mapping": {}
 }

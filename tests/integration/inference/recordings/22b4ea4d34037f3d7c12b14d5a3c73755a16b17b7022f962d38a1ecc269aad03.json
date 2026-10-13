@@ -1,11 +1,11 @@
 {
-  "test_id": "tests/integration/inference/test_vision_inference.py::test_image_chat_completion_non_streaming[vis=ollama/llama3.2-vision:11b]",
+  "test_id": "tests/integration/inference/test_vision_inference.py::test_image_chat_completion_non_streaming[vis=ollama/qwen3-vl:2b]",
   "request": {
     "method": "POST",
     "url": "http://0.0.0.0:11434/v1/v1/chat/completions",
     "headers": {},
     "body": {
-      "model": "llama3.2-vision:11b",
+      "model": "qwen3-vl:2b",
       "messages": [
         {
           "role": "user",
@@ -26,43 +26,56 @@
       "stream": false
     },
     "endpoint": "/v1/chat/completions",
-    "model": "llama3.2-vision:11b"
+    "model": "qwen3-vl:2b",
+    "provider_metadata": {
+      "openai_sdk_version": "3.17.0"
+    }
   },
   "response": {
     "body": {
       "__type__": "openai.types.chat.chat_completion.ChatCompletion",
       "__data__": {
-        "id": "rec-02fba1826ee7",
+        "id": "rec-22b4ea4d3403",
         "choices": [
           {
             "finish_reason": "stop",
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "The image presents a close-up view of a Golden Retriever puppy displaying a wide smile and a loose-jawed posture. The puppy is viewed from a slight above angle, and has sandy-colored fur with light-colored inner ears and a black nose. The puppy's head and neck are centered in the frame, positioned atop what is likely its front legs. The puppy\u2019s open mouth creates a gentle smile, and it looks directly into the camera. Light, sandy-colored fur is slightly blurred just above its nose and just below its eyes. The background is out of focus, but appears to be a grassy area.",
+              "content": "The image features a **puppy** with a light golden coat, identifiable as a **Golden Retriever** (or a similar breed, due to its characteristic appearance). The puppy is positioned in the foreground, facing the camera with an open mouth and tongue out, suggesting it is panting\u2014likely due to exertion or excitement. \n\n### Key Details:\n- **Appearance**: The puppy has soft, fluffy fur, large expressive eyes, and a dark brown/black nose. Its ears are floppy and hang down on either side of its head. The puppy\u2019s overall expression is joyful and energetic.\n- **Posture/Action**: It appears to be in motion (possibly running or trotting), as indicated by its relaxed yet dynamic stance.\n- **Collar**: A collar with a small tag is visible around its neck.\n- **Background**: The background is blurred (bokeh effect), creating a soft, natural backdrop that suggests an outdoor setting\u2014likely a park or open field with neutral, earthy tones (hints of green and brown).\n\nThe overall mood of the image is cheerful and lively, capturing a moment of the puppy\u2019s playful or happy nature.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
-              "tool_calls": null
+              "tool_calls": null,
+              "reasoning": "So, let's look at the image. There's a puppy, specifically a Golden Retriever puppy, right? The puppy is light golden color, fluffy, and it's looking at the camera. Its mouth is open, so it's panting, and its tongue is out. The background is blurred, which is a bokeh effect, so it's probably outdoors. The puppy has floppy ears, and it's wearing a collar with a tag. The setting seems to be a natural environment, maybe a grassy field. The puppy appears happy and energetic, with a joyful expression. I need to describe all these elements: the type of dog, its color, posture, expression, and the background.\n\nFirst, identify the breed: Golden Retriever puppy. Then physical features: light golden coat, floppy ears, expressive eyes, black nose. Mouth is open, tongue out, panting. Collar with a tag. Background is blurred, soft tones, likely outdoors. Let's put it all together."
             }
           }
         ],
         "created": 0,
-        "model": "llama3.2-vision:11b",
+        "model": "qwen3-vl:2b",
         "object": "chat.completion",
+        "metadata": null,
+        "moderation": null,
         "service_tier": null,
         "system_fingerprint": "fp_ollama",
         "usage": {
-          "completion_tokens": 125,
-          "prompt_tokens": 18,
-          "total_tokens": 143,
+          "completion_tokens": 441,
+          "prompt_tokens": 1104,
+          "total_tokens": 1545,
           "completion_tokens_details": null,
-          "prompt_tokens_details": null
+          "prompt_tokens_details": {
+            "audio_tokens": null,
+            "cache_write_tokens": null,
+            "cached_tokens": 0,
+            "image_tokens": null,
+            "text_tokens": null
+          }
         }
       }
     },
     "is_streaming": false
-  }
+  },
+  "id_normalization_mapping": {}
 }
