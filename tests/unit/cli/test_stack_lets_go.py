@@ -170,6 +170,28 @@ class TestAutodetect:
             await _autodetect_providers()
             assert captured[0] == "OLLAMA_URL"
 
+    async def test_autodetect_typesafe_candidate_config(self, monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.setenv("TYPESAFE_API_KEY", "ts-test")
+        captured: list[tuple] = []
+
+        def side_effect(
+            provider_type: str,
+            base_url_env: object,
+            default_base_url: str,
+            required_api_key_env: object,
+            optional_api_key_env: object = None,
+            debug: bool = False,
+        ) -> tuple:
+            if provider_type == "remote::typesafe":
+                captured.append((base_url_env, default_base_url, required_api_key_env))
+                return (_ProbeStatus.OK, [], "https://api.typesafe.ai", "default", None)
+            return (_ProbeStatus.UNREACHABLE, [], "", "default", None)
+
+        with patch("ogx.cli.stack.lets_go._probe_provider_availability", side_effect=side_effect):
+            parts = (await _autodetect_providers())[0].split(",")
+            assert "inference=remote::typesafe" in parts
+            assert captured == [("TYPESAFE_BASE_URL", "https://api.typesafe.ai", "TYPESAFE_API_KEY")]
+
     async def test_autodetect_result_order_matches_candidate_order(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
 
