@@ -4135,22 +4135,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nltk"
-version = "3.10.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "defusedxml" },
-    { name = "joblib" },
-    { name = "regex" },
-    { name = "tqdm" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e0/e6/fe51d2bb1a3b446f59c5c8165999a9fee208bc346af90a7cbf7657bc0d75/nltk-3.10.3.tar.gz", hash = "sha256:bb9327a461c3811c2fa4900e03840401f2126adfb30c0072827c433bd2444ea4", size = 5137152, upload-time = "2026-08-12T23:46:37.258Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/6d/ebd2af4640b12168fdf0cb74b6118df2f32a2f62ec7e0c06fbfd80706639/nltk-3.10.3-py3-none-any.whl", hash = "sha256:ff9598a8e20518ee0d557745890cc4435b9578489e2dcbc69c4f81fa060caf7c", size = 1798643, upload-time = "2026-08-12T23:44:13.478Z" },
-]
-
-[[package]]
 name = "nodeenv"
 version = "1.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -4299,7 +4283,6 @@ starter = [
     { name = "matplotlib" },
     { name = "milvus-lite", marker = "platform_machine == 'aarch64' or platform_machine == 'arm64' or platform_machine == 'x86_64'" },
     { name = "neo4j" },
-    { name = "nltk" },
     { name = "numpy" },
     { name = "ollama" },
     { name = "pandas" },
@@ -4408,6 +4391,7 @@ dev = [
     { name = "types-requests" },
     { name = "types-setuptools" },
     { name = "types-tqdm" },
+    { name = "typesafe-sdk" },
     { name = "unstructured-client" },
     { name = "weaviate-client" },
 ]
@@ -4461,10 +4445,9 @@ requires-dist = [
     { name = "milvus-lite", marker = "(platform_machine == 'aarch64' and extra == 'starter') or (platform_machine == 'arm64' and extra == 'starter') or (platform_machine == 'x86_64' and extra == 'starter')", specifier = ">=2.5.1,<3.0" },
     { name = "models-dev", specifier = ">=1.0.398" },
     { name = "neo4j", marker = "extra == 'starter'", specifier = ">=6.3.1" },
-    { name = "nltk", marker = "extra == 'starter'", specifier = ">=3.10.3" },
     { name = "numpy", marker = "extra == 'starter'", specifier = ">=2.5.3" },
     { name = "ogx-api", editable = "src/ogx_api" },
-    { name = "ogx-client", marker = "extra == 'client'", specifier = ">=1.4.0" },
+    { name = "ogx-client", marker = "extra == 'client'", specifier = ">=1.5.0" },
     { name = "ollama", marker = "extra == 'starter'" },
     { name = "openai", specifier = ">=3.0.0" },
     { name = "opentelemetry-distro", specifier = ">=0.60b1" },
@@ -4548,7 +4531,7 @@ dev = [
     { name = "nbval" },
     { name = "neo4j", specifier = ">=6.3.1" },
     { name = "nest-asyncio" },
-    { name = "ogx-client", specifier = ">=1.4.0" },
+    { name = "ogx-client", specifier = ">=1.5.0" },
     { name = "ollama" },
     { name = "openapi-spec-validator", specifier = ">=0.9.0" },
     { name = "pandas", specifier = ">=3.0.5" },
@@ -4586,6 +4569,7 @@ dev = [
     { name = "types-requests", specifier = ">=2.33.0.20260906" },
     { name = "types-setuptools", specifier = ">=84.0.0.20260812" },
     { name = "types-tqdm", specifier = ">=4.70.0.20260906" },
+    { name = "typesafe-sdk", specifier = ">=0.7.2" },
     { name = "unstructured-client", specifier = ">=0.46.2" },
     { name = "weaviate-client", specifier = ">=4.23.1" },
 ]
@@ -4637,7 +4621,7 @@ requires-dist = [
 
 [[package]]
 name = "ogx-client"
-version = "1.4.0"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fire" },
@@ -4647,9 +4631,9 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/13/7c7030849b3083b2f09356f5ef2b8c9eeffcf1d2b2565cbdbd94930cd689/ogx_client-1.4.0.tar.gz", hash = "sha256:15f2a078e75758713af05702d84419f6517f5fb8406b312ff585ac370be4d516", size = 648483, upload-time = "2026-09-11T14:02:34.746Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c6/0e/985a2b90fea50f662da1e07d0c241062dde363d560aba527711001fd3eb6/ogx_client-1.5.0.tar.gz", hash = "sha256:4d932ae3d7105e48f9f99d320f3ca14d58a79ac196cad06f660708ce20e8a04d", size = 649571, upload-time = "2026-10-09T01:40:07.168Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/68/c3d73ab41eea9106f60ff6acdc7e6a924d82c6904ac4ff8631c08f3cbf42/ogx_client-1.4.0-py3-none-any.whl", hash = "sha256:336f5a84df9985d2a3c49f8b2cb6c1458689ae6625b9bb82beb5db93378a1295", size = 1593061, upload-time = "2026-09-11T14:02:33.026Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/6c/5c7a3e1cf70eb185fda6f097fb42bf1c6f82ff71051a2dfe8b02e8bdb576/ogx_client-1.5.0-py3-none-any.whl", hash = "sha256:b9d90a85851807f47e757501991d4b004432affe761cc831357015fa6dda8624", size = 1595662, upload-time = "2026-10-09T01:40:05.516Z" },
 ]
 
 [[package]]
@@ -8161,6 +8145,24 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fe/92/517d71d5a399cd2f8ead3b4328d987262478f22fbbe7f8312360d4c321d0/types_tqdm-4.70.0.20260906.tar.gz", hash = "sha256:6581dc996152a87d51ce2ea169169187ffc0a96dacdb8adbdef29cbee8c1e631", size = 19309, upload-time = "2026-09-06T06:35:31.916Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/81/ea/d12697988ab2c672877796ecaea69666e2379ee7b40f01f4540250d5a97b/types_tqdm-4.70.0.20260906-py3-none-any.whl", hash = "sha256:c3b88c694928515d601f73fa6646aa43adc0ef735bedbeebf0cc543f6a201ae8", size = 25181, upload-time = "2026-09-06T06:35:30.931Z" },
+]
+
+[[package]]
+name = "typesafe-sdk"
+version = "0.7.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx2" },
+    { name = "packaging" },
+    { name = "pydantic" },
+    { name = "pydantic-core" },
+    { name = "tenacity" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/15/c5/f659e9b60d239d88a5e0c0ae6ecdde478aadb9db9b962cac1075b55df5c1/typesafe_sdk-0.7.3.tar.gz", hash = "sha256:7c3efa360bfe34a0017047ddb89ab254b8e1b45f4c5a16c6533059307f925748", size = 24325, upload-time = "2026-10-09T09:43:58.41Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4c/f2/8c091d0e259fa5e07b25fea1e3baced59e74bd08a4a9965395885a6ffbe3/typesafe_sdk-0.7.3-py3-none-any.whl", hash = "sha256:27449bdcfba4a2580a669637e925541e7ba491671d5a52509220546b41c9ea3d", size = 37633, upload-time = "2026-10-09T09:43:57.155Z" },
 ]
 
 [[package]]

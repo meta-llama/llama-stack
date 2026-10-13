@@ -12,7 +12,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install vLLM 0.22.1 (CPU x86_64) and download Qwen3-0.6B
+    - name: Install vLLM 0.31.0 (CPU x86_64) and download Qwen3-0.6B
       shell: bash
       run: |
         set -euo pipefail
@@ -27,14 +27,14 @@ runs:
             || { echo "Failed to verify sha256 for $1 (expected $2)" >&2; exit 1; }
         }
 
-        # 1. vLLM CPU wheel, pinned to the official 0.22.1 GitHub release asset.
+        # 1. vLLM CPU wheel, pinned to the official 0.31.0 GitHub release asset.
         #    Verify the hash BEFORE installing so we never install unauthenticated bytes.
         #    Transitive dependencies are resolved by uv; only vLLM itself is hash-pinned.
-        WHEEL_NAME="vllm-0.22.1+cpu-cp38-abi3-manylinux_2_34_x86_64.whl"
+        WHEEL_NAME="vllm-0.31.0+cpu-cp38-abi3-manylinux_2_39_x86_64.whl"
         WHEEL="$WORKDIR/$WHEEL_NAME"
-        WHEEL_SHA=c8661ca28e8e0a65fdf7f5462877150c9157be85507aa4b2aacfe6a8d25b1827
+        WHEEL_SHA=d1eb6f3b6e548cfe372ecc4c85d0d2aa6986f183a2bfcfccdff93549b5463227
         [ -f "$WHEEL" ] || curl -fsSL --retry 3 -o "$WHEEL" \
-          "https://github.com/vllm-project/vllm/releases/download/v0.22.1/$WHEEL_NAME"
+          "https://github.com/vllm-project/vllm/releases/download/v0.31.0/$WHEEL_NAME"
         verify "$WHEEL" "$WHEEL_SHA"
 
         # Isolated venv: vLLM pins its own torch, which must not leak into the project env.
@@ -74,6 +74,11 @@ runs:
         # setsid + nohup fully detach the server from this step's process group so it
         # keeps running after the step's shell exits (unlike a plain `&`). The weights
         # are served from the hash-verified local directory, so HF is never contacted.
+        #
+        # KNOWN BUG: while --reasoning-parser is set, vLLM silently ignores structured
+        # outputs on /v1/completions (vllm-project/vllm#57726).
+        # test_openai_completion_guided_choice skips on vllm because of this; drop the
+        # flag (and the skip) once the fix is in the pinned release.
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Qwen3-0.6B" \
           --host 127.0.0.1 \
           --port "$PORT" \

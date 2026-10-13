@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Annotated, Any, Literal, Self
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from ogx.core.access_control.datatypes import AccessRule, RouteAccessRule
 from ogx.core.server_tls import ServerTLSConfig, validate_fips_tls
@@ -860,6 +860,8 @@ class ServerConfig(BaseModel):
 class StackConfig(BaseModel):
     """Top-level runtime configuration for a OGX distribution including providers, storage, and server settings."""
 
+    model_config = ConfigDict(hide_input_in_errors=True)
+
     version: int = OGX_RUN_CONFIG_VERSION
 
     distro_name: str | None = Field(
@@ -971,6 +973,23 @@ can be instantiated multiple times (with different configs) if necessary.
                 stacklevel=2,
             )
 
+        return self
+
+    @model_validator(mode="after")
+    def normalize_systemone_to_inference(self) -> "StackConfig":
+        """Collapse the ``systemone`` provider/api section into ``inference``.
+
+        Judgment/decision (SystemOne) models are served through the Inference API, so a
+        ``systemone`` section is a spelling alias for ``inference``. Keeping the spelling in
+        the config makes intent explicit; the resolver only ever sees ``inference``.
+        """
+        systemone_providers = self.providers.pop("systemone", None)
+        if systemone_providers:
+            self.providers["inference"] = [*self.providers.get("inference", []), *systemone_providers]
+        if self.apis and "systemone" in self.apis:
+            self.apis = [a for a in self.apis if a != "systemone"]
+            if "inference" not in self.apis:
+                self.apis.append("inference")
         return self
 
     @model_validator(mode="after")
