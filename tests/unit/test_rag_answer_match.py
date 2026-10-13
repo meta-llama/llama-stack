@@ -7,6 +7,7 @@
 # The benchmark harness lives outside the Python package tree, so import the
 # dependency-free scorer module by path.
 import importlib.util
+import itertools
 import pathlib
 
 import pytest
@@ -89,6 +90,32 @@ class TestContainsAnswer:
         assert contains_answer(reply, "Yes")
 
 
+class TestContainsAnswerWordBudget:
+    """Regression tests for the enumeration loophole flagged in review: without a budget, a
+    reply can list arbitrarily many candidate answers and contain one by chance, with no cost
+    the constant-reply baseline also pays -- see the module docstring and
+    TestWordBudgetClosesEnumerationLoophole below for the baseline side of this fix.
+    """
+
+    def test_match_within_the_default_budget_is_found(self):
+        near = " ".join(["filler"] * 19 + ["Google"])  # Google is the 20th normalized word
+        assert contains_answer(near, "Google")
+
+    def test_match_beyond_the_default_budget_is_not_found(self):
+        far = " ".join(["filler"] * 20 + ["Google"])  # Google is the 21st normalized word
+        assert not contains_answer(far, "Google")
+
+    def test_budget_is_configurable(self):
+        reply = "lorem Google"  # Google is the 2nd normalized word
+        assert contains_answer(reply, "Google", word_budget=2)
+        assert not contains_answer(reply, "Google", word_budget=1)
+
+    def test_containment_accuracy_applies_the_same_budget_to_every_query(self):
+        far_reply = " ".join(["filler"] * 20 + ["Google"])
+        assert containment_accuracy({"1": far_reply}, {"1": "Google"}) == 0.0
+        assert containment_accuracy({"1": far_reply}, {"1": "Google"}, word_budget=21) == 1.0
+
+
 class TestContainmentAccuracy:
     """The controls from the issue: wrong answers must fail and correct ones must pass at any length."""
 
@@ -132,17 +159,23 @@ LONG_TAIL = {
 
 
 class TestConstantReplyBaseline:
-    def test_reply_lists_the_most_common_answers_and_scores_their_coverage(self):
+    def test_reply_lists_answers_that_fit_the_word_budget_and_scores_their_coverage(self):
+        # Yes(1) + No(1) + "Insufficient information."(2) + "Sam Bankman-Fried"(3) + Google(1) = 8
+        # words, leaving 12 of the default 20-word budget for the ten 2-word "Entity N"
+        # singletons (count 1 each): 6 of them fit, in dict insertion order on this tie.
         reply, score = constant_reply_baseline(LONG_TAIL)
-        assert reply == "Yes No Insufficient information. Sam Bankman-Fried Google"
-        assert score == pytest.approx(30 / 40)
+        assert reply == (
+            "Yes No Insufficient information. Sam Bankman-Fried Google "
+            "Entity 0 Entity 1 Entity 2 Entity 3 Entity 4 Entity 5"
+        )
+        assert score == pytest.approx(36 / 40)
 
-    def test_cap_is_configurable(self):
-        reply, score = constant_reply_baseline(LONG_TAIL, max_answers=1)
+    def test_word_budget_is_configurable(self):
+        reply, score = constant_reply_baseline(LONG_TAIL, word_budget=1)
         assert (reply, score) == ("Yes", pytest.approx(10 / 40))
 
     def test_case_and_punctuation_variants_count_as_one_answer(self):
-        reply, score = constant_reply_baseline({"1": "Yes", "2": "yes.", "3": "No"}, max_answers=1)
+        reply, score = constant_reply_baseline({"1": "Yes", "2": "yes.", "3": "No"}, word_budget=1)
         assert reply == "Yes"
         assert score == pytest.approx(2 / 3)
 
@@ -165,6 +198,58 @@ class TestConstantReplyBaseline:
         _, baseline = constant_reply_baseline(LONG_TAIL)
         verbose = {qid: _pad(answer, 120) for qid, answer in LONG_TAIL.items()}
         assert containment_accuracy(verbose, LONG_TAIL) > baseline
+
+
+class TestWordBudgetClosesEnumerationLoophole:
+    """Regression tests for the review finding on the original fix: a fixed-size answer list
+    (there, the five most common) is not "the best a no-retrieval reply can do" -- a reply
+    listing one more answer scores higher without retrieval, and listing every distinct answer
+    scores 1.0, so beating the old baseline proved nothing. Closing this requires the exact
+    property these tests check: nothing built from the same word budget can outscore
+    constant_reply_baseline's own reply, so clearing it is only possible with real signal.
+    """
+
+    def test_listing_every_distinct_answer_scores_no_higher_than_the_optimized_baseline(self):
+        """The exact failure mode from the review: an unbounded reply enumerating the whole
+        answer vocabulary must not beat a reply properly optimized for the word budget.
+        """
+        _, baseline = constant_reply_baseline(LONG_TAIL)
+        distinct_answers_by_frequency = sorted(
+            set(LONG_TAIL.values()), key=lambda a: -sum(1 for v in LONG_TAIL.values() if v == a)
+        )
+        enumerate_everything = " ".join(distinct_answers_by_frequency)
+        score = containment_accuracy(dict.fromkeys(LONG_TAIL, enumerate_everything), LONG_TAIL)
+        assert score <= baseline
+
+    def test_baseline_is_optimal_against_every_other_reply_within_the_same_budget(self):
+        """Brute-force proof for a small vocabulary: try every subset of distinct gold answers
+        that fits the word budget as a candidate constant reply, and confirm none scores
+        higher than constant_reply_baseline's own choice. A less frequent one-word answer (
+        "Google", count 1) can be worth more per word than a more frequent multi-word one
+        ("Sam Bankman-Fried", count 2, 3 words), so this also guards against a baseline that
+        only ever greedily picks by raw frequency rather than by value-per-word.
+        """
+        small_vocab_gold = {
+            **{f"a{i}": "Yes" for i in range(5)},
+            **{f"b{i}": "No" for i in range(3)},
+            **{f"c{i}": "Sam Bankman-Fried" for i in range(2)},
+            "d0": "Google",
+        }
+        word_budget = 4
+        reply, baseline = constant_reply_baseline(small_vocab_gold, word_budget=word_budget)
+
+        best_alternative = 0.0
+        distinct_answers = sorted(set(small_vocab_gold.values()))
+        for size in range(1, len(distinct_answers) + 1):
+            for combo in itertools.combinations(distinct_answers, size):
+                candidate_reply = " ".join(combo)
+                score = containment_accuracy(
+                    dict.fromkeys(small_vocab_gold, candidate_reply), small_vocab_gold, word_budget
+                )
+                best_alternative = max(best_alternative, score)
+
+        assert baseline == pytest.approx(best_alternative)
+        assert reply  # sanity: a non-empty reply was actually returned
 
 
 class TestBaselineWarning:

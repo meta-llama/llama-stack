@@ -13,8 +13,14 @@ answer appears, as whole tokens, in the normalized reply.
 
 Containment accepts hedged replies (a reply of "Yes No" contains both), and most gold answers
 come from a few values, so a query-independent reply that lists the most common answers scores
-high. Every score is therefore reported next to that constant-reply baseline, which needs no
-retrieval and no generation. Containment is only informative above it.
+high; listing every distinct answer scores 1.0. Both sides of that problem are the same fix:
+containment is only checked within a fixed word budget (CONTAINMENT_WORD_BUDGET) of the
+reply, on both a scored prediction and the constant-reply baseline, so enumerating more
+answers than fit in the budget helps neither. The baseline is the highest-scoring reply a
+0/1 knapsack (answer -> (frequency, word width)) can build within that same budget, so no
+other reply bounded by the budget can outscore it either -- the comparison "containment >
+constant_baseline" is only meaningful because nothing budget-bounded can beat the baseline
+by construction. Every score is reported next to it; containment is only informative above it.
 """
 
 from __future__ import annotations
@@ -28,9 +34,13 @@ _CITATION_RE = re.compile(r"<\|[^|>]*\|>")
 _ARTICLES_RE = re.compile(r"\b(a|an|the)\b")
 _ASCII_PUNCTUATION = frozenset(string.punctuation)
 
-# How many of the most common gold answers the constant-reply baseline lists. Listing every
-# distinct answer would score 1.0, so the reply is capped; five covers 83% of MultiHOP.
-CONSTANT_REPLY_MAX_ANSWERS = 5
+# Word budget (normalized tokens) that containment checks within, on both a scored prediction
+# and the constant-reply baseline (see contains_answer and constant_reply_baseline). 20 words
+# comfortably fits a direct one-sentence answer with light framing (e.g. "Based on the
+# retrieved articles, the company most closely associated with this event is Google." is 15
+# words through the answer), while still bounding what a query-independent reply can list:
+# on MultiHopRAG it caps the baseline at 0.9174 rather than letting it drift toward 1.0.
+CONTAINMENT_WORD_BUDGET = 20
 
 
 def _is_punctuation(ch: str) -> bool:
@@ -50,10 +60,19 @@ def normalize_answer(text: str) -> list[str]:
     return _ARTICLES_RE.sub(" ", text).split()
 
 
-def contains_answer(prediction: str, gold: str | list[str]) -> bool:
-    """Whether any gold answer appears in the prediction as a contiguous run of whole tokens."""
+def contains_answer(prediction: str, gold: str | list[str], word_budget: int = CONTAINMENT_WORD_BUDGET) -> bool:
+    """Whether any gold answer appears, as a contiguous run of whole tokens, within the first
+    ``word_budget`` normalized words of the prediction.
+
+    The budget applies here, not just in constant_reply_baseline: without it, a prediction
+    could enumerate arbitrarily many candidate answers and contain one by chance, with no
+    corresponding cost the baseline also pays, making "beats the baseline" meaningless (see
+    the module docstring). Callers that build a constant_reply_baseline with a non-default
+    word_budget must pass the same value here (containment_accuracy does), or the two sides
+    of that comparison stop being bounded by the same constraint.
+    """
     golds = gold if isinstance(gold, list) else [gold]
-    pred_tokens = normalize_answer(prediction)
+    pred_tokens = normalize_answer(prediction)[:word_budget]
     for answer in golds:
         gold_tokens = normalize_answer(answer)
         if not gold_tokens:
@@ -64,34 +83,64 @@ def contains_answer(prediction: str, gold: str | list[str]) -> bool:
     return False
 
 
-def containment_accuracy(predictions: dict[str, str], ground_truths: dict[str, str | list[str]]) -> float:
-    """Fraction of queries, among those present in both dicts, whose reply contains the gold answer."""
+def containment_accuracy(
+    predictions: dict[str, str],
+    ground_truths: dict[str, str | list[str]],
+    word_budget: int = CONTAINMENT_WORD_BUDGET,
+) -> float:
+    """Fraction of queries, among those present in both dicts, whose reply contains the gold
+    answer within the first ``word_budget`` normalized words (see contains_answer)."""
     common_qids = set(predictions) & set(ground_truths)
     if not common_qids:
         return 0.0
-    hits = sum(contains_answer(predictions[qid], ground_truths[qid]) for qid in common_qids)
+    hits = sum(contains_answer(predictions[qid], ground_truths[qid], word_budget) for qid in common_qids)
     return hits / len(common_qids)
 
 
 def constant_reply_baseline(
-    ground_truths: dict[str, str | list[str]], max_answers: int = CONSTANT_REPLY_MAX_ANSWERS
+    ground_truths: dict[str, str | list[str]], word_budget: int = CONTAINMENT_WORD_BUDGET
 ) -> tuple[str, float]:
-    """Best query-independent reply and its containment score.
+    """The highest-scoring query-independent reply buildable within ``word_budget`` normalized
+    words, and its containment score. It uses no retrieval and no generation.
 
-    The reply lists the ``max_answers`` most common gold answers, so it catches the hedge that
-    a single "always Yes" reply misses. It uses no retrieval and no generation.
+    Each distinct gold answer is worth its frequency count and costs its normalized word
+    width; picking answers by frequency alone (ignoring width) is not optimal, since e.g. a
+    less frequent one-word answer can be worth more per word than a more frequent multi-word
+    one. This is a 0/1 knapsack over that trade-off, so the returned reply is provably the
+    best any reply bounded by the same word budget can do -- which is the property that makes
+    "containment beats this baseline" a meaningful claim (see contains_answer, which checks
+    containment within that same budget).
     """
     counts: Counter[str] = Counter()
     representative: dict[str, str] = {}
     for gold in ground_truths.values():
         answer = gold[0] if isinstance(gold, list) else gold
         key = " ".join(normalize_answer(answer))
+        if not key:
+            continue
         counts[key] += 1
         representative.setdefault(key, answer)
     if not counts:
         return "", 0.0
-    reply = " ".join(representative[key] for key, _ in counts.most_common(max_answers))
-    return reply, containment_accuracy(dict.fromkeys(ground_truths, reply), ground_truths)
+
+    # dp[b] / chosen[b]: best score and the answer keys achieving it, using <= b words.
+    # Standard 0/1 knapsack: iterating each item's capacity slots from high to low ensures it
+    # is considered at most once (dp[b - width] still reflects only earlier items).
+    dp = [0] * (word_budget + 1)
+    chosen: list[list[str]] = [[] for _ in range(word_budget + 1)]
+    for key, count in counts.items():
+        width = len(key.split())
+        if width > word_budget:
+            continue
+        for b in range(word_budget, width - 1, -1):
+            candidate_score = dp[b - width] + count
+            if candidate_score > dp[b]:
+                dp[b] = candidate_score
+                chosen[b] = [*chosen[b - width], key]
+
+    best_budget_used = max(range(word_budget + 1), key=lambda b: dp[b])
+    reply = " ".join(representative[key] for key in chosen[best_budget_used])
+    return reply, containment_accuracy(dict.fromkeys(ground_truths, reply), ground_truths, word_budget)
 
 
 def baseline_warning(metrics: dict) -> str | None:

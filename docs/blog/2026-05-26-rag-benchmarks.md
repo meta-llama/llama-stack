@@ -77,7 +77,7 @@ Retrieval is only half the story. End-to-end RAG tests whether the system can re
 
 MultiHOP tests multi-hop reasoning over 609 news articles with 2,556 queries that require synthesizing information across documents.
 
-> **Correction.** An earlier version of this post ranked these systems by token-F1 and reported Gemma 31B as 81.6% ahead of OpenAI. That comparison is withdrawn. MultiHOP gold answers are mostly one word, so token-F1 mostly measures reply length: a constant "Yes" reply scores 0.3059, and a fully correct reply padded to 120-250 tokens scores 0.02-0.01, the same band as every row below. The benchmark now scores MultiHOP by containment and prints a constant-reply baseline (0.8337); these runs predate that change and need re-running.
+> **Correction.** An earlier version of this post ranked these systems by token-F1 and reported Gemma 31B as 81.6% ahead of OpenAI. That comparison is withdrawn. MultiHOP gold answers are mostly one word, so token-F1 mostly measures reply length: a constant "Yes" reply scores 0.3059, and a fully correct reply padded to 120-250 tokens scores 0.02-0.01, the same band as every row below. The benchmark now scores MultiHOP by containment, checked within a fixed word budget, and prints a constant-reply baseline (the best reply buildable within that same budget, 0.9202); these runs predate that change and need re-running.
 
 | Configuration | Token-F1 | ROUGE-L |
 |--------------|-----|---------|

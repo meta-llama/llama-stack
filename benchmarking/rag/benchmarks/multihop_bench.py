@@ -119,7 +119,10 @@ class MultiHOPBenchmark(BenchmarkRunner):
         # Gold answers are ~1 word, so SQuAD EM/F1 mostly measures reply length here.
         # Containment is the primary score; the constant-reply baseline is the bar it must clear.
         metrics["containment"] = containment_accuracy(all_predictions, all_ground_truths)
-        constant_reply, constant_baseline = constant_reply_baseline(all_ground_truths)
+        # Baseline from the full gold set (self.ground_truths), not all_ground_truths: with
+        # --max-queries, all_ground_truths is only the first N queries, which skews the
+        # answer-frequency distribution the baseline is optimized over away from the real one.
+        constant_reply, constant_baseline = constant_reply_baseline(self.ground_truths)
         metrics["constant_reply"] = constant_reply
         metrics["constant_baseline"] = constant_baseline
         metrics["clears_constant_baseline"] = metrics["containment"] > constant_baseline

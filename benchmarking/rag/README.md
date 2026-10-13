@@ -159,9 +159,12 @@ benchmarking/rag/
    Exact Match, token-level F1 (HuggingFace SQuAD metric), and ROUGE-L.
    MultiHOP gold answers are ~1 word, so token-F1 there mostly measures reply
    length; MultiHOP is instead scored by containment (does the normalized gold
-   answer appear in the reply) and reported next to a constant-reply baseline
-   (a query-independent reply listing the five most common gold answers, 0.8337
-   on MultiHOP). A run that does not beat that baseline is flagged by
+   answer appear, within a fixed word budget, in the reply) and reported next
+   to a constant-reply baseline (the highest-scoring query-independent reply
+   buildable within that same word budget, 0.9202 on MultiHOP). The budget
+   applies to both sides of that comparison so enumerating more candidate
+   answers than fit in it helps neither; see `lib/answer_match.py` for why
+   that matters. A run that does not beat the baseline is flagged by
    `compare_results.py`.
 
 4. **Conversational RAG** (QReCC, Doc2Dial): Multi-turn conversations are
