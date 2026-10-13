@@ -308,7 +308,7 @@ jobs:
 
       - name: Setup test environment
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/setup-test-environment@0807a93e8508bb22dcd633de0a993343a6b1b346
+        uses: ogx-ai/ogx/.github/actions/setup-test-environment@f07637627d3d192c7a6b6263b9337573e7c739d4
         with:
           python-version: "3.12"
           client-version: "latest"
