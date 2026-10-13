@@ -55,9 +55,68 @@ class TestExtractUrlCitationsFromText:
         assert annotations == []
         assert cleaned_text == "Some fact <|url-99|>."
 
+    def test_adjacent_url_markers_share_the_same_span_instead_of_one_being_empty(self):
+        """Regression test: a model citing one claim with several sources
+        ("fact <|url-1|><|url-2|>.") glues the markers together with no text between
+        them. Giving the second marker a span starting where the first one ended would
+        make it a zero-width (x, x) span pointing at nothing; both should instead cover
+        the same real preceding text.
+        """
+        text = "Transformers use self-attention <|url-1|><|url-2|>."
+        citation_urls = {
+            "url-1": CitationUrl(url="https://arxiv.org/abs/1706.03762", title="Attention Is All You Need"),
+            "url-2": CitationUrl(url="https://en.wikipedia.org/wiki/Transformer", title="Transformer"),
+        }
+
+        annotations, cleaned_text = _extract_citations_from_text(text, {}, citation_urls)
+
+        assert cleaned_text == "Transformers use self-attention."
+        assert annotations == [
+            OpenAIResponseAnnotationCitation(
+                url="https://arxiv.org/abs/1706.03762", title="Attention Is All You Need", start_index=0, end_index=31
+            ),
+            OpenAIResponseAnnotationCitation(
+                url="https://en.wikipedia.org/wiki/Transformer", title="Transformer", start_index=0, end_index=31
+            ),
+        ]
+
+    def test_three_adjacent_url_markers_all_share_the_same_span(self):
+        text = "Fact <|url-1|><|url-2|><|url-3|>."
+        citation_urls = {
+            "url-1": CitationUrl(url="https://a.com", title="A"),
+            "url-2": CitationUrl(url="https://b.com", title="B"),
+            "url-3": CitationUrl(url="https://c.com", title="C"),
+        }
+
+        annotations, cleaned_text = _extract_citations_from_text(text, {}, citation_urls)
+
+        assert cleaned_text == "Fact."
+        assert [(a.start_index, a.end_index) for a in annotations] == [(0, 4), (0, 4), (0, 4)]
+
+    def test_url_marker_after_an_adjacent_cluster_gets_its_own_fresh_span(self):
+        text = "Fact A <|url-1|><|url-2|> Fact B <|url-3|>."
+        citation_urls = {
+            "url-1": CitationUrl(url="https://a.com", title="A"),
+            "url-2": CitationUrl(url="https://b.com", title="B"),
+            "url-3": CitationUrl(url="https://c.com", title="C"),
+        }
+
+        annotations, cleaned_text = _extract_citations_from_text(text, {}, citation_urls)
+
+        assert cleaned_text == "Fact A Fact B."
+        assert (annotations[0].start_index, annotations[0].end_index) == (0, 6)
+        assert (annotations[1].start_index, annotations[1].end_index) == (0, 6)
+        assert (annotations[2].start_index, annotations[2].end_index) == (6, 13)
+
     def test_file_and_url_markers_coexist_with_correct_indices(self):
         """A single turn can call both file_search and web_search; markers of both
-        types must be strippable in one pass without corrupting each other's indices."""
+        types must be strippable in one pass without corrupting each other's indices.
+
+        A file citation doesn't bound where the next url span starts: the two citation
+        types track independently, since a file_citation and a url_citation can
+        legitimately cover overlapping text (e.g. one sentence backed by both a file and
+        a web result).
+        """
         text = "From a doc <|file-abc123|>. From the web <|url-1|>."
         citation_files = {"file-abc123": "doc1.pdf"}
         citation_urls = {"url-1": CitationUrl(url="https://example.com", title="Example")}
@@ -67,7 +126,7 @@ class TestExtractUrlCitationsFromText:
         assert cleaned_text == "From a doc. From the web."
         assert annotations == [
             OpenAIResponseAnnotationFileCitation(file_id="file-abc123", filename="doc1.pdf", index=10),
-            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=10, end_index=24),
+            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=0, end_index=24),
         ]
 
     def test_falls_back_to_whole_text_span_when_model_does_not_cite(self):
@@ -114,9 +173,9 @@ class TestExtractUrlCitationsFromText:
         assert annotations[0].url == "https://a.com"
         assert cleaned_text == "Cited fact. Uncited fact."
 
-    def test_both_file_and_url_fallbacks_apply_independently(self):
-        """When the model cites neither inline, both a file_citation and a url_citation
-        fallback should be produced -- one per retrieval type, not just one overall."""
+    def test_both_fallbacks_apply_when_nothing_was_cited_at_all(self):
+        """When the model cites nothing inline at all, both a file_citation and a
+        url_citation fallback should be produced -- one per retrieval type."""
         text = "An answer that draws on both sources."
         citation_files = {"file-abc123": "doc1.pdf"}
         citation_urls = {"url-1": CitationUrl(url="https://example.com", title="Example")}
@@ -128,6 +187,38 @@ class TestExtractUrlCitationsFromText:
         assert isinstance(annotations[1], OpenAIResponseAnnotationCitation)
         assert annotations[0].index == len(cleaned_text)
         assert annotations[1].end_index == len(cleaned_text)
+
+    def test_no_url_fallback_when_the_model_already_cited_a_file_inline(self):
+        """Regression test: a model that cites a real file_citation inline made a
+        deliberate attribution choice. Guessing an extra whole-answer url_citation for
+        web_search results it didn't cite would misrepresent that choice, even though
+        file_search's own fallback check (now looking for *any* citation, not just a
+        file one) correctly stays silent too.
+        """
+        text = "Cited from the doc <|file-abc123|>."
+        citation_files = {"file-abc123": "doc1.pdf"}
+        citation_urls = {"url-1": CitationUrl(url="https://example.com", title="Example")}
+
+        annotations, cleaned_text = extract_citations_from_text(text, citation_files, citation_urls)
+
+        assert cleaned_text == "Cited from the doc."
+        assert len(annotations) == 1
+        assert isinstance(annotations[0], OpenAIResponseAnnotationFileCitation)
+        assert annotations[0].file_id == "file-abc123"
+
+    def test_no_file_fallback_when_the_model_already_cited_a_url_inline(self):
+        """Mirror of the above: a real inline url_citation should suppress the file
+        fallback too, when file_search also ran but wasn't cited."""
+        text = "Cited from the web <|url-1|>."
+        citation_files = {"file-abc123": "doc1.pdf"}
+        citation_urls = {"url-1": CitationUrl(url="https://example.com", title="Example")}
+
+        annotations, cleaned_text = extract_citations_from_text(text, citation_files, citation_urls)
+
+        assert cleaned_text == "Cited from the web."
+        assert len(annotations) == 1
+        assert isinstance(annotations[0], OpenAIResponseAnnotationCitation)
+        assert annotations[0].url == "https://example.com"
 
 
 class TestConvertChatChoiceToResponseMessageWithUrlCitations:

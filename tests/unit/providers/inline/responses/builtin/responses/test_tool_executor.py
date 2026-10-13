@@ -15,6 +15,7 @@ from ogx.providers.inline.responses.builtin.responses.tool_executor import (
     ToolExecutor,
     _add_web_search_citation_markers,
     _escape_delimiter_collisions,
+    _web_search_citation_marker_id,
     _wrap_untrusted_tool_output,
 )
 from ogx_api import (
@@ -247,6 +248,8 @@ class TestAddWebSearchCitationMarkers:
     recorded an id->source mapping to turn any citation back into an annotation."""
 
     def test_appends_numbered_sources_and_instruction_to_string_content(self):
+        arxiv_id = _web_search_citation_marker_id("https://arxiv.org/abs/1706.03762")
+        wiki_id = _web_search_citation_marker_id("https://en.wikipedia.org/wiki/Transformer")
         result = ToolInvocationResult(
             content="Some search results here.",
             metadata={
@@ -260,15 +263,47 @@ class TestAddWebSearchCitationMarkers:
         _add_web_search_citation_markers(result)
 
         assert "Some search results here." in result.content
-        assert "1. Attention Is All You Need - https://arxiv.org/abs/1706.03762 (cite as <|url-1|>)" in result.content
         assert (
-            "2. Transformer (Wikipedia) - https://en.wikipedia.org/wiki/Transformer (cite as <|url-2|>)"
+            f"1. Attention Is All You Need - https://arxiv.org/abs/1706.03762 (cite as <|{arxiv_id}|>)"
             in result.content
         )
-        assert "<|url-N|>" in result.content
-        assert result.metadata["citation_urls"]["url-1"].url == "https://arxiv.org/abs/1706.03762"
-        assert result.metadata["citation_urls"]["url-1"].title == "Attention Is All You Need"
-        assert result.metadata["citation_urls"]["url-2"].url == "https://en.wikipedia.org/wiki/Transformer"
+        assert (
+            f"2. Transformer (Wikipedia) - https://en.wikipedia.org/wiki/Transformer (cite as <|{wiki_id}|>)"
+            in result.content
+        )
+        assert result.metadata["citation_urls"][arxiv_id].url == "https://arxiv.org/abs/1706.03762"
+        assert result.metadata["citation_urls"][arxiv_id].title == "Attention Is All You Need"
+        assert result.metadata["citation_urls"][wiki_id].url == "https://en.wikipedia.org/wiki/Transformer"
+
+    def test_marker_id_is_stable_across_calls_for_the_same_url(self):
+        """Regression test: a sequential id (url-1, url-2, ...) would collide across
+        separate web_search calls -- e.g. a second search in the same response, or a
+        follow-up turn whose stored tool message keeps the first turn's old ids in
+        context -- silently misattributing a citation to the wrong source. The id must
+        depend only on the url, not on call order or position in that call's results.
+        """
+        first_call = ToolInvocationResult(
+            content="First search.",
+            metadata={"sources": [{"url": "https://example.com/a", "title": "A"}]},
+        )
+        second_call = ToolInvocationResult(
+            content="Second search.",
+            metadata={
+                "sources": [
+                    {"url": "https://example.com/b", "title": "B"},
+                    {"url": "https://example.com/a", "title": "A"},
+                ]
+            },
+        )
+
+        _add_web_search_citation_markers(first_call)
+        _add_web_search_citation_markers(second_call)
+
+        (first_call_id,) = first_call.metadata["citation_urls"].keys()
+        second_call_ids = second_call.metadata["citation_urls"].keys()
+        assert first_call_id in second_call_ids
+        assert first_call.metadata["citation_urls"][first_call_id].url == "https://example.com/a"
+        assert second_call.metadata["citation_urls"][first_call_id].url == "https://example.com/a"
 
     def test_falls_back_to_url_as_title_when_title_missing(self):
         result = ToolInvocationResult(
@@ -278,7 +313,8 @@ class TestAddWebSearchCitationMarkers:
 
         _add_web_search_citation_markers(result)
 
-        assert result.metadata["citation_urls"]["url-1"].title == "https://example.com"
+        marker_id = _web_search_citation_marker_id("https://example.com")
+        assert result.metadata["citation_urls"][marker_id].title == "https://example.com"
 
     def test_appends_instruction_as_text_part_for_list_content(self):
         result = ToolInvocationResult(
@@ -288,9 +324,10 @@ class TestAddWebSearchCitationMarkers:
 
         _add_web_search_citation_markers(result)
 
+        marker_id = _web_search_citation_marker_id("https://example.com")
         assert len(result.content) == 2
         assert result.content[0].text == "Some search results here."
-        assert "cite as <|url-1|>" in result.content[1].text
+        assert f"cite as <|{marker_id}|>" in result.content[1].text
 
     def test_no_op_when_no_sources(self):
         result = ToolInvocationResult(content="Some search results here.", metadata={"sources": []})
@@ -325,5 +362,6 @@ class TestAddWebSearchCitationMarkers:
 
         _add_web_search_citation_markers(result)
 
-        assert list(result.metadata["citation_urls"].keys()) == ["url-1"]
-        assert result.metadata["citation_urls"]["url-1"].url == "https://example.com"
+        marker_id = _web_search_citation_marker_id("https://example.com")
+        assert list(result.metadata["citation_urls"].keys()) == [marker_id]
+        assert result.metadata["citation_urls"][marker_id].url == "https://example.com"

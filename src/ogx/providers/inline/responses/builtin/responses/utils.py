@@ -488,6 +488,16 @@ CITATION_MARKER_REGEX = re.compile(
     r"|\((?P<id_paren>(?:file|url)-[A-Za-z0-9_-]+)\)"
 )
 
+# Matches any proper prefix of the literal word "file-" or "url-" (including the empty
+# prefix), each character gated behind the ones before it so e.g. "fi" matches but "fx"
+# does not. Needed because providers stream a marker as several separate tokens (e.g.
+# "<", "|", "file", "-", "abc", "|", ">"), so the pending-marker check below has to
+# recognize it's mid-marker at every one of those boundaries, not just once the whole
+# "file-"/"url-" word has already arrived.
+_PARTIAL_FILE_ID = r"f(?:i(?:l(?:e(?:-[A-Za-z0-9_-]*)?)?)?)?"
+_PARTIAL_URL_ID = r"u(?:r(?:l(?:-[A-Za-z0-9_-]*)?)?)?"
+_PARTIAL_CITATION_ID = rf"(?:{_PARTIAL_FILE_ID}|{_PARTIAL_URL_ID})?"
+
 # Matches an in-progress citation marker at the very end of a string, including a possible
 # single space right before it (since a known marker's preceding space gets dropped by
 # _extract_citations_from_text, and that only happens correctly if the space and the
@@ -496,10 +506,14 @@ CITATION_MARKER_REGEX = re.compile(
 # chunk. Used to withhold text from streamed deltas until either a marker completes (and
 # gets cleaned) or a later chunk proves it wasn't a marker after all (and gets flushed
 # through as literal text).
+#
+# The `<|...` branch additionally matches a *complete* id followed by its closing `|`
+# but not yet the final `>` (e.g. "<|file-abc123|"), since that's a distinct pending
+# state the bracket/paren forms don't have (`[id]`/`(id)` have no internal `|`).
 _PENDING_CITATION_MARKER_TAIL_REGEX = re.compile(
-    r"(?: ?<(?:\|(?:(?:file|url)-[A-Za-z0-9_-]*)?)?"
-    r"| ?\[(?:(?:file|url)-[A-Za-z0-9_-]*)?"
-    r"| ?\((?:(?:file|url)-[A-Za-z0-9_-]*)?"
+    rf"(?: ?<(?:\|(?:{_PARTIAL_CITATION_ID}|(?:file|url)-[A-Za-z0-9_-]+\|))?"
+    rf"| ?\[{_PARTIAL_CITATION_ID}"
+    rf"| ?\({_PARTIAL_CITATION_ID}"
     r"| )$"
 )
 
@@ -533,12 +547,12 @@ def _extract_citations_from_text(
     total_len = 0
     last_end = 0
     # Tracks where the cleaned text's current url citation span starts. A url_citation
-    # needs a (start_index, end_index) span rather than file_citation's single point, so
-    # each one is attributed the text since the most recent citation of *either* type (or
-    # the start of the text) -- mirroring how OpenAI attributes a citation to the
-    # sentence(s) preceding it, and not re-claiming text a prior file_citation already
-    # covered.
-    last_citation_end = 0
+    # needs a (start_index, end_index) span rather than file_citation's single point.
+    # Only ever advanced by a *url* citation (not a file one), since a file_citation and a
+    # url_citation can legitimately both cover the same stretch of text (e.g. one sentence
+    # backed by both a retrieved file and a web result) -- a file marker shouldn't truncate
+    # where the next url span is considered to start.
+    url_span_start = 0
 
     for m in marker_regex.finditer(text):
         # segment before the marker
@@ -566,18 +580,28 @@ def _extract_citations_from_text(
                     index=total_len,  # index points to punctuation
                 )
             )
-            last_citation_end = total_len
         elif is_url:
             source = citation_urls[cid]
+            # Adjacent url markers with nothing between them (e.g. "fact <|url-1|><|url-2|>.",
+            # a model citing one claim with several sources) would otherwise give the second
+            # one a zero-width span ending where the first one ended. Instead, a marker
+            # directly glued to a prior url_citation reuses that citation's start, so both
+            # end up covering the same (real) preceding span rather than one of them covering
+            # nothing.
+            start_index = (
+                annotations[-1].start_index
+                if not prefix and annotations and isinstance(annotations[-1], OpenAIResponseAnnotationCitation)
+                else url_span_start
+            )
             annotations.append(
                 OpenAIResponseAnnotationCitation(
                     url=source.url,
                     title=source.title,
-                    start_index=last_citation_end,
+                    start_index=start_index,
                     end_index=total_len,  # end_index points to punctuation
                 )
             )
-            last_citation_end = total_len
+            url_span_start = total_len
         else:
             # Unrecognized marker (e.g. a stale/mismatched id): preserve it verbatim
             # rather than silently deleting user-visible text we can't actually attribute.
@@ -620,19 +644,24 @@ def extract_citations_from_text(
     citation_urls = citation_urls or {}
     annotations, clean_text = _extract_citations_from_text(text, citation_files, citation_urls)
 
-    if citation_files and not any(isinstance(a, OpenAIResponseAnnotationFileCitation) for a in annotations):
-        file_id, filename = next(iter(citation_files.items()))
-        annotations.append(
-            OpenAIResponseAnnotationFileCitation(file_id=file_id, filename=filename, index=len(clean_text))
-        )
-
-    if citation_urls and not any(isinstance(a, OpenAIResponseAnnotationCitation) for a in annotations):
-        source = next(iter(citation_urls.values()))
-        annotations.append(
-            OpenAIResponseAnnotationCitation(
-                url=source.url, title=source.title, start_index=0, end_index=len(clean_text)
+    # Only guess when the model cited *nothing* inline, of either type. A model that did
+    # cite inline (even only a file, with web_search also having run) made a deliberate
+    # attribution choice; forcing an extra guessed citation for the type it didn't use
+    # would misrepresent that choice, not fill a gap.
+    if not annotations:
+        if citation_files:
+            file_id, filename = next(iter(citation_files.items()))
+            annotations.append(
+                OpenAIResponseAnnotationFileCitation(file_id=file_id, filename=filename, index=len(clean_text))
             )
-        )
+
+        if citation_urls:
+            source = next(iter(citation_urls.values()))
+            annotations.append(
+                OpenAIResponseAnnotationCitation(
+                    url=source.url, title=source.title, start_index=0, end_index=len(clean_text)
+                )
+            )
 
     return annotations, clean_text
 

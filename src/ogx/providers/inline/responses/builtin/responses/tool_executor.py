@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import asyncio
+import hashlib
 import json
 import re
 from collections.abc import AsyncIterator
@@ -117,16 +118,31 @@ def _wrap_untrusted_tool_output(msg_content: str | list[Any]) -> str | list[Any]
 
 _WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE = (
     "\n\nSources:\n{source_list}\n"
-    "Cite sources immediately at the end of sentences before punctuation, using `<|url-N|>` "
-    "format like 'This is a fact <|url-1|>.', where N is the source number above. Use only "
-    "the source numbers listed, do not invent new ones."
+    "Cite a source immediately at the end of a sentence before punctuation, using the exact "
+    "token shown after it above, like 'This is a fact <|url-1a2b3c4d5e6f|>.' Copy the token "
+    "exactly as given, do not invent new ones."
 )
+
+
+def _web_search_citation_marker_id(url: str) -> str:
+    """A citation marker id derived from the url itself rather than its position in this
+    call's source list.
+
+    A per-call sequential id (url-1, url-2, ...) collides across separate web_search calls:
+    a second search in the same response -- or a follow-up turn, whose stored tool messages
+    from a prior turn keep that turn's old ids in context -- can reuse "url-1" for a
+    different url, silently misattributing a citation to the wrong source. Hashing the url
+    makes the id stable and (for practical purposes) unique per url regardless of when or
+    how many times it was searched, so a stale id from an earlier call/turn is either
+    identical (same url, correctly reused) or simply unrecognized rather than wrong.
+    """
+    return f"url-{hashlib.sha256(url.encode()).hexdigest()[:12]}"
 
 
 def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
     """Append a numbered source list and citation instructions to a web_search tool result,
     and record the id->source mapping in result.metadata["citation_urls"] so
-    extract_citations_from_text can turn `<|url-N|>` markers the model echoes back into
+    extract_citations_from_text can turn `<|url-...|>` markers the model echoes back into
     url_citation annotations (see utils.py). Mirrors how file_search's annotation
     instructions are baked into its tool content in _execute_file_search_via_vector_store,
     since web_search's content is provider-owned free-form text/JSON with no markers of
@@ -141,14 +157,16 @@ def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
 
     citation_urls: dict[str, CitationUrl] = {}
     source_lines = []
+    display_index = 0
     for source in sources:
         url = source.get("url")
         if not url:
             continue
-        marker_id = f"url-{len(citation_urls) + 1}"
+        display_index += 1
+        marker_id = _web_search_citation_marker_id(url)
         title = source.get("title") or url
         citation_urls[marker_id] = CitationUrl(url=url, title=title)
-        source_lines.append(f"{len(citation_urls)}. {title} - {url} (cite as <|{marker_id}|>)")
+        source_lines.append(f"{display_index}. {title} - {url} (cite as <|{marker_id}|>)")
 
     if not citation_urls:
         return

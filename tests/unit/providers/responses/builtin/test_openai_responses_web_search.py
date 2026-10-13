@@ -4,11 +4,15 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+import pytest
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice, ChoiceDelta
 
+from ogx.providers.inline.responses.builtin.responses.tool_executor import _web_search_citation_marker_id
 from ogx_api.openai_responses import (
     OpenAIResponseInputToolWebSearch,
     OpenAIResponseMessage,
+    OpenAIResponseObjectStreamResponseContentPartDone,
+    OpenAIResponseObjectStreamResponseOutputTextDelta,
 )
 from ogx_api.responses.models import CreateResponseRequest
 from ogx_api.tools import ToolDef, ToolInvocationResult
@@ -132,7 +136,7 @@ async def test_web_search_citation_populated_when_model_cites_inline(openai_resp
     """Regression test for #6763: web_search never produced url_citation annotations.
 
     Round 1: the model calls web_search. Round 2: the model answers, citing the
-    retrieved source with the instructed `<|url-N|>` marker. The final response's
+    retrieved source with the instructed `<|url-...|>` marker. The final response's
     output_text annotations should contain a matching url_citation.
     """
     openai_responses_impl.tool_groups_api.get_tool.return_value = ToolDef(
@@ -156,6 +160,8 @@ async def test_web_search_citation_populated_when_model_cites_inline(openai_resp
         },
     )
 
+    marker_id = _web_search_citation_marker_id("https://arxiv.org/abs/1706.03762")
+
     async def cited_final_answer():
         yield ChatCompletionChunk(
             id="chat-completion-web-cited",
@@ -167,7 +173,7 @@ async def test_web_search_citation_populated_when_model_cites_inline(openai_resp
                     index=0,
                     delta=ChoiceDelta(
                         role="assistant",
-                        content="Transformers use self-attention <|url-1|>.",
+                        content=f"Transformers use self-attention <|{marker_id}|>.",
                     ),
                     finish_reason="stop",
                 )
@@ -260,3 +266,89 @@ async def test_web_search_citation_falls_back_when_model_does_not_cite(openai_re
     assert text_content.text == "Transformers use self-attention."
     assert len(text_content.annotations) == 1
     assert text_content.annotations[0].url == "https://arxiv.org/abs/1706.03762"
+
+
+@pytest.mark.parametrize(
+    "split_marker",
+    [
+        pytest.param(
+            lambda marker_id: ["<", "|", "url", "-", marker_id.split("-", 1)[1], "|", ">."], id="char_by_char"
+        ),
+        pytest.param(lambda marker_id: ["<|u", f"rl-{marker_id.split('-', 1)[1]}|>."], id="split_mid_prefix"),
+        pytest.param(lambda marker_id: [f"<|{marker_id}|", ">."], id="split_before_close"),
+        pytest.param(lambda marker_id: ["[", f"{marker_id}]."], id="bracket_form"),
+    ],
+)
+async def test_streaming_deltas_never_leak_partial_url_marker_syntax(
+    openai_responses_impl, mock_inference_api, split_marker
+):
+    """Regression test: a `url-...` marker must be withheld from streamed deltas at every
+    intermediate boundary a real provider might split it at, not just once the literal
+    "url-" word has fully arrived. Before the fix, "<", "|", "url" (no trailing "-") would
+    already be flushed as visible text, since the pending-marker check only recognized a
+    partial "file-" prefix, not a partial "url-" one.
+    """
+    openai_responses_impl.tool_groups_api.get_tool.return_value = ToolDef(
+        name="web_search",
+        toolgroup_id="web_search",
+        description="Search the web for information",
+        input_schema={
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "The query to search for"}},
+            "required": ["query"],
+        },
+    )
+    openai_responses_impl.tool_runtime_api.invoke_tool.return_value = ToolInvocationResult(
+        status="completed",
+        content="Attention Is All You Need",
+        metadata={
+            "query": "What is a transformer?",
+            "sources": [{"url": "https://arxiv.org/abs/1706.03762", "title": "Attention Is All You Need"}],
+        },
+    )
+    marker_id = _web_search_citation_marker_id("https://arxiv.org/abs/1706.03762")
+    chunks_content = ["Transformers use self-attention ", *split_marker(marker_id)]
+
+    async def split_marker_final_answer():
+        for i, delta_text in enumerate(chunks_content):
+            yield ChatCompletionChunk(
+                id="chat-completion-web-split",
+                created=1234567895,
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                object="chat.completion.chunk",
+                choices=[
+                    Choice(
+                        index=0,
+                        delta=ChoiceDelta(role="assistant", content=delta_text),
+                        finish_reason="stop" if i == len(chunks_content) - 1 else None,
+                    )
+                ],
+            )
+
+    mock_inference_api.openai_chat_completion.side_effect = [
+        fake_stream("tool_call_completion.yaml"),
+        split_marker_final_answer(),
+    ]
+
+    stream = await openai_responses_impl.create_openai_response(
+        CreateResponseRequest(
+            input="What is a transformer?",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            tools=[OpenAIResponseInputToolWebSearch(type="web_search")],
+            stream=True,
+        )
+    )
+
+    delta_texts = []
+    content_part_done_text = None
+    async for event in stream:
+        if isinstance(event, OpenAIResponseObjectStreamResponseOutputTextDelta):
+            delta_texts.append(event.delta)
+            assert "<|url" not in event.delta, "raw marker syntax must never leak into a delta"
+            assert "[url-" not in event.delta, "raw marker syntax must never leak into a delta"
+            assert "|>" not in event.delta, "raw marker syntax must never leak into a delta"
+        elif isinstance(event, OpenAIResponseObjectStreamResponseContentPartDone) and event.part.text:
+            content_part_done_text = event.part.text
+
+    assert content_part_done_text == "Transformers use self-attention."
+    assert "".join(delta_texts) == content_part_done_text
