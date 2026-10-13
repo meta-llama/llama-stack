@@ -976,6 +976,23 @@ can be instantiated multiple times (with different configs) if necessary.
         return self
 
     @model_validator(mode="after")
+    def normalize_systemone_to_inference(self) -> "StackConfig":
+        """Collapse the ``systemone`` provider/api section into ``inference``.
+
+        Judgment/decision (SystemOne) models are served through the Inference API, so a
+        ``systemone`` section is a spelling alias for ``inference``. Keeping the spelling in
+        the config makes intent explicit; the resolver only ever sees ``inference``.
+        """
+        systemone_providers = self.providers.pop("systemone", None)
+        if systemone_providers:
+            self.providers["inference"] = [*self.providers.get("inference", []), *systemone_providers]
+        if self.apis and "systemone" in self.apis:
+            self.apis = [a for a in self.apis if a != "systemone"]
+            if "inference" not in self.apis:
+                self.apis.append("inference")
+        return self
+
+    @model_validator(mode="after")
     def validate_server_stores(self) -> "StackConfig":
         backend_map = self.storage.backends
         stores = self.storage.stores

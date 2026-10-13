@@ -9,6 +9,7 @@ from ogx.core.datatypes import Provider
 from ogx.distributions.template import DistributionTemplate
 from ogx.providers.remote.inference.llama_cpp_server.config import LlamaCppServerConfig
 from ogx.providers.remote.inference.text_embeddings_inference.config import TextEmbeddingsInferenceConfig
+from ogx.providers.remote.inference.typesafe.config import TypeSafeConfig
 from ogx.providers.remote.inference.watsonx.config import WatsonXConfig
 from ogx_api import ConnectorInput, ModelInput, ModelType
 
@@ -23,6 +24,11 @@ def get_distribution_template() -> DistributionTemplate:
     """
     template = get_starter_distribution_template(name="ci-tests")
     template.description = "CI tests for OGX"
+
+    # The TypeSafe provider serves SystemOne (judgment) models. The config spells it as a
+    # `systemone` provider section; the StackConfig normalizer reads that spelling as
+    # `inference` at load time (see StackConfig.normalize_systemone_to_inference).
+    template.providers["systemone"] = []
 
     # Pre-register a test MCP connector used by test_response_connector_resolution_mcp_tool.
     # The test starts an MCP server on port 5199 and references it by connector_id.
@@ -122,6 +128,18 @@ def get_distribution_template() -> DistributionTemplate:
         config=TextEmbeddingsInferenceConfig.sample_run_config(),
     )
 
+    # TypeSafe serves SystemOne (judgment) models, registered under the `systemone` provider
+    # section (added to the template above), which the StackConfig normalizer reads as
+    # `inference`. Always present; the api_key is read from TYPESAFE_API_KEY (empty by default),
+    # matching the other remote providers. Replay supplies a dummy value (see
+    # integration-tests.yml) so the recorder can serve the recorded responses; record supplies a
+    # real key.
+    typesafe_provider = Provider(
+        provider_id="typesafe",
+        provider_type="remote::typesafe",
+        config=TypeSafeConfig.sample_run_config(),
+    )
+
     for run_config in template.run_configs.values():
         if run_config.default_connectors is None:
             run_config.default_connectors = []
@@ -142,6 +160,9 @@ def get_distribution_template() -> DistributionTemplate:
 
         # Add the CI-only text-embeddings-inference inference provider
         run_config.provider_overrides["inference"].append(text_embeddings_inference_provider)
+
+        # Register the TypeSafe (SystemOne judgment) provider under the `systemone` section
+        run_config.provider_overrides["systemone"] = [typesafe_provider]
 
         # Add conditional auth config
         run_config.auth_config = auth_config

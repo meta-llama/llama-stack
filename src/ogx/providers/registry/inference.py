@@ -320,4 +320,17 @@ https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm
             config_class="ogx.providers.remote.inference.llama_cpp_server.config.LlamaCppServerConfig",
             description="llama.cpp inference provider for connecting to llama.cpp servers with OpenAI-compatible API.",
         ),
+        RemoteProviderSpec(
+            api=Api.inference,
+            adapter_type="typesafe",
+            provider_type="remote::typesafe",
+            pip_packages=["typesafe-sdk>=0.7.2"],
+            module="ogx.providers.remote.inference.typesafe",
+            config_class="ogx.providers.remote.inference.typesafe.config.TypeSafeConfig",
+            provider_data_validator="ogx.providers.remote.inference.typesafe.config.TypeSafeProviderDataValidator",
+            description=(
+                "TypeSafe inference provider for SystemOne (judgment/decision) models. "
+                "Serves POST /v1/systemone and registers ModelType.systemone models via the official typesafe SDK."
+            ),
+        ),
     ]
