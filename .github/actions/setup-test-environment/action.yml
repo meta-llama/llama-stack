@@ -91,6 +91,8 @@ runs:
     - name: Setup llama-cpp-server router
       if: ${{ startsWith(inputs.setup, 'llama-cpp-server') && inputs.inference-mode != 'replay' }}
       uses: ./.github/actions/setup-llamacpp
+      with:
+        suite: ${{ inputs.suite }}
 
     - name: Setup text-embeddings-inference
       if: ${{ startsWith(inputs.setup, 'text-embeddings-inference') && inputs.inference-mode != 'replay' }}
