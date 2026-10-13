@@ -22,18 +22,31 @@ captures a distinct recording. To (re)record the judgment tests against the live
 
 Assertions check the SystemOne wire contract (the shape of the response), not exact values, so
 they hold for both the committed placeholder recordings and freshly recorded live responses.
+
+The raw-wire tests (model listing shape and judgment) call the server's HTTP surface, so they
+need the server client; the ogx_client fixture carries the server URL for them, and they skip in
+in-process (library client) runs.
 """
 
 import json
-import os
 
+import pytest
 import requests
 
+from ogx.core.library_client import OGXAsLibraryClient
 from ogx.core.testing_context import get_test_context
 
 
-def _base_url() -> str:
-    return f"http://localhost:{os.environ['OGX_PORT']}"
+def _base_url(ogx_client) -> str:
+    """The running server's base URL, from the same source as the ogx_client fixture.
+
+    ``instantiate_ogx_client`` binds the server client to the running server and carries its URL
+    on ``base_url``; the in-process library client has no HTTP surface, so the raw-wire tests skip
+    there.
+    """
+    if isinstance(ogx_client, OGXAsLibraryClient):
+        pytest.skip("SystemOne wire tests need the server client; the in-process library client has no HTTP surface")
+    return str(ogx_client.base_url)
 
 
 def _test_context_headers() -> dict[str, str]:
@@ -44,10 +57,10 @@ def _test_context_headers() -> dict[str, str]:
     return {"X-OGX-Provider-Data": json.dumps({"__test_id": test_id})}
 
 
-def _judge(payload: dict[str, object]) -> "requests.Response":
+def _judge(ogx_client, payload: dict[str, object]) -> "requests.Response":
     """POST /v1/systemone with the active test id, returning the raw response."""
     return requests.post(
-        f"{_base_url()}/v1/systemone",
+        f"{_base_url(ogx_client)}/v1/systemone",
         headers=_test_context_headers(),
         json=payload,
         timeout=30,
@@ -82,7 +95,7 @@ def test_systemone_model_is_listed(ogx_client, judge_model_id):
 def test_systemone_models_listing_typesafe_shape(ogx_client, judge_model_id):
     """GET /v1/models with the x-typesafe-sdk header returns TypeSafe's model-listing shape."""
     resp = requests.get(
-        f"{_base_url()}/v1/models",
+        f"{_base_url(ogx_client)}/v1/models",
         headers={"x-typesafe-sdk": "1"},
         timeout=30,
     )
@@ -102,11 +115,12 @@ def test_systemone_models_listing_typesafe_shape(ogx_client, judge_model_id):
 def test_systemone_judgment_is_replayed(ogx_client, judge_model_id):
     """A noul (yes/no) question returns a calibrated probability in [0, 1]."""
     resp = _judge(
+        ogx_client,
         {
             "model": judge_model_id,
             "state": "I was charged twice. Please help.",
             "questions": {"billing": {"type": "noul", "instructions": "Is this about billing?"}},
-        }
+        },
     )
     assert resp.status_code == 200, resp.text
     answers = _assert_envelope(resp.json(), frozenset({"billing"}), judge_model_id)
@@ -121,6 +135,7 @@ def test_systemone_judgment_is_replayed(ogx_client, judge_model_id):
 def test_systemone_judgment_choice(ogx_client, judge_model_id):
     """A choice question returns a selected option, per-option probabilities, and confidence."""
     resp = _judge(
+        ogx_client,
         {
             "model": judge_model_id,
             "state": "The caller is shouting and using profanity.",
@@ -131,7 +146,7 @@ def test_systemone_judgment_choice(ogx_client, judge_model_id):
                     "criteria": {"calm": "Level and measured", "angry": "Loud and hostile", "neutral": None},
                 }
             },
-        }
+        },
     )
     assert resp.status_code == 200, resp.text
     answers = _assert_envelope(resp.json(), frozenset({"tone"}), judge_model_id)
@@ -148,6 +163,7 @@ def test_systemone_judgment_choice(ogx_client, judge_model_id):
 def test_systemone_judgment_score(ogx_client, judge_model_id):
     """A score question returns a rubric-weighted score, legend, probabilities, and confidence."""
     resp = _judge(
+        ogx_client,
         {
             "model": judge_model_id,
             "state": "The agent was slightly rude but did resolve the issue.",
@@ -158,7 +174,7 @@ def test_systemone_judgment_score(ogx_client, judge_model_id):
                     "criteria": ["Unacceptable", "Poor", "Acceptable", "Good", "Excellent"],
                 }
             },
-        }
+        },
     )
     assert resp.status_code == 200, resp.text
     answers = _assert_envelope(resp.json(), frozenset({"quality"}), judge_model_id)
@@ -176,6 +192,7 @@ def test_systemone_judgment_score(ogx_client, judge_model_id):
 def test_systemone_judgment_mixed_questions(ogx_client, judge_model_id):
     """One request can mix noul, choice, and score questions; each is answered by its name."""
     resp = _judge(
+        ogx_client,
         {
             "model": judge_model_id,
             "state": "I was charged twice and the agent was rude about it.",
@@ -192,7 +209,7 @@ def test_systemone_judgment_mixed_questions(ogx_client, judge_model_id):
                     "criteria": ["Bad", "Ok", "Good"],
                 },
             },
-        }
+        },
     )
     assert resp.status_code == 200, resp.text
     answers = _assert_envelope(resp.json(), frozenset({"billing", "tone", "quality"}), judge_model_id)
@@ -207,11 +224,12 @@ def test_systemone_judgment_mixed_questions(ogx_client, judge_model_id):
 def test_systemone_judgment_structured_state(ogx_client, judge_model_id):
     """`state` may be a JSON object (not just a string); questions evaluate against it."""
     resp = _judge(
+        ogx_client,
         {
             "model": judge_model_id,
             "state": {"message": "I was charged twice. Please help.", "channel": "phone", "customer_tier": "premium"},
             "questions": {"billing": {"type": "noul", "instructions": "Is this about billing?"}},
-        }
+        },
     )
     assert resp.status_code == 200, resp.text
     answers = _assert_envelope(resp.json(), frozenset({"billing"}), judge_model_id)

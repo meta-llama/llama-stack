@@ -29,7 +29,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `base` | `fireworks` |  |
 | `llama-cpp-server` | `llama-cpp-server` | `inference` only |
 | `text-embeddings-inference` | `text-embeddings-inference` | `test_openai_embeddings.py` only |
-| `systemone` | `typesafe` | `test_systemone.py` only |
+| `systemone` | `typesafe` | server client only; `test_systemone.py` only |
 
 ## CI Lanes (Scheduled)
 
