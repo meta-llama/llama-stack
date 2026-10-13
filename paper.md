@@ -51,11 +51,11 @@ bibliography: paper.bib
 
 OGX (Open GenAI Stack), formerly Llama Stack [@llamastack], is an open-source AI application server and Python library with interchangeable backend providers [@ogx]. Teams building retrieval-augmented generation (RAG) pipelines, conversational agents, and tool-calling workflows can change their inference engine and vector database through server configuration without rewriting application code.
 
-OGX implements OpenAI, Anthropic, and Google APIs, with the Responses API for server-side orchestration as its primary focus [@openresponses]. The cited v1.0.3 release registers 23 inference provider types and 13 vector I/O provider types spanning 10 distinct storage backends; inline and remote variants count separately as provider types. A companion Kubernetes Operator [@ogxk8soperator] manages deployments, including shared and per-tenant instances. Together, OGX and its operator provide a self-hosted backend for AI-powered developer tools such as Claude Code, Codex CLI, OpenCode, and OpenHands.
+OGX implements OpenAI, Anthropic, and Google APIs, with the Responses API for server-side orchestration as its primary focus [@openresponses]. The cited v1.5.0 release supports configurable inference and vector storage providers. A companion Kubernetes Operator [@ogxk8soperator] manages deployments, including shared and per-tenant instances. Together, OGX and its operator provide a self-hosted backend for AI-powered developer tools such as Claude Code, Codex CLI, OpenCode, and OpenHands.
 
 # Statement of Need
 
-AI application development today is tightly coupled to proprietary API providers. While inference-only workloads can increasingly be swapped across providers---vLLM, for example, supports the Responses API for basic inference---applications that rely on the full stack (retrieval, tool calling, conversation state, safety guardrails) remain difficult to migrate without rewriting significant application logic. This coupling limits reproducibility, makes comparisons across model providers difficult, and prevents teams from running AI workloads on controlled infrastructure---a requirement in regulated, privacy-sensitive, and air-gapped environments.
+AI application development today is tightly coupled to proprietary API providers. While inference-only workloads can increasingly be swapped across providers---vLLM [@kwon2023vllm], for example, supports the Responses API for basic inference---applications that rely on the full stack (retrieval, tool calling, conversation state, safety guardrails) remain difficult to migrate without rewriting significant application logic. This coupling limits reproducibility, makes comparisons across model providers difficult, and prevents teams from running AI workloads on controlled infrastructure---a requirement in regulated, privacy-sensitive, and air-gapped environments.
 
 OGX addresses this need through standard APIs and configurable infrastructure. Researchers can compare backends while keeping retrieval, tool authorization, and conversation handling in one server. This separates the choice of client SDK, model, and deployment environment, supporting reproducible configurations on controlled infrastructure.
 
@@ -63,9 +63,9 @@ OGX addresses this need through standard APIs and configurable infrastructure. R
 
 OGX continues Llama Stack under a renamed, model-agnostic mission. Its server-side API layer complements inference engines, gateways, and client-side frameworks, which address different parts of the deployment problem.
 
-**Inference engines** (vLLM [@kwon2023vllm], SGLang [@sglang], Ollama) focus on efficient model serving. They optimize throughput and latency but do not provide retrieval, conversation state, tool execution, or safety guardrails. An application using vLLM for inference must separately integrate a vector database, implement its own agentic loop, and manage multi-turn state.
+**Inference engines** (vLLM [@kwon2023vllm], SGLang [@sglang], Ollama [@ollama]) focus on model inference and serving. Some expose tool-calling APIs; applications using them directly still need to arrange retrieval, persistent conversation state, and tool execution for agentic workflows. OGX supplies these application services around interchangeable inference engines.
 
-**API gateways** (LiteLLM, OpenRouter) provide a unified interface across multiple inference providers but act as pass-through proxies. They do not manage vector stores, execute tool calls, or maintain conversation history---they translate request formats between SDKs and providers.
+**API gateways** (LiteLLM [@litellm], OpenRouter [@openrouter]) provide unified access and routing across inference providers. Their feature sets also include capabilities beyond request translation, such as LiteLLM's guardrails and MCP gateway. OGX combines provider routing with its own vector stores, persistent conversations, and server-side Responses orchestration in a self-hosted application server.
 
 **Client-side frameworks** (LangChain [@langchain], LangGraph [@langgraph], LlamaIndex [@llamaindex], CrewAI [@crewai], Haystack [@haystack]) provide rich developer abstractions for building agents and RAG pipelines. However, they execute orchestration client-side, distributing security-critical logic across application code. These frameworks are complementary to OGX: they compose agent logic while OGX provides the server-side execution target they call into.
 
@@ -134,7 +134,7 @@ OGX has realized impact through both public deployments and customer production 
 
 The security architecture---specifically, the multitenant isolation model combining ABAC-gated retrieval, server-side orchestration, and pluggable provider backends---was formally analyzed in a peer-reviewed publication at the ACM Conference on AI and Agentic Systems [@arceo2026securing]. OGX conforms to the Open Responses specification [@openresponses] and serves as a reference implementation for open, vendor-neutral agentic AI APIs.
 
-As of June 2026, the project has over 8,400 GitHub stars, 242 contributors, 4,000 commits, and 68 releases across nearly two years of public development. Community engagement includes weekly contributor calls, an active Discord server, and integrations contributed by external organizations including Red Hat, IBM, Oracle, and Infinispan.
+Community engagement includes weekly contributor calls, an active Discord server, and integrations contributed by external organizations including Red Hat, IBM, Oracle, and Infinispan.
 
 # AI Usage Disclosure
 
