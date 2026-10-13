@@ -78,6 +78,7 @@ INTENTIONALLY_UNMAPPED_REGISTRY_PROVIDERS = {
     "passthrough",
     "runpod",
     "sambanova",
+    "typesafe",
 }
 
 

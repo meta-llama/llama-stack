@@ -18,7 +18,8 @@
     {"suite": "interactions", "setup": "gemini"},
     {"suite": "base", "setup": "fireworks"},
     {"suite": "llama-cpp-server", "setup": "llama-cpp-server"},
-    {"suite": "text-embeddings-inference", "setup": "text-embeddings-inference"}
+    {"suite": "text-embeddings-inference", "setup": "text-embeddings-inference"},
+    {"suite": "systemone", "setup": "typesafe", "allowed_clients": ["server"]}
   ],
   "schedules": {
     "1 0 * * 0": [
