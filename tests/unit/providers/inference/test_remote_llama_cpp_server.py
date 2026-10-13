@@ -17,6 +17,7 @@ from ogx.providers.remote.inference.llama_cpp_server.llama_cpp_server import (
 )
 from ogx.providers.utils.inference import server_signature
 from ogx.providers.utils.inference.server_signature import ServerUnreachableError
+from ogx.providers.utils.inference.systemone import LOCAL_ENGINE_API_KEY
 from ogx_api import (
     HealthStatus,
     ModelType,
@@ -378,7 +379,9 @@ async def test_judge_forwards_to_systemone_util():
     mock_judge.assert_awaited_once()
     args, kwargs = mock_judge.call_args
     assert args[0] == "http://mocked.localhost:8080"
-    assert args[1] == "NO KEY REQUIRED"
+    # No auth_credential configured: the fixed local placeholder is used, not
+    # get_api_key()'s whitespace-containing display value (rejected by the SDK).
+    assert args[1] == LOCAL_ENGINE_API_KEY
     assert kwargs["network"] is None
 
 

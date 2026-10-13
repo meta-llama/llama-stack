@@ -126,9 +126,17 @@ class LlamaCppServerInferenceAdapter(OpenAIMixin):
         models, so no translation is needed; the shared helper validates the raw response body
         into the OGX wire model.
         """
+        # get_api_key() returns a display placeholder ("NO KEY REQUIRED") when no
+        # credential is configured, which the typesafe SDK rejects; pass the
+        # configured credential or the fixed local placeholder instead.
+        api_key = (
+            self.config.auth_credential.get_secret_value()
+            if self.config.auth_credential is not None
+            else LOCAL_ENGINE_API_KEY
+        )
         return await systemone_judge(
             self._get_systemone_base_url(),
-            self.get_api_key() or LOCAL_ENGINE_API_KEY,
+            api_key,
             request,
             network=self.config.network,
         )
