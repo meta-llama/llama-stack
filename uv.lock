@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.15' and sys_platform == 'win32'",
@@ -4391,6 +4391,7 @@ dev = [
     { name = "types-requests" },
     { name = "types-setuptools" },
     { name = "types-tqdm" },
+    { name = "typesafe-sdk" },
     { name = "unstructured-client" },
     { name = "weaviate-client" },
 ]
@@ -4568,6 +4569,7 @@ dev = [
     { name = "types-requests", specifier = ">=2.33.0.20260906" },
     { name = "types-setuptools", specifier = ">=84.0.0.20260812" },
     { name = "types-tqdm", specifier = ">=4.70.0.20260906" },
+    { name = "typesafe-sdk", specifier = ">=0.7.2" },
     { name = "unstructured-client", specifier = ">=0.46.2" },
     { name = "weaviate-client", specifier = ">=4.23.1" },
 ]
@@ -8143,6 +8145,24 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/fe/92/517d71d5a399cd2f8ead3b4328d987262478f22fbbe7f8312360d4c321d0/types_tqdm-4.70.0.20260906.tar.gz", hash = "sha256:6581dc996152a87d51ce2ea169169187ffc0a96dacdb8adbdef29cbee8c1e631", size = 19309, upload-time = "2026-09-06T06:35:31.916Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/81/ea/d12697988ab2c672877796ecaea69666e2379ee7b40f01f4540250d5a97b/types_tqdm-4.70.0.20260906-py3-none-any.whl", hash = "sha256:c3b88c694928515d601f73fa6646aa43adc0ef735bedbeebf0cc543f6a201ae8", size = 25181, upload-time = "2026-09-06T06:35:30.931Z" },
+]
+
+[[package]]
+name = "typesafe-sdk"
+version = "0.7.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx2" },
+    { name = "packaging" },
+    { name = "pydantic" },
+    { name = "pydantic-core" },
+    { name = "tenacity" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/15/c5/f659e9b60d239d88a5e0c0ae6ecdde478aadb9db9b962cac1075b55df5c1/typesafe_sdk-0.7.3.tar.gz", hash = "sha256:7c3efa360bfe34a0017047ddb89ab254b8e1b45f4c5a16c6533059307f925748", size = 24325, upload-time = "2026-10-09T09:43:58.41Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4c/f2/8c091d0e259fa5e07b25fea1e3baced59e74bd08a4a9965395885a6ffbe3/typesafe_sdk-0.7.3-py3-none-any.whl", hash = "sha256:27449bdcfba4a2580a669637e925541e7ba491671d5a52509220546b41c9ea3d", size = 37633, upload-time = "2026-10-09T09:43:57.155Z" },
 ]
 
 [[package]]

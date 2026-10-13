@@ -27,7 +27,10 @@ SCHEDULE_MATRICES: dict[str, list[dict[str, str]]] = matrix_config.get("schedule
 # Maps path prefixes to the test setup names they should trigger.
 # Order matters: more specific paths should come before broader ones.
 PROVIDER_PATH_TO_SETUPS: list[tuple[str, list[str]]] = [
-    ("src/ogx/providers/remote/inference/ollama/", ["ollama", "ollama-vision", "ollama-postgres", "ollama-reasoning"]),
+    (
+        "src/ogx/providers/remote/inference/ollama/",
+        ["ollama", "ollama-vision", "ollama-postgres", "ollama-reasoning", "ollama-systemone"],
+    ),
     ("src/ogx/providers/remote/inference/openai/", ["gpt", "gpt-reasoning"]),
     ("src/ogx/providers/remote/inference/azure/", ["azure"]),
     ("src/ogx/providers/remote/inference/bedrock/", ["bedrock"]),

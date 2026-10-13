@@ -73,7 +73,7 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.inference,
             adapter_type="ollama",
             provider_type="remote::ollama",
-            pip_packages=["ollama", "aiohttp", "h11>=0.16.0"],
+            pip_packages=["ollama", "aiohttp", "h11>=0.16.0", "typesafe-sdk>=0.7.2"],
             config_class="ogx.providers.remote.inference.ollama.OllamaImplConfig",
             module="ogx.providers.remote.inference.ollama",
             description="Ollama inference provider for running local models through the Ollama runtime.",
@@ -319,5 +319,18 @@ https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm
             module="ogx.providers.remote.inference.llama_cpp_server",
             config_class="ogx.providers.remote.inference.llama_cpp_server.config.LlamaCppServerConfig",
             description="llama.cpp inference provider for connecting to llama.cpp servers with OpenAI-compatible API.",
+        ),
+        RemoteProviderSpec(
+            api=Api.inference,
+            adapter_type="typesafe",
+            provider_type="remote::typesafe",
+            pip_packages=["typesafe-sdk>=0.7.2"],
+            module="ogx.providers.remote.inference.typesafe",
+            config_class="ogx.providers.remote.inference.typesafe.config.TypeSafeConfig",
+            provider_data_validator="ogx.providers.remote.inference.typesafe.config.TypeSafeProviderDataValidator",
+            description=(
+                "TypeSafe inference provider for SystemOne (judgment/decision) models. "
+                "Serves POST /v1/systemone and registers ModelType.systemone models via the official typesafe SDK."
+            ),
         ),
     ]

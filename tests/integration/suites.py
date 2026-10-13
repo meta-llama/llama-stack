@@ -107,6 +107,16 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "ollama/nomic-embed-text:v1.5",
         },
     ),
+    "ollama-systemone": Setup(
+        name="ollama",
+        description="Local Ollama provider with a SystemOne decision model (tev1:0.8b)",
+        env={
+            "OLLAMA_URL": "http://0.0.0.0:11434/v1",
+        },
+        defaults={
+            "judge_model": "ollama/tev1:0.8b",
+        },
+    ),
     "bedrock": Setup(
         name="bedrock",
         description=(
@@ -291,6 +301,17 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "typesafe": Setup(
+        name="typesafe",
+        description=(
+            "TypeSafe SystemOne (judgment) models, replayed from recordings. Set "
+            "TYPESAFE_API_KEY to record against the live API; without it the recorded "
+            "responses are replayed."
+        ),
+        defaults={
+            "judge_model": "typesafe/jev-latest",
+        },
+    ),
 }
 
 
@@ -326,6 +347,14 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         name="text-embeddings-inference",
         roots=["tests/integration/inference/test_openai_embeddings.py"],
         default_setup="text-embeddings-inference",
+    ),
+    # TypeSafe SystemOne (judgment) backend. The typesafe setup only provides a
+    # judge model (no chat/completion or embedding model), so this suite is scoped
+    # to the SystemOne tests only, mirroring text-embeddings-inference.
+    "systemone": Suite(
+        name="systemone",
+        roots=["tests/integration/inference/test_systemone.py"],
+        default_setup="typesafe",
     ),
     "responses": Suite(
         name="responses",
