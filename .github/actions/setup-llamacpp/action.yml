@@ -40,7 +40,7 @@ runs:
         # Pinned sha256: GitHub release asset digest (b11429) and HuggingFace LFS oid
         # (= content sha256) for the models.
         LLAMA_TARBALL_SHA=f6d25dde8f51133143d1453da4fd5f73b145127177612a283bf7995957af3392
-        LAYA_SHA=acb12df5d1292bef427034193bd085547f6feea44e29c5599d3584dff9a2543b
+        LAYA_SHA=c06528c5746d3bb8baa72a27938be95abbfd0b226f8471e8a9e365ed0bb066d2
 
         # 1. llama.cpp CPU binary, pinned to build b11429 (v0.6.0, which serves the
         #    SystemOne protocol). bXXXX builds are published as GitHub prereleases;
