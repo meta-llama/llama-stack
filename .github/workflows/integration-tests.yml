@@ -186,7 +186,7 @@ jobs:
       - name: Setup TypeScript client
         if: ${{ matrix.client == 'server' }}
         id: setup-ts-client
-        uses: ogx-ai/ogx/.github/actions/setup-typescript-client@fb32709e3b29816b52085c92820531e4e6d94be8
+        uses: ogx-ai/ogx/.github/actions/setup-typescript-client@75ed067efcadcb30bf61df4684c5151aa2640cae
         with:
           client-version: ${{ matrix.client-version }}
 
