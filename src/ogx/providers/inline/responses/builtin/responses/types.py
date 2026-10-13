@@ -57,6 +57,13 @@ def _json_equal(a: str, b: str) -> bool:
         return a == b
 
 
+class CitationUrl(BaseModel):
+    """A web source cited inline via a `<|url-id|>` marker (see extract_citations_from_text)."""
+
+    url: str
+    title: str
+
+
 class ToolExecutionResult(BaseModel):
     """Result of streaming tool execution."""
 
@@ -65,6 +72,7 @@ class ToolExecutionResult(BaseModel):
     final_output_message: OpenAIResponseOutput | None = None
     final_input_message: OpenAIMessageParam | None = None
     citation_files: dict[str, str] | None = None
+    citation_urls: dict[str, CitationUrl] | None = None
 
 
 @dataclass

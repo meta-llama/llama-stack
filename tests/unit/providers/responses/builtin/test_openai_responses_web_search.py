@@ -4,8 +4,11 @@
 # This source code is licensed under the terms described in the LICENSE file in
 # the root directory of this source tree.
 
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice, ChoiceDelta
+
 from ogx_api.openai_responses import (
     OpenAIResponseInputToolWebSearch,
+    OpenAIResponseMessage,
 )
 from ogx_api.responses.models import CreateResponseRequest
 from ogx_api.tools import ToolDef, ToolInvocationResult
@@ -123,3 +126,137 @@ async def test_web_search_without_config_passes_only_query(openai_responses_impl
     assert "search_context_size" not in call_kwargs
     assert "allowed_domains" not in call_kwargs
     assert "user_location" not in call_kwargs
+
+
+async def test_web_search_citation_populated_when_model_cites_inline(openai_responses_impl, mock_inference_api):
+    """Regression test for #6763: web_search never produced url_citation annotations.
+
+    Round 1: the model calls web_search. Round 2: the model answers, citing the
+    retrieved source with the instructed `<|url-N|>` marker. The final response's
+    output_text annotations should contain a matching url_citation.
+    """
+    openai_responses_impl.tool_groups_api.get_tool.return_value = ToolDef(
+        name="web_search",
+        toolgroup_id="web_search",
+        description="Search the web for information",
+        input_schema={
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "The query to search for"}},
+            "required": ["query"],
+        },
+    )
+    openai_responses_impl.tool_runtime_api.invoke_tool.return_value = ToolInvocationResult(
+        status="completed",
+        content="Attention Is All You Need",
+        metadata={
+            "query": "What is a transformer?",
+            "sources": [
+                {"url": "https://arxiv.org/abs/1706.03762", "title": "Attention Is All You Need"},
+            ],
+        },
+    )
+
+    async def cited_final_answer():
+        yield ChatCompletionChunk(
+            id="chat-completion-web-cited",
+            created=1234567893,
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            object="chat.completion.chunk",
+            choices=[
+                Choice(
+                    index=0,
+                    delta=ChoiceDelta(
+                        role="assistant",
+                        content="Transformers use self-attention <|url-1|>.",
+                    ),
+                    finish_reason="stop",
+                )
+            ],
+        )
+
+    mock_inference_api.openai_chat_completion.side_effect = [
+        fake_stream("tool_call_completion.yaml"),
+        cited_final_answer(),
+    ]
+
+    result = await openai_responses_impl.create_openai_response(
+        CreateResponseRequest(
+            input="What is a transformer?",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            tools=[OpenAIResponseInputToolWebSearch(type="web_search")],
+        )
+    )
+
+    messages = [item for item in result.output if isinstance(item, OpenAIResponseMessage)]
+    assert len(messages) == 1
+    text_content = messages[0].content[0]
+    assert text_content.text == "Transformers use self-attention."
+    assert len(text_content.annotations) == 1
+    annotation = text_content.annotations[0]
+    assert annotation.type == "url_citation"
+    assert annotation.url == "https://arxiv.org/abs/1706.03762"
+    assert annotation.title == "Attention Is All You Need"
+
+
+async def test_web_search_citation_falls_back_when_model_does_not_cite(openai_responses_impl, mock_inference_api):
+    """When the model doesn't echo the `<|url-N|>` marker, the response should still
+    attribute the answer to the single retrieved source rather than returning no
+    annotations at all."""
+    openai_responses_impl.tool_groups_api.get_tool.return_value = ToolDef(
+        name="web_search",
+        toolgroup_id="web_search",
+        description="Search the web for information",
+        input_schema={
+            "type": "object",
+            "properties": {"query": {"type": "string", "description": "The query to search for"}},
+            "required": ["query"],
+        },
+    )
+    openai_responses_impl.tool_runtime_api.invoke_tool.return_value = ToolInvocationResult(
+        status="completed",
+        content="Attention Is All You Need",
+        metadata={
+            "query": "What is a transformer?",
+            "sources": [
+                {"url": "https://arxiv.org/abs/1706.03762", "title": "Attention Is All You Need"},
+            ],
+        },
+    )
+
+    async def uncited_final_answer():
+        yield ChatCompletionChunk(
+            id="chat-completion-web-uncited",
+            created=1234567894,
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            object="chat.completion.chunk",
+            choices=[
+                Choice(
+                    index=0,
+                    delta=ChoiceDelta(
+                        role="assistant",
+                        content="Transformers use self-attention.",
+                    ),
+                    finish_reason="stop",
+                )
+            ],
+        )
+
+    mock_inference_api.openai_chat_completion.side_effect = [
+        fake_stream("tool_call_completion.yaml"),
+        uncited_final_answer(),
+    ]
+
+    result = await openai_responses_impl.create_openai_response(
+        CreateResponseRequest(
+            input="What is a transformer?",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            tools=[OpenAIResponseInputToolWebSearch(type="web_search")],
+        )
+    )
+
+    messages = [item for item in result.output if isinstance(item, OpenAIResponseMessage)]
+    assert len(messages) == 1
+    text_content = messages[0].content[0]
+    assert text_content.text == "Transformers use self-attention."
+    assert len(text_content.annotations) == 1
+    assert text_content.annotations[0].url == "https://arxiv.org/abs/1706.03762"

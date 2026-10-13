@@ -13,6 +13,7 @@ from ogx.providers.inline.responses.builtin.responses.tool_executor import (
     _UNTRUSTED_TOOL_OUTPUT_FOOTER,
     _UNTRUSTED_TOOL_OUTPUT_HEADER,
     ToolExecutor,
+    _add_web_search_citation_markers,
     _escape_delimiter_collisions,
     _wrap_untrusted_tool_output,
 )
@@ -238,3 +239,91 @@ class TestEmptyToolResultNotReportedAsFailure:
         )
 
         assert input_message.content == "Tool execution failed"
+
+
+class TestAddWebSearchCitationMarkers:
+    """Regression tests for #6763: web_search never produced url_citation annotations
+    because nothing told the model how to cite the sources it found, and nothing
+    recorded an id->source mapping to turn any citation back into an annotation."""
+
+    def test_appends_numbered_sources_and_instruction_to_string_content(self):
+        result = ToolInvocationResult(
+            content="Some search results here.",
+            metadata={
+                "sources": [
+                    {"url": "https://arxiv.org/abs/1706.03762", "title": "Attention Is All You Need"},
+                    {"url": "https://en.wikipedia.org/wiki/Transformer", "title": "Transformer (Wikipedia)"},
+                ]
+            },
+        )
+
+        _add_web_search_citation_markers(result)
+
+        assert "Some search results here." in result.content
+        assert "1. Attention Is All You Need - https://arxiv.org/abs/1706.03762 (cite as <|url-1|>)" in result.content
+        assert (
+            "2. Transformer (Wikipedia) - https://en.wikipedia.org/wiki/Transformer (cite as <|url-2|>)"
+            in result.content
+        )
+        assert "<|url-N|>" in result.content
+        assert result.metadata["citation_urls"]["url-1"].url == "https://arxiv.org/abs/1706.03762"
+        assert result.metadata["citation_urls"]["url-1"].title == "Attention Is All You Need"
+        assert result.metadata["citation_urls"]["url-2"].url == "https://en.wikipedia.org/wiki/Transformer"
+
+    def test_falls_back_to_url_as_title_when_title_missing(self):
+        result = ToolInvocationResult(
+            content="Some search results here.",
+            metadata={"sources": [{"url": "https://example.com"}]},
+        )
+
+        _add_web_search_citation_markers(result)
+
+        assert result.metadata["citation_urls"]["url-1"].title == "https://example.com"
+
+    def test_appends_instruction_as_text_part_for_list_content(self):
+        result = ToolInvocationResult(
+            content=[TextContentItem(text="Some search results here.")],
+            metadata={"sources": [{"url": "https://example.com", "title": "Example"}]},
+        )
+
+        _add_web_search_citation_markers(result)
+
+        assert len(result.content) == 2
+        assert result.content[0].text == "Some search results here."
+        assert "cite as <|url-1|>" in result.content[1].text
+
+    def test_no_op_when_no_sources(self):
+        result = ToolInvocationResult(content="Some search results here.", metadata={"sources": []})
+
+        _add_web_search_citation_markers(result)
+
+        assert result.content == "Some search results here."
+        assert result.metadata.get("citation_urls") is None
+
+    def test_no_op_when_no_metadata(self):
+        result = ToolInvocationResult(content="Some search results here.")
+
+        _add_web_search_citation_markers(result)
+
+        assert result.content == "Some search results here."
+
+    def test_no_op_when_content_is_none(self):
+        result = ToolInvocationResult(
+            content=None, metadata={"sources": [{"url": "https://example.com", "title": "Example"}]}
+        )
+
+        _add_web_search_citation_markers(result)
+
+        assert result.content is None
+        assert result.metadata.get("citation_urls") is None
+
+    def test_skips_sources_missing_url(self):
+        result = ToolInvocationResult(
+            content="Some search results here.",
+            metadata={"sources": [{"title": "No URL here"}, {"url": "https://example.com", "title": "Has URL"}]},
+        )
+
+        _add_web_search_citation_markers(result)
+
+        assert list(result.metadata["citation_urls"].keys()) == ["url-1"]
+        assert result.metadata["citation_urls"]["url-1"].url == "https://example.com"

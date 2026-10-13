@@ -47,7 +47,7 @@ from ogx_api import (
     WebSearchSource,
 )
 
-from .types import ChatCompletionContext, ToolExecutionResult
+from .types import ChatCompletionContext, CitationUrl, ToolExecutionResult
 
 logger = get_logger(name=__name__, category="agents::builtin")
 tracer = trace.get_tracer(__name__)
@@ -113,6 +113,53 @@ def _wrap_untrusted_tool_output(msg_content: str | list[Any]) -> str | list[Any]
         else:
             wrapped.append(part)
     return wrapped
+
+
+_WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE = (
+    "\n\nSources:\n{source_list}\n"
+    "Cite sources immediately at the end of sentences before punctuation, using `<|url-N|>` "
+    "format like 'This is a fact <|url-1|>.', where N is the source number above. Use only "
+    "the source numbers listed, do not invent new ones."
+)
+
+
+def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
+    """Append a numbered source list and citation instructions to a web_search tool result,
+    and record the id->source mapping in result.metadata["citation_urls"] so
+    extract_citations_from_text can turn `<|url-N|>` markers the model echoes back into
+    url_citation annotations (see utils.py). Mirrors how file_search's annotation
+    instructions are baked into its tool content in _execute_file_search_via_vector_store,
+    since web_search's content is provider-owned free-form text/JSON with no markers of
+    its own.
+
+    Mutates result.content and result.metadata in place. No-op if there are no sources
+    (e.g. a failed search) or no content to append the instruction to.
+    """
+    if result.content is None:
+        return
+    sources = (result.metadata or {}).get("sources") or []
+
+    citation_urls: dict[str, CitationUrl] = {}
+    source_lines = []
+    for source in sources:
+        url = source.get("url")
+        if not url:
+            continue
+        marker_id = f"url-{len(citation_urls) + 1}"
+        title = source.get("title") or url
+        citation_urls[marker_id] = CitationUrl(url=url, title=title)
+        source_lines.append(f"{len(citation_urls)}. {title} - {url} (cite as <|{marker_id}|>)")
+
+    if not citation_urls:
+        return
+
+    instruction = _WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE.format(source_list="\n".join(source_lines))
+    if isinstance(result.content, str):
+        result.content = result.content + instruction
+    elif isinstance(result.content, list):
+        result.content = [*result.content, TextContentItem(text=instruction)]
+
+    result.metadata = {**(result.metadata or {}), "citation_urls": citation_urls}
 
 
 class ToolExecutor:
@@ -183,13 +230,13 @@ class ToolExecutor:
         )
 
         # Yield the final result
+        result_metadata = getattr(result, "metadata", None) if result else None
         yield ToolExecutionResult(
             sequence_number=sequence_number,
             final_output_message=output_message,
             final_input_message=input_message,
-            citation_files=(
-                metadata.get("citation_files") if result and (metadata := getattr(result, "metadata", None)) else None
-            ),
+            citation_files=result_metadata.get("citation_files") if result_metadata else None,
+            citation_urls=result_metadata.get("citation_urls") if result_metadata else None,
         )
 
     async def _execute_file_search_via_vector_store(
@@ -466,6 +513,8 @@ class ToolExecutor:
                         tool_name=function_name,
                         kwargs=tool_kwargs,
                     )
+                if result is not None:
+                    _add_web_search_citation_markers(result)
             else:
                 attributes = {
                     "tool_name": function_name,
