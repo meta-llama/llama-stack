@@ -29,6 +29,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `base` | `fireworks` |  |
 | `llama-cpp-server` | `llama-cpp-server` | `inference` only |
 | `text-embeddings-inference` | `text-embeddings-inference` | `test_openai_embeddings.py` only |
+| `systemone` | `typesafe` | server client only; `test_systemone.py` only |
 
 ## CI Lanes (Scheduled)
 
@@ -55,6 +56,7 @@ Cron: `1 0 * * 0`
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
 | `ollama-vision` | — | ollama/qwen3-vl:2b | ollama/nomic-embed-text:v1.5 | — | `vision` | — |
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
+| `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 | `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base-vllm-subset`, `vllm-reasoning` | `base` |
 | `vllm-qwen3next` | Qwen3-Next-80B-A3B-Instruct-FP8 | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | — | `base` |
