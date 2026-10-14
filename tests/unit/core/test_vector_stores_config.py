@@ -107,6 +107,13 @@ class TestVectorStoresConfigValidation:
         with pytest.raises(ValidationError, match=r"got \[\]"):
             WebSearchAnnotationParams(source_list_header_template="{{source_list}}")
 
+        # A bad format spec on an otherwise-correctly-named field (e.g. {title:d}, which
+        # expects an integer) passes the field-name check -- the name is right -- then raises
+        # on every search that returns a source. Actually formatting with sample values at
+        # config-load time catches this instead.
+        with pytest.raises(ValidationError, match="template cannot be formatted"):
+            WebSearchAnnotationParams(source_line_template="{index}. {title:d} - {url} (cite as <|{marker_id}|>)")
+
     def test_rewrite_query_params_validation(self):
         """Test RewriteQueryParams validation."""
         model = QualifiedModel(provider_id="test", model_id="test-model")

@@ -522,6 +522,22 @@ _PENDING_CITATION_MARKER_TAIL_REGEX = re.compile(
 
 CitationAnnotation = OpenAIResponseAnnotationFileCitation | OpenAIResponseAnnotationCitation
 
+_SENTENCE_BREAK = re.compile(r"[.!?؟]\s|\n")
+
+
+def _sentence_start(text: str, floor: int) -> int:
+    """Find where the sentence containing `text`'s current end actually starts, without going
+    earlier than `floor` (the checkpoint left by the previous citation of either kind -- see
+    _extract_citations_from_text). A url citation's span is meant to cover the sentence it's
+    attached to, not drag in whatever unrelated text came before it back to the last citation,
+    which is what using `floor` as the span start unconditionally did.
+    """
+    end = len(text.rstrip(" \n.!?؟"))
+    start = floor
+    for m in _SENTENCE_BREAK.finditer(text, floor, end):
+        start = m.end()
+    return len(text) - len(text[start:].lstrip())
+
 
 def _extract_citations_from_text(
     text: str,
@@ -555,8 +571,11 @@ def _extract_citations_from_text(
     url_span_start = 0
     # Start index shared by every url citation in the current glued cluster -- a run of
     # markers (file and/or url, any mix) with no real text between them, all backing the same
-    # claim. Reset to the checkpoint above only when real text separates this marker from the
-    # previous one; carried forward unchanged across glued markers regardless of their type, so
+    # claim. Reset, only when real text separates this marker from the previous one, to the
+    # start of the sentence containing that text -- never earlier than the checkpoint above,
+    # since a url citation's span is meant to cover its own sentence, not drag in whatever
+    # unrelated text came before it back to the last citation of either kind (see
+    # _sentence_start). Carried forward unchanged across glued markers regardless of type, so
     # e.g. "<|url-1|><|file-a|><|url-2|>" gives url-2 the same span as url-1 instead of a
     # zero-width one, and "<|file-a|>. <|url-1|>" doesn't let url-1 reach back across text that
     # only the file citation covers.
@@ -581,7 +600,7 @@ def _extract_citations_from_text(
         total_len += len(prefix)
 
         if prefix:
-            cluster_start = url_span_start
+            cluster_start = _sentence_start("".join(parts), url_span_start)
 
         if is_file:
             annotations.append(

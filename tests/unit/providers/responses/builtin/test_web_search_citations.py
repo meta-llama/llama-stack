@@ -22,6 +22,11 @@ class TestExtractUrlCitationsFromText:
     """Regression tests for #6763: web_search never produced url_citation annotations."""
 
     def test_extracts_url_citation_with_span_since_previous_marker(self):
+        """The second citation's span starts at its own sentence ("They were introduced in
+        2017"), not all the way back at the checkpoint left by the first citation -- the two
+        sentences are both attributed to web_search, but each citation covers only the
+        sentence it's actually attached to.
+        """
         text = "Transformers use self-attention <|url-1|>. They were introduced in 2017 <|url-2|>."
         citation_urls = {
             "url-1": CitationUrl(url="https://arxiv.org/abs/1706.03762", title="Attention Is All You Need"),
@@ -41,12 +46,13 @@ class TestExtractUrlCitationsFromText:
             OpenAIResponseAnnotationCitation(
                 url="https://en.wikipedia.org/wiki/Transformer",
                 title="Transformer",
-                start_index=31,
+                start_index=33,
                 end_index=61,
             ),
         ]
         assert cleaned_text[annotations[0].end_index] == "."
         assert cleaned_text[annotations[1].end_index] == "."
+        assert cleaned_text[annotations[1].start_index :] == "They were introduced in 2017."
 
     def test_preserves_unknown_url_marker(self):
         text = "Some fact <|url-99|>."
@@ -94,6 +100,9 @@ class TestExtractUrlCitationsFromText:
         assert [(a.start_index, a.end_index) for a in annotations] == [(0, 4), (0, 4), (0, 4)]
 
     def test_url_marker_after_an_adjacent_cluster_gets_its_own_fresh_span(self):
+        """url-3's span covers only "Fact B", its own sentence, not the space separating it
+        from the previous cluster's sentence.
+        """
         text = "Fact A <|url-1|><|url-2|> Fact B <|url-3|>."
         citation_urls = {
             "url-1": CitationUrl(url="https://a.com", title="A"),
@@ -106,15 +115,17 @@ class TestExtractUrlCitationsFromText:
         assert cleaned_text == "Fact A Fact B."
         assert (annotations[0].start_index, annotations[0].end_index) == (0, 6)
         assert (annotations[1].start_index, annotations[1].end_index) == (0, 6)
-        assert (annotations[2].start_index, annotations[2].end_index) == (6, 13)
+        assert (annotations[2].start_index, annotations[2].end_index) == (7, 13)
+        assert cleaned_text[7:13] == "Fact B"
 
     def test_file_and_url_markers_coexist_with_correct_indices(self):
         """A single turn can call both file_search and web_search; markers of both
         types must be strippable in one pass without corrupting each other's indices.
 
-        The url citation's span starts right after the preceding file citation, not at the
-        very beginning of the text: "From a doc" was already attributed to the file citation,
-        so the url citation covering "From the web" must not also claim it.
+        The url citation's span starts at its own sentence ("From the web"), not at the very
+        beginning of the text and not merely right after the preceding file citation: "From a
+        doc" was already attributed to the file citation, so the url citation must not also
+        claim it or the sentence-boundary whitespace between the two.
         """
         text = "From a doc <|file-abc123|>. From the web <|url-1|>."
         citation_files = {"file-abc123": "doc1.pdf"}
@@ -125,8 +136,9 @@ class TestExtractUrlCitationsFromText:
         assert cleaned_text == "From a doc. From the web."
         assert annotations == [
             OpenAIResponseAnnotationFileCitation(file_id="file-abc123", filename="doc1.pdf", index=10),
-            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=10, end_index=24),
+            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=12, end_index=24),
         ]
+        assert cleaned_text[12:24] == "From the web"
 
     def test_url_marker_glued_to_file_marker_shares_the_same_cluster_start(self):
         """`<|url-1|><|file-a|><|url-2|>`, with no text separating any of the three markers,
