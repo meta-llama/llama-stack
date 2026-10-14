@@ -26,6 +26,7 @@ from ogx_api import (
     OpenAIResponseInputToolFileSearch,
     OpenAIResponseInputToolMCP,
     OpenAIResponseInputToolWebSearch,
+    OpenAIResponseObject,
     OpenAIResponseObjectStreamResponseFileSearchCallCompleted,
     OpenAIResponseObjectStreamResponseFileSearchCallInProgress,
     OpenAIResponseObjectStreamResponseFileSearchCallSearching,
@@ -50,6 +51,7 @@ from ogx_api import (
 )
 
 from .types import ChatCompletionContext, CitationUrl, ToolExecutionResult
+from .utils import CITATION_MARKER_REGEX
 
 logger = get_logger(name=__name__, category="agents::builtin")
 tracer = trace.get_tracer(__name__)
@@ -126,18 +128,56 @@ def _web_search_citation_marker_id(url: str) -> str:
     return f"url-{hashlib.sha256(url.encode()).hexdigest()[:12]}"
 
 
+def build_web_search_citation_history(previous_response: OpenAIResponseObject) -> dict[str, CitationUrl]:
+    """Reconstruct a marker id -> CitationUrl map from a previous response's own
+    web_search_call outputs, so a follow-up turn that echoes an earlier turn's
+    `<|url-...|>` marker (from the stored assistant message) without calling web_search
+    again can still resolve it. Marker ids are deterministic hashes of the url (see
+    _web_search_citation_marker_id), so the same url always maps to the same id regardless
+    of which turn or call searched it.
+
+    Reads ONLY previous_response.output -- OGX's own prior output, never a client-supplied
+    input item -- so a client can't inject an attacker-chosen url into this map by crafting
+    message history. Title is not recoverable here (action.sources only stores the url, see
+    WebSearchSource) so it falls back to the url itself, same as parse_web_search_sources
+    does when a provider source has no title.
+
+    Callers must keep this a map SEPARATE from the current turn's own citation_urls: it's
+    meant only to resolve a marker that is actually in the text (see
+    extract_citations_from_text's historical_citation_urls parameter), never to feed the
+    "model didn't cite anything" fallback, which must only ever guess from what *this* turn
+    actually searched for.
+    """
+    history: dict[str, CitationUrl] = {}
+    for item in previous_response.output:
+        if not isinstance(item, OpenAIResponseOutputMessageWebSearchToolCall):
+            continue
+        if not isinstance(item.action, WebSearchActionSearch) or not item.action.sources:
+            continue
+        for source in item.action.sources:
+            marker_id = _web_search_citation_marker_id(source.url)
+            history[marker_id] = CitationUrl(url=source.url, title=source.url)
+    return history
+
+
 def _build_web_search_citation_block(
     sources: list[WebSearchSourceDict],
     params: WebSearchAnnotationParams | None = None,
-) -> tuple[str, dict[str, CitationUrl]] | None:
-    """Build the numbered source list and citation instructions to append to a web_search tool
+) -> tuple[str, str, dict[str, CitationUrl]] | None:
+    """Build the numbered source list and citation instruction to append to a web_search tool
     result, and the id->source mapping extract_citations_from_text needs to turn `<|url-...|>`
     markers the model echoes back into url_citation annotations (see utils.py). Mirrors how
     file_search's annotation instructions are baked into its tool content in
     _execute_file_search_via_vector_store, since web_search's content is provider-owned
     free-form text/JSON with no markers of its own.
 
-    Pure: returns None if there's nothing to cite, otherwise the text to append and the
+    Returns the source list and the instruction as two separate strings (rather than one
+    combined block) because they get appended to the tool message at two different points
+    relative to the <untrusted_tool_output> wrap: the source list is still the search engine's
+    own data (titles/urls) and must stay inside the wrap, while the instruction is a real
+    instruction to the model and must stay outside it (see _build_result_messages).
+
+    Pure: returns None if there's nothing to cite, otherwise the two text blocks and the
     mapping to record. The caller (_add_web_search_citation_markers) owns applying that to a
     result, so this can be tested and reasoned about without a ToolInvocationResult at all.
     """
@@ -149,23 +189,31 @@ def _build_web_search_citation_block(
     source_lines = []
     for display_index, source in enumerate(sources, start=1):
         marker_id = _web_search_citation_marker_id(source["url"])
+        # citation_urls keeps the real title/url (used for the actual url_citation annotation
+        # and action.sources); only the *displayed* copy in the source line is neutralized,
+        # since a title or url containing e.g. "[url-abc123]" would otherwise look like a real
+        # marker for a different source once it reaches the model (see CITATION_MARKER_REGEX).
         citation_urls[marker_id] = CitationUrl(url=source["url"], title=source["title"])
         source_lines.append(
             params.source_line_template.format(
-                index=display_index, title=source["title"], url=source["url"], marker_id=marker_id
+                index=display_index,
+                title=CITATION_MARKER_REGEX.sub(" ", source["title"]),
+                url=CITATION_MARKER_REGEX.sub(" ", source["url"]),
+                marker_id=marker_id,
             )
         )
 
-    instruction = params.citation_instruction_template.format(source_list="\n".join(source_lines))
-    return instruction, citation_urls
+    source_list = params.source_list_header_template.format(source_list="\n".join(source_lines))
+    return source_list, params.citation_instruction_template, citation_urls
 
 
 def _add_web_search_citation_markers(
     result: ToolInvocationResult, params: WebSearchAnnotationParams | None = None
 ) -> None:
     """Record _build_web_search_citation_block's output on result.metadata, for
-    _build_result_messages to append to the tool message *after* it wraps the search
-    engine's own content in <untrusted_tool_output> (see _wrap_untrusted_tool_output).
+    _build_result_messages to append to the tool message: the source list *before* it wraps
+    the search engine's own content in <untrusted_tool_output>, and the instruction *after*
+    (see _wrap_untrusted_tool_output).
 
     This deliberately does not touch result.content itself: the citation instruction is a
     real instruction the model should follow, unlike everything inside that delimited block,
@@ -184,10 +232,11 @@ def _add_web_search_citation_markers(
     if citation_block is None:
         return
 
-    instruction, citation_urls = citation_block
+    source_list, instruction, citation_urls = citation_block
     result.metadata = {
         **(result.metadata or {}),
         "citation_urls": citation_urls,
+        "citation_source_list": source_list,
         "citation_instruction": instruction,
     }
 
@@ -725,6 +774,19 @@ class ToolExecutor:
                 msg_content = content_list
             else:
                 raise ValueError(f"Unknown result content type: {type(result_content)}")
+            # Appended *before* wrapping, so it goes through _escape_delimiter_collisions and
+            # stays inside <untrusted_tool_output>: titles/urls are still the search engine's
+            # own data, not something OGX asserts as fact (see _add_web_search_citation_markers).
+            if function.name == "web_search" and (metadata := getattr(result, "metadata", None)):
+                if source_list := metadata.get("citation_source_list"):
+                    separated_source_list = f"\n\n{source_list}"
+                    if isinstance(msg_content, str):
+                        msg_content = msg_content + separated_source_list
+                    elif isinstance(msg_content, list):
+                        msg_content = [
+                            *msg_content,
+                            OpenAIChatCompletionContentPartTextParam(text=separated_source_list),
+                        ]
             if function.name in _UNTRUSTED_CONTENT_TOOL_NAMES:
                 msg_content = _wrap_untrusted_tool_output(msg_content)
             # Appended after wrapping, never inside <untrusted_tool_output>: this instruction

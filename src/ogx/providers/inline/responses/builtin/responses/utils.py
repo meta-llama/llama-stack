@@ -114,11 +114,14 @@ async def convert_chat_choice_to_response_message(
     citation_urls: dict[str, CitationUrl] | None = None,
     *,
     message_id: str | None = None,
+    historical_citation_urls: dict[str, CitationUrl] | None = None,
 ) -> OpenAIResponseMessage:
     """Convert an OpenAI Chat Completion choice into an OpenAI Response output message."""
     output_content = choice.message.content or ""
 
-    annotations, clean_text = extract_citations_from_text(output_content, citation_files or {}, citation_urls)
+    annotations, clean_text = extract_citations_from_text(
+        output_content, citation_files or {}, citation_urls, historical_citation_urls
+    )
     logprobs = choice.logprobs.content if choice.logprobs and choice.logprobs.content else []
 
     return OpenAIResponseMessage(
@@ -547,9 +550,17 @@ def _extract_citations_from_text(
     parts = []
     total_len = 0
     last_end = 0
-    # Tracks the current url_citation span's start. Advances only on url citations, not file
-    # ones, since a file_citation and a url_citation can legitimately cover the same text.
+    # Checkpoint: the position right after the last citation marker of either kind, used to
+    # anchor the *next new* (non-glued) cluster of citations.
     url_span_start = 0
+    # Start index shared by every url citation in the current glued cluster -- a run of
+    # markers (file and/or url, any mix) with no real text between them, all backing the same
+    # claim. Reset to the checkpoint above only when real text separates this marker from the
+    # previous one; carried forward unchanged across glued markers regardless of their type, so
+    # e.g. "<|url-1|><|file-a|><|url-2|>" gives url-2 the same span as url-1 instead of a
+    # zero-width one, and "<|file-a|>. <|url-1|>" doesn't let url-1 reach back across text that
+    # only the file citation covers.
+    cluster_start = 0
 
     for m in marker_regex.finditer(text):
         # segment before the marker
@@ -569,6 +580,9 @@ def _extract_citations_from_text(
         parts.append(prefix)
         total_len += len(prefix)
 
+        if prefix:
+            cluster_start = url_span_start
+
         if is_file:
             annotations.append(
                 OpenAIResponseAnnotationFileCitation(
@@ -577,21 +591,14 @@ def _extract_citations_from_text(
                     index=total_len,  # index points to punctuation
                 )
             )
+            url_span_start = total_len
         elif is_url:
             source = citation_urls[cid]
-            # A marker directly glued to a prior url_citation (no text between them, e.g.
-            # one claim with several sources) reuses that citation's start, so both cover
-            # the same real span instead of the second one getting a zero-width span.
-            start_index = (
-                annotations[-1].start_index
-                if not prefix and annotations and isinstance(annotations[-1], OpenAIResponseAnnotationCitation)
-                else url_span_start
-            )
             annotations.append(
                 OpenAIResponseAnnotationCitation(
                     url=source.url,
                     title=source.title,
-                    start_index=start_index,
+                    start_index=cluster_start,
                     end_index=total_len,  # end_index points to punctuation
                 )
             )
@@ -614,6 +621,7 @@ def extract_citations_from_text(
     text: str,
     citation_files: dict[str, str],
     citation_urls: dict[str, CitationUrl] | None = None,
+    historical_citation_urls: dict[str, CitationUrl] | None = None,
 ) -> tuple[list[CitationAnnotation], str]:
     """Extract citation markers from text, with a fallback for models that don't cite inline.
 
@@ -631,13 +639,19 @@ def extract_citations_from_text(
             ordered by descending relevance score (see tool_executor.py).
         citation_urls: Dictionary mapping a `url-<hash>` marker id to its CitationUrl(url,
             title) for web_search results retrieved this turn, in result order.
-
+        historical_citation_urls: Same mapping, but reconstructed from a *previous* turn's
+            own web_search_call outputs (see tool_executor.build_web_search_citation_history),
+            so a marker the model copies from stored history can still be resolved even
+            without re-searching. Used only to resolve markers actually present in text --
+            never merged into the fallback below, which must only ever guess from what this
+            turn itself retrieved (citation_urls), not from unrelated earlier searches.
     Returns:
         Tuple of (annotations_list, clean_text_without_markers)
     """
     if citation_urls is None:
         citation_urls = {}
-    annotations, clean_text = _extract_citations_from_text(text, citation_files, citation_urls)
+    resolvable_urls = {**(historical_citation_urls or {}), **citation_urls}
+    annotations, clean_text = _extract_citations_from_text(text, citation_files, resolvable_urls)
 
     # Only guess when the model cited *nothing* inline, of either type. A model that did
     # cite inline (even only a file, with web_search also having run) made a deliberate
@@ -681,9 +695,17 @@ class StreamingCitationCleaner:
     minor cosmetic difference from the final text, not a correctness issue.
     """
 
-    def __init__(self, citation_files: dict[str, str], citation_urls: dict[str, CitationUrl] | None = None):
+    def __init__(
+        self,
+        citation_files: dict[str, str],
+        citation_urls: dict[str, CitationUrl] | None = None,
+        historical_citation_urls: dict[str, CitationUrl] | None = None,
+    ):
         self._citation_files = citation_files
-        self._citation_urls = {} if citation_urls is None else citation_urls
+        # Merged for resolution only (same reasoning as extract_citations_from_text): this
+        # cleaner never does the "didn't cite anything" fallback, so there's no fallback to
+        # accidentally pollute with stale sources here.
+        self._citation_urls = {**(historical_citation_urls or {}), **(citation_urls or {})}
         self._buffer = ""
 
     def feed(self, delta: str) -> str:

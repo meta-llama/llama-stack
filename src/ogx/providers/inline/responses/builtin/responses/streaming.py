@@ -344,6 +344,13 @@ class StreamingResponseOrchestrator:
         # mapping for annotations
         self.citation_files: dict[str, str] = {}
         self.citation_urls: dict[str, CitationUrl] = {}
+        # Markers resolvable from a previous turn's own web_search results (see
+        # tool_executor.build_web_search_citation_history); used only to resolve a
+        # `<|url-...|>` marker the model echoes from stored history, never to drive the
+        # "didn't cite anything" fallback -- see extract_citations_from_text.
+        self.historical_citation_urls: dict[str, CitationUrl] = (
+            ctx.tool_context.historical_citation_urls if ctx.tool_context else {}
+        )
         # Track accumulated usage across all inference calls
         self.accumulated_usage: OpenAIResponseUsage | None = None
         # Track if we've sent a refusal response
@@ -812,6 +819,7 @@ class StreamingResponseOrchestrator:
                                 self.citation_files,
                                 self.citation_urls,
                                 message_id=completion_result_data.message_item_id,
+                                historical_citation_urls=self.historical_citation_urls,
                             )
                         )
                 # Execute tool calls and coordinate results
@@ -1227,7 +1235,9 @@ class StreamingResponseOrchestrator:
         # Cleans citation markers out of delta text as it streams, so a client
         # reconstructing output from deltas sees the same text as content_part.done /
         # output_item.done (which clean the fully accumulated text once streaming ends).
-        citation_cleaner = StreamingCitationCleaner(self.citation_files, self.citation_urls)
+        citation_cleaner = StreamingCitationCleaner(
+            self.citation_files, self.citation_urls, self.historical_citation_urls
+        )
 
         async for raw_chunk in completion_result:
             # Providers returning OpenAIChatCompletionChunkWithReasoning wrap
@@ -1516,7 +1526,7 @@ class StreamingResponseOrchestrator:
 
             final_text = "".join(chat_response_content)
             part_annotations, part_clean_text = extract_citations_from_text(
-                final_text, self.citation_files, self.citation_urls
+                final_text, self.citation_files, self.citation_urls, self.historical_citation_urls
             )
             self.sequence_number += 1
             yield OpenAIResponseObjectStreamResponseContentPartDone(
@@ -1562,7 +1572,7 @@ class StreamingResponseOrchestrator:
             if content_part_emitted:
                 final_text = "".join(chat_response_content)
                 final_annotations, final_clean_text = extract_citations_from_text(
-                    final_text, self.citation_files, self.citation_urls
+                    final_text, self.citation_files, self.citation_urls, self.historical_citation_urls
                 )
                 content_parts.append(
                     OpenAIResponseOutputMessageContentOutputText(

@@ -112,10 +112,9 @@ class TestExtractUrlCitationsFromText:
         """A single turn can call both file_search and web_search; markers of both
         types must be strippable in one pass without corrupting each other's indices.
 
-        A file citation doesn't bound where the next url span starts: the two citation
-        types track independently, since a file_citation and a url_citation can
-        legitimately cover overlapping text (e.g. one sentence backed by both a file and
-        a web result).
+        The url citation's span starts right after the preceding file citation, not at the
+        very beginning of the text: "From a doc" was already attributed to the file citation,
+        so the url citation covering "From the web" must not also claim it.
         """
         text = "From a doc <|file-abc123|>. From the web <|url-1|>."
         citation_files = {"file-abc123": "doc1.pdf"}
@@ -126,8 +125,26 @@ class TestExtractUrlCitationsFromText:
         assert cleaned_text == "From a doc. From the web."
         assert annotations == [
             OpenAIResponseAnnotationFileCitation(file_id="file-abc123", filename="doc1.pdf", index=10),
-            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=0, end_index=24),
+            OpenAIResponseAnnotationCitation(url="https://example.com", title="Example", start_index=10, end_index=24),
         ]
+
+    def test_url_marker_glued_to_file_marker_shares_the_same_cluster_start(self):
+        """`<|url-1|><|file-a|><|url-2|>`, with no text separating any of the three markers,
+        is one claim backed by two sources; url-2 must share url-1's start instead of getting
+        a zero-width span once the file citation sits between them.
+        """
+        text = "Fact <|url-1|><|file-a|><|url-2|>."
+        citation_files = {"file-a": "doc.pdf"}
+        citation_urls = {
+            "url-1": CitationUrl(url="https://a.com", title="A"),
+            "url-2": CitationUrl(url="https://b.com", title="B"),
+        }
+
+        annotations, cleaned_text = _extract_citations_from_text(text, citation_files, citation_urls)
+
+        assert cleaned_text == "Fact."
+        url_annotations = [a for a in annotations if isinstance(a, OpenAIResponseAnnotationCitation)]
+        assert [(a.start_index, a.end_index) for a in url_annotations] == [(0, 4), (0, 4)]
 
     def test_falls_back_to_whole_text_span_when_model_does_not_cite(self):
         text = "Transformers use self-attention."

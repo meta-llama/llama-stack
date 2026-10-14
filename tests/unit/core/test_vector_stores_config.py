@@ -28,13 +28,14 @@ class TestVectorStoresConfigValidation:
         assert config.context_prompt_params.chunk_annotation_template is not None
         assert config.annotation_prompt_params.chunk_annotation_template is not None
         assert config.web_search_annotation_params.citation_instruction_template is not None
+        assert config.web_search_annotation_params.source_list_header_template is not None
 
         # Verify required placeholders are present
         assert "{num_chunks}" in config.file_search_params.header_template
         assert "file_search" in config.file_search_params.header_template.lower()
         assert "{chunk.content}" in config.context_prompt_params.chunk_annotation_template
         assert "{query}" in config.context_prompt_params.context_template
-        assert "{source_list}" in config.web_search_annotation_params.citation_instruction_template
+        assert "{source_list}" in config.web_search_annotation_params.source_list_header_template
         assert config.web_search_annotation_params.enable_annotations is True
 
     def test_default_search_mode_defaults_to_vector(self):
@@ -81,13 +82,30 @@ class TestVectorStoresConfigValidation:
         from ogx.core.datatypes import WebSearchAnnotationParams
 
         with pytest.raises(ValidationError, match="must not be empty"):
-            WebSearchAnnotationParams(citation_instruction_template="")
+            WebSearchAnnotationParams(source_list_header_template="")
 
-        with pytest.raises(ValidationError, match="must contain {source_list} placeholder"):
-            WebSearchAnnotationParams(citation_instruction_template="No placeholder here.")
+        # Missing the required field
+        with pytest.raises(ValidationError, match=r"must be exactly \['source_list'\], got \[\]"):
+            WebSearchAnnotationParams(source_list_header_template="No placeholder here.")
 
-        with pytest.raises(ValidationError, match="must contain {marker_id} placeholder"):
+        with pytest.raises(ValidationError, match=r"must be exactly \['index', 'marker_id', 'title', 'url'\]"):
             WebSearchAnnotationParams(source_line_template="{index}. {title} - {url}")
+
+        # citation_instruction_template takes no placeholders: the source list is delimited
+        # separately via source_list_header_template, so it must not reference it.
+        with pytest.raises(ValidationError, match=r"must be exactly \[\], got \['source_list'\]"):
+            WebSearchAnnotationParams(citation_instruction_template="Cite it. {source_list}")
+
+        # An extra, unexpected field raises a KeyError at format() time if it slips through;
+        # exact field-set comparison catches it at config-validation time instead.
+        with pytest.raises(ValidationError, match=r"got \['extra', 'source_list'\]"):
+            WebSearchAnnotationParams(source_list_header_template="{source_list} {extra}")
+
+        # A doubled brace is a literal-text escape, not a real placeholder, so a naive
+        # substring check ("{source_list}" in v) would accept this even though it silently
+        # renders as the text "{source_list}" instead of the actual list.
+        with pytest.raises(ValidationError, match=r"got \[\]"):
+            WebSearchAnnotationParams(source_list_header_template="{{source_list}}")
 
     def test_rewrite_query_params_validation(self):
         """Test RewriteQueryParams validation."""
@@ -141,13 +159,15 @@ class TestVectorStoresConfigValidation:
         config = VectorStoresConfig(
             web_search_annotation_params=WebSearchAnnotationParams(
                 enable_annotations=False,
-                citation_instruction_template="Custom instruction.\n{source_list}",
+                source_list_header_template="Custom header.\n{source_list}",
+                citation_instruction_template="Custom instruction.",
                 source_line_template="- {title} ({url}) [{marker_id}] #{index}",
             )
         )
 
         assert config.web_search_annotation_params.enable_annotations is False
-        assert config.web_search_annotation_params.citation_instruction_template.startswith("Custom instruction.")
+        assert config.web_search_annotation_params.source_list_header_template.startswith("Custom header.")
+        assert config.web_search_annotation_params.citation_instruction_template == "Custom instruction."
 
 
 class TestOptionalArchitecture:
