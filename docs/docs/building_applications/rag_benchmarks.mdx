@@ -193,7 +193,7 @@ BEIR benchmarks are **retrieval-only** — no LLM is involved. Documents are upl
 | **nDCG@10** | BEIR | Normalized Discounted Cumulative Gain at rank 10 — measures ranking quality |
 | **Recall@10** | BEIR | Fraction of relevant documents retrieved in top 10 |
 | **MAP@10** | BEIR | Mean Average Precision at rank 10 |
-| **Containment** | MultiHOP | Whether the normalized gold answer appears, as whole tokens, in the reply. Independent of reply length |
+| **Containment** | MultiHOP | Whether the normalized gold answer appears, as whole tokens, within the first word-budget words of the reply. Not sensitive to reply length below that budget, unlike token-F1 |
 | **Constant-reply baseline** | MultiHOP | Containment score of the highest-scoring query-independent reply buildable within the same word budget containment checks against. A run must beat it |
 | **Exact Match** | MultiHOP, Doc2Dial | Whether the prediction exactly matches the ground truth |
 | **F1** | MultiHOP, Doc2Dial | Token-level F1 (SQuAD-style precision/recall on answer tokens). Not used to rank MultiHOP, where it depends mostly on reply length |

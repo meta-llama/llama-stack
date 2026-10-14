@@ -16,11 +16,17 @@ come from a few values, so a query-independent reply that lists the most common 
 high; listing every distinct answer scores 1.0. Both sides of that problem are the same fix:
 containment is only checked within a fixed word budget (CONTAINMENT_WORD_BUDGET) of the
 reply, on both a scored prediction and the constant-reply baseline, so enumerating more
-answers than fit in the budget helps neither. The baseline is the highest-scoring reply a
-0/1 knapsack (answer -> (frequency, word width)) can build within that same budget, so no
-other reply bounded by the budget can outscore it either -- the comparison "containment >
-constant_baseline" is only meaningful because nothing budget-bounded can beat the baseline
-by construction. Every score is reported next to it; containment is only informative above it.
+answers than fit in the budget helps neither. The baseline is the highest-scoring reply a 0/1
+knapsack (answer -> (frequency, word width)) can build within that same budget, assuming each
+answer's credit is independent of what else is packed alongside it; see
+constant_reply_baseline for why that assumption, and the "nothing budget-bounded beats this"
+property it gives, hold on MultiHopRAG but aren't a general guarantee. Every score is
+reported next to the baseline; containment is only informative above it.
+
+The budget is a tradeoff, not a free fix: a reply that states its answer after more than
+CONTAINMENT_WORD_BUDGET words of framing scores 0 on that query even if the answer itself is
+right. file_search replies are typically multi-sentence with citations, so this can matter;
+how often it does hasn't been measured (see README.md).
 """
 
 from __future__ import annotations
@@ -39,7 +45,7 @@ _ASCII_PUNCTUATION = frozenset(string.punctuation)
 # comfortably fits a direct one-sentence answer with light framing (e.g. "Based on the
 # retrieved articles, the company most closely associated with this event is Google." is 15
 # words through the answer), while still bounding what a query-independent reply can list:
-# on MultiHopRAG it caps the baseline at 0.9174 rather than letting it drift toward 1.0.
+# on MultiHopRAG it caps the baseline at 0.9202 rather than letting it drift toward 1.0.
 CONTAINMENT_WORD_BUDGET = 20
 
 
@@ -106,10 +112,17 @@ def constant_reply_baseline(
     Each distinct gold answer is worth its frequency count and costs its normalized word
     width; picking answers by frequency alone (ignoring width) is not optimal, since e.g. a
     less frequent one-word answer can be worth more per word than a more frequent multi-word
-    one. This is a 0/1 knapsack over that trade-off, so the returned reply is provably the
-    best any reply bounded by the same word budget can do -- which is the property that makes
-    "containment beats this baseline" a meaningful claim (see contains_answer, which checks
-    containment within that same budget).
+    one. This is a 0/1 knapsack over that trade-off, treating each distinct answer's value as
+    independent of every other one it packs alongside.
+
+    That independence assumption isn't quite true: contains_answer does substring matching, so
+    one gold answer's tokens can be a contiguous run inside another's (MultiHopRAG has a few
+    such pairs, e.g. "Taylor Swift" inside "Taylor Swift and Travis Kelce"), and packing the
+    longer one for free credits the shorter one's queries too -- the knapsack doesn't see that
+    bonus, so in principle a reply exploiting it could beat this one. It doesn't on
+    MultiHopRAG (checked by forcing each overlapping answer in as a bundle with the answers
+    inside it, which scores no higher), but that's true of this dataset, not a general
+    guarantee the knapsack enforces for arbitrary ground_truths.
     """
     counts: Counter[str] = Counter()
     representative: dict[str, str] = {}

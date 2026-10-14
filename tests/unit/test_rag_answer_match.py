@@ -115,9 +115,26 @@ class TestContainsAnswerWordBudget:
         assert containment_accuracy({"1": far_reply}, {"1": "Google"}) == 0.0
         assert containment_accuracy({"1": far_reply}, {"1": "Google"}, word_budget=21) == 1.0
 
+    def test_a_correct_answer_stated_after_too_much_framing_is_not_credited(self):
+        """Known, documented tradeoff (see the module docstring and README.md): the budget
+        closes the enumeration loophole, but it also means a reply that opens with enough
+        framing before stating its (correct) answer scores 0 on that query. file_search
+        replies are multi-sentence with citations, so this can happen on real runs.
+        """
+        framed_reply = (
+            "Based on the retrieved articles and the evidence they present across multiple "
+            "related news reports, the company most closely associated with this event is Google."
+        )
+        assert len(normalize_answer(framed_reply)) == 22  # confirms the scenario, not just the result
+        assert not contains_answer(framed_reply, "Google")
+        assert contains_answer(framed_reply, "Google", word_budget=1000)
+
 
 class TestContainmentAccuracy:
-    """The controls from the issue: wrong answers must fail and correct ones must pass at any length."""
+    """The controls from the issue: wrong answers must fail and correct ones must pass at any
+    length, as long as the answer itself is within the word budget (here, always at the front
+    of the padded reply) -- see TestContainsAnswerWordBudget for what happens otherwise.
+    """
 
     def test_empty_replies_fail(self):
         assert containment_accuracy(dict.fromkeys(GOLD, ""), GOLD) == 0.0
@@ -250,6 +267,35 @@ class TestWordBudgetClosesEnumerationLoophole:
 
         assert baseline == pytest.approx(best_alternative)
         assert reply  # sanity: a non-empty reply was actually returned
+
+
+class TestOverlappingGoldAnswersAreAKnownLimitation:
+    """Review finding on the knapsack fix: it treats each distinct gold answer's value as
+    independent of every other one packed alongside it, but contains_answer does substring
+    matching, so one answer's tokens can be a contiguous run inside another's (MultiHopRAG has
+    6 such pairs, e.g. "Taylor Swift" inside "Taylor Swift and Travis Kelce"). Packing the
+    longer one covers the shorter one's queries too, a bonus the knapsack's accounting doesn't
+    see. Checked against the real dataset (both independently and by the reviewer): it doesn't
+    cost anything there. This test is not a bug fix -- it demonstrates, on a constructed
+    vocabulary where the bonus is large enough to matter, that the independence assumption is a
+    real (if currently dormant) gap, not a merely theoretical one, so it isn't accidentally
+    "fixed" by a future change without updating constant_reply_baseline's docstring too.
+    """
+
+    def test_a_reply_exploiting_an_answer_overlap_can_beat_the_knapsack(self):
+        overlapping_gold = {
+            **{f"a{i}": "Taylor Swift" for i in range(5)},
+            **{f"b{i}": "Taylor Swift and Travis Kelce" for i in range(5)},
+            **{f"c{i}": "Yes" for i in range(3)},
+        }
+        word_budget = 5
+
+        _, baseline = constant_reply_baseline(overlapping_gold, word_budget=word_budget)
+        exploiting_score = containment_accuracy(
+            dict.fromkeys(overlapping_gold, "Taylor Swift and Travis Kelce"), overlapping_gold, word_budget
+        )
+
+        assert exploiting_score > baseline
 
 
 class TestBaselineWarning:

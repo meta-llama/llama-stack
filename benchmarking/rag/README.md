@@ -165,7 +165,11 @@ benchmarking/rag/
    applies to both sides of that comparison so enumerating more candidate
    answers than fit in it helps neither; see `lib/answer_match.py` for why
    that matters. A run that does not beat the baseline is flagged by
-   `compare_results.py`.
+   `compare_results.py`. The budget is a tradeoff, not a free fix: the
+   `file_search` template asks for cited, multi-sentence replies, so a system
+   that opens with framing before stating its answer can push that answer
+   past the word budget and score 0 on an otherwise-correct reply. How often
+   that happens on real runs hasn't been measured.
 
 4. **Conversational RAG** (QReCC, Doc2Dial): Multi-turn conversations are
    threaded using `previous_response_id` to maintain context across turns.
