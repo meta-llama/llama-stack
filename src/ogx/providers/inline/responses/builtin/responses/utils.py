@@ -529,29 +529,26 @@ def _extract_citations_from_text(
 
     Args:
         text: The text containing citation markers like <|file-Cn3MSNn72ENTiiq11Qda4A|> or
-            <|url-1|>. The primary marker format is `<|id|>`, but `[id]` and `(id)` are also
-            accepted since weaker models often approximate the instructed format rather than
-            reproduce it exactly.
+            <|url-1a2b3c4d5e6f|>. The primary marker format is `<|id|>`, but `[id]` and
+            `(id)` are also accepted since weaker models often approximate the instructed
+            format rather than reproduce it exactly.
         citation_files: Dictionary mapping file_id to filename
-        citation_urls: Dictionary mapping a `url-N` marker id to its CitationUrl(url, title),
-            for web_search results (see tool_executor.py).
+        citation_urls: Dictionary mapping a `url-<hash>` marker id to its CitationUrl(url,
+            title), for web_search results (see tool_executor.py).
 
     Returns:
         Tuple of (annotations_list, clean_text_without_markers)
     """
-    citation_urls = citation_urls or {}
+    if citation_urls is None:
+        citation_urls = {}
     marker_regex = CITATION_MARKER_REGEX
 
     annotations: list[CitationAnnotation] = []
     parts = []
     total_len = 0
     last_end = 0
-    # Tracks where the cleaned text's current url citation span starts. A url_citation
-    # needs a (start_index, end_index) span rather than file_citation's single point.
-    # Only ever advanced by a *url* citation (not a file one), since a file_citation and a
-    # url_citation can legitimately both cover the same stretch of text (e.g. one sentence
-    # backed by both a retrieved file and a web result) -- a file marker shouldn't truncate
-    # where the next url span is considered to start.
+    # Tracks the current url_citation span's start. Advances only on url citations, not file
+    # ones, since a file_citation and a url_citation can legitimately cover the same text.
     url_span_start = 0
 
     for m in marker_regex.finditer(text):
@@ -582,12 +579,9 @@ def _extract_citations_from_text(
             )
         elif is_url:
             source = citation_urls[cid]
-            # Adjacent url markers with nothing between them (e.g. "fact <|url-1|><|url-2|>.",
-            # a model citing one claim with several sources) would otherwise give the second
-            # one a zero-width span ending where the first one ended. Instead, a marker
-            # directly glued to a prior url_citation reuses that citation's start, so both
-            # end up covering the same (real) preceding span rather than one of them covering
-            # nothing.
+            # A marker directly glued to a prior url_citation (no text between them, e.g.
+            # one claim with several sources) reuses that citation's start, so both cover
+            # the same real span instead of the second one getting a zero-width span.
             start_index = (
                 annotations[-1].start_index
                 if not prefix and annotations and isinstance(annotations[-1], OpenAIResponseAnnotationCitation)
@@ -635,13 +629,14 @@ def extract_citations_from_text(
         text: The text possibly containing citation markers.
         citation_files: Dictionary mapping file_id to filename for files retrieved this turn,
             ordered by descending relevance score (see tool_executor.py).
-        citation_urls: Dictionary mapping a `url-N` marker id to its CitationUrl(url, title)
-            for web_search results retrieved this turn, in result order.
+        citation_urls: Dictionary mapping a `url-<hash>` marker id to its CitationUrl(url,
+            title) for web_search results retrieved this turn, in result order.
 
     Returns:
         Tuple of (annotations_list, clean_text_without_markers)
     """
-    citation_urls = citation_urls or {}
+    if citation_urls is None:
+        citation_urls = {}
     annotations, clean_text = _extract_citations_from_text(text, citation_files, citation_urls)
 
     # Only guess when the model cited *nothing* inline, of either type. A model that did
@@ -688,7 +683,7 @@ class StreamingCitationCleaner:
 
     def __init__(self, citation_files: dict[str, str], citation_urls: dict[str, CitationUrl] | None = None):
         self._citation_files = citation_files
-        self._citation_urls = citation_urls or {}
+        self._citation_urls = {} if citation_urls is None else citation_urls
         self._buffer = ""
 
     def feed(self, delta: str) -> str:

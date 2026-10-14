@@ -15,6 +15,7 @@ from opentelemetry import trace
 
 from ogx.core.datatypes import VectorStoresConfig
 from ogx.log import get_logger
+from ogx.providers.utils.tools.web_search import WebSearchSourceDict, parse_web_search_sources
 from ogx_api import (
     ImageContentItem,
     InvalidParameterError,
@@ -125,53 +126,58 @@ _WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE = (
 
 
 def _web_search_citation_marker_id(url: str) -> str:
-    """A citation marker id derived from the url itself rather than its position in this
-    call's source list.
-
-    A per-call sequential id (url-1, url-2, ...) collides across separate web_search calls:
-    a second search in the same response -- or a follow-up turn, whose stored tool messages
-    from a prior turn keep that turn's old ids in context -- can reuse "url-1" for a
-    different url, silently misattributing a citation to the wrong source. Hashing the url
-    makes the id stable and (for practical purposes) unique per url regardless of when or
-    how many times it was searched, so a stale id from an earlier call/turn is either
-    identical (same url, correctly reused) or simply unrecognized rather than wrong.
+    """Hashed so ids stay stable across separate web_search calls: a per-call sequential id
+    (url-1, url-2, ...) would collide between them, and a stale id from a different call or
+    turn is then either identical (that one searched the same url too) or simply unrecognized,
+    never silently wrong.
     """
     return f"url-{hashlib.sha256(url.encode()).hexdigest()[:12]}"
 
 
-def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
-    """Append a numbered source list and citation instructions to a web_search tool result,
-    and record the id->source mapping in result.metadata["citation_urls"] so
-    extract_citations_from_text can turn `<|url-...|>` markers the model echoes back into
-    url_citation annotations (see utils.py). Mirrors how file_search's annotation
-    instructions are baked into its tool content in _execute_file_search_via_vector_store,
-    since web_search's content is provider-owned free-form text/JSON with no markers of
-    its own.
+def _build_web_search_citation_block(
+    sources: list[WebSearchSourceDict],
+) -> tuple[str, dict[str, CitationUrl]] | None:
+    """Build the numbered source list and citation instructions to append to a web_search tool
+    result, and the id->source mapping extract_citations_from_text needs to turn `<|url-...|>`
+    markers the model echoes back into url_citation annotations (see utils.py). Mirrors how
+    file_search's annotation instructions are baked into its tool content in
+    _execute_file_search_via_vector_store, since web_search's content is provider-owned
+    free-form text/JSON with no markers of its own.
 
-    Mutates result.content and result.metadata in place. No-op if there are no sources
-    (e.g. a failed search) or no content to append the instruction to.
+    Pure: returns None if there's nothing to cite, otherwise the text to append and the
+    mapping to record. The caller (_add_web_search_citation_markers) owns applying that to a
+    result, so this can be tested and reasoned about without a ToolInvocationResult at all.
     """
-    if result.content is None:
-        return
-    sources = (result.metadata or {}).get("sources") or []
+    if not sources:
+        return None
 
     citation_urls: dict[str, CitationUrl] = {}
     source_lines = []
-    display_index = 0
-    for source in sources:
-        url = source.get("url")
-        if not url:
-            continue
-        display_index += 1
-        marker_id = _web_search_citation_marker_id(url)
-        title = source.get("title") or url
-        citation_urls[marker_id] = CitationUrl(url=url, title=title)
-        source_lines.append(f"{display_index}. {title} - {url} (cite as <|{marker_id}|>)")
-
-    if not citation_urls:
-        return
+    for display_index, source in enumerate(sources, start=1):
+        marker_id = _web_search_citation_marker_id(source["url"])
+        citation_urls[marker_id] = CitationUrl(url=source["url"], title=source["title"])
+        source_lines.append(f"{display_index}. {source['title']} - {source['url']} (cite as <|{marker_id}|>)")
 
     instruction = _WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE.format(source_list="\n".join(source_lines))
+    return instruction, citation_urls
+
+
+def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
+    """Apply _build_web_search_citation_block's output to a web_search tool result.
+
+    Mutates result.content and result.metadata in place. No-op if there's no content to
+    append to, or no valid source to cite (sources are validated by parse_web_search_sources,
+    which skips and logs a malformed one rather than raising -- see its docstring for why
+    that matters here).
+    """
+    if result.content is None:
+        return
+    sources = parse_web_search_sources((result.metadata or {}).get("sources"))
+    citation_block = _build_web_search_citation_block(sources)
+    if citation_block is None:
+        return
+
+    instruction, citation_urls = citation_block
     if isinstance(result.content, str):
         result.content = result.content + instruction
     elif isinstance(result.content, list):
@@ -224,6 +230,14 @@ class ToolExecutor:
 
         # Execute the actual tool call
         error_exc, result = await self._execute_tool(function.name, tool_kwargs, ctx, mcp_tool_to_server)
+
+        # Citation-marker building is a presentation nicety layered on top of an already-
+        # successful tool call. It must run outside _execute_tool's try/except: a bug in it
+        # there would set error_exc and retroactively mark a successful web search as failed,
+        # even though real results already exist (see _add_web_search_citation_markers, which
+        # validates each source and skips/warns rather than raising).
+        if function.name == "web_search" and result is not None:
+            _add_web_search_citation_markers(result)
 
         # Emit completion events for tool execution
         has_error = bool(
@@ -531,8 +545,6 @@ class ToolExecutor:
                         tool_name=function_name,
                         kwargs=tool_kwargs,
                     )
-                if result is not None:
-                    _add_web_search_citation_markers(result)
             else:
                 attributes = {
                     "tool_name": function_name,
@@ -642,10 +654,10 @@ class ToolExecutor:
                 if has_error:
                     message.status = "failed"
                 elif result and (metadata := getattr(result, "metadata", None)):
-                    sources = []
-                    for source in metadata.get("sources", []):
-                        if "url" in source:
-                            sources.append(WebSearchSource(url=source["url"]))
+                    sources = [
+                        WebSearchSource(url=source["url"])
+                        for source in parse_web_search_sources(metadata.get("sources"))
+                    ]
                     query = metadata.get("query", tool_kwargs.get("query", ""))
                     message.action = WebSearchActionSearch(
                         query=query,
