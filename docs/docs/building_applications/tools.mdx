@@ -181,11 +181,11 @@ response = client.responses.create(
 )
 
 while True:
-    requests = [item for item in response.output if item.type == "mcp_approval_request"]
-    if not requests:
+    pending_approvals = [item for item in response.output if item.type == "mcp_approval_request"]
+    if not pending_approvals:
         break
     answers = []
-    for req in requests:
+    for req in pending_approvals:
         print(f"{req.server_label}.{req.name}({req.arguments})")
         approve = input("Approve? [y/N] ").strip().lower() == "y"
         answers.append({"type": "mcp_approval_response", "approval_request_id": req.id, "approve": approve})
