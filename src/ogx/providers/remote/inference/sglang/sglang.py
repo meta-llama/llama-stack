@@ -111,10 +111,13 @@ class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
             raise NotImplementedError("Non-streaming reasoning is not yet supported for SGLang")
 
         params = params.model_copy()
-        params.messages = [
+        # Dump the assistant messages that carry reasoning to dicts so the
+        # `reasoning_content` key reaches SGLang as-is (the typed message drops it).
+        mapped_messages: list = [
             msg.model_dump(exclude_none=True) if isinstance(msg, AssistantMessageWithReasoning) else msg
             for msg in params.messages
         ]
+        params.messages = mapped_messages
 
         result = await self.openai_chat_completion(params)
         if not isinstance(result, AsyncIterator):
