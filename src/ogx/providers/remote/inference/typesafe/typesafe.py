@@ -13,6 +13,7 @@ from typesafe_sdk import AsyncTypeSafeClient, TypeSafeAPIError
 from ogx.core.request_headers import NeedsRequestProviderData
 from ogx.log import get_logger
 from ogx.providers.utils.inference.http_client import build_network_client_kwargs
+from ogx.providers.utils.inference.systemone import systemone_judge, to_provider_error
 from ogx_api import (
     AnthropicCountTokensRequest,
     AnthropicCountTokensResponse,
@@ -44,36 +45,14 @@ logger = get_logger(name=__name__, category="inference::typesafe")
 _UNIMPLEMENTED = "The TypeSafe provider only serves SystemOne (judgment) models and does not support {operation}."
 
 
-class TypeSafeProviderError(Exception):
-    """A general upstream TypeSafe failure, carrying the upstream HTTP status code.
-
-    The provider translates the SDK's typed errors into this so the core layer can surface the
-    upstream status via the generic ``status_code`` path (core.exceptions.translation) without
-    importing the SDK.
-    """
-
-    def __init__(self, status_code: int, message: str):
-        super().__init__(message)
-        self.status_code = status_code
-
-
-def _to_provider_error(exc: TypeSafeAPIError) -> TypeSafeProviderError:
-    # Surface 4xx as-is; map 5xx (or a missing status) to a bad-gateway, signalling an upstream
-    # failure rather than an OGX error.
-    status = exc.status
-    if status is None or status >= 500:
-        status = httpx2.codes.BAD_GATEWAY
-    return TypeSafeProviderError(status, str(exc))
-
-
 class TypeSafeInferenceAdapter(InferenceProvider, ModelsProtocolPrivate, NeedsRequestProviderData):
     """Inference adapter for TypeSafe's SystemOne (judgment/decision) models.
 
-    Uses the official ``typesafe_sdk`` client. Judgment calls go through
-    ``client.system_one`` with OGX's ``SystemOneResponse`` wire model as the response model,
-    so the raw TypeSafe response body is validated straight into the OGX wire format. The SDK
-    sends the ``X-TypeSafe-SDK`` header on every request, which the models router uses to serve
-    the TypeSafe-shaped ``GET /v1/models`` payload.
+    Uses the official ``typesafe_sdk`` client via the shared SystemOne helper
+    (``ogx.providers.utils.inference.systemone``), so the raw TypeSafe response body is
+    validated straight into the OGX ``SystemOneResponse`` wire format. The SDK sends the
+    ``X-TypeSafe-SDK`` header on every request, which the models router uses to serve the
+    TypeSafe-shaped ``GET /v1/models`` payload.
     """
 
     config: TypeSafeConfig
@@ -136,26 +115,19 @@ class TypeSafeInferenceAdapter(InferenceProvider, ModelsProtocolPrivate, NeedsRe
     async def judge(self, request: SystemOneRequest) -> SystemOneResponse:
         """Answer a SystemOne judgment request by forwarding it to TypeSafe.
 
-        ``request.model`` is already the provider-specific model id (the InferenceRouter rewrites
-        it before dispatch). Questions are forwarded as raw dictionaries, which the SDK
-        normalizes. The response is reconstructed into OGX's ``SystemOneResponse`` from the raw
-        response body -- rather than cast from the SDK's parsed object -- so any drift between
-        TypeSafe's schema and the OGX wire model is caught here and surfaces as a validation
-        error instead of passing a wrong-shaped object through unchecked.
+        Delegates to the shared TypeSafe-compatible judge helper; see ``systemone_judge`` for
+        the wire behavior. The API key (config or per-request override) is resolved here and
+        passed explicitly so a missing key surfaces as a clear error rather than the SDK
+        falling back to the ``TYPESAFE_API_KEY`` environment variable.
         """
-        client = self._build_client()
-        try:
-            payload: dict[str, Any] = request.model_dump(exclude_none=True)
-            sdk_response = await client.system_one(
-                state=payload["state"],
-                questions=payload["questions"],
-                model=request.model,
-            )
-            return SystemOneResponse.model_validate_json(sdk_response.raw_http_response.content)
-        except TypeSafeAPIError as exc:
-            raise _to_provider_error(exc) from exc
-        finally:
-            await client.aclose()
+        api_key = self._get_api_key()
+        if not api_key:
+            provider_id = getattr(self, "__provider_id__", None)
+            message = "Failed to authenticate with TypeSafe: no API key provided."
+            if provider_id:
+                message += f' Provide one in the provider config or the x-ogx-provider-data header, e.g. {{"{provider_id}_typesafe_api_key": "<API_KEY>"}} or {{"typesafe_api_key": "<API_KEY>"}}.'
+            raise ValueError(message)
+        return await systemone_judge(self._get_base_url(), api_key, request, network=self.config.network)
 
     async def list_models(self) -> list[Model] | None:
         """List decision models from TypeSafe's ``GET /v1/models``.
@@ -172,7 +144,7 @@ class TypeSafeInferenceAdapter(InferenceProvider, ModelsProtocolPrivate, NeedsRe
         try:
             response = await client.models.list()
         except TypeSafeAPIError as exc:
-            raise _to_provider_error(exc) from exc
+            raise to_provider_error(exc) from exc
         finally:
             await client.aclose()
 
