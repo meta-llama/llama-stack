@@ -96,6 +96,17 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "sglang": Setup(
+        name="sglang",
+        description="SGLang provider with a text model",
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "text_model": "sglang/Qwen/Qwen3-0.6B",
+            "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
+        },
+    ),
     "ollama-reasoning": Setup(
         name="ollama",
         description="Local Ollama provider with a reasoning-capable model (deepseek-r1)",

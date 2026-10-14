@@ -32,6 +32,15 @@ providers:
       network:
         tls:
           verify: ${env.VLLM_TLS_VERIFY:=true}
+  - provider_id: ${env.SGLANG_URL:+sglang}
+    provider_type: remote::sglang
+    config:
+      base_url: ${env.SGLANG_URL:=}
+      max_tokens: ${env.SGLANG_MAX_TOKENS:=4096}
+      api_token: ${env.SGLANG_API_TOKEN:=fake}
+      network:
+        tls:
+          verify: ${env.SGLANG_TLS_VERIFY:=true}
   - provider_id: fireworks
     provider_type: remote::fireworks
     config:
