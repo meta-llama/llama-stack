@@ -30,6 +30,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `llama-cpp-server` | `llama-cpp-server` | `inference` only |
 | `text-embeddings-inference` | `text-embeddings-inference` | `test_openai_embeddings.py` only |
 | `systemone` | `typesafe` | server client only; `test_systemone.py` only |
+| `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
 
 ## CI Lanes (Scheduled)
 
@@ -54,6 +55,7 @@ Cron: `1 0 * * 0`
 | `ollama` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base`, `messages` | — |
 | `ollama-postgres` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base` | — |
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
+| `ollama-systemone` | — | — | — | — | `systemone` | — |
 | `ollama-vision` | — | ollama/qwen3-vl:2b | ollama/nomic-embed-text:v1.5 | — | `vision` | — |
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |

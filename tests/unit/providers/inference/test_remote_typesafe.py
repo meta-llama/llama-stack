@@ -22,12 +22,21 @@ import ogx.providers.remote.inference.typesafe.typesafe as typesafe_module
 from ogx.core.request_headers import PROVIDER_DATA_VAR
 from ogx.providers.remote.inference.typesafe.config import TypeSafeConfig
 from ogx.providers.remote.inference.typesafe.typesafe import TypeSafeInferenceAdapter
+from ogx.providers.utils.inference.systemone import SystemOneProviderError
 from ogx_api import Model, ModelType, SystemOneRequest, SystemOneResponse
 
 _VALIDATOR = "ogx.providers.remote.inference.typesafe.config.TypeSafeProviderDataValidator"
 
+# judge() delegates to the shared util, so its SDK client is patched in the util's namespace;
+# list_models() still builds its own client, patched in the provider module's namespace.
+_JUDGE_CLIENT = "ogx.providers.utils.inference.systemone.AsyncTypeSafeClient"
 
-def _patch_client(client: MagicMock):
+
+def _patch_judge_client(client: MagicMock):
+    return patch(_JUDGE_CLIENT, return_value=client)
+
+
+def _patch_list_client(client: MagicMock):
     return patch.object(typesafe_module, "AsyncTypeSafeClient", return_value=client)
 
 
@@ -74,7 +83,7 @@ async def test_judge_forwards_to_sdk_and_returns_wire_response():
     client.system_one.return_value = _sdk_response(body)
     adapter = _make_adapter()
 
-    with _patch_client(client):
+    with _patch_judge_client(client):
         result = await adapter.judge(_judge_request())
 
     # The response is reconstructed from the raw body into the OGX wire model, not cast through.
@@ -105,8 +114,8 @@ async def test_judge_translates_sdk_error_to_provider_error():
         status=401, body=None, headers=httpx2.Headers(), message="Invalid API key"
     )
     adapter = _make_adapter(_make_config(api_key="test-key"))
-    with _patch_client(client):
-        with pytest.raises(typesafe_module.TypeSafeProviderError) as exc_info:
+    with _patch_judge_client(client):
+        with pytest.raises(SystemOneProviderError) as exc_info:
             await adapter.judge(_judge_request())
     assert exc_info.value.status_code == 401
 
@@ -118,8 +127,8 @@ async def test_judge_maps_upstream_5xx_to_bad_gateway():
         status=503, body=None, headers=httpx2.Headers(), message="upstream unavailable"
     )
     adapter = _make_adapter(_make_config(api_key="test-key"))
-    with _patch_client(client):
-        with pytest.raises(typesafe_module.TypeSafeProviderError) as exc_info:
+    with _patch_judge_client(client):
+        with pytest.raises(SystemOneProviderError) as exc_info:
             await adapter.judge(_judge_request())
     assert exc_info.value.status_code == 502
 
@@ -134,7 +143,7 @@ async def test_list_models_maps_metadata_to_systemone_models():
     )
     adapter = _make_adapter()
 
-    with _patch_client(client):
+    with _patch_list_client(client):
         models = await adapter.list_models()
 
     assert [m.identifier for m in models] == ["jev-latest", "jev-mini"]
@@ -160,7 +169,7 @@ async def test_list_models_respects_allowed_models():
     )
     adapter = _make_adapter(_make_config(allowed_models=["jev-mini"]))
 
-    with _patch_client(client):
+    with _patch_list_client(client):
         models = await adapter.list_models()
 
     assert [m.identifier for m in models] == ["jev-mini"]
@@ -238,7 +247,7 @@ async def test_judge_closes_client_after_call():
     )
     adapter = _make_adapter()
 
-    with _patch_client(client):
+    with _patch_judge_client(client):
         await adapter.judge(_judge_request())
 
     client.aclose.assert_awaited_once()
@@ -254,7 +263,7 @@ async def test_judge_raises_when_response_does_not_match_wire_model():
     adapter = _make_adapter()
 
     with pytest.raises(ValidationError):
-        with _patch_client(client):
+        with _patch_judge_client(client):
             await adapter.judge(_judge_request())
 
     client.aclose.assert_awaited_once()
@@ -267,7 +276,7 @@ async def test_list_models_closes_client_after_call():
     )
     adapter = _make_adapter()
 
-    with _patch_client(client):
+    with _patch_list_client(client):
         await adapter.list_models()
 
     client.aclose.assert_awaited_once()

@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import ssl
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import httpx2
@@ -14,11 +15,15 @@ from ogx.providers.inline.responses.builtin.responses.types import AssistantMess
 from ogx.providers.remote.inference.ollama.config import OllamaImplConfig
 from ogx.providers.remote.inference.ollama.ollama import OllamaInferenceAdapter
 from ogx.providers.utils.inference.openai_compat import prepare_openai_completion_params
+from ogx.providers.utils.inference.systemone import LOCAL_ENGINE_API_KEY
 from ogx_api import (
     HealthStatus,
+    ModelType,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionRequestWithExtraBody,
     OpenAIUserMessageParam,
+    SystemOneRequest,
+    SystemOneResponse,
 )
 from ogx_api.messages.models import AnthropicCountTokensRequest, AnthropicCreateMessageRequest
 
@@ -258,3 +263,96 @@ async def test_adhoc_calls_keep_the_shared_ssl_context_when_only_a_proxy_is_conf
 
     assert set(kwargs["mounts"]) == {"http://", "https://"}
     assert kwargs["verify"] is adapter.shared_ssl_context
+
+
+# ---------------------------------------------------------------------------
+# SystemOne (judgment)
+# ---------------------------------------------------------------------------
+
+
+def _judge_request() -> SystemOneRequest:
+    return SystemOneRequest(
+        model="laya",
+        state="I was charged twice. Please help.",
+        questions={"billing": {"type": "noul", "instructions": "Is this about billing?"}},
+    )
+
+
+async def test_judge_forwards_to_systemone_util():
+    """judge() must hit the engine root (no /v1) with the placeholder key and no network config."""
+    adapter = _make_adapter()
+    request = _judge_request()
+    with patch("ogx.providers.remote.inference.ollama.ollama.systemone_judge") as mock_judge:
+        mock_judge.return_value = SystemOneResponse(
+            model="laya",
+            answers={"billing": {"type": "noul", "noul": 0.9}},
+            usage={"input_tokens": 1, "output_tokens": 0},
+        )
+        await adapter.judge(request)
+
+    mock_judge.assert_awaited_once()
+    args, kwargs = mock_judge.call_args
+    assert args[0] == "http://localhost:11434"
+    assert args[1] == LOCAL_ENGINE_API_KEY
+    assert args[2] is request
+    assert kwargs["network"] is None
+
+
+async def test_judge_passes_network_config_to_systemone_util():
+    adapter = _make_adapter(network=NETWORK_CONFIG)
+    with patch("ogx.providers.remote.inference.ollama.ollama.systemone_judge") as mock_judge:
+        mock_judge.return_value = SystemOneResponse(
+            model="laya",
+            answers={"billing": {"type": "noul", "noul": 0.9}},
+            usage={"input_tokens": 1, "output_tokens": 0},
+        )
+        await adapter.judge(_judge_request())
+
+    assert mock_judge.call_args.kwargs["network"] == adapter.config.network
+
+
+def test_construct_model_from_identifier_marks_decision_models():
+    adapter = _make_adapter()
+
+    decision_model = adapter.construct_model_from_identifier("laya:latest")
+    plain_model = adapter.construct_model_from_identifier("llama3.2:3b")
+
+    assert decision_model.model_type == ModelType.systemone
+    assert plain_model.model_type == ModelType.llm
+
+
+def test_construct_model_from_identifier_matches_tag_stripped_names():
+    adapter = _make_adapter()
+
+    tagged = adapter.construct_model_from_identifier("laya:custom")
+    other = adapter.construct_model_from_identifier("laya-2:latest")
+
+    assert tagged.model_type == ModelType.systemone
+    assert other.model_type == ModelType.llm
+
+
+def test_construct_model_from_identifier_keeps_embedding_type():
+    adapter = _make_adapter()
+
+    embedding_model = adapter.construct_model_from_identifier("nomic-embed-text:latest")
+
+    assert embedding_model.model_type == ModelType.embedding
+
+
+async def test_list_models_registers_decision_models_as_systemone():
+    """Decision models from the /v1/models listing must be typed as systemone by name."""
+    adapter = _make_adapter()
+
+    async def _fake_models_list():
+        yield SimpleNamespace(id="llama3.2:3b")
+        yield SimpleNamespace(id="laya:latest")
+
+    mock_client = MagicMock()
+    mock_client.models.list = MagicMock(side_effect=lambda: _fake_models_list())
+
+    with patch.object(type(adapter), "client", new_callable=PropertyMock, return_value=mock_client):
+        models = await adapter.list_models()
+
+    by_id = {m.identifier: m for m in models}
+    assert by_id["laya:latest"].model_type == ModelType.systemone
+    assert by_id["llama3.2:3b"].model_type == ModelType.llm
