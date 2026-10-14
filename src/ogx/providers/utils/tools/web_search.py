@@ -29,6 +29,21 @@ class WebSearchSourceDict(TypedDict):
     title: str
 
 
+_ALLOWED_URL_SCHEMES = ("http://", "https://")
+_UNSAFE_URL_CHARS = ("\n", "\r", "\t", " ", "<", ">", "|")
+
+
+def _sanitize_title(title: str, url: str) -> str:
+    """Collapse whitespace (including newlines) to single spaces and strip the `<|`/`|>`
+    marker delimiters, so a title can't fake a second numbered source line (one containing a
+    newline and attacker-chosen text) or smuggle in something that resolves as a citation
+    marker (see _build_web_search_citation_block). Falls back to the url if that leaves
+    nothing.
+    """
+    collapsed = " ".join(title.split()).replace("<|", "").replace("|>", "").strip()
+    return collapsed or url
+
+
 def parse_web_search_sources(raw_sources: Any) -> list[WebSearchSourceDict]:
     """Validate and parse a raw metadata["sources"] value into well-formed WebSearchSourceDicts.
 
@@ -36,7 +51,11 @@ def parse_web_search_sources(raw_sources: Any) -> list[WebSearchSourceDict]:
     list, an element that isn't a dict, or a non-string/empty url) is skipped and logged, not
     raised, since raising here would otherwise fail a web_search call that already succeeded
     (see tool_executor.py, which builds citations from this after the tool call completed).
-    A missing or non-string title falls back to the url.
+
+    Also enforces http(s)-only urls (so a `javascript:`/`data:` url can never become a
+    web_search_call source or a url_citation) and sanitizes titles (see _sanitize_title),
+    since both are rendered into text a client or model reads as if they were plain facts, not
+    attacker-influenced content.
     """
     if not isinstance(raw_sources, list):
         if raw_sources:
@@ -52,8 +71,14 @@ def parse_web_search_sources(raw_sources: Any) -> list[WebSearchSourceDict]:
         if not isinstance(url, str) or not url:
             logger.warning("Skipping web_search source with a missing or non-string url", source=repr(source))
             continue
+        if not url.lower().startswith(_ALLOWED_URL_SCHEMES):
+            logger.warning("Skipping web_search source with a non-http(s) url", source=repr(source))
+            continue
+        if any(ch in url for ch in _UNSAFE_URL_CHARS):
+            logger.warning("Skipping web_search source with unsafe characters in its url", source=repr(source))
+            continue
         title = source.get("title")
         if not isinstance(title, str) or not title:
             title = url
-        parsed.append(WebSearchSourceDict(url=url, title=title))
+        parsed.append(WebSearchSourceDict(url=url, title=_sanitize_title(title, url)))
     return parsed

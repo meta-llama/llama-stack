@@ -13,7 +13,7 @@ from typing import Any
 
 from opentelemetry import trace
 
-from ogx.core.datatypes import VectorStoresConfig
+from ogx.core.datatypes import VectorStoresConfig, WebSearchAnnotationParams
 from ogx.log import get_logger
 from ogx.providers.utils.tools.web_search import WebSearchSourceDict, parse_web_search_sources
 from ogx_api import (
@@ -117,14 +117,6 @@ def _wrap_untrusted_tool_output(msg_content: str | list[Any]) -> str | list[Any]
     return wrapped
 
 
-_WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE = (
-    "\n\nSources:\n{source_list}\n"
-    "Cite a source immediately at the end of a sentence before punctuation, using the exact "
-    "token shown after it above, like 'This is a fact <|url-1a2b3c4d5e6f|>.' Copy the token "
-    "exactly as given, do not invent new ones."
-)
-
-
 def _web_search_citation_marker_id(url: str) -> str:
     """Hashed so ids stay stable across separate web_search calls: a per-call sequential id
     (url-1, url-2, ...) would collide between them, and a stale id from a different call or
@@ -136,6 +128,7 @@ def _web_search_citation_marker_id(url: str) -> str:
 
 def _build_web_search_citation_block(
     sources: list[WebSearchSourceDict],
+    params: WebSearchAnnotationParams | None = None,
 ) -> tuple[str, dict[str, CitationUrl]] | None:
     """Build the numbered source list and citation instructions to append to a web_search tool
     result, and the id->source mapping extract_citations_from_text needs to turn `<|url-...|>`
@@ -148,7 +141,8 @@ def _build_web_search_citation_block(
     mapping to record. The caller (_add_web_search_citation_markers) owns applying that to a
     result, so this can be tested and reasoned about without a ToolInvocationResult at all.
     """
-    if not sources:
+    params = params or WebSearchAnnotationParams()
+    if not sources or not params.enable_annotations:
         return None
 
     citation_urls: dict[str, CitationUrl] = {}
@@ -156,34 +150,46 @@ def _build_web_search_citation_block(
     for display_index, source in enumerate(sources, start=1):
         marker_id = _web_search_citation_marker_id(source["url"])
         citation_urls[marker_id] = CitationUrl(url=source["url"], title=source["title"])
-        source_lines.append(f"{display_index}. {source['title']} - {source['url']} (cite as <|{marker_id}|>)")
+        source_lines.append(
+            params.source_line_template.format(
+                index=display_index, title=source["title"], url=source["url"], marker_id=marker_id
+            )
+        )
 
-    instruction = _WEB_SEARCH_CITATION_INSTRUCTION_TEMPLATE.format(source_list="\n".join(source_lines))
+    instruction = params.citation_instruction_template.format(source_list="\n".join(source_lines))
     return instruction, citation_urls
 
 
-def _add_web_search_citation_markers(result: ToolInvocationResult) -> None:
-    """Apply _build_web_search_citation_block's output to a web_search tool result.
+def _add_web_search_citation_markers(
+    result: ToolInvocationResult, params: WebSearchAnnotationParams | None = None
+) -> None:
+    """Record _build_web_search_citation_block's output on result.metadata, for
+    _build_result_messages to append to the tool message *after* it wraps the search
+    engine's own content in <untrusted_tool_output> (see _wrap_untrusted_tool_output).
 
-    Mutates result.content and result.metadata in place. No-op if there's no content to
-    append to, or no valid source to cite (sources are validated by parse_web_search_sources,
-    which skips and logs a malformed one rather than raising -- see its docstring for why
-    that matters here).
+    This deliberately does not touch result.content itself: the citation instruction is a
+    real instruction the model should follow, unlike everything inside that delimited block,
+    which it's told to treat strictly as data -- appending the instruction inside the same
+    block would undercut both (the model may not reliably follow it, and instructions in
+    genuinely malicious search results gain a precedent for being followed too).
+
+    No-op if there's no content to cite from, no valid source (sources are validated by
+    parse_web_search_sources, which skips and logs a malformed one rather than raising -- see
+    its docstring for why that matters here), or params.enable_annotations is False.
     """
     if result.content is None:
         return
     sources = parse_web_search_sources((result.metadata or {}).get("sources"))
-    citation_block = _build_web_search_citation_block(sources)
+    citation_block = _build_web_search_citation_block(sources, params)
     if citation_block is None:
         return
 
     instruction, citation_urls = citation_block
-    if isinstance(result.content, str):
-        result.content = result.content + instruction
-    elif isinstance(result.content, list):
-        result.content = [*result.content, TextContentItem(text=instruction)]
-
-    result.metadata = {**(result.metadata or {}), "citation_urls": citation_urls}
+    result.metadata = {
+        **(result.metadata or {}),
+        "citation_urls": citation_urls,
+        "citation_instruction": instruction,
+    }
 
 
 class ToolExecutor:
@@ -237,7 +243,7 @@ class ToolExecutor:
         # even though real results already exist (see _add_web_search_citation_markers, which
         # validates each source and skips/warns rather than raising).
         if function.name == "web_search" and result is not None:
-            _add_web_search_citation_markers(result)
+            _add_web_search_citation_markers(result, self.vector_stores_config.web_search_annotation_params)
 
         # Emit completion events for tool execution
         has_error = bool(
@@ -721,6 +727,23 @@ class ToolExecutor:
                 raise ValueError(f"Unknown result content type: {type(result_content)}")
             if function.name in _UNTRUSTED_CONTENT_TOOL_NAMES:
                 msg_content = _wrap_untrusted_tool_output(msg_content)
+            # Appended after wrapping, never inside <untrusted_tool_output>: this instruction
+            # is meant to be followed, unlike the search engine's own content above it (see
+            # _add_web_search_citation_markers).
+            if function.name == "web_search" and (metadata := getattr(result, "metadata", None)):
+                if citation_instruction := metadata.get("citation_instruction"):
+                    # Blank-line separator added here, not part of the configurable template
+                    # itself (see WebSearchAnnotationParams.citation_instruction_template) --
+                    # a leading "\n\n" baked into that string renders as a whitespace-only
+                    # table cell line in the auto-generated provider docs.
+                    separated_instruction = f"\n\n{citation_instruction}"
+                    if isinstance(msg_content, str):
+                        msg_content = msg_content + separated_instruction
+                    elif isinstance(msg_content, list):
+                        msg_content = [
+                            *msg_content,
+                            OpenAIChatCompletionContentPartTextParam(text=separated_instruction),
+                        ]
             # OpenAIToolMessageParam accepts str | list[TextParam] but we may have images
             # This is runtime-safe as the API accepts it, but mypy complains
             input_message = OpenAIToolMessageParam(content=msg_content, tool_call_id=tool_call_id)  # type: ignore[arg-type]

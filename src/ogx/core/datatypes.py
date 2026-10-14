@@ -613,6 +613,56 @@ class AnnotationPromptParams(BaseModel):
         return v
 
 
+class WebSearchAnnotationParams(BaseModel):
+    """Configuration for web_search citation annotations (the url_citation counterpart to
+    AnnotationPromptParams, which only covers file_search)."""
+
+    enable_annotations: bool = Field(
+        default=True,
+        description="Whether to instruct the model to cite web_search sources inline, producing "
+        "url_citation annotations. When False, web_search still returns results and "
+        "action.sources, but no citation instruction is sent and no url_citation annotations "
+        "are produced.",
+    )
+    citation_instruction_template: str = Field(
+        default=(
+            "Sources:\n{source_list}\n"
+            "Cite a source immediately at the end of a sentence before punctuation, using the "
+            "exact token shown after it above, like 'This is a fact <|url-1a2b3c4d5e6f|>.' Copy "
+            "the token exactly as given, do not invent new ones."
+        ),
+        description="Instructions for how the model should cite web_search sources, appended "
+        "after a blank-line separator (added automatically, not part of this template). Used "
+        "when enable_annotations is True. Available placeholders: {source_list} the numbered, "
+        "formatted source list (see source_line_template).",
+    )
+    source_line_template: str = Field(
+        default="{index}. {title} - {url} (cite as <|{marker_id}|>)",
+        description="Template for each line of the numbered source list. Available "
+        "placeholders: {index} 1-based source index, {title} source title, {url} source url, "
+        "{marker_id} the citation marker id to use.",
+    )
+
+    @field_validator("citation_instruction_template")
+    @classmethod
+    def validate_citation_instruction_template(cls, v: str) -> str:
+        if len(v) == 0:
+            raise ValueError("citation_instruction_template must not be empty")
+        if "{source_list}" not in v:
+            raise ValueError("citation_instruction_template must contain {source_list} placeholder")
+        return v
+
+    @field_validator("source_line_template")
+    @classmethod
+    def validate_source_line_template(cls, v: str) -> str:
+        if len(v) == 0:
+            raise ValueError("source_line_template must not be empty")
+        for placeholder in ("{index}", "{title}", "{url}", "{marker_id}"):
+            if placeholder not in v:
+                raise ValueError(f"source_line_template must contain {placeholder} placeholder")
+        return v
+
+
 class FileIngestionParams(BaseModel):
     """Configuration for file processing during ingestion."""
 
@@ -730,6 +780,10 @@ class VectorStoresConfig(BaseModel):
     annotation_prompt_params: AnnotationPromptParams = Field(
         default_factory=AnnotationPromptParams,
         description="Configuration for source annotation and attribution features.",
+    )
+    web_search_annotation_params: WebSearchAnnotationParams = Field(
+        default_factory=WebSearchAnnotationParams,
+        description="Configuration for web_search citation annotations.",
     )
 
     file_ingestion_params: FileIngestionParams = Field(

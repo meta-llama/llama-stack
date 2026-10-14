@@ -7,6 +7,7 @@
 import pytest
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, Choice, ChoiceDelta
 
+from ogx.core.datatypes import VectorStoresConfig, WebSearchAnnotationParams
 from ogx.providers.inline.responses.builtin.responses.tool_executor import _web_search_citation_marker_id
 from ogx_api.openai_responses import (
     OpenAIResponseInputToolWebSearch,
@@ -115,6 +116,46 @@ async def test_malformed_source_does_not_fail_a_web_search_that_already_succeede
     assert web_search_output.action is not None
     assert len(web_search_output.action.sources) == 1
     assert web_search_output.action.sources[0].url == "https://arxiv.org/abs/1706.03762"
+
+
+async def test_citation_annotations_can_be_disabled_via_config(openai_responses_impl, mock_inference_api):
+    """Regression test for a review finding: the citation instruction was hard-coded with no
+    off switch, unlike file_search's AnnotationPromptParams.enable_annotations.
+    WebSearchAnnotationParams.enable_annotations=False must mean no citation instruction is
+    sent at all (not just that annotations end up empty), end to end through ToolExecutor.
+    """
+    openai_responses_impl.tool_executor.vector_stores_config = VectorStoresConfig(
+        web_search_annotation_params=WebSearchAnnotationParams(enable_annotations=False)
+    )
+    openai_responses_impl.tool_runtime_api.invoke_tool.return_value = ToolInvocationResult(
+        status="completed",
+        content="Attention Is All You Need",
+        metadata={
+            "query": "Find papers on transformers",
+            "sources": [{"url": "https://arxiv.org/abs/1706.03762", "title": "Attention Is All You Need"}],
+        },
+    )
+    mock_inference_api.openai_chat_completion.side_effect = [
+        fake_stream("tool_call_completion.yaml"),
+        fake_stream(),
+    ]
+
+    result = await openai_responses_impl.create_openai_response(
+        CreateResponseRequest(
+            input="Find papers on transformers",
+            model="meta-llama/Llama-3.1-8B-Instruct",
+            tools=[OpenAIResponseInputToolWebSearch(type="web_search")],
+        )
+    )
+
+    # action.sources is unaffected -- the off switch only concerns the citation instruction.
+    web_search_output = next((o for o in result.output if o.type == "web_search_call"), None)
+    assert len(web_search_output.action.sources) == 1
+    # The model's own second-round call never received a citation instruction.
+    second_round_params = mock_inference_api.openai_chat_completion.call_args_list[1].args[0]
+    tool_result_message = next(m for m in second_round_params.messages if getattr(m, "role", None) == "tool")
+    assert "Cite a source" not in tool_result_message.content
+    assert "Sources:" not in tool_result_message.content
 
 
 def _setup_web_search_mocks(openai_responses_impl, mock_inference_api):

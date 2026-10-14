@@ -27,12 +27,15 @@ class TestVectorStoresConfigValidation:
         assert config.file_search_params.header_template is not None
         assert config.context_prompt_params.chunk_annotation_template is not None
         assert config.annotation_prompt_params.chunk_annotation_template is not None
+        assert config.web_search_annotation_params.citation_instruction_template is not None
 
         # Verify required placeholders are present
         assert "{num_chunks}" in config.file_search_params.header_template
         assert "file_search" in config.file_search_params.header_template.lower()
         assert "{chunk.content}" in config.context_prompt_params.chunk_annotation_template
         assert "{query}" in config.context_prompt_params.context_template
+        assert "{source_list}" in config.web_search_annotation_params.citation_instruction_template
+        assert config.web_search_annotation_params.enable_annotations is True
 
     def test_default_search_mode_defaults_to_vector(self):
         """Test that default_search_mode defaults to 'vector' for backward compatibility."""
@@ -74,6 +77,17 @@ class TestVectorStoresConfigValidation:
 
         with pytest.raises(ValidationError, match="must contain {file_id} placeholder"):
             AnnotationPromptParams(chunk_annotation_template="[{index}] {chunk_text}")
+
+        from ogx.core.datatypes import WebSearchAnnotationParams
+
+        with pytest.raises(ValidationError, match="must not be empty"):
+            WebSearchAnnotationParams(citation_instruction_template="")
+
+        with pytest.raises(ValidationError, match="must contain {source_list} placeholder"):
+            WebSearchAnnotationParams(citation_instruction_template="No placeholder here.")
+
+        with pytest.raises(ValidationError, match="must contain {marker_id} placeholder"):
+            WebSearchAnnotationParams(source_line_template="{index}. {title} - {url}")
 
     def test_rewrite_query_params_validation(self):
         """Test RewriteQueryParams validation."""
@@ -121,6 +135,20 @@ class TestVectorStoresConfigValidation:
         assert "Custom file_search" in config.file_search_params.header_template
         assert config.annotation_prompt_params.enable_annotations is False
 
+    def test_web_search_annotation_params_custom_configuration(self):
+        from ogx.core.datatypes import WebSearchAnnotationParams
+
+        config = VectorStoresConfig(
+            web_search_annotation_params=WebSearchAnnotationParams(
+                enable_annotations=False,
+                citation_instruction_template="Custom instruction.\n{source_list}",
+                source_line_template="- {title} ({url}) [{marker_id}] #{index}",
+            )
+        )
+
+        assert config.web_search_annotation_params.enable_annotations is False
+        assert config.web_search_annotation_params.citation_instruction_template.startswith("Custom instruction.")
+
 
 class TestOptionalArchitecture:
     """Test optional sub-config architecture and constants fallback."""
@@ -132,6 +160,7 @@ class TestOptionalArchitecture:
         assert config.file_search_params is not None
         assert config.context_prompt_params is not None
         assert config.annotation_prompt_params is not None
+        assert config.web_search_annotation_params is not None
         assert "{num_chunks}" in config.file_search_params.header_template
 
     def test_guaranteed_defaults_have_expected_values(self):
