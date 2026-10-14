@@ -80,6 +80,7 @@ INTENTIONALLY_UNMAPPED_REGISTRY_PROVIDERS = {
     "runpod",
     "sambanova",
     "thegrid",
+    "typesafe",
 }
 
 

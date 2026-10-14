@@ -18,7 +18,7 @@ inference/
   llama_openai_compat/      # Generic OpenAI-compatible endpoints
   nvidia/                   # NVIDIA NIM
   oci/                      # Oracle Cloud Infrastructure GenAI
-  ollama/                   # Ollama (local model serving)
+  ollama/                   # Ollama (local model serving, including SystemOne decision models)
   openai/                   # OpenAI API
   passthrough/              # Generic passthrough to any endpoint
   runpod/                   # RunPod cloud GPU
@@ -26,6 +26,7 @@ inference/
   text_embeddings_inference/ # HuggingFace Text-Embeddings-Inference (embedding models)
   tgi/                      # HuggingFace TGI and Inference API
   together/                 # Together AI
+  typesafe/                 # TypeSafe SystemOne (judgment) models
   vertexai/                 # Google Vertex AI
   vllm/                     # vLLM inference server
   watsonx/                  # IBM WatsonX
