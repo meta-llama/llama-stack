@@ -17,19 +17,33 @@ from ogx.providers.remote.inference.ollama.config import OllamaImplConfig
 from ogx.providers.utils.inference.anthropic_mixin import AnthropicMixin
 from ogx.providers.utils.inference.openai_mixin import OpenAIMixin
 from ogx.providers.utils.inference.stream_utils import wrap_reasoning_chunks
+from ogx.providers.utils.inference.systemone import LOCAL_ENGINE_API_KEY, systemone_judge
 from ogx_api import (
     HealthResponse,
     HealthStatus,
     Model,
+    ModelType,
     OpenAIAssistantMessageParam,
     OpenAIChatCompletionChunkWithReasoning,
     OpenAIChatCompletionRequestWithExtraBody,
     OpenAIChatCompletionWithReasoning,
     OpenAIMessageParam,
+    SystemOneRequest,
+    SystemOneResponse,
     UnsupportedModelError,
 )
 
 logger = get_logger(name=__name__, category="inference::ollama")
+
+# Library names of Ollama models that serve the SystemOne (decision) protocol natively.
+# The OpenAI-compatible /v1/models listing does not expose per-model capabilities, so
+# decision models are recognized by their tag-stripped name.
+_SYSTEMONE_MODEL_NAMES = frozenset({"clef", "clef-flash", "laya", "nimble", "tev1"})
+
+
+def _is_systemone_model(identifier: str) -> bool:
+    # The engine reports canonical names with a tag (e.g. "laya:latest").
+    return identifier.split(":", 1)[0] in _SYSTEMONE_MODEL_NAMES
 
 
 class OllamaInferenceAdapter(AnthropicMixin, OpenAIMixin):
@@ -117,6 +131,29 @@ class OllamaInferenceAdapter(AnthropicMixin, OpenAIMixin):
         if base_url_str.endswith("/v1"):
             return base_url_str[:-3]
         return base_url_str
+
+    def construct_model_from_identifier(self, identifier: str) -> Model:
+        model = super().construct_model_from_identifier(identifier)
+        if _is_systemone_model(identifier):
+            # Decision models answer SystemOne judgments, not chat completions; register them
+            # under ModelType.systemone so the /v1/systemone router finds them.
+            model.model_type = ModelType.systemone
+        return model
+
+    async def judge(self, request: SystemOneRequest) -> SystemOneResponse:
+        """Answer a SystemOne judgment request by forwarding it to Ollama's /v1/systemone.
+
+        Ollama serves the TypeSafe-compatible SystemOne protocol natively for local decision
+        models, so no translation is needed; the shared helper validates the raw response
+        body into the OGX wire model. The SDK requires an API key, but Ollama ignores it, so a
+        fixed placeholder is passed.
+        """
+        return await systemone_judge(
+            self._get_ollama_base_url(),
+            LOCAL_ENGINE_API_KEY,
+            request,
+            network=self.config.network,
+        )
 
     async def initialize(self) -> None:
         logger.info("checking connectivity to Ollama", base_url=self.config.base_url)
