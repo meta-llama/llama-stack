@@ -20,7 +20,8 @@
     {"suite": "llama-cpp-server", "setup": "llama-cpp-server"},
     {"suite": "text-embeddings-inference", "setup": "text-embeddings-inference"},
     {"suite": "systemone", "setup": "typesafe", "allowed_clients": ["server"]},
-    {"suite": "systemone", "setup": "ollama-systemone", "allowed_clients": ["server"]}
+    {"suite": "systemone", "setup": "ollama-systemone", "allowed_clients": ["server"]},
+    {"suite": "systemone", "setup": "llama-cpp-server-systemone", "allowed_clients": ["server"]}
   ],
   "schedules": {
     "1 0 * * 0": [

@@ -315,7 +315,7 @@ https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm
             api=Api.inference,
             adapter_type="llama-cpp-server",
             provider_type="remote::llama-cpp-server",
-            pip_packages=[],
+            pip_packages=["typesafe-sdk>=0.7.2"],
             module="ogx.providers.remote.inference.llama_cpp_server",
             config_class="ogx.providers.remote.inference.llama_cpp_server.config.LlamaCppServerConfig",
             description="llama.cpp inference provider for connecting to llama.cpp servers with OpenAI-compatible API.",

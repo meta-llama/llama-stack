@@ -277,6 +277,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "rerank_model": "llama-cpp-server/bge-reranker-v2-m3",
         },
     ),
+    "llama-cpp-server-systemone": Setup(
+        name="llama-cpp-server",
+        description=(
+            "Local llama.cpp server (>= v0.6.0) serving the SystemOne decision model laya. "
+            "The URL must include the /v1 prefix because the OpenAI SDK appends endpoint "
+            "paths to it."
+        ),
+        env={
+            "LLAMA_CPP_SERVER_URL": "http://localhost:8080/v1",
+        },
+        defaults={
+            "judge_model": "llama-cpp-server/laya",
+        },
+    ),
     "text-embeddings-inference": Setup(
         name="text-embeddings-inference",
         description=(
