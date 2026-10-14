@@ -201,6 +201,38 @@ print(response.output_text)
 
 The approver does not have to be a person. Any check that can decide on the exact `name` and `arguments` can answer the request.
 
+For example, a SystemOne judgment model served by OGX at `/v1/systemone` can decide each request against a written policy. A `noul` question returns a calibrated probability, so the threshold is a policy choice; anything below it is denied:
+
+```python
+import json
+
+import requests
+
+POLICY = "Approve only read-only lookups. Deny anything that writes, deletes, sends or pays."
+
+
+def systemone_approver(req) -> bool:
+    resp = requests.post(
+        "http://localhost:8321/v1/systemone",
+        json={
+            "model": "typesafe/jev-latest",
+            "state": {"server_label": req.server_label, "tool": req.name, "arguments": json.loads(req.arguments)},
+            "questions": {
+                "allowed": {
+                    "type": "noul",
+                    "instructions": POLICY,
+                    "criteria": {"true": "the policy permits this exact call", "false": "the policy does not permit it"},
+                }
+            },
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()["answers"]["allowed"]["noul"] >= 0.9
+```
+
+In the loop above, replace the `input(...)` prompt with `approve = systemone_approver(req)`.
+
 ### Running Your Own MCP Server
 
 Here's an example of how to run a simple MCP server that exposes a File System as a set of tools to the OGX agent.
