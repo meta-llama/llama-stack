@@ -173,7 +173,6 @@ async def test_rerank_uses_sglang_wire_format():
     call = client.post.call_args
     assert call.args[0] == "https://sglang.example.com/v1/rerank"
     assert call.kwargs["json"] == {
-        "model": "rerank-model",
         "query": "test",
         "documents": ["doc1", "doc2"],
         "top_n": 2,

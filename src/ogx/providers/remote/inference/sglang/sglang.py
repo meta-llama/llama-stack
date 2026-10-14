@@ -88,18 +88,6 @@ class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
         except Exception as e:
             return HealthResponse(status=HealthStatus.ERROR, message=f"Health check failed: {str(e)}")
 
-    async def check_model_availability(self, model: str) -> bool:
-        """Verify the model against ``/v1/models``; skipped when a token is configured."""
-        if not self.config.auth_credential:
-            model_ids = []
-            async for m in self.client.models.list():
-                if m.id == model:
-                    return True
-                model_ids.append(m.id)
-            raise ValueError(f"Model '{model}' not found. Available models: {model_ids}")
-        log.warning(f"Not checking model availability for {model} as API token may trigger OAuth workflow")
-        return True
-
     async def openai_chat_completion(
         self,
         params: OpenAIChatCompletionRequestWithExtraBody,
@@ -157,8 +145,9 @@ class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
             else:
                 raise ValueError("Unsupported item type for reranking")
 
+        # SGLang's rerank request has no model field: the server reranks with the
+        # model it was launched with, so the requested model is not sent.
         payload: dict[str, str | int | float | list[str]] = {
-            "model": request.model,
             "query": format_item(request.query),
             "documents": [format_item(item) for item in request.items],
         }
