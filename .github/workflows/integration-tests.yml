@@ -21,6 +21,7 @@ on:
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-llamacpp/action.yml'
       - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-sglang/action.yml'
       - '.github/actions/setup-tei/action.yml'
       - '.github/actions/setup-test-environment/action.yml'
       - '.github/actions/run-and-record-tests/action.yml'

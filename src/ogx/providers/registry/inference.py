@@ -90,6 +90,16 @@ def available_providers() -> list[ProviderSpec]:
         ),
         RemoteProviderSpec(
             api=Api.inference,
+            adapter_type="sglang",
+            provider_type="remote::sglang",
+            pip_packages=[],
+            module="ogx.providers.remote.inference.sglang",
+            config_class="ogx.providers.remote.inference.sglang.SGLangInferenceAdapterConfig",
+            provider_data_validator="ogx.providers.remote.inference.sglang.SGLangProviderDataValidator",
+            description="Remote SGLang inference provider for connecting to SGLang servers.",
+        ),
+        RemoteProviderSpec(
+            api=Api.inference,
             adapter_type="fireworks",
             provider_type="remote::fireworks",
             pip_packages=[],

@@ -1,0 +1,37 @@
+name: Setup SGLang
+description: Start an SGLang CPU server and load the Qwen3-0.6B text model
+inputs:
+  port:
+    description: 'Port for the SGLang server'
+    required: false
+    default: '30000'
+runs:
+  using: "composite"
+  steps:
+    - name: Start SGLang
+      shell: bash
+      run: |
+        set -euo pipefail
+        # The `-xeon` tags are the CPU builds (SGLANG_USE_CPU_ENGINE=1, CPU torch); the
+        # un-suffixed tags are CUDA builds that fail on CPU-only runners. The CPU engine is
+        # built for Intel AVX-512 + AMX: on the AMD EPYC 7763 runners GitHub also hands
+        # out, `import sgl_kernel` dies with SIGILL (exit 132), so fail fast with a clear
+        # message instead of waiting for the health probe to time out.
+        if ! grep -q -w avx512f /proc/cpuinfo; then
+          echo "::error::SGLang's CPU build needs an AVX-512 (Intel Xeon) runner; this runner is '$(lscpu | grep 'Model name' | sed 's/.*: *//')'"
+          exit 1
+        fi
+        echo "Starting SGLang server..."
+        docker run -d --name sglang --ipc=host -p ${{ inputs.port }}:${{ inputs.port }} \
+          lmsysorg/sglang:v0.5.21-xeon \
+          sglang serve --model-path Qwen/Qwen3-0.6B --device cpu \
+            --host 0.0.0.0 --port ${{ inputs.port }} \
+            --disable-overlap-schedule --max-total-tokens 8192
+        echo "Verifying SGLang status..."
+        # The model is downloaded and loaded during first boot (about a minute), so allow time.
+        timeout 900 bash -c 'while ! curl -sf http://127.0.0.1:${{ inputs.port }}/health >/dev/null; do
+          if ! docker ps -q -f name=sglang | grep -q .; then echo "SGLang container exited"; docker logs sglang; exit 1; fi
+          sleep 5 && echo "."; done'
+        echo "SGLang is ready"
+        echo "Verifying the model is served..."
+        curl -sf http://127.0.0.1:${{ inputs.port }}/v1/models | grep -q "Qwen/Qwen3-0.6B"
