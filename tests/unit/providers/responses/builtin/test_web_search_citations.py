@@ -21,7 +21,7 @@ from ogx_api.openai_responses import (
 class TestExtractUrlCitationsFromText:
     """Regression tests for #6763: web_search never produced url_citation annotations."""
 
-    def test_extracts_url_citation_with_span_since_previous_marker(self):
+    def test_extracts_url_citation_with_span_limited_to_its_own_sentence(self):
         """The second citation's span starts at its own sentence ("They were introduced in
         2017"), not all the way back at the checkpoint left by the first citation -- the two
         sentences are both attributed to web_search, but each citation covers only the
@@ -157,6 +157,42 @@ class TestExtractUrlCitationsFromText:
         assert cleaned_text == "Fact."
         url_annotations = [a for a in annotations if isinstance(a, OpenAIResponseAnnotationCitation)]
         assert [(a.start_index, a.end_index) for a in url_annotations] == [(0, 4), (0, 4)]
+
+    def test_unknown_markers_between_a_known_marker_and_its_sentence_start_dont_break_the_span(self):
+        """Regression test for the seg_start/prefix_end deferred-recompute optimization: an
+        unknown/stale marker inside the sentence a later known marker is attached to must not
+        get folded into the join and corrupt the sentence-start scan -- the sentence-start
+        rescan is deferred until a known marker is actually reached, but it must still cover
+        the full span of text accumulated since the last checkpoint, unknown markers included.
+        """
+        text = "Fact one. Unverified claim <|url-fake|> about fact two <|url-1|>."
+        citation_urls = {"url-1": CitationUrl(url="https://example.com", title="Example")}
+
+        annotations, cleaned_text = _extract_citations_from_text(text, {}, citation_urls)
+
+        assert cleaned_text == "Fact one. Unverified claim <|url-fake|> about fact two."
+        assert len(annotations) == 1
+        assert (annotations[0].start_index, annotations[0].end_index) == (10, 54)
+        assert cleaned_text[10:54] == "Unverified claim <|url-fake|> about fact two"
+
+    def test_many_unknown_markers_do_not_cause_quadratic_slowdown(self):
+        """Regression test for a DoS finding: the sentence-start rescan used to re-join and
+        re-scan the *entire* text accumulated so far on every single marker, including
+        unknown ones (which never advance the checkpoint and are fully attacker-controlled,
+        since they're never validated against a real id) -- making a long run of them
+        quadratic in the number of markers. 20,000 repeated fake markers previously took on
+        the order of 10+ seconds; this must stay well under a second.
+        """
+        import time
+
+        text = "<|url-fake|>" * 20000
+
+        start = time.perf_counter()
+        annotations, _ = _extract_citations_from_text(text, {}, {})
+        elapsed = time.perf_counter() - start
+
+        assert annotations == []
+        assert elapsed < 2.0
 
     def test_falls_back_to_whole_text_span_when_model_does_not_cite(self):
         text = "Transformers use self-attention."

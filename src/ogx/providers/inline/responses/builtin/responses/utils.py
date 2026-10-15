@@ -527,10 +527,17 @@ _SENTENCE_BREAK = re.compile(r"[.!?؟]\s|\n")
 
 def _sentence_start(text: str, floor: int) -> int:
     """Find where the sentence containing `text`'s current end actually starts, without going
-    earlier than `floor` (the checkpoint left by the previous citation of either kind -- see
-    _extract_citations_from_text). A url citation's span is meant to cover the sentence it's
-    attached to, not drag in whatever unrelated text came before it back to the last citation,
-    which is what using `floor` as the span start unconditionally did.
+    earlier than `floor`. A url citation's span is meant to cover the sentence it's attached
+    to, not drag in whatever unrelated text came before it back to the last citation of either
+    kind, which is what using the checkpoint left by that citation as the span start
+    unconditionally did.
+
+    Callers pass only the text *since* that checkpoint (with floor=0), not the whole text seen
+    so far: re-joining and re-scanning everything on every marker is quadratic in the number of
+    markers, and unknown/stale markers (attacker-controlled, since they're never validated
+    against a real id) never advance the checkpoint, so a long run of them makes each call scan
+    the same, ever-growing prefix again -- see _extract_citations_from_text's seg_start/
+    prefix_end bookkeeping.
     """
     end = len(text.rstrip(" \n.!?؟"))
     start = floor
@@ -580,6 +587,16 @@ def _extract_citations_from_text(
     # zero-width one, and "<|file-a|>. <|url-1|>" doesn't let url-1 reach back across text that
     # only the file citation covers.
     cluster_start = 0
+    # parts[seg_start:] is exactly the text produced since url_span_start (both are updated
+    # together below), so _sentence_start only ever rescans the text since the last checkpoint
+    # instead of everything seen so far.
+    seg_start = 0
+    # Index into `parts` just after the latest prefix, if that prefix hasn't been folded into
+    # cluster_start yet. Deferring the (re)join+scan in _sentence_start to the next *known*
+    # marker means a long run of unknown/stale markers -- which never advance the checkpoint,
+    # and are attacker-controlled since they're never validated against a real id -- can't
+    # force a rescan on every single one of them.
+    prefix_end: int | None = None
 
     for m in marker_regex.finditer(text):
         # segment before the marker
@@ -600,7 +617,10 @@ def _extract_citations_from_text(
         total_len += len(prefix)
 
         if prefix:
-            cluster_start = _sentence_start("".join(parts), url_span_start)
+            prefix_end = len(parts)
+        if is_known and prefix_end is not None:
+            cluster_start = url_span_start + _sentence_start("".join(parts[seg_start:prefix_end]), 0)
+            prefix_end = None
 
         if is_file:
             annotations.append(
@@ -611,6 +631,7 @@ def _extract_citations_from_text(
                 )
             )
             url_span_start = total_len
+            seg_start = len(parts)
         elif is_url:
             source = citation_urls[cid]
             annotations.append(
@@ -622,6 +643,7 @@ def _extract_citations_from_text(
                 )
             )
             url_span_start = total_len
+            seg_start = len(parts)
         else:
             # Unrecognized marker (e.g. a stale/mismatched id): preserve it verbatim
             # rather than silently deleting user-visible text we can't actually attribute.
