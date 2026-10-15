@@ -35,11 +35,12 @@ PROVIDER_PATH_TO_SETUPS: list[tuple[str, list[str]]] = [
     ("src/ogx/providers/remote/inference/azure/", ["azure"]),
     ("src/ogx/providers/remote/inference/bedrock/", ["bedrock"]),
     ("src/ogx/providers/remote/inference/vllm/", ["vllm"]),
+    ("src/ogx/providers/remote/inference/sglang/", ["sglang"]),
     ("src/ogx/providers/remote/inference/watsonx/", ["watsonx"]),
     ("src/ogx/providers/remote/inference/vertexai/", ["vertexai"]),
     ("src/ogx/providers/remote/inference/gemini/", ["gemini"]),
     ("src/ogx/providers/remote/inference/fireworks/", ["fireworks"]),
-    ("src/ogx/providers/remote/inference/llama_cpp_server/", ["llama-cpp-server"]),
+    ("src/ogx/providers/remote/inference/llama_cpp_server/", ["llama-cpp-server", "llama-cpp-server-systemone"]),
     ("src/ogx/providers/remote/inference/text_embeddings_inference/", ["text-embeddings-inference"]),
 ]
 
