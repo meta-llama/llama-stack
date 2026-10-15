@@ -263,6 +263,8 @@ async def test_judge_forwards_to_systemone_util():
     assert args[0] == "http://mocked.localhost:30000"
     assert args[1] == LOCAL_ENGINE_API_KEY
     assert kwargs["network"] is None
+    # SGLang's x_label_mass extension must be dropped before the strict wire validation.
+    assert kwargs["extension_fields"] == frozenset({"x_label_mass"})
 
 
 async def test_judge_passes_auth_credential_to_systemone_util():

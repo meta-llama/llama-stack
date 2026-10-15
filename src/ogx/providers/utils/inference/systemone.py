@@ -13,6 +13,7 @@ every such provider shares one call path, one error mapping, and one raw-body
 validation into the OGX wire model.
 """
 
+import json
 from typing import Any
 
 import httpx2
@@ -63,6 +64,7 @@ async def systemone_judge(
     request: SystemOneRequest,
     *,
     network: NetworkConfig | None = None,
+    extension_fields: frozenset[str] = frozenset(),
 ) -> SystemOneResponse:
     """Answer a SystemOne judgment request against a TypeSafe-compatible endpoint.
 
@@ -79,6 +81,10 @@ async def systemone_judge(
     response body -- rather than cast from the SDK's parsed object -- so any drift between
     the backend's schema and the OGX wire model is caught here and surfaces as a validation
     error instead of passing a wrong-shaped object through unchecked.
+
+    ``extension_fields`` names answer fields a backend adds beyond the SystemOne schema
+    (SGLang reports ``x_label_mass`` on every answer); they are dropped from each answer
+    before validation so the strict wire model still catches real drift.
     """
     client_kwargs: dict[str, Any] = {}
     if network is not None:
@@ -95,7 +101,13 @@ async def systemone_judge(
             questions=payload["questions"],
             model=request.model,
         )
-        return SystemOneResponse.model_validate_json(sdk_response.raw_http_response.content)
+        body = json.loads(sdk_response.raw_http_response.content)
+        if extension_fields and isinstance(body, dict):
+            for answer in body.get("answers", {}).values():
+                if isinstance(answer, dict):
+                    for field in extension_fields:
+                        answer.pop(field, None)
+        return SystemOneResponse.model_validate(body)
     except TypeSafeAPIResponseValidationError as exc:
         # The backend answered 200 with a structurally invalid body: an upstream failure,
         # not a client error.

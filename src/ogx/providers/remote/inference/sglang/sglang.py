@@ -174,6 +174,9 @@ class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
             api_key,
             request,
             network=self.config.network,
+            # SGLang adds the full-vocabulary probability of the answer labels to every
+            # answer as `x_label_mass`, an SGLang extension outside the SystemOne schema.
+            extension_fields=frozenset({"x_label_mass"}),
         )
 
     async def rerank(
