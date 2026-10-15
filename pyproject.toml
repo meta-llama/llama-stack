@@ -216,7 +216,7 @@ dev = [
     "ogx-client>=1.5.0",
     "openapi-spec-validator>=0.9.0",
     "pre-commit>=4.6.2",
-    "pytest>=8.4,<9.1",                        # CI/unit: 9.1.x monkeypatch.resolve() calls importlib.import_module, breaking tests that mock ogx.core.resolver.importlib.import_module (global); cap mirrored in .github/dependabot.yml
+    "pytest>=8.4",
     "pytest-asyncio>=1.4.0",
     "pytest-cov",
     "pytest-html",
