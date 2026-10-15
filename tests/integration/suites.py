@@ -96,6 +96,22 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "sglang": Setup(
+        name="sglang",
+        description=(
+            "SGLang server (CPU build in CI) serving a text model over its OpenAI-compatible "
+            "endpoint. The URL must include the /v1 prefix because the OpenAI SDK appends "
+            "endpoint paths to it; the adapter strips it again for the root-level /health "
+            "probe. Embeddings come from the local sentence-transformers provider."
+        ),
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "text_model": "sglang/Qwen/Qwen3-0.6B",
+            "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
+        },
+    ),
     "ollama-reasoning": Setup(
         name="ollama",
         description="Local Ollama provider with a reasoning-capable model (deepseek-r1)",
@@ -346,6 +362,13 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         name="base-vllm-subset",
         roots=["tests/integration/inference"],
         default_setup="vllm",
+    ),
+    # SGLang backend, scoped like base-vllm-subset (the full inference directory): the
+    # CI server serves one text model, so vision tests skip.
+    "sglang": Suite(
+        name="sglang",
+        roots=["tests/integration/inference"],
+        default_setup="sglang",
     ),
     # llama.cpp multi-model router backend (llama-server --models-preset), scoped like
     # base-vllm-subset (the full inference directory). The router serves a text, an
