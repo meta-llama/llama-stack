@@ -17,10 +17,12 @@ from ogx.providers.utils.inference.anthropic_mixin import AnthropicMixin
 from ogx.providers.utils.inference.models_dev_registry import classify_model
 from ogx.providers.utils.inference.openai_mixin import OpenAIMixin
 from ogx.providers.utils.inference.stream_utils import wrap_reasoning_chunks
+from ogx.providers.utils.inference.systemone import LOCAL_ENGINE_API_KEY, systemone_judge
 from ogx_api import (
     HealthResponse,
     HealthStatus,
     Model,
+    ModelType,
     OpenAIChatCompletion,
     OpenAIChatCompletionChunk,
     OpenAIChatCompletionChunkWithReasoning,
@@ -30,12 +32,27 @@ from ogx_api import (
     OpenAIChatCompletionWithReasoning,
     RerankData,
     RerankResponse,
+    SystemOneRequest,
+    SystemOneResponse,
 )
 from ogx_api.inference import RerankRequest
 
 from .config import SGLangInferenceAdapterConfig
 
 log = get_logger(name=__name__, category="inference::sglang")
+
+# Decision checkpoints SGLang answers on /v1/systemone through their own readout: the Clef
+# family (joint schema head) and PPLX-Decider (decision_config.json). SGLang's /v1/models
+# exposes no capabilities and the served id is normally the HuggingFace path, so the last
+# path segment is matched by name. SGLang also scores the answer labels of any chat model
+# on /v1/systemone; such a model can be registered under ModelType.systemone explicitly.
+_SYSTEMONE_MODEL_NAMES = frozenset({"clef", "clef-flash", "clef-omni"})
+_SYSTEMONE_MODEL_PREFIXES = ("pplx-decider",)
+
+
+def _is_systemone_model(identifier: str) -> bool:
+    name = identifier.rsplit("/", 1)[-1].casefold()
+    return name in _SYSTEMONE_MODEL_NAMES or name.startswith(_SYSTEMONE_MODEL_PREFIXES)
 
 
 class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
@@ -128,9 +145,39 @@ class SGLangInferenceAdapter(AnthropicMixin, OpenAIMixin):
         # SGLang's /v1/models response does not expose a model task/type field,
         # so we classify with models.dev with a name fallback.
         model = classify_model(identifier, self.__provider_id__)
-        if model is not None:
-            return model
-        return super().construct_model_from_identifier(identifier)
+        if model is None:
+            model = super().construct_model_from_identifier(identifier)
+        if _is_systemone_model(identifier):
+            # Decision models answer SystemOne judgments, not chat completions; register them
+            # under ModelType.systemone so the /v1/systemone router finds them.
+            model.model_type = ModelType.systemone
+        return model
+
+    async def judge(self, request: SystemOneRequest) -> SystemOneResponse:
+        """Answer a SystemOne judgment request by forwarding it to SGLang's /v1/systemone.
+
+        SGLang serves the TypeSafe-compatible SystemOne protocol natively, through the
+        decision readout of a decision checkpoint or by scoring the answer labels of a chat
+        model, so no translation is needed; the shared helper validates the raw response
+        body into the OGX wire model.
+        """
+        # get_api_key() returns a display placeholder ("NO KEY REQUIRED") when no
+        # credential is configured, which the typesafe SDK rejects; pass the
+        # configured credential or the fixed local placeholder instead.
+        api_key = (
+            self.config.auth_credential.get_secret_value()
+            if self.config.auth_credential is not None
+            else LOCAL_ENGINE_API_KEY
+        )
+        return await systemone_judge(
+            self._get_base_url_without_version(),
+            api_key,
+            request,
+            network=self.config.network,
+            # SGLang adds the full-vocabulary probability of the answer labels to every
+            # answer as `x_label_mass`, an SGLang extension outside the SystemOne schema.
+            extension_fields=frozenset({"x_label_mass"}),
+        )
 
     async def rerank(
         self,

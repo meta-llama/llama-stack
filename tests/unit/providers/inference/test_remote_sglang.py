@@ -7,15 +7,19 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import SecretStr
 
 from ogx.providers.inline.responses.builtin.responses.types import AssistantMessageWithReasoning
 from ogx.providers.remote.inference.sglang.config import SGLangInferenceAdapterConfig
 from ogx.providers.remote.inference.sglang.sglang import SGLangInferenceAdapter
+from ogx.providers.utils.inference.systemone import LOCAL_ENGINE_API_KEY
 from ogx_api import (
     HealthStatus,
     ModelType,
     OpenAIChatCompletionRequestWithExtraBody,
     OpenAIUserMessageParam,
+    SystemOneRequest,
+    SystemOneResponse,
 )
 from ogx_api.inference import RerankRequest
 
@@ -224,3 +228,91 @@ async def test_rerank_passes_tls_config():
         await adapter.rerank(RerankRequest(model="rerank-model", query="test", items=["doc1"]))
 
     assert mock_client_class.call_args.kwargs.get("verify") is False
+
+
+# ---------------------------------------------------------------------------
+# SystemOne (judgment)
+# ---------------------------------------------------------------------------
+
+
+def _judge_request() -> SystemOneRequest:
+    return SystemOneRequest(
+        model="Cloudflare/clef-flash",
+        state="I was charged twice. Please help.",
+        questions={"billing": {"type": "noul", "instructions": "Is this about billing?"}},
+    )
+
+
+def _judge_response() -> SystemOneResponse:
+    return SystemOneResponse(
+        model="Cloudflare/clef-flash",
+        answers={"billing": {"type": "noul", "noul": 0.9}},
+        usage={"input_tokens": 1, "output_tokens": 0},
+    )
+
+
+async def test_judge_forwards_to_systemone_util():
+    """judge() must hit the server root (no /v1) with the local placeholder key and no network config."""
+    adapter = _adapter(base_url="http://mocked.localhost:30000/v1/")
+    with patch("ogx.providers.remote.inference.sglang.sglang.systemone_judge") as mock_judge:
+        mock_judge.return_value = _judge_response()
+        await adapter.judge(_judge_request())
+
+    mock_judge.assert_awaited_once()
+    args, kwargs = mock_judge.call_args
+    assert args[0] == "http://mocked.localhost:30000"
+    assert args[1] == LOCAL_ENGINE_API_KEY
+    assert kwargs["network"] is None
+    # SGLang's x_label_mass extension must be dropped before the strict wire validation.
+    assert kwargs["extension_fields"] == frozenset({"x_label_mass"})
+
+
+async def test_judge_passes_auth_credential_to_systemone_util():
+    adapter = _adapter(api_token=SecretStr("top-secret"))
+    with patch("ogx.providers.remote.inference.sglang.sglang.systemone_judge") as mock_judge:
+        mock_judge.return_value = _judge_response()
+        await adapter.judge(_judge_request())
+
+    assert mock_judge.call_args.args[1] == "top-secret"
+
+
+async def test_judge_passes_network_config_to_systemone_util():
+    adapter = _adapter(network={"tls": {"verify": False}})
+    with patch("ogx.providers.remote.inference.sglang.sglang.systemone_judge") as mock_judge:
+        mock_judge.return_value = _judge_response()
+        await adapter.judge(_judge_request())
+
+    assert mock_judge.call_args.kwargs["network"] == adapter.config.network
+
+
+@pytest.mark.parametrize(
+    "identifier",
+    [
+        "Cloudflare/clef",
+        "Cloudflare/clef-flash",
+        "Cloudflare/clef-omni",
+        "clef-flash",
+        "perplexity-ai/pplx-decider-v1-27b",
+        "perplexity-ai/pplx-decider-v1.1-27b",
+        "/models/Clef-Flash",
+    ],
+)
+def test_construct_model_from_identifier_marks_decision_models(identifier):
+    model = _adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type == ModelType.systemone
+
+
+@pytest.mark.parametrize(
+    "identifier",
+    [
+        "Qwen/Qwen3-0.6B",
+        "zai-org/GLM-5.3-Flash",
+        "Cloudflare/clef-2",
+        "text-embedding-3-large",
+    ],
+)
+def test_construct_model_from_identifier_leaves_other_models_alone(identifier):
+    model = _adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type != ModelType.systemone

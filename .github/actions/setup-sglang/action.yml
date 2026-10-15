@@ -13,12 +13,13 @@ runs:
       run: |
         set -euo pipefail
         # The `-xeon` tags are the CPU builds (SGLANG_USE_CPU_ENGINE=1, CPU torch); the
-        # un-suffixed tags are CUDA builds that fail on CPU-only runners. The CPU engine is
-        # built for Intel AVX-512 + AMX: on the AMD EPYC 7763 runners GitHub also hands
-        # out, `import sgl_kernel` dies with SIGILL (exit 132), so fail fast with a clear
-        # message instead of waiting for the health probe to time out.
+        # un-suffixed tags are CUDA builds that fail on CPU-only runners. The CPU kernels
+        # need AVX-512 (measured: Intel Xeon 6973P-C and AMD EPYC 9V45 serve Qwen3-0.6B in
+        # about a minute; on the AMD EPYC 7763 runners GitHub also hands out, `import
+        # sgl_kernel` dies with SIGILL, exit 132), so fail fast with a clear message
+        # instead of waiting for the health probe to time out.
         if ! grep -q -w avx512f /proc/cpuinfo; then
-          echo "::error::SGLang's CPU build needs an AVX-512 (Intel Xeon) runner; this runner is '$(lscpu | grep 'Model name' | sed 's/.*: *//')'"
+          echo "::error::SGLang's CPU build needs an AVX-512 runner; this runner is '$(lscpu | grep 'Model name' | sed 's/.*: *//')'"
           exit 1
         fi
         echo "Starting SGLang server..."
