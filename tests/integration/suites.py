@@ -112,6 +112,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "sglang-systemone": Setup(
+        name="sglang",
+        description=(
+            "SGLang server serving a SystemOne decision checkpoint (Cloudflare/clef-flash, 9B, "
+            "needs a GPU or >= 24 GB of RAM, so no hosted-runner lane). The URL must include "
+            "the /v1 prefix because the OpenAI SDK appends endpoint paths to it."
+        ),
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "judge_model": "sglang/Cloudflare/clef-flash",
+        },
+    ),
     "ollama-reasoning": Setup(
         name="ollama",
         description="Local Ollama provider with a reasoning-capable model (deepseek-r1)",

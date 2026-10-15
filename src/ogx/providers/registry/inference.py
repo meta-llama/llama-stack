@@ -92,7 +92,7 @@ def available_providers() -> list[ProviderSpec]:
             api=Api.inference,
             adapter_type="sglang",
             provider_type="remote::sglang",
-            pip_packages=[],
+            pip_packages=["typesafe-sdk>=0.7.2"],
             module="ogx.providers.remote.inference.sglang",
             config_class="ogx.providers.remote.inference.sglang.SGLangInferenceAdapterConfig",
             provider_data_validator="ogx.providers.remote.inference.sglang.SGLangProviderDataValidator",

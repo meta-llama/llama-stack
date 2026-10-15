@@ -23,7 +23,7 @@ inference/
   passthrough/              # Generic passthrough to any endpoint
   runpod/                   # RunPod cloud GPU
   sambanova/                # SambaNova
-  sglang/                   # SGLang inference server
+  sglang/                   # SGLang inference server (serves llm, embedding, and SystemOne decision models)
   text_embeddings_inference/ # HuggingFace Text-Embeddings-Inference (embedding models)
   tgi/                      # HuggingFace TGI and Inference API
   together/                 # Together AI
