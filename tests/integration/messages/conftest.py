@@ -94,6 +94,33 @@ def make_messages_request(
     return client.post("/v1/messages", headers=_build_headers(), json=body)
 
 
+def _build_count_tokens_body(
+    *,
+    model: str,
+    messages: list[dict],
+    system: str | None = None,
+    tools: list[dict] | None = None,
+) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+    }
+    if system is not None:
+        body["system"] = system
+    if tools is not None:
+        body["tools"] = tools
+    return body
+
+
+def make_count_tokens_request(
+    client: httpx2.Client,
+    **kwargs: Any,
+) -> httpx2.Response:
+    """Make a POST request to /v1/messages/count_tokens."""
+    body = _build_count_tokens_body(**kwargs)
+    return client.post("/v1/messages/count_tokens", headers=_build_headers(), json=body)
+
+
 def make_streaming_messages_request(
     client: httpx2.Client,
     **kwargs: Any,
