@@ -43,17 +43,39 @@ def messages_client(messages_base_url):
 
 
 # Setups whose text model thinks by default. The suite asserts on text content,
-# so disable thinking explicitly where the provider's /v1/messages endpoint
-# accepts the Anthropic `thinking` parameter (Fireworks documents
-# {"type": "disabled"}; Meta's Muse returns redacted_thinking blocks by
-# default; other providers default to non-thinking models).
-_THINKING_DISABLED_SETUPS = frozenset({"fireworks", "meta"})
+# so thinking must be steered per provider:
+#   - Fireworks: disable it (its /v1/messages documents {"type": "disabled"}).
+#   - Meta Muse: cannot be disabled (reasoning_effort 'none' is unsupported);
+#     enable it with an explicit budget and raise max_tokens so text follows
+#     the thinking blocks (verified against api.meta.ai).
+# Other providers default to non-thinking models.
+_THINKING_DISABLED_SETUPS = frozenset({"fireworks"})
+_THINKING_BUDGET_SETUPS = frozenset({"meta"})
+_THINKING_BUDGET_TOKENS = 1024
+_THINKING_MAX_TOKENS = 2048
 
 
-def _thinking_config() -> dict[str, str] | None:
-    if os.environ.get("OGX_TEST_SETUP") in _THINKING_DISABLED_SETUPS:
+def _thinking_config() -> dict[str, Any] | None:
+    setup = os.environ.get("OGX_TEST_SETUP")
+    if setup in _THINKING_DISABLED_SETUPS:
         return {"type": "disabled"}
+    if setup in _THINKING_BUDGET_SETUPS:
+        return {"type": "enabled", "budget_tokens": _THINKING_BUDGET_TOKENS}
     return None
+
+
+def _max_tokens_floor(max_tokens: int) -> int:
+    """Raise max_tokens for setups that must reserve a thinking budget."""
+    if os.environ.get("OGX_TEST_SETUP") in _THINKING_BUDGET_SETUPS:
+        return max(max_tokens, _THINKING_MAX_TOKENS)
+    return max_tokens
+
+
+def _thinking_params_fragment() -> dict[str, Any]:
+    """Fragment to merge into message-creation params (e.g. batch items)."""
+    if (thinking := _thinking_config()) is None:
+        return {}
+    return {"thinking": thinking}
 
 
 # Models released after Claude Opus 4.6 (e.g. claude-haiku-5-5) reject any
@@ -83,7 +105,7 @@ def _build_messages_body(
     body: dict[str, Any] = {
         "model": model,
         "messages": messages,
-        "max_tokens": max_tokens,
+        "max_tokens": _max_tokens_floor(max_tokens),
         "stream": stream,
     }
     if (thinking := _thinking_config()) is not None:

@@ -14,7 +14,7 @@ run under the `messages-openai` suite.
 import json
 import time
 
-from .conftest import _build_headers
+from .conftest import _build_headers, _max_tokens_floor, _thinking_params_fragment
 
 
 def _poll_until_ended(client, batch_id: str, timeout: float = 60.0) -> dict:
@@ -39,7 +39,8 @@ def _create_batch(client, text_model_id: str, prompts: list[tuple[str, str]]) ->
                 "params": {
                     "model": text_model_id,
                     "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 32,
+                    "max_tokens": _max_tokens_floor(32),
+                    **_thinking_params_fragment(),
                 },
             }
             for cid, prompt in prompts
