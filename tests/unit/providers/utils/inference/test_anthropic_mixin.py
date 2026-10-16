@@ -215,6 +215,24 @@ class TestHeadersAndBody:
         assert body["metadata"] == {"user_id": "u1"}
         assert body["stream"] is False
 
+    async def test_body_keeps_custom_tool_type_by_default(self, mock_client):
+        """The default _prepare_passthrough_body is a no-op, so tools keep their type marker
+        (only providers whose backends reject it, e.g. DeepSeek, strip it)."""
+        await _adapter("meta").anthropic_messages(
+            _message_request(
+                tools=[
+                    {
+                        "type": "custom",
+                        "name": "get_weather",
+                        "input_schema": {"type": "object", "properties": {"location": {"type": "string"}}},
+                    }
+                ]
+            )
+        )
+
+        body = mock_client.client.post.call_args.kwargs["json"]
+        assert body["tools"][0]["type"] == "custom"
+
 
 class TestErrors:
     async def test_error_preserves_status_and_body_message(self, mock_client):

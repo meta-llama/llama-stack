@@ -32,7 +32,9 @@ def test_messages_non_streaming_basic(messages_client, text_model_id):
     data = response.json()
     assert data["type"] == "message"
     assert data["role"] == "assistant"
-    assert data["id"].startswith("msg_")
+    # Native passthroughs return the upstream id as-is; some providers
+    # (e.g. DeepSeek) do not use the "msg_" prefix.
+    assert data["id"]
     assert len(data["content"]) > 0
 
     # Content may include thinking blocks; find first text block
