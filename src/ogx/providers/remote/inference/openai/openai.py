@@ -21,6 +21,7 @@ from ogx_api.messages.models import (
     AnthropicCountTokensResponse,
     AnthropicCreateMessageRequest,
     AnthropicMessageResponse,
+    _ToolChoiceNone,
 )
 
 from .config import OpenAIConfig
@@ -84,7 +85,7 @@ class OpenAIInferenceAdapter(OpenAIMixin):
             max_tokens=1,
             system=params.system,
             tools=params.tools,
-            tool_choice="none" if params.tools else None,
+            tool_choice=_ToolChoiceNone() if params.tools else None,
             stream=False,
         )
         result = await self.anthropic_messages(msg_request)
