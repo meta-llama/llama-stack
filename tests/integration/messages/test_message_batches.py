@@ -14,10 +14,10 @@ run under the `messages-openai` suite.
 import json
 import time
 
-from .conftest import _build_headers, _max_tokens_floor, _thinking_params_fragment
+from .conftest import _REQUEST_TIMEOUT, _build_headers, _max_tokens_floor, _thinking_params_fragment
 
 
-def _poll_until_ended(client, batch_id: str, timeout: float = 60.0) -> dict:
+def _poll_until_ended(client, batch_id: str, timeout: float = _REQUEST_TIMEOUT) -> dict:
     """Poll the batch until processing_status is 'ended' or timeout."""
     deadline = time.time() + timeout
     while time.time() < deadline:

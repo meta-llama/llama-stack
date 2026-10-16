@@ -34,10 +34,18 @@ def messages_base_url(ogx_client):
     return ogx_client.base_url
 
 
+# Single timeout for every messages request in this suite. Mirrors
+# AnthropicMixin.anthropic_messages_timeout (300s, the provider's own upstream
+# timeout unless network.timeout is set) so the test client is never the first
+# link to give up: on slow backends (e.g. CPU vllm with thinking) a request can
+# legitimately take well over a minute.
+_REQUEST_TIMEOUT = 300.0
+
+
 @pytest.fixture
 def messages_client(messages_base_url):
     """Provide an httpx2 client configured for Anthropic Messages API calls."""
-    client = httpx2.Client(base_url=messages_base_url, timeout=60.0)
+    client = httpx2.Client(base_url=messages_base_url, timeout=_REQUEST_TIMEOUT)
     yield client
     client.close()
 
