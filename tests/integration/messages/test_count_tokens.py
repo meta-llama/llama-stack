@@ -7,8 +7,8 @@
 """Integration tests for the Anthropic count_tokens API (/v1/messages/count_tokens).
 
 These tests exercise both count_tokens paths end-to-end: the provider's native
-/v1/messages/count_tokens endpoint (ollama, anthropic, meta, vllm, sglang) and
-the fallback that counts via a max_tokens=1 message round trip (fireworks,
+/v1/messages/count_tokens endpoint (anthropic, meta, vllm, sglang) and the
+fallback that counts via a max_tokens=1 message round trip (ollama, fireworks,
 deepseek). Assertions are deliberately path-agnostic because exact counts vary
 by provider tokenizer; they pin response shape, the anthropic-version header,
 and monotonicity as the prompt grows.
