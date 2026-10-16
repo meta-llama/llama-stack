@@ -79,6 +79,7 @@ runs:
         # outputs on /v1/completions (vllm-project/vllm#57726).
         # test_openai_completion_guided_choice skips on vllm because of this; drop the
         # flag (and the skip) once the fix is in the pinned release.
+        #
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Qwen3-0.6B" \
           --host 127.0.0.1 \
           --port "$PORT" \

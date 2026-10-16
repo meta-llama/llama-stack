@@ -112,6 +112,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "sglang-systemone": Setup(
+        name="sglang",
+        description=(
+            "SGLang server serving a SystemOne decision checkpoint (Cloudflare/clef-flash, 9B, "
+            "needs a GPU or >= 24 GB of RAM, so no hosted-runner lane). The URL must include "
+            "the /v1 prefix because the OpenAI SDK appends endpoint paths to it."
+        ),
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "judge_model": "sglang/Cloudflare/clef-flash",
+        },
+    ),
     "ollama-reasoning": Setup(
         name="ollama",
         description="Local Ollama provider with a reasoning-capable model (deepseek-r1)",
@@ -247,7 +261,27 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         name="anthropic",
         description="Anthropic Claude models",
         defaults={
-            "text_model": "anthropic/claude-3-5-haiku-20241022",
+            "text_model": "anthropic/claude-haiku-5-5",
+        },
+    ),
+    "meta": Setup(
+        name="meta",
+        description="Meta AI models via the api.meta.ai endpoint",
+        defaults={
+            "text_model": "meta/muse-spark-1.3-contributor",
+        },
+    ),
+    # DeepSeek serves /v1/messages from a separate host path (anthropic_base_url), not
+    # from base_url, so both are set explicitly.
+    "deepseek": Setup(
+        name="deepseek",
+        description="DeepSeek models via the DeepSeek platform API",
+        env={
+            "DEEPSEEK_BASE_URL": "https://api.deepseek.com/v1",
+            "DEEPSEEK_ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+        },
+        defaults={
+            "text_model": "deepseek/deepseek-chat",
         },
     ),
     "llama-api": Setup(
