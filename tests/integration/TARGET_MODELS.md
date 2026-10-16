@@ -61,7 +61,7 @@ Cron: `1 0 * * 0`
 | `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `gpt-reasoning` | — |
 | `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `llama-cpp-server` | — |
 | `llama-cpp-server-systemone` | — | — | — | — | `systemone` | — |
-| `meta` | meta/muse-spark-1.1 | — | — | — | `messages` | — |
+| `meta` | meta/muse-spark-1.3-contributor | — | — | — | `messages` | — |
 | `ollama` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base`, `messages` | — |
 | `ollama-postgres` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base` | — |
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |

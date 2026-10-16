@@ -268,7 +268,7 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         name="meta",
         description="Meta AI models via the api.meta.ai endpoint",
         defaults={
-            "text_model": "meta/muse-spark-1.1",
+            "text_model": "meta/muse-spark-1.3-contributor",
         },
     ),
     # DeepSeek serves /v1/messages from a separate host path (anthropic_base_url), not
