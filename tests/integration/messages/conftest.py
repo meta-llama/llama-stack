@@ -45,8 +45,9 @@ def messages_client(messages_base_url):
 # Setups whose text model thinks by default. The suite asserts on text content,
 # so disable thinking explicitly where the provider's /v1/messages endpoint
 # accepts the Anthropic `thinking` parameter (Fireworks documents
-# {"type": "disabled"}; other providers default to non-thinking models).
-_THINKING_DISABLED_SETUPS = frozenset({"fireworks"})
+# {"type": "disabled"}; Meta's Muse returns redacted_thinking blocks by
+# default; other providers default to non-thinking models).
+_THINKING_DISABLED_SETUPS = frozenset({"fireworks", "meta"})
 
 
 def _thinking_config() -> dict[str, str] | None:
