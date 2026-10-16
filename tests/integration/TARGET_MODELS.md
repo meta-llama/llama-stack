@@ -51,7 +51,7 @@ Cron: `1 0 * * 0`
 
 | Setup | Text Model | Vision Model | Embedding Model | Safety Model | Default CI | Scheduled CI |
 |-------|------------|--------------|-----------------|--------------|------------|--------------|
-| `anthropic` | anthropic/claude-3-5-haiku-20241022 | — | — | — | `messages` | — |
+| `anthropic` | anthropic/claude-haiku-5-5 | — | — | — | `messages` | — |
 | `azure` | azure/gpt-4o | azure/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 | `bedrock` | bedrock/openai.gpt-oss-20b-1:0 | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `bedrock`, `bedrock-responses` | — |
 | `deepseek` | deepseek/deepseek-chat | — | — | — | `messages` | — |

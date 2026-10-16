@@ -261,7 +261,7 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         name="anthropic",
         description="Anthropic Claude models",
         defaults={
-            "text_model": "anthropic/claude-3-5-haiku-20241022",
+            "text_model": "anthropic/claude-haiku-5-5",
         },
     ),
     "meta": Setup(
