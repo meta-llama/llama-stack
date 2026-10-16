@@ -90,6 +90,15 @@ def _temperature_value(default: float) -> float:
     return default
 
 
+# Meta Muse's /v1/messages rejects stop_sequences entirely and only accepts
+# tool_choice "auto" (not "any"/"none"/named). Adapt those params for meta.
+_META_LIMITED_SETUPS = frozenset({"meta"})
+
+
+def _is_meta_limited() -> bool:
+    return os.environ.get("OGX_TEST_SETUP") in _META_LIMITED_SETUPS
+
+
 def _build_messages_body(
     *,
     model: str,
@@ -115,10 +124,12 @@ def _build_messages_body(
     if tools is not None:
         body["tools"] = tools
     if tool_choice is not None:
+        if _is_meta_limited():
+            tool_choice = {"type": "auto"}
         body["tool_choice"] = tool_choice
     if temperature is not None:
         body["temperature"] = _temperature_value(temperature)
-    if stop_sequences is not None:
+    if stop_sequences is not None and not _is_meta_limited():
         body["stop_sequences"] = stop_sequences
     return body
 

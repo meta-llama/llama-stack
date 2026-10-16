@@ -47,7 +47,7 @@ def test_messages_non_streaming_basic(messages_client, text_model_id):
 
     # All content blocks must be valid types
     for block in data["content"]:
-        assert block["type"] in ("text", "thinking", "tool_use")
+        assert block["type"] in ("text", "thinking", "redacted_thinking", "tool_use")
 
 
 def test_messages_non_streaming_with_system(messages_client, text_model_id):
@@ -212,7 +212,7 @@ def test_messages_with_tool_definitions(messages_client, text_model_id):
 
     # The model may or may not call the tool; thinking, text, and tool_use are all valid
     for block in data["content"]:
-        assert block["type"] in ("text", "tool_use", "thinking")
+        assert block["type"] in ("text", "tool_use", "thinking", "redacted_thinking")
         if block["type"] == "tool_use":
             assert "id" in block
             assert block["name"] == "get_weather"
