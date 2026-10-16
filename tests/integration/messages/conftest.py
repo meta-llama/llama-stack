@@ -48,9 +48,13 @@ def messages_client(messages_base_url):
 #   - Meta Muse: cannot be disabled (reasoning_effort 'none' is unsupported);
 #     enable it with an explicit budget and raise max_tokens so text follows
 #     the thinking blocks (verified against api.meta.ai).
+#   - vllm (Qwen3-0.6B): thinks by default in a typical deployment; keep the
+#     deployment standard and just raise max_tokens so text follows the
+#     thinking blocks.
 # Other providers default to non-thinking models.
 _THINKING_DISABLED_SETUPS = frozenset({"fireworks"})
 _THINKING_BUDGET_SETUPS = frozenset({"meta"})
+_THINKING_FLOOR_SETUPS = frozenset({"meta", "vllm"})
 _THINKING_BUDGET_TOKENS = 1024
 _THINKING_MAX_TOKENS = 2048
 
@@ -65,8 +69,9 @@ def _thinking_config() -> dict[str, Any] | None:
 
 
 def _max_tokens_floor(max_tokens: int) -> int:
-    """Raise max_tokens for setups that must reserve a thinking budget."""
-    if os.environ.get("OGX_TEST_SETUP") in _THINKING_BUDGET_SETUPS:
+    """Raise max_tokens for setups whose model thinks (thinking plus the asserted
+    text must fit within the budget)."""
+    if os.environ.get("OGX_TEST_SETUP") in _THINKING_FLOOR_SETUPS:
         return max(max_tokens, _THINKING_MAX_TOKENS)
     return max_tokens
 
