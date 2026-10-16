@@ -42,6 +42,19 @@ def messages_client(messages_base_url):
     client.close()
 
 
+# Setups whose text model thinks by default. The suite asserts on text content,
+# so disable thinking explicitly where the provider's /v1/messages endpoint
+# accepts the Anthropic `thinking` parameter (Fireworks documents
+# {"type": "disabled"}; other providers default to non-thinking models).
+_THINKING_DISABLED_SETUPS = frozenset({"fireworks"})
+
+
+def _thinking_config() -> dict[str, str] | None:
+    if os.environ.get("OGX_TEST_SETUP") in _THINKING_DISABLED_SETUPS:
+        return {"type": "disabled"}
+    return None
+
+
 def _build_messages_body(
     *,
     model: str,
@@ -60,6 +73,8 @@ def _build_messages_body(
         "max_tokens": max_tokens,
         "stream": stream,
     }
+    if (thinking := _thinking_config()) is not None:
+        body["thinking"] = thinking
     if system is not None:
         body["system"] = system
     if tools is not None:

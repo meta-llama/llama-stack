@@ -266,6 +266,9 @@ jobs:
             suite: base
           - setup: vllm
             suite: messages
+            # The messages suite asserts on text content; Qwen3 thinks by
+            # default, so this instance serves it with thinking disabled.
+            vllm-enable-thinking: 'false'
           - setup: fireworks
             suite: messages
           - setup: anthropic
@@ -325,6 +328,7 @@ jobs:
           setup: ${{ matrix.provider.setup }}
           suite: ${{ inputs.suite || matrix.provider.suite }}
           inference-mode: ${{ inputs.inference_mode || 'record-if-missing' }}
+          vllm-enable-thinking: ${{ matrix.provider['vllm-enable-thinking'] || 'true' }}
 
       - name: Prepare AWS web identity for Bedrock
         if: steps.should_run.outputs.run == 'true' && matrix.provider.setup == 'bedrock'

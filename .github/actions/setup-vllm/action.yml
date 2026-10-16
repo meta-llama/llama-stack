@@ -9,6 +9,10 @@ inputs:
     description: 'Directory for the vLLM virtualenv, wheel, model weights and server log'
     required: false
     default: '${{ runner.temp }}/vllm'
+  enable-thinking:
+    description: 'Enable Qwen3 thinking mode (chat template enable_thinking)'
+    required: false
+    default: 'true'
 runs:
   using: "composite"
   steps:
@@ -79,6 +83,14 @@ runs:
         # outputs on /v1/completions (vllm-project/vllm#57726).
         # test_openai_completion_guided_choice skips on vllm because of this; drop the
         # flag (and the skip) once the fix is in the pinned release.
+        #
+        # Qwen3 thinks by default, which can consume the whole max_tokens in
+        # thinking blocks. Suites that assert on text content (messages) start
+        # the server with thinking disabled via the chat template.
+        EXTRA_ARGS=()
+        if [ "${{ inputs.enable-thinking }}" != "true" ]; then
+          EXTRA_ARGS+=(--chat-template-kwargs '{"enable_thinking": false}')
+        fi
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Qwen3-0.6B" \
           --host 127.0.0.1 \
           --port "$PORT" \
@@ -88,6 +100,7 @@ runs:
           --reasoning-parser deepseek_r1 \
           --max-model-len 8192 \
           --gpu-memory-utilization 0.5 \
+          "${EXTRA_ARGS[@]}" \
           < /dev/null > "$WORKDIR/vllm.log" 2>&1 &
         VLLM_PID=$!
         echo "vLLM launched (detached, pid $VLLM_PID)"
