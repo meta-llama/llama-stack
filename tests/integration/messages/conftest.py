@@ -55,6 +55,18 @@ def _thinking_config() -> dict[str, str] | None:
     return None
 
 
+# Models released after Claude Opus 4.6 (e.g. claude-haiku-5-5) reject any
+# temperature other than 1.0 with a 400. Other setups keep 0.0 to preserve
+# existing recordings (the request body is hashed for replay).
+_TEMP_LOCKED_SETUPS = frozenset({"anthropic"})
+
+
+def _temperature_value(default: float) -> float:
+    if os.environ.get("OGX_TEST_SETUP") in _TEMP_LOCKED_SETUPS:
+        return 1.0
+    return default
+
+
 def _build_messages_body(
     *,
     model: str,
@@ -82,7 +94,7 @@ def _build_messages_body(
     if tool_choice is not None:
         body["tool_choice"] = tool_choice
     if temperature is not None:
-        body["temperature"] = temperature
+        body["temperature"] = _temperature_value(temperature)
     if stop_sequences is not None:
         body["stop_sequences"] = stop_sequences
     return body
