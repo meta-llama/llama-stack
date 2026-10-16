@@ -126,6 +126,12 @@ providers:
     provider_type: remote::text-embeddings-inference
     config:
       base_url: ${env.TEI_URL:=http://localhost:8080/v1}
+  - provider_id: ${env.DEEPSEEK_API_KEY:+deepseek}
+    provider_type: remote::deepseek
+    config:
+      base_url: ${env.DEEPSEEK_BASE_URL:=https://api.deepseek.com/v1}
+      anthropic_base_url: ${env.DEEPSEEK_ANTHROPIC_BASE_URL:=https://api.deepseek.com/anthropic}
+      api_key: ${env.DEEPSEEK_API_KEY:=}
   vector_io:
   - provider_id: faiss
     provider_type: inline::faiss

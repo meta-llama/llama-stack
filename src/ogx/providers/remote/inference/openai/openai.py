@@ -16,6 +16,13 @@ from ogx_api import (
     OpenAIChatCompletionChunk,
     OpenAIChatCompletionRequestWithExtraBody,
 )
+from ogx_api.messages.models import (
+    AnthropicCountTokensRequest,
+    AnthropicCountTokensResponse,
+    AnthropicCreateMessageRequest,
+    AnthropicMessageResponse,
+    _ToolChoiceNone,
+)
 
 from .config import OpenAIConfig
 
@@ -62,6 +69,29 @@ class OpenAIInferenceAdapter(OpenAIMixin):
         "text-embedding-3-small": {"embedding_dimension": 1536, "context_length": 8192},
         "text-embedding-3-large": {"embedding_dimension": 3072, "context_length": 8192},
     }
+
+    async def anthropic_count_tokens(
+        self,
+        params: AnthropicCountTokensRequest,
+    ) -> AnthropicCountTokensResponse:
+        """Count via the max_tokens=1 fallback, suppressing tool calls when tools are
+        present. OpenAI 400s when a tool call cannot be constructed within max_tokens,
+        but only usage.input_tokens is needed from the reply, so tool_choice "none"
+        keeps the tool definitions in the counted prompt while the reply is plain text
+        that always fits in one token."""
+        msg_request = AnthropicCreateMessageRequest(
+            model=params.model,
+            messages=params.messages,
+            max_tokens=1,
+            system=params.system,
+            tools=params.tools,
+            tool_choice=_ToolChoiceNone() if params.tools else None,
+            stream=False,
+        )
+        result = await self.anthropic_messages(msg_request)
+        if not isinstance(result, AnthropicMessageResponse):
+            raise RuntimeError("Received streaming response from non-streaming request")
+        return AnthropicCountTokensResponse(input_tokens=result.usage.input_tokens)
 
     def _get_max_output_tokens(self, model: str) -> int | None:
         if model in _MODEL_MAX_OUTPUT_TOKENS:
