@@ -16,7 +16,7 @@ from ogx.providers.inline.vector_io.sqlite_vec.sqlite_vec import (
     _create_sqlite_connection,
 )
 from ogx_api import Chunk, ChunkMetadata, EmbeddedChunk, QueryChunksResponse
-from ogx_api.filters import ComparisonFilter
+from ogx_api.filters import ComparisonFilter, CompoundFilter
 
 # This test is a unit test for the SQLiteVecVectorIOAdapter class. This should only contain
 # tests which are specific to this class. More general (API-level) tests should be placed in
@@ -828,6 +828,44 @@ async def test_query_vector_with_filter_returns_k_matching_chunks(sqlite_vec_ind
     filtered = await sqlite_vec_index.query_vector(query, k=30, score_threshold=0.0, filters=match_all)
     assert [chunk.chunk_id for chunk in filtered.chunks] == [chunk.chunk_id for chunk in unfiltered.chunks]
     assert filtered.scores == pytest.approx(unfiltered.scores)
+
+
+async def test_query_vector_with_or_filter_returns_k_matching_chunks(sqlite_vec_index, embedding_dimension):
+    """An "or" filter must stay grouped when it is combined with the KNN search."""
+    rng = np.random.default_rng(1)
+    query = np.ones(embedding_dimension, dtype=np.float32)
+    groups = ["other"] * 20 + ["a"] * 3 + ["b"] * 3
+    embedded_chunks = []
+    for i, group in enumerate(groups):
+        # Chunks outside the filter are all closer to the query than any matching chunk.
+        offset = 0.1 if group == "other" else 5.0 + i
+        embedding = query + offset * rng.standard_normal(embedding_dimension).astype(np.float32)
+        embedded_chunks.append(
+            EmbeddedChunk(
+                content=f"chunk {i}",
+                chunk_id=f"chunk-{i}",
+                metadata={"group": group},
+                chunk_metadata=ChunkMetadata(document_id=group, chunk_id=f"chunk-{i}"),
+                embedding=embedding.tolist(),
+                embedding_model="test-embedding-model",
+                embedding_dimension=embedding_dimension,
+            )
+        )
+    await sqlite_vec_index.add_chunks(embedded_chunks)
+
+    a_or_b = CompoundFilter(
+        type="or",
+        filters=[
+            ComparisonFilter(type="eq", key="group", value="a"),
+            ComparisonFilter(type="eq", key="group", value="b"),
+        ],
+    )
+    response = await sqlite_vec_index.query_vector(query, k=4, score_threshold=0.0, filters=a_or_b)
+
+    matching = [chunk for chunk in embedded_chunks if chunk.metadata["group"] in ("a", "b")]
+    expected = sorted(matching, key=lambda chunk: np.linalg.norm(np.array(chunk.embedding) - query))[:4]
+    assert [chunk.chunk_id for chunk in response.chunks] == [chunk.chunk_id for chunk in expected]
+    assert response.scores == sorted(response.scores, reverse=True)
 
 
 def test_create_sqlite_connection_sets_wal_pragmas(tmp_path):
