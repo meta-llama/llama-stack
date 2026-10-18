@@ -15,14 +15,19 @@ runs:
       run: |
         set -euo pipefail
         MODEL="${SGLANG_MODEL:-Qwen/Qwen3-0.6B}"
+        CPU_FEATURE=avx512f
+        # v0.5.21 gates Qwen3.5's CPU gated RMSNorm on AMX; its fallback is CUDA.
+        if [[ "$MODEL" == "togethercomputer/Tev1-0.8B-experimental" ]]; then
+          CPU_FEATURE=amx_tile
+        fi
         # The `-xeon` tags are the CPU builds (SGLANG_USE_CPU_ENGINE=1, CPU torch); the
         # un-suffixed tags are CUDA builds that fail on CPU-only runners. The CPU kernels
         # need AVX-512 (measured: Intel Xeon 6973P-C and AMD EPYC 9V45 serve Qwen3-0.6B in
         # about a minute; on the AMD EPYC 7763 runners GitHub also hands out, `import
         # sgl_kernel` dies with SIGILL, exit 132), so fail fast with a clear message
         # instead of waiting for the health probe to time out.
-        if ! grep -q -w avx512f /proc/cpuinfo; then
-          echo "::error::Failed to start SGLang: this runner lacks AVX-512. Re-run the job to request a supported runner. No recordings were produced."
+        if ! grep -q -w "$CPU_FEATURE" /proc/cpuinfo; then
+          echo "::error::Failed to start SGLang: this runner lacks $CPU_FEATURE. Re-run the job to request a supported runner. No recordings were produced."
           exit 1
         fi
         echo "Starting SGLang server..."

@@ -116,7 +116,7 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         name="sglang",
         description=(
             "SGLang server serving the Tev1-0.8B-experimental decision model on its CPU "
-            "next-token scoring path. Recording requires an AVX-512 runner. The URL must include "
+            "next-token scoring path. Recording requires an AMX runner with the pinned CPU image. The URL must include "
             "the /v1 prefix because the OpenAI SDK appends endpoint paths to it."
         ),
         env={
