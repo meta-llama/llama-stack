@@ -78,6 +78,11 @@ class OllamaInferenceAdapter(AnthropicMixin, OpenAIMixin):
     def get_base_url(self):
         return str(self.config.base_url)
 
+    def _anthropic_count_tokens_url(self) -> str | None:
+        """Ollama's /v1/messages has no count_tokens endpoint; counting falls through to
+        OpenAIMixin's default, which counts by calling anthropic_messages with max_tokens=1."""
+        return None
+
     def _prepare_reasoning_params(self, params: OpenAIChatCompletionRequestWithExtraBody) -> None:
         """Adapt CC request params to match what Ollama expects for reasoning.
 

@@ -52,7 +52,6 @@ SETUP_PROVIDER_ALIASES = {
     "vertexai": "vertexai",
     "watsonx": "watsonx",
     "vllm": "vllm",
-    "vllm-qwen3next": "vllm",
     "sglang": "sglang",
     "ollama": "ollama",
     "ollama-vision": "ollama",
