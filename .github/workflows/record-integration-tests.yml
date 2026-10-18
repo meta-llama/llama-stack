@@ -290,10 +290,7 @@ jobs:
           PROVIDERS=$(echo "$PROVIDERS_TO_RUN" | tr -d ' ')
           CURRENT="$CURRENT_PROVIDER"
 
-          CPU_FEATURE=avx512f
-          if [[ "$CURRENT" == "sglang-systemone" ]]; then
-            CPU_FEATURE=amx_tile
-          fi
+          CPU_FEATURE=amx_tile
 
           if [[ ",$PROVIDERS," == *",$CURRENT,"* && "$CURRENT" == sglang* ]] && ! grep -qw "$CPU_FEATURE" /proc/cpuinfo; then
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -450,7 +447,7 @@ jobs:
             let message = `${COMMENT_MARKER}\n**Recording workflow ${status === 'success' ? 'completed' : 'finished with status: ' + status}**\n\nProviders: ${providers.join(', ')}\n\n`;
 
             if (providers.some(provider => provider.startsWith('sglang'))) {
-              message += 'SGLang recording requires AVX-512, and Tev1 requires AMX with the pinned CPU image. Any hardware skips are reported in the job summaries; re-run those jobs to request another runner. Replay tests do not require AVX-512.\n\n';
+              message += 'SGLang recording uses the AMX backend of the pinned CPU image. Any hardware skips are reported in the job summaries; re-run those jobs to request another runner. Replay tests do not require AMX.\n\n';
             }
 
             if (process.env.INFER_MODE === 'record') {

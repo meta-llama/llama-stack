@@ -99,7 +99,7 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
     "sglang": Setup(
         name="sglang",
         description=(
-            "SGLang server (CPU build in CI) serving a text model over its OpenAI-compatible "
+            "SGLang server (AMX CPU build in CI) serving a text model over its OpenAI-compatible "
             "endpoint. The URL must include the /v1 prefix because the OpenAI SDK appends "
             "endpoint paths to it; the adapter strips it again for the root-level /health "
             "probe. Embeddings come from the local sentence-transformers provider."
