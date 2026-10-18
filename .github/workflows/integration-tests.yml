@@ -167,7 +167,9 @@ jobs:
       # called from pull_request_target workflows.
       - name: Setup test environment
         if: ${{ matrix.config.allowed_clients == null || contains(matrix.config.allowed_clients, matrix.client) }}
-        uses: ogx-ai/ogx/.github/actions/setup-test-environment@0807a93e8508bb22dcd633de0a993343a6b1b346
+        uses: ogx-ai/ogx/.github/actions/setup-test-environment@ee0bb716745751a4b4de822ce79deea45ded6d1b
+        env:
+          SGLANG_MODEL: ${{ matrix.config.setup == 'sglang-systemone' && 'togethercomputer/Tev1-0.8B-experimental' || 'Qwen/Qwen3-0.6B' }}
         with:
           python-version: ${{ matrix.python-version }}
           client-version: ${{ matrix.client-version }}
@@ -193,7 +195,7 @@ jobs:
 
       - name: Run tests
         if: ${{ matrix.config.allowed_clients == null || contains(matrix.config.allowed_clients, matrix.client) }}
-        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@0807a93e8508bb22dcd633de0a993343a6b1b346
+        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@ee0bb716745751a4b4de822ce79deea45ded6d1b
         env:
           OPENAI_API_KEY: dummy
           AZURE_API_KEY: replay-mode-dummy-key
