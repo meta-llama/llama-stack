@@ -17,9 +17,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "dall-e-3-3.0",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -41,9 +41,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "dall-e-2-2.0",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -65,9 +65,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-cushman-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -90,9 +90,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-cushman-fine-tune-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -115,9 +115,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "whisper-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -139,9 +139,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-0125-Preview",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -163,9 +163,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-1106-Preview",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -187,9 +187,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-0314",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -211,9 +211,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-0613",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -236,9 +236,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-32k-0314",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -260,9 +260,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-32k-0613",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -284,9 +284,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-vision-preview",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -308,9 +308,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-turbo-2024-04-09",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -333,9 +333,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-turbo-jp",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -357,9 +357,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-2024-05-13",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -382,9 +382,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-2024-08-06",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -407,9 +407,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-2024-07-18",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -432,9 +432,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-2024-11-20",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -456,9 +456,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-audio-mai",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -481,9 +481,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-realtime-preview",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -506,9 +506,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-realtime-preview-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -531,9 +531,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-realtime-preview-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -556,9 +556,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-realtime-preview-2025-06-03",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -580,9 +580,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-canvas-2024-09-25",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -604,9 +604,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-audio-preview-2024-10-01",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -629,9 +629,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-audio-preview-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -654,9 +654,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-audio-preview-2025-06-03",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -679,9 +679,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-audio-preview-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -704,9 +704,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "computer-use-preview-2025-04-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -728,9 +728,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-transcribe-2025-03-20",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -753,9 +753,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-transcribe-2025-03-20",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -778,9 +778,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-tts-2025-03-20",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -803,9 +803,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-0301",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -827,9 +827,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-0613",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -852,9 +852,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-1106",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -877,9 +877,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-0125",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -902,9 +902,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-instruct-0914",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -926,9 +926,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-16k-0613",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -950,9 +950,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "davinci",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -975,9 +975,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-davinci-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1000,9 +1000,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-davinci-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1024,9 +1024,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-davinci-003",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1048,9 +1048,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-davinci-fine-tune-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1073,9 +1073,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-davinci-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1097,9 +1097,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-davinci-fine-tune-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1122,9 +1122,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-similarity-davinci-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1146,9 +1146,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-davinci-doc-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1170,9 +1170,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-davinci-query-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1194,9 +1194,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "babbage",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1219,9 +1219,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-babbage-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1244,9 +1244,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-similarity-babbage-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1268,9 +1268,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-babbage-doc-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1292,9 +1292,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-babbage-query-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1316,9 +1316,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-search-babbage-code-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1340,9 +1340,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-search-babbage-text-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1364,9 +1364,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "ada",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1389,9 +1389,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-ada-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1414,9 +1414,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-similarity-ada-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1438,9 +1438,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-ada-doc-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1462,9 +1462,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-ada-query-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1486,9 +1486,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-search-ada-code-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1510,9 +1510,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "code-search-ada-text-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1534,9 +1534,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-embedding-ada-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1558,9 +1558,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-embedding-ada-002-2",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1582,9 +1582,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "curie",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1607,9 +1607,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-curie-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1632,9 +1632,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-similarity-curie-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1656,9 +1656,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-curie-doc-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1680,9 +1680,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-search-curie-query-001",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1704,9 +1704,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-embedding-3-small",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1728,9 +1728,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-embedding-3-large",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1752,9 +1752,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o1-mini-2024-09-12",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1777,9 +1777,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o1-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1801,9 +1801,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o1-pro-2025-03-19",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1825,9 +1825,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-mini-alpha-2024-12-17",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1849,9 +1849,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-mini-2025-01-31",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1874,9 +1874,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-deep-research-2025-06-26",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1899,9 +1899,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-deep-research-2025-06-26-ev3",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1924,9 +1924,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "model-router-2025-05-19",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1949,9 +1949,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "model-router-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1974,9 +1974,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "model-router-2025-11-18",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -1998,9 +1998,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "codex-mini-2025-05-16",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2022,9 +2022,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "aoai-sora-2025-02-28",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2046,9 +2046,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "sora-2025-05-02",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2070,9 +2070,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o4-mini-2025-04-16",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2095,9 +2095,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-2025-04-14",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2120,9 +2120,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-2025-04-14-text",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2144,9 +2144,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-mini-2025-04-14",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2169,9 +2169,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-nano-2025-04-14",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2194,9 +2194,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2219,9 +2219,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-mini-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2243,9 +2243,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-chat-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2267,9 +2267,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-nano-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2291,9 +2291,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-realtime-2025-08-28",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2315,9 +2315,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-audio-2025-08-28",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2340,9 +2340,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-chat-2025-08-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2364,9 +2364,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-codex-2025-09-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2388,9 +2388,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-chat-2025-10-03",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2412,9 +2412,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-realtime-mini-2025-10-06",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2436,9 +2436,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-audio-mini-2025-10-06",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2461,9 +2461,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-pro-2025-10-06",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2485,9 +2485,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-transcribe-diarize-2025-10-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2510,9 +2510,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1-2025-11-13",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2535,9 +2535,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1-chat-2025-11-13",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2560,9 +2560,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1-codex-mini-2025-11-13",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2584,9 +2584,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1-codex-2025-11-13",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2608,9 +2608,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5-mini-lite-2025-08-07",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2632,9 +2632,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1-codex-max-2025-12-04",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2656,9 +2656,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.2-chat-2025-12-11",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2680,9 +2680,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-transcribe-2025-12-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2705,9 +2705,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-realtime-mini-2025-12-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2729,9 +2729,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-tts-2025-12-15",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2754,9 +2754,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.2-chat-2026-02-10",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2779,9 +2779,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-audio-1.5-2026-02-23",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2804,9 +2804,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-realtime-1.5-2026-02-23",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2828,9 +2828,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.3-codex-2026-02-20",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2852,9 +2852,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.3-chat-2026-03-03",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2876,9 +2876,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "dall-e-3",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2900,9 +2900,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "dall-e-2",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2924,9 +2924,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "whisper",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2948,9 +2948,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2973,9 +2973,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4-32k",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -2997,9 +2997,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3022,9 +3022,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3047,9 +3047,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-transcribe",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3072,9 +3072,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3097,9 +3097,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-instruct",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3121,9 +3121,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-35-turbo-16k",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3145,9 +3145,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "text-embedding-ada-002",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3169,9 +3169,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o1-pro",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3193,9 +3193,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-mini-alpha",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3217,9 +3217,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o3-mini",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3242,9 +3242,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "model-router",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3266,9 +3266,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "aoai-sora",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3290,9 +3290,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "sora",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3314,9 +3314,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "o4-mini",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3339,9 +3339,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3364,9 +3364,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-mini",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3389,9 +3389,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4.1-nano",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3414,9 +3414,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-transcribe-diarize",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3439,9 +3439,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-5.1",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3464,9 +3464,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-transcribe",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3489,9 +3489,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-realtime-mini",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
@@ -3513,9 +3513,9 @@
         "__type__": "openai.types.model.Model",
         "__data__": {
           "id": "gpt-4o-mini-tts",
-          "created": null,
+          "created": 0,
           "object": "model",
-          "owned_by": null,
+          "owned_by": "openai",
           "status": "succeeded",
           "capabilities": {
             "fine_tune": false,
