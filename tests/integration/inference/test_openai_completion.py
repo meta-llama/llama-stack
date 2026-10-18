@@ -746,12 +746,15 @@ def test_openai_completion_logprobs(client_with_models, openai_client, text_mode
     skip_if_doesnt_support_completions_logprobs(client_with_models, text_model_id)
 
     tc = TestCase(test_case)
+    provider_type = provider_from_model(client_with_models, text_model_id).provider_type
+    # Keep the existing request bodies for other providers' recordings.
+    sampling = {"temperature": 0} if provider_type == "remote::sglang" else {}
 
     response = openai_client.completions.create(
         model=text_model_id,
         prompt=tc["content"],
         logprobs=5,
-        temperature=0,
+        **sampling,
     )
     assert len(response.choices) > 0
     choice = response.choices[0]
@@ -777,14 +780,16 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
     skip_if_doesnt_support_completions_logprobs(client_with_models, text_model_id)
 
     tc = TestCase(test_case)
+    provider_type = provider_from_model(client_with_models, text_model_id).provider_type
+    sampling = {"temperature": 0} if provider_type == "remote::sglang" else {}
 
     response = openai_client.completions.create(
         model=text_model_id,
         prompt=tc["content"],
         logprobs=3,
-        temperature=0,
         stream=True,
         max_tokens=5,
+        **sampling,
     )
     for chunk in response:
         if not chunk.choices:  # skip the trailing usage chunk (empty choices)
