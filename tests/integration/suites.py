@@ -96,6 +96,36 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "sglang": Setup(
+        name="sglang",
+        description=(
+            "SGLang server (CPU build in CI) serving a text model over its OpenAI-compatible "
+            "endpoint. The URL must include the /v1 prefix because the OpenAI SDK appends "
+            "endpoint paths to it; the adapter strips it again for the root-level /health "
+            "probe. Embeddings come from the local sentence-transformers provider."
+        ),
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "text_model": "sglang/Qwen/Qwen3-0.6B",
+            "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
+        },
+    ),
+    "sglang-systemone": Setup(
+        name="sglang",
+        description=(
+            "SGLang server serving a SystemOne decision checkpoint (Cloudflare/clef-flash, 9B, "
+            "needs a GPU or >= 24 GB of RAM, so no hosted-runner lane). The URL must include "
+            "the /v1 prefix because the OpenAI SDK appends endpoint paths to it."
+        ),
+        env={
+            "SGLANG_URL": "http://localhost:30000/v1",
+        },
+        defaults={
+            "judge_model": "sglang/Cloudflare/clef-flash",
+        },
+    ),
     "ollama-reasoning": Setup(
         name="ollama",
         description="Local Ollama provider with a reasoning-capable model (deepseek-r1)",
@@ -105,6 +135,16 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         defaults={
             "text_model": "ollama/deepseek-r1:1.5b",
             "embedding_model": "ollama/nomic-embed-text:v1.5",
+        },
+    ),
+    "ollama-systemone": Setup(
+        name="ollama",
+        description="Local Ollama provider with a SystemOne decision model (tev1:0.8b)",
+        env={
+            "OLLAMA_URL": "http://0.0.0.0:11434/v1",
+        },
+        defaults={
+            "judge_model": "ollama/tev1:0.8b",
         },
     ),
     "bedrock": Setup(
@@ -221,7 +261,27 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         name="anthropic",
         description="Anthropic Claude models",
         defaults={
-            "text_model": "anthropic/claude-3-5-haiku-20241022",
+            "text_model": "anthropic/claude-haiku-5-5",
+        },
+    ),
+    "meta": Setup(
+        name="meta",
+        description="Meta AI models via the api.meta.ai endpoint",
+        defaults={
+            "text_model": "meta/muse-spark-1.3-contributor",
+        },
+    ),
+    # DeepSeek serves /v1/messages from a separate host path (anthropic_base_url), not
+    # from base_url, so both are set explicitly.
+    "deepseek": Setup(
+        name="deepseek",
+        description="DeepSeek models via the DeepSeek platform API",
+        env={
+            "DEEPSEEK_BASE_URL": "https://api.deepseek.com/v1",
+            "DEEPSEEK_ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+        },
+        defaults={
+            "text_model": "deepseek/deepseek-chat",
         },
     ),
     "llama-api": Setup(
@@ -267,6 +327,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "rerank_model": "llama-cpp-server/bge-reranker-v2-m3",
         },
     ),
+    "llama-cpp-server-systemone": Setup(
+        name="llama-cpp-server",
+        description=(
+            "Local llama.cpp server (>= v0.6.0) serving the SystemOne decision model laya. "
+            "The URL must include the /v1 prefix because the OpenAI SDK appends endpoint "
+            "paths to it."
+        ),
+        env={
+            "LLAMA_CPP_SERVER_URL": "http://localhost:8080/v1",
+        },
+        defaults={
+            "judge_model": "llama-cpp-server/laya",
+        },
+    ),
     "text-embeddings-inference": Setup(
         name="text-embeddings-inference",
         description=(
@@ -283,12 +357,15 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_dimension": 768,
         },
     ),
-    "vllm-qwen3next": Setup(
-        name="vllm-qwen3next",
-        description="Qwen3-Next model for contextual retrieval validation",
+    "typesafe": Setup(
+        name="typesafe",
+        description=(
+            "TypeSafe SystemOne (judgment) models, replayed from recordings. Set "
+            "TYPESAFE_API_KEY to record against the live API; without it the recorded "
+            "responses are replayed."
+        ),
         defaults={
-            "text_model": "Qwen3-Next-80B-A3B-Instruct-FP8",
-            "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
+            "judge_model": "typesafe/jev-latest",
         },
     ),
 }
@@ -312,6 +389,13 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=["tests/integration/inference"],
         default_setup="vllm",
     ),
+    # SGLang backend, scoped like base-vllm-subset (the full inference directory): the
+    # CI server serves one text model, so vision tests skip.
+    "sglang": Suite(
+        name="sglang",
+        roots=["tests/integration/inference"],
+        default_setup="sglang",
+    ),
     # llama.cpp multi-model router backend (llama-server --models-preset), scoped like
     # base-vllm-subset (the full inference directory). The router serves a text, an
     # embedding, and a rerank model, but no vision model, so vision tests skip.
@@ -326,6 +410,14 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         name="text-embeddings-inference",
         roots=["tests/integration/inference/test_openai_embeddings.py"],
         default_setup="text-embeddings-inference",
+    ),
+    # TypeSafe SystemOne (judgment) backend. The typesafe setup only provides a
+    # judge model (no chat/completion or embedding model), so this suite is scoped
+    # to the SystemOne tests only, mirroring text-embeddings-inference.
+    "systemone": Suite(
+        name="systemone",
+        roots=["tests/integration/inference/test_systemone.py"],
+        default_setup="typesafe",
     ),
     "responses": Suite(
         name="responses",

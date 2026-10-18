@@ -21,6 +21,7 @@ on:
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-llamacpp/action.yml'
       - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-sglang/action.yml'
       - '.github/actions/setup-tei/action.yml'
       - '.github/actions/setup-test-environment/action.yml'
       - '.github/actions/run-and-record-tests/action.yml'
@@ -186,7 +187,7 @@ jobs:
       - name: Setup TypeScript client
         if: ${{ matrix.client == 'server' }}
         id: setup-ts-client
-        uses: ogx-ai/ogx/.github/actions/setup-typescript-client@fb32709e3b29816b52085c92820531e4e6d94be8
+        uses: ogx-ai/ogx/.github/actions/setup-typescript-client@75ed067efcadcb30bf61df4684c5151aa2640cae
         with:
           client-version: ${{ matrix.client-version }}
 
@@ -207,7 +208,11 @@ jobs:
           AWS_DEFAULT_REGION: us-west-2
           GEMINI_API_KEY: replay-mode-dummy-key
           FIREWORKS_API_KEY: replay-mode-dummy-key
+          ANTHROPIC_API_KEY: ${{ matrix.config.setup == 'anthropic' && 'replay-mode-dummy-key' || '' }}
+          META_API_KEY: ${{ matrix.config.setup == 'meta' && 'replay-mode-dummy-key' || '' }}
+          DEEPSEEK_API_KEY: ${{ matrix.config.setup == 'deepseek' && 'replay-mode-dummy-key' || '' }}
           TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY || 'replay-mode-dummy-key' }}
+          TYPESAFE_API_KEY: replay-mode-dummy-key
           TS_CLIENT_PATH: ${{ steps.setup-ts-client.outputs.ts-client-path || '' }}
         with:
           stack-config: >-

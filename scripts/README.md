@@ -31,8 +31,9 @@ scripts/
   get_setup_env.py             # Get setup environment variables
   generate_prompt_format.py    # Generate prompt format documentation
   generate_openai_coverage_docs.py # Generate OpenAI API coverage docs
-  openai_coverage.py           # OpenAI API coverage analysis
-  provider_compat_matrix.py    # Provider compatibility matrix
+   openai_coverage.py           # OpenAI API coverage analysis
+   systemone_coverage.py        # TypeSafe SystemOne API conformance analysis
+   provider_compat_matrix.py    # Provider compatibility matrix
   responses_test_coverage.py   # Responses API test coverage
 ```
 

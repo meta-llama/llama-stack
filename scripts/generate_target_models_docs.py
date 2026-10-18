@@ -29,6 +29,7 @@ PROVIDER_DISPLAY_NAMES = {
     "vertexai": "Vertex AI",
     "watsonx": "WatsonX",
     "vllm": "vLLM",
+    "sglang": "SGLang",
     "ollama": "Ollama",
     "gemini": "Gemini",
     "anthropic": "Anthropic",
@@ -51,7 +52,7 @@ SETUP_PROVIDER_ALIASES = {
     "vertexai": "vertexai",
     "watsonx": "watsonx",
     "vllm": "vllm",
-    "vllm-qwen3next": "vllm",
+    "sglang": "sglang",
     "ollama": "ollama",
     "ollama-vision": "ollama",
     "ollama-reasoning": "ollama",
@@ -79,6 +80,7 @@ INTENTIONALLY_UNMAPPED_REGISTRY_PROVIDERS = {
     "passthrough",
     "runpod",
     "sambanova",
+    "typesafe",
 }
 
 
