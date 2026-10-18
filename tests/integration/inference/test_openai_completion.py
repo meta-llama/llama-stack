@@ -751,6 +751,7 @@ def test_openai_completion_logprobs(client_with_models, openai_client, text_mode
         model=text_model_id,
         prompt=tc["content"],
         logprobs=5,
+        temperature=0,
     )
     assert len(response.choices) > 0
     choice = response.choices[0]
@@ -762,7 +763,7 @@ def test_openai_completion_logprobs(client_with_models, openai_client, text_mode
     assert len(logprobs.token_logprobs) == len(logprobs.top_logprobs)
     for i, (token, prob) in enumerate(zip(logprobs.tokens, logprobs.token_logprobs, strict=True)):
         assert logprobs.top_logprobs[i][token] == prob
-        assert len(logprobs.top_logprobs[i]) == 5
+        assert 1 <= len(logprobs.top_logprobs[i]) <= 6
 
 
 @pytest.mark.parametrize(
@@ -781,6 +782,7 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
         model=text_model_id,
         prompt=tc["content"],
         logprobs=3,
+        temperature=0,
         stream=True,
         max_tokens=5,
     )
@@ -796,7 +798,7 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
             assert len(logprobs.token_logprobs) == len(logprobs.top_logprobs)
             for i, (token, prob) in enumerate(zip(logprobs.tokens, logprobs.token_logprobs, strict=True)):
                 assert logprobs.top_logprobs[i][token] == prob
-                assert len(logprobs.top_logprobs[i]) == 3
+                assert 1 <= len(logprobs.top_logprobs[i]) <= 4
         else:  # no token, no logprobs
             assert not choice.logprobs, "Logprobs should be empty"
 

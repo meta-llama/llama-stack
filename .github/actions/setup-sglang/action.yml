@@ -16,6 +16,10 @@ runs:
         set -euo pipefail
         MODEL="${SGLANG_MODEL:-Qwen/Qwen3-0.6B}"
         CPU_FEATURE=avx512f
+        SERVER_ARGS=(--default-chat-template-kwargs '{"enable_thinking":false}')
+        if [[ "$MODEL" == "Qwen/Qwen3-0.6B" ]]; then
+          SERVER_ARGS+=(--tool-call-parser qwen25 --reasoning-parser qwen3)
+        fi
         # v0.5.21 gates Qwen3.5's CPU gated RMSNorm on AMX; its fallback is CUDA.
         if [[ "$MODEL" == "togethercomputer/Tev1-0.8B-experimental" ]]; then
           CPU_FEATURE=amx_tile
@@ -35,7 +39,7 @@ runs:
           lmsysorg/sglang:v0.5.21-xeon \
           sglang serve --model-path "$MODEL" --device cpu \
             --host 0.0.0.0 --port "$PORT" \
-            --disable-overlap-schedule --max-total-tokens 8192
+            --disable-overlap-schedule --max-total-tokens 8192 "${SERVER_ARGS[@]}"
         echo "Verifying SGLang status..."
         # The model is downloaded and loaded during first boot (about a minute), so allow time.
         timeout 900 bash -c 'while ! curl -sf "http://127.0.0.1:$PORT/health" >/dev/null; do
