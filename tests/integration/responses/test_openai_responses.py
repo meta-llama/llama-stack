@@ -30,6 +30,20 @@ class TestOpenAIResponses:
             }
         ]
 
+    def _unsupported_media_type_image_input(self):
+        return [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": "Describe this image"},
+                    {
+                        "type": "input_image",
+                        "image_url": "data:text/plain;base64,SGVsbG8gd29ybGQ=",
+                    },
+                ],
+            }
+        ]
+
     def test_openai_response_with_max_output_tokens(self, openai_client, text_model_id):
         """Test OpenAI response with max_output_tokens parameter."""
         if text_model_id.startswith("watsonx/"):
@@ -88,12 +102,24 @@ class TestOpenAIResponses:
         assert "validation" in error_message or "invalid" in error_message or "16" in error_message
 
     def test_openai_response_streaming_failed_error_code_is_spec_compliant(self, openai_client, text_model_id):
-        """Verify streaming failures produce a spec-compliant error code."""
+        """Verify streaming failures produce a spec-compliant error code.
+
+        Uses an image with an unsupported media type (text/plain) as the failure
+        trigger: the provider rejects it before generation, so the stream must
+        terminate with a single response.failed event carrying a valid code.
+        """
+        if text_model_id.startswith("watsonx/"):
+            pytest.skip("WatsonX text model does not support image inputs")
+        if text_model_id.startswith("ollama/"):
+            # In some replay environments, Ollama models may not be exposed via `models.list()`.
+            available_model_ids = {m.id for m in openai_client.models.list()}
+            if text_model_id not in available_model_ids:
+                pytest.skip(f"Model {text_model_id} not available in this environment")
+
         stream = openai_client.responses.create(
             model=text_model_id,
-            input="Hello",
+            input=self._unsupported_media_type_image_input(),
             stream=True,
-            truncation="auto",
         )
 
         chunks = list(stream)
@@ -103,7 +129,13 @@ class TestOpenAIResponses:
         failed_events = [e for e in chunks if e.type == "response.failed"]
         assert len(failed_events) == 1, f"Expected exactly one response.failed event, got {len(failed_events)}"
 
+        error = failed_events[0].response.error
+        assert error is not None
+
         validator.validate_event_structure()
+
+        if text_model_id.startswith("openai/"):
+            assert error.code == "invalid_image_format"
 
     def test_openai_response_streaming_invalid_base64_image_failure_code_is_spec_compliant(
         self, openai_client, text_model_id

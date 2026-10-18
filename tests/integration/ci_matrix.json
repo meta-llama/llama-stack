@@ -15,6 +15,11 @@
     {"suite": "ollama-reasoning", "setup": "ollama-reasoning"},
     {"suite": "messages", "setup": "ollama"},
     {"suite": "messages-openai", "setup": "gpt"},
+    {"suite": "messages", "setup": "vllm"},
+    {"suite": "messages", "setup": "fireworks"},
+    {"suite": "messages", "setup": "anthropic"},
+    {"suite": "messages", "setup": "meta"},
+    {"suite": "messages", "setup": "deepseek"},
     {"suite": "interactions", "setup": "gemini"},
     {"suite": "base", "setup": "fireworks"},
     {"suite": "llama-cpp-server", "setup": "llama-cpp-server"},
@@ -25,8 +30,7 @@
   ],
   "schedules": {
     "1 0 * * 0": [
-      {"suite": "base", "setup": "vllm"},
-      {"suite": "base", "setup": "vllm-qwen3next"}
+      {"suite": "base", "setup": "vllm"}
     ]
   }
 }
