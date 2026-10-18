@@ -1,0 +1,137 @@
+{
+  "test_id": "tests/integration/inference/test_tools_with_schemas.py::TestChatCompletionWithTools::test_tool_with_complex_schema[txt=sglang/Qwen/Qwen3-0.6B]",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:30000/v1/v1/chat/completions",
+    "headers": {},
+    "body": {
+      "model": "Qwen/Qwen3-0.6B",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Book a flight from SFO to JFK for John Doe"
+        }
+      ],
+      "max_tokens": 4096,
+      "tools": [
+        {
+          "type": "function",
+          "function": {
+            "name": "book_flight",
+            "description": "Book a flight",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "flight": {
+                  "$ref": "#/$defs/FlightInfo"
+                },
+                "passenger": {
+                  "$ref": "#/$defs/Passenger"
+                }
+              },
+              "required": [
+                "flight",
+                "passenger"
+              ],
+              "$defs": {
+                "FlightInfo": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date"
+                    }
+                  }
+                },
+                "Passenger": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "age": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "endpoint": "/v1/chat/completions",
+    "model": "Qwen/Qwen3-0.6B",
+    "provider_metadata": {
+      "openai_sdk_version": "3.29.0"
+    }
+  },
+  "response": {
+    "body": {
+      "__type__": "openai.types.chat.chat_completion.ChatCompletion",
+      "__data__": {
+        "id": "rec-92ddeb07263c",
+        "choices": [
+          {
+            "finish_reason": "tool_calls",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "",
+              "refusal": null,
+              "role": "assistant",
+              "annotations": null,
+              "audio": null,
+              "function_call": null,
+              "tool_calls": [
+                {
+                  "id": "call_4c1910e391f74b548dba698e",
+                  "function": {
+                    "arguments": "{\"flight\": {\"from\": \"SFO\", \"to\": \"JFK\"}, \"passenger\": {\"name\": \"John Doe\", \"age\": 35}}",
+                    "name": "book_flight"
+                  },
+                  "type": "function",
+                  "index": 0
+                }
+              ],
+              "reasoning_content": null
+            },
+            "matched_stop": null
+          }
+        ],
+        "created": 0,
+        "model": "Qwen/Qwen3-0.6B",
+        "object": "chat.completion",
+        "metadata": {
+          "weight_version": "default",
+          "weight_versions": [
+            {
+              "version": "default",
+              "start": 0,
+              "end": 50
+            }
+          ]
+        },
+        "moderation": null,
+        "service_tier": null,
+        "system_fingerprint": null,
+        "usage": {
+          "completion_tokens": 50,
+          "prompt_tokens": 275,
+          "total_tokens": 325,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null,
+          "reasoning_tokens": 0
+        }
+      }
+    },
+    "is_streaming": false
+  },
+  "id_normalization_mapping": {}
+}
