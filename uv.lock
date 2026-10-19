@@ -4363,7 +4363,7 @@ requires-dist = [
     { name = "neo4j", marker = "extra == 'starter'" },
     { name = "numpy", marker = "extra == 'starter'" },
     { name = "ogx-api", editable = "src/ogx_api" },
-    { name = "ogx-client", marker = "extra == 'client'", specifier = "==1.4.0" },
+    { name = "ogx-client", marker = "extra == 'client'", specifier = "==1.4.1" },
     { name = "ogx-open-client", marker = "extra == 'openclient'", specifier = ">=1.0.2" },
     { name = "ollama", marker = "extra == 'starter'" },
     { name = "openai", specifier = ">=2.41.0" },
@@ -4535,7 +4535,7 @@ requires-dist = [
 
 [[package]]
 name = "ogx-client"
-version = "1.4.0"
+version = "1.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fire" },
@@ -4545,9 +4545,9 @@ dependencies = [
     { name = "requests" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/13/7c7030849b3083b2f09356f5ef2b8c9eeffcf1d2b2565cbdbd94930cd689/ogx_client-1.4.0.tar.gz", hash = "sha256:15f2a078e75758713af05702d84419f6517f5fb8406b312ff585ac370be4d516", size = 648483, upload-time = "2026-09-11T14:02:34.746Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/c3/f273b1baffe28a20af4ef51c795ea2c3853847e93d137d63b0b91e8bcd03/ogx_client-1.4.1.tar.gz", hash = "sha256:f551cf5cde17bcaecb9f50b742bee866797e6fc546eae5c9a6871de6c1fc02d6", size = 648491, upload-time = "2026-10-19T14:59:09.185Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/68/c3d73ab41eea9106f60ff6acdc7e6a924d82c6904ac4ff8631c08f3cbf42/ogx_client-1.4.0-py3-none-any.whl", hash = "sha256:336f5a84df9985d2a3c49f8b2cb6c1458689ae6625b9bb82beb5db93378a1295", size = 1593061, upload-time = "2026-09-11T14:02:33.026Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/11/818de4e90a8bc168862ade76cabc158c75a2b0f6e09075f60a63db63b69a/ogx_client-1.4.1-py3-none-any.whl", hash = "sha256:1e0d09784cac35f0c3a2d92f8719aceef463c4c761abf571dc7eebb172c742b7", size = 1593059, upload-time = "2026-10-19T14:59:07.62Z" },
 ]
 
 [[package]]
