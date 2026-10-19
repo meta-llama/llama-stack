@@ -264,6 +264,16 @@ jobs:
             suite: interactions
           - setup: fireworks
             suite: base
+          - setup: vllm
+            suite: messages
+          - setup: fireworks
+            suite: messages
+          - setup: anthropic
+            suite: messages
+          - setup: meta
+            suite: messages
+          - setup: deepseek
+            suite: messages
     steps:
       - name: Check if provider should run
         id: should_run
@@ -308,7 +318,7 @@ jobs:
 
       - name: Setup test environment
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/setup-test-environment@f07637627d3d192c7a6b6263b9337573e7c739d4
+        uses: ogx-ai/ogx/.github/actions/setup-test-environment@ba7c01d930156cdaaeff0e2f3f9bb742de500ec0
         with:
           python-version: "3.12"
           client-version: "latest"
@@ -355,6 +365,9 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ matrix.provider.setup == 'vertexai' && steps.vertex_auth.outputs.credentials_file_path || '' }}
           GEMINI_API_KEY: ${{ matrix.provider.setup == 'gemini' && secrets.GEMINI_API_KEY || '' }}
           FIREWORKS_API_KEY: ${{ matrix.provider.setup == 'fireworks' && secrets.FIREWORKS_API_KEY || '' }}
+          ANTHROPIC_API_KEY: ${{ matrix.provider.setup == 'anthropic' && secrets.ANTHROPIC_API_KEY || '' }}
+          META_API_KEY: ${{ matrix.provider.setup == 'meta' && secrets.META_API_KEY || '' }}
+          DEEPSEEK_API_KEY: ${{ matrix.provider.setup == 'deepseek' && secrets.DEEPSEEK_API_KEY || '' }}
           TAVILY_SEARCH_API_KEY: ${{ contains(fromJSON('["gpt","azure","vertexai"]'), matrix.provider.setup) && secrets.TAVILY_SEARCH_API_KEY || '' }}
           AWS_BEDROCK_BEARER_TOKEN: ${{ matrix.provider.setup == 'bedrock' && secrets.AWS_BEARER_TOKEN_BEDROCK || '' }}
           AWS_BEARER_TOKEN_BEDROCK: ${{ matrix.provider.setup == 'bedrock' && secrets.AWS_BEARER_TOKEN_BEDROCK || '' }}
