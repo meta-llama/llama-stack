@@ -591,7 +591,10 @@ def parse_anthropic_sse_event(event_type: str, data: dict[str, Any]) -> Anthropi
         return ContentBlockStopEvent(index=data["index"])
     if event_type == "message_delta":
         return MessageDeltaEvent(
-            delta=_MessageDelta(stop_reason=data["delta"].get("stop_reason")),
+            delta=_MessageDelta(
+                stop_reason=data["delta"].get("stop_reason"),
+                stop_sequence=data["delta"].get("stop_sequence"),
+            ),
             usage=AnthropicUsage(**data.get("usage", {})),
         )
     if event_type == "message_stop":

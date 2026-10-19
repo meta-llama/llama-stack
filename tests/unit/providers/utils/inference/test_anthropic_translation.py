@@ -838,6 +838,19 @@ class TestSSEParsing:
         assert event.type == "message_delta"
         assert event.delta.stop_reason == "pause_turn"
 
+    def test_stop_sequence_passthrough(self):
+        event = parse_anthropic_sse_event(
+            "message_delta",
+            {
+                "delta": {"stop_reason": "stop_sequence", "stop_sequence": "END"},
+                "usage": {"output_tokens": 10},
+            },
+        )
+        assert event is not None
+        assert event.type == "message_delta"
+        assert event.delta.stop_reason == "stop_sequence"
+        assert event.delta.stop_sequence == "END"
+
     def test_ping_event_parsed(self):
         event = parse_anthropic_sse_event("ping", {})
         assert event is not None
