@@ -24,7 +24,7 @@ runs:
         fi
         echo "Starting SGLang server..."
         docker run -d --name sglang --ipc=host -p ${{ inputs.port }}:${{ inputs.port }} \
-          lmsysorg/sglang:v0.5.21-xeon \
+          lmsysorg/sglang:v0.5.22-xeon \
           sglang serve --model-path Qwen/Qwen3-0.6B --device cpu \
             --host 0.0.0.0 --port ${{ inputs.port }} \
             --disable-overlap-schedule --max-total-tokens 8192
