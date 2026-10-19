@@ -7,9 +7,12 @@
 """Unit tests for `ogx go` and `ogx stack go` CLI commands."""
 
 import argparse
+import sys
 import warnings
+from collections.abc import Callable
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx2
 import pytest
 
 from ogx.cli.letsgo import LetsGo, LetsGoDeprecated
@@ -19,8 +22,12 @@ from ogx.cli.stack.lets_go import (
     StackLetsGo,
     _autodetect_providers,
     _build_claude_code_aliases,
+    _install_provider_deps,
+    _is_reachable,
+    _pip_install_command,
     _ProbeStatus,
 )
+from ogx.core.build import split_pip_packages
 
 
 @pytest.fixture
@@ -251,6 +258,125 @@ class TestAutodetect:
             assert embedding is None
 
 
+_OLLAMA_MISSING_DEPS = (
+    _ProbeStatus.MISSING_DEPS,
+    [],
+    "http://localhost:11434/v1",
+    "default",
+    ["typesafe-sdk>=0.7.2", "torch --index-url https://download.pytorch.org/whl/cpu"],
+)
+_OLLAMA_OK = (_ProbeStatus.OK, [], "http://localhost:11434/v1", "default", None)
+_UNREACHABLE = (_ProbeStatus.UNREACHABLE, [], "", "default", None)
+
+
+def _ollama_probe(*ollama_results: tuple) -> Callable[..., tuple]:
+    """Return a probe side effect that yields ollama_results in order and UNREACHABLE for others."""
+    remaining = list(ollama_results)
+
+    def side_effect(provider_type: str, *args: object, **kwargs: object) -> tuple:
+        if provider_type == "remote::ollama":
+            return remaining.pop(0)
+        return _UNREACHABLE
+
+    return side_effect
+
+
+class TestInstallMissingDeps:
+    async def test_installs_registry_packages_and_reprobes_reachable_provider(self):
+        probe = AsyncMock(side_effect=_ollama_probe(_OLLAMA_MISSING_DEPS, _OLLAMA_OK))
+        with (
+            patch("ogx.cli.stack.lets_go._probe_provider_availability", probe),
+            patch("ogx.cli.stack.lets_go._is_reachable", AsyncMock(return_value=True)),
+            patch("ogx.cli.stack.lets_go._install_provider_deps", return_value=True) as mock_install,
+        ):
+            parts = (await _autodetect_providers(install_missing_deps=True))[0].split(",")
+
+        assert "inference=remote::ollama" in parts
+        mock_install.assert_called_once_with(
+            ["typesafe-sdk>=0.7.2"], ["torch --index-url https://download.pytorch.org/whl/cpu"]
+        )
+        ollama_calls = [c for c in probe.call_args_list if c.args[0] == "remote::ollama"]
+        assert len(ollama_calls) == 2
+
+    async def test_skips_install_when_provider_is_unreachable(self):
+        with (
+            patch(
+                "ogx.cli.stack.lets_go._probe_provider_availability",
+                side_effect=_ollama_probe(_OLLAMA_MISSING_DEPS),
+            ),
+            patch("ogx.cli.stack.lets_go._is_reachable", AsyncMock(return_value=False)),
+            patch("ogx.cli.stack.lets_go._install_provider_deps") as mock_install,
+        ):
+            parts = (await _autodetect_providers(install_missing_deps=True))[0].split(",")
+
+        assert "inference=remote::ollama" not in parts
+        mock_install.assert_not_called()
+
+    async def test_skips_install_by_default(self):
+        mock_reachable = AsyncMock(return_value=True)
+        with (
+            patch(
+                "ogx.cli.stack.lets_go._probe_provider_availability",
+                side_effect=_ollama_probe(_OLLAMA_MISSING_DEPS),
+            ),
+            patch("ogx.cli.stack.lets_go._is_reachable", mock_reachable),
+            patch("ogx.cli.stack.lets_go._install_provider_deps") as mock_install,
+        ):
+            parts = (await _autodetect_providers())[0].split(",")
+
+        assert "inference=remote::ollama" not in parts
+        mock_reachable.assert_not_called()
+        mock_install.assert_not_called()
+
+    async def test_does_not_reprobe_when_install_fails(self):
+        probe = AsyncMock(side_effect=_ollama_probe(_OLLAMA_MISSING_DEPS))
+        with (
+            patch("ogx.cli.stack.lets_go._probe_provider_availability", probe),
+            patch("ogx.cli.stack.lets_go._is_reachable", AsyncMock(return_value=True)),
+            patch("ogx.cli.stack.lets_go._install_provider_deps", return_value=False),
+        ):
+            parts = (await _autodetect_providers(install_missing_deps=True))[0].split(",")
+
+        assert "inference=remote::ollama" not in parts
+        ollama_calls = [c for c in probe.call_args_list if c.args[0] == "remote::ollama"]
+        assert len(ollama_calls) == 1
+
+    def test_pip_install_targets_running_interpreter_with_uv(self):
+        with patch("ogx.cli.stack.lets_go.shutil.which", return_value="/usr/bin/uv"):
+            assert _pip_install_command() == ["uv", "pip", "install", "--python", sys.executable]
+
+    def test_pip_install_falls_back_to_pip_without_uv(self):
+        with patch("ogx.cli.stack.lets_go.shutil.which", return_value=None):
+            assert _pip_install_command() == [sys.executable, "-m", "pip", "install"]
+
+    def test_install_provider_deps_reports_failure(self):
+        failed = MagicMock(returncode=1)
+        with patch("ogx.cli.stack.lets_go.subprocess.run", return_value=failed):
+            assert _install_provider_deps(["typesafe-sdk>=0.7.2"], []) is False
+
+    def test_install_provider_deps_reports_success(self):
+        ok = MagicMock(returncode=0)
+        with patch("ogx.cli.stack.lets_go.subprocess.run", return_value=ok) as mock_run:
+            assert _install_provider_deps(["typesafe-sdk>=0.7.2"], ["torch --index-url https://example"]) is True
+        assert mock_run.call_count == 2
+
+    async def test_is_reachable_without_base_url(self):
+        assert await _is_reachable("") is False
+
+    async def test_is_reachable_on_connection_error(self):
+        with patch("ogx.cli.stack.lets_go.httpx2.AsyncClient.get", side_effect=httpx2.ConnectError("refused")):
+            assert await _is_reachable("http://localhost:11434/v1") is False
+
+    async def test_is_reachable_on_any_http_response(self):
+        with patch("ogx.cli.stack.lets_go.httpx2.AsyncClient.get", AsyncMock(return_value=MagicMock(status_code=404))):
+            assert await _is_reachable("http://localhost:11434/v1") is True
+
+    def test_split_pip_packages_separates_flagged_entries(self):
+        normal, special = split_pip_packages(["ollama", "torch --index-url https://example", "x --no-deps"])
+        assert normal == ["ollama"]
+        assert special == ["torch --index-url https://example", "x --no-deps"]
+
+
 class TestRunCommandSync:
     """Tests that interact with the sync CLI entry point via _run_stack_lets_go_cmd.
 
@@ -305,6 +431,30 @@ class TestRunCommandSync:
             lets_go._run_stack_lets_go_cmd(args)
 
         assert mock_cfg.model_dump.called
+
+    @pytest.mark.parametrize(("cli_args", "expected"), [([], True), (["--skip-install-deps"], False)])
+    def test_autodetect_installs_missing_deps_unless_skipped(
+        self, lets_go: StackLetsGo, cli_args: list[str], expected: bool
+    ):
+        args = lets_go.parser.parse_args(cli_args)
+        mock_cfg = MagicMock()
+        mock_cfg.model_dump.return_value = {}
+        mock_detect = AsyncMock(return_value=("inference=remote::ollama", None))
+
+        with (
+            patch("ogx.cli.stack.lets_go._uvicorn_run"),
+            patch("ogx.cli.stack.lets_go.get_provider_dependencies", return_value=([], [], [])),
+            patch("ogx.cli.stack.lets_go.subprocess.run"),
+            patch("ogx.cli.stack.lets_go.run_config_from_dynamic_config_spec", return_value=mock_cfg),
+            patch("ogx.cli.stack.lets_go._autodetect_providers", mock_detect),
+            patch("builtins.open", MagicMock()),
+            patch("ogx.cli.stack.lets_go.yaml.dump"),
+            warnings.catch_warnings(),
+        ):
+            warnings.simplefilter("ignore", FutureWarning)
+            lets_go._run_stack_lets_go_cmd(args)
+
+        assert mock_detect.call_args.kwargs["install_missing_deps"] is expected
 
     def test_providers_override_skips_autodetect(self, lets_go: StackLetsGo):
         args = lets_go.parser.parse_args(["--providers-override", "inference=remote::ollama"])
