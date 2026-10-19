@@ -28,6 +28,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import subprocess
 import tempfile
 from collections import defaultdict
@@ -42,6 +43,10 @@ with open(CI_MATRIX_FILE) as f:
 
 DEFAULT_CI_MATRIX: list[dict[str, str]] = _matrix_config["default"]
 SCHEDULED_MATRICES: dict[str, list[dict[str, str]]] = _matrix_config.get("schedules", {})
+
+# Top-level ``test_id`` is always written as the first key (see store_recording),
+# so a short file prefix is enough to read it without parsing the response body.
+_TEST_ID_RE = re.compile(rb'"test_id"\s*:\s*("(?:[^"\\]|\\.)*"|null)')
 
 
 def _unique_configs(entries):
@@ -151,6 +156,23 @@ def find_all_recordings():
     return list((REPO_ROOT / "tests/integration").rglob("recordings/*.json"))
 
 
+def _read_test_id(json_file: Path) -> str | None:
+    """Return a recording's top-level ``test_id`` without parsing its body.
+
+    Only a short prefix is read, which matters for large streaming recordings.
+    Falls back to a full parse if the key is not found in the prefix.
+    """
+    with open(json_file, "rb") as f:
+        match = _TEST_ID_RE.search(f.read(65536))
+    if match is not None:
+        try:
+            return json.loads(match.group(1))
+        except ValueError:
+            pass
+    with open(json_file) as f:
+        return json.load(f).get("test_id", "")
+
+
 def analyze_recordings(ci_test_ids, dry_run=True):
     """Analyze recordings and identify unused ones."""
 
@@ -166,10 +188,7 @@ def analyze_recordings(ci_test_ids, dry_run=True):
 
     for json_file in all_recordings:
         try:
-            with open(json_file) as f:
-                data = json.load(f)
-
-            test_id = data.get("test_id", "")
+            test_id = _read_test_id(json_file)
 
             if not test_id:
                 # Shared/infrastructure recordings (model lists, etc)
