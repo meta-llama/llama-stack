@@ -289,6 +289,7 @@ class StreamingResponseOrchestrator:
         presence_penalty: float | None = None,
         extra_body: dict | None = None,
         stream_options: ResponseStreamOptions | None = None,
+        initial_usage: OpenAIChatCompletionUsage | None = None,
     ):
         self.inference_api = inference_api
         self.ctx = ctx
@@ -350,6 +351,12 @@ class StreamingResponseOrchestrator:
         self.accumulated_builtin_tool_calls = 0
         # Track total output tokens generated across inference calls
         self.accumulated_builtin_output_tokens = 0
+        if initial_usage is not None:
+            # Seeds with the compaction/summarization call's own usage, so a client sees
+            # what that call cost instead of it silently not showing up anywhere.
+            # Must run after accumulated_builtin_output_tokens is initialized above --
+            # _accumulate_usage increments it.
+            self._accumulate_usage(initial_usage)
 
     async def _create_refusal_response(self, violation_message: str) -> OpenAIResponseObjectStream:
         """Create a refusal response to replace streaming content."""
