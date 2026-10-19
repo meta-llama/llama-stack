@@ -113,7 +113,7 @@ def available_providers() -> list[ProviderSpec]:
             adapter_type="together",
             provider_type="remote::together",
             pip_packages=[
-                "together>=2.34.0",
+                "together>=2.36.0",
             ],
             module="ogx.providers.remote.inference.together",
             config_class="ogx.providers.remote.inference.together.TogetherImplConfig",
