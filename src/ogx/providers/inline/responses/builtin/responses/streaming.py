@@ -44,6 +44,7 @@ from ogx_api import (
     OpenAIChoiceLogprobs,
     OpenAIFinishReason,
     OpenAIMessageParam,
+    OpenAIResponseCompaction,
     OpenAIResponseContentPartOutputText,
     OpenAIResponseContentPartReasoningText,
     OpenAIResponseContentPartRefusal,
@@ -290,6 +291,7 @@ class StreamingResponseOrchestrator:
         extra_body: dict | None = None,
         stream_options: ResponseStreamOptions | None = None,
         initial_usage: OpenAIChatCompletionUsage | None = None,
+        pending_compaction_item: OpenAIResponseCompaction | None = None,
     ):
         self.inference_api = inference_api
         self.ctx = ctx
@@ -343,6 +345,11 @@ class StreamingResponseOrchestrator:
         self.final_messages: list[OpenAIMessageParam] = []
         # mapping for annotations
         self.citation_files: dict[str, str] = {}
+        # Item representing a compaction that already happened before this turn's own
+        # inference loop starts (see openai_responses.py's _maybe_auto_compact); surfaced
+        # as the first item of this response's own output, matching OpenAI's behavior of
+        # returning the compaction item rather than hiding it in server-only state.
+        self.pending_compaction_item = pending_compaction_item
         # Track accumulated usage across all inference calls
         self.accumulated_usage: OpenAIResponseUsage | None = None
         # Track if we've sent a refusal response
@@ -460,6 +467,27 @@ class StreamingResponseOrchestrator:
             response=self._snapshot_response("in_progress", output_messages),
             sequence_number=self.sequence_number,
         )
+
+        # Auto-compaction already happened before this turn's inference loop started (see
+        # openai_responses.py's _maybe_auto_compact); surface it as this response's own
+        # first output item instead of leaving it as invisible server-only state.
+        if self.pending_compaction_item is not None:
+            compaction_output_index = len(output_messages)
+            output_messages.append(self.pending_compaction_item)
+            self.sequence_number += 1
+            yield OpenAIResponseObjectStreamResponseOutputItemAdded(
+                response_id=self.response_id,
+                item=self.pending_compaction_item,
+                output_index=compaction_output_index,
+                sequence_number=self.sequence_number,
+            )
+            self.sequence_number += 1
+            yield OpenAIResponseObjectStreamResponseOutputItemDone(
+                response_id=self.response_id,
+                item=self.pending_compaction_item,
+                output_index=compaction_output_index,
+                sequence_number=self.sequence_number,
+            )
 
         # Input safety validation - check messages before processing
         if self.enable_guardrails:

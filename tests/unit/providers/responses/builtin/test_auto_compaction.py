@@ -308,6 +308,27 @@ class TestAutoCompactionEndToEnd:
         ]
         assert len(compaction_calls) == 1
 
+    async def test_compaction_item_is_the_first_output_item(
+        self, openai_responses_impl, mock_inference_api, mock_responses_store
+    ):
+        """Point 9: OpenAI returns the compaction item in output; it must not stay
+        server-only state the client never sees.
+        """
+        mock_responses_store.get_response_object.return_value = _previous_response()
+        mock_inference_api.openai_chat_completion = _dual_inference_mock()
+
+        result = await openai_responses_impl.create_openai_response(
+            CreateResponseRequest(
+                input="What is the code word?",
+                model="meta-llama/Llama-3.1-8B-Instruct",
+                previous_response_id="resp-previous-123",
+                context_management=[{"type": "compaction", "compact_threshold": 1}],
+            )
+        )
+
+        assert len(result.output) >= 1
+        assert isinstance(result.output[0], OpenAIResponseCompaction)
+
     async def test_fresh_single_call_with_large_input_still_compacts(
         self, openai_responses_impl, mock_inference_api, mock_responses_store
     ):
@@ -323,7 +344,7 @@ class TestAutoCompactionEndToEnd:
             large_input.append(OpenAIResponseMessage(role="assistant", content=f"Here is topic {i}. " * 20))
         large_input.append(OpenAIResponseMessage(role="user", content="Summarize what we discussed."))
 
-        await openai_responses_impl.create_openai_response(
+        result = await openai_responses_impl.create_openai_response(
             CreateResponseRequest(
                 input=large_input,
                 model="meta-llama/Llama-3.1-8B-Instruct",
@@ -331,6 +352,7 @@ class TestAutoCompactionEndToEnd:
             )
         )
 
+        assert isinstance(result.output[0], OpenAIResponseCompaction)
         compaction_calls = [
             call for call in mock_inference_api.openai_chat_completion.call_args_list if not call.args[0].stream
         ]

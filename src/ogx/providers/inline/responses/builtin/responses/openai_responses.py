@@ -1477,6 +1477,7 @@ class OpenAIResponsesImpl:
                 stream_options=request.stream_options,
                 extra_body=extra_body,
                 initial_usage=summary_usage,
+                pending_compaction_item=compaction_item,
             )
 
             final_response = None
