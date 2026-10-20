@@ -13,7 +13,6 @@ from ogx.log import get_logger
 from ogx.providers.utils.inference.prompt_adapter import interleaved_content_as_str
 from ogx_api import (
     URL,
-    Files,
     Inference,
     InterleavedContent,
     InterleavedContentItem,
@@ -45,12 +44,10 @@ class FileSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime):
         config: FileSearchToolRuntimeConfig,
         vector_io_api: VectorIO,
         inference_api: Inference,
-        files_api: Files,
     ):
         self.config = config
         self.vector_io_api = vector_io_api
         self.inference_api = inference_api
-        self.files_api = files_api
 
     async def initialize(self):
         pass

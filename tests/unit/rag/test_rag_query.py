@@ -16,9 +16,7 @@ from ogx_api import Chunk, ChunkMetadata, EmbeddedChunk, QueryChunksResponse, RA
 class TestRagQuery:
     async def test_query_raises_on_empty_vector_store_ids(self):
         config = FileSearchToolRuntimeConfig()
-        rag_tool = FileSearchToolRuntimeImpl(
-            config=config, vector_io_api=MagicMock(), inference_api=MagicMock(), files_api=MagicMock()
-        )
+        rag_tool = FileSearchToolRuntimeImpl(config=config, vector_io_api=MagicMock(), inference_api=MagicMock())
         with pytest.raises(ValueError):
             await rag_tool.query(content=MagicMock(), vector_store_ids=[])
 
@@ -26,9 +24,7 @@ class TestRagQuery:
         # Create config with default templates
         config = FileSearchToolRuntimeConfig()
 
-        rag_tool = FileSearchToolRuntimeImpl(
-            config=config, vector_io_api=MagicMock(), inference_api=MagicMock(), files_api=MagicMock()
-        )
+        rag_tool = FileSearchToolRuntimeImpl(config=config, vector_io_api=MagicMock(), inference_api=MagicMock())
         content = "test query content"
         vector_store_ids = ["db1"]
 
@@ -99,7 +95,6 @@ class TestRagQuery:
             config=config,
             vector_io_api=MagicMock(),
             inference_api=MagicMock(),
-            files_api=MagicMock(),
         )
 
         vector_store_ids = ["db1", "db2"]
