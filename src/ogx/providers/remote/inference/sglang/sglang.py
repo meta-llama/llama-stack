@@ -46,8 +46,8 @@ log = get_logger(name=__name__, category="inference::sglang")
 # exposes no capabilities and the served id is normally the HuggingFace path, so the last
 # path segment is matched by name. SGLang also scores the answer labels of any chat model
 # on /v1/systemone; such a model can be registered under ModelType.systemone explicitly.
-_SYSTEMONE_MODEL_NAMES = frozenset({"clef", "clef-flash", "clef-omni", "tev1-0.8b", "tev1-0.8b-experimental"})
-_SYSTEMONE_MODEL_PREFIXES = ("pplx-decider",)
+_SYSTEMONE_MODEL_NAMES = frozenset({"clef", "clef-flash", "clef-omni", "tev1"})
+_SYSTEMONE_MODEL_PREFIXES = ("pplx-decider", "tev1-")
 
 
 def _is_systemone_model(identifier: str) -> bool:

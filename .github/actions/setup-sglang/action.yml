@@ -16,7 +16,7 @@ runs:
         set -euo pipefail
         MODEL="${SGLANG_MODEL:-Qwen/Qwen3-0.6B}"
         CPU_FEATURE=amx_tile
-        SERVER_ARGS=(--default-chat-template-kwargs '{"enable_thinking":false}')
+        SERVER_ARGS=()
         if [[ "$MODEL" == "Qwen/Qwen3-0.6B" ]]; then
           SERVER_ARGS+=(--tool-call-parser qwen25 --reasoning-parser qwen3)
         fi

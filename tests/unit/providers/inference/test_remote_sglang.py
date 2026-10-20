@@ -299,6 +299,9 @@ async def test_judge_passes_network_config_to_systemone_util():
         "Tev1-0.8B-experimental",
         "tev1-0.8b",
         "/models/TEV1-0.8B-EXPERIMENTAL",
+        "togethercomputer/Tev1-7B-experimental",
+        "Tev1",
+        "tev1-0.8b-experimental-chat",
     ],
 )
 def test_construct_model_from_identifier_marks_decision_models(identifier):
@@ -314,8 +317,8 @@ def test_construct_model_from_identifier_marks_decision_models(identifier):
         "zai-org/GLM-5.3-Flash",
         "Cloudflare/clef-2",
         "text-embedding-3-large",
-        "togethercomputer/Tev1-7B-experimental",
-        "tev1-0.8b-experimental-chat",
+        "tev10-0.8b",
+        "my-tev1-0.8b",
     ],
 )
 def test_construct_model_from_identifier_leaves_other_models_alone(identifier):

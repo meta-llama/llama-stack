@@ -61,6 +61,9 @@ def skip_if_doesnt_support_completions_logprobs(client_with_models, model_id):
         # boolean logprobs + top_logprobs, returning a non-OAI {"content": [...]} shape.
         # Integer logprobs=N (what these tests send) isn't honored at all.
         "remote::llama-cpp-server",
+        # SGLang can return fewer than logprobs=N entries or omit the sampled token.
+        # Revisit when its top_logprobs satisfy the shared completions contract.
+        "remote::sglang",
     ):
         pytest.skip(f"Model {model_id} hosted by {provider_type} doesn't support /v1/completions logprobs.")
 
@@ -746,15 +749,11 @@ def test_openai_completion_logprobs(client_with_models, openai_client, text_mode
     skip_if_doesnt_support_completions_logprobs(client_with_models, text_model_id)
 
     tc = TestCase(test_case)
-    provider_type = provider_from_model(client_with_models, text_model_id).provider_type
-    # Keep the existing request bodies for other providers' recordings.
-    sampling = {"temperature": 0} if provider_type == "remote::sglang" else {}
 
     response = openai_client.completions.create(
         model=text_model_id,
         prompt=tc["content"],
         logprobs=5,
-        **sampling,
     )
     assert len(response.choices) > 0
     choice = response.choices[0]
@@ -766,7 +765,7 @@ def test_openai_completion_logprobs(client_with_models, openai_client, text_mode
     assert len(logprobs.token_logprobs) == len(logprobs.top_logprobs)
     for i, (token, prob) in enumerate(zip(logprobs.tokens, logprobs.token_logprobs, strict=True)):
         assert logprobs.top_logprobs[i][token] == prob
-        assert 1 <= len(logprobs.top_logprobs[i]) <= 6
+        assert len(logprobs.top_logprobs[i]) == 5
 
 
 @pytest.mark.parametrize(
@@ -780,8 +779,6 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
     skip_if_doesnt_support_completions_logprobs(client_with_models, text_model_id)
 
     tc = TestCase(test_case)
-    provider_type = provider_from_model(client_with_models, text_model_id).provider_type
-    sampling = {"temperature": 0} if provider_type == "remote::sglang" else {}
 
     response = openai_client.completions.create(
         model=text_model_id,
@@ -789,7 +786,6 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
         logprobs=3,
         stream=True,
         max_tokens=5,
-        **sampling,
     )
     for chunk in response:
         if not chunk.choices:  # skip the trailing usage chunk (empty choices)
@@ -803,7 +799,7 @@ def test_openai_completion_logprobs_streaming(client_with_models, openai_client,
             assert len(logprobs.token_logprobs) == len(logprobs.top_logprobs)
             for i, (token, prob) in enumerate(zip(logprobs.tokens, logprobs.token_logprobs, strict=True)):
                 assert logprobs.top_logprobs[i][token] == prob
-                assert 1 <= len(logprobs.top_logprobs[i]) <= 4
+                assert len(logprobs.top_logprobs[i]) == 3
         else:  # no token, no logprobs
             assert not choice.logprobs, "Logprobs should be empty"
 
