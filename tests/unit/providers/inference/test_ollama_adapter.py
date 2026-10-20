@@ -173,10 +173,11 @@ async def _call_messages(adapter: OllamaInferenceAdapter) -> None:
     )
 
 
-# (call, the call's own default timeout in seconds)
+# (call, the call's own default timeout in seconds). count_tokens has no native
+# endpoint, so it falls through to anthropic_messages and uses that timeout.
 ADHOC_CALLS = [
     pytest.param(_call_health, 30.0, id="health"),
-    pytest.param(_call_count_tokens, 30.0, id="anthropic_count_tokens"),
+    pytest.param(_call_count_tokens, 300.0, id="anthropic_count_tokens"),
     pytest.param(_call_messages, 300.0, id="anthropic_messages"),
 ]
 
@@ -263,6 +264,36 @@ async def test_adhoc_calls_keep_the_shared_ssl_context_when_only_a_proxy_is_conf
 
     assert set(kwargs["mounts"]) == {"http://", "https://"}
     assert kwargs["verify"] is adapter.shared_ssl_context
+
+
+class TestCountTokensFallsBackToMessages:
+    """Ollama's /v1/messages has no count_tokens endpoint, so anthropic_count_tokens must
+    inherit OpenAIMixin's default, which counts by calling anthropic_messages() -- our
+    native override -- with max_tokens=1."""
+
+    async def test_count_tokens_posts_to_messages_not_count_tokens(self):
+        adapter = _make_adapter()
+
+        with patch("httpx2.AsyncClient") as mock_client_class:
+            response = MagicMock()
+            response.raise_for_status.return_value = None
+            response.json.return_value = _MESSAGE_RESPONSE
+            client = MagicMock()
+            client.post = AsyncMock(return_value=response)
+            mock_client_class.return_value.__aenter__.return_value = client
+
+            result = await adapter.anthropic_count_tokens(
+                AnthropicCountTokensRequest(model="test-model", messages=[{"role": "user", "content": "Hi"}])
+            )
+
+            assert client.post.call_args.args[0] == "http://localhost:11434/v1/messages"
+            body = client.post.call_args.kwargs["json"]
+            assert body["max_tokens"] == 1
+            assert result.input_tokens == 5
+
+    async def test_count_tokens_url_is_none(self):
+        """Guards the design decision itself: no /v1/messages/count_tokens endpoint exists to call."""
+        assert OllamaInferenceAdapter._anthropic_count_tokens_url(_make_adapter()) is None
 
 
 # ---------------------------------------------------------------------------

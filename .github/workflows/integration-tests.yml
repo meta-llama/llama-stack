@@ -21,6 +21,7 @@ on:
       - '.github/workflows/integration-tests.yml' # This workflow
       - '.github/actions/setup-llamacpp/action.yml'
       - '.github/actions/setup-ollama/action.yml'
+      - '.github/actions/setup-sglang/action.yml'
       - '.github/actions/setup-tei/action.yml'
       - '.github/actions/setup-test-environment/action.yml'
       - '.github/actions/run-and-record-tests/action.yml'
@@ -98,7 +99,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.pr_head_sha || github.event.pull_request.head.sha || github.sha }}
 
@@ -157,7 +158,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.pr_head_sha || github.event.pull_request.head.sha || github.sha }}
 
@@ -207,7 +208,10 @@ jobs:
           AWS_DEFAULT_REGION: us-west-2
           GEMINI_API_KEY: replay-mode-dummy-key
           FIREWORKS_API_KEY: replay-mode-dummy-key
-          THEGRID_API_KEY: replay-mode-dummy-key
+          ANTHROPIC_API_KEY: ${{ matrix.config.setup == 'anthropic' && 'replay-mode-dummy-key' || '' }}
+          META_API_KEY: ${{ matrix.config.setup == 'meta' && 'replay-mode-dummy-key' || '' }}
+          DEEPSEEK_API_KEY: ${{ matrix.config.setup == 'deepseek' && 'replay-mode-dummy-key' || '' }}
+          THEGRID_API_KEY: ${{ matrix.config.setup == 'thegrid' && 'replay-mode-dummy-key' || '' }}
           TAVILY_SEARCH_API_KEY: ${{ secrets.TAVILY_SEARCH_API_KEY || 'replay-mode-dummy-key' }}
           TYPESAFE_API_KEY: replay-mode-dummy-key
           TS_CLIENT_PATH: ${{ steps.setup-ts-client.outputs.ts-client-path || '' }}

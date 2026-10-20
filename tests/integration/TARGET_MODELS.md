@@ -14,24 +14,30 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `bedrock` | `bedrock` | library client only; 3 roots |
 | `base` | `ollama-postgres` | server client only; Postgres store |
 | `vision` | `ollama-vision` | `test_vision_inference.py` only |
-| `responses` | `gpt` | `responses` only; Responses coverage: 137/137 (100%) |
-| `responses` | `azure` | `responses` only; Responses coverage: 112/137 (82%) |
-| `gpt-reasoning` | `gpt-reasoning` | 2 roots; Responses coverage: 137/137 (100%) |
-| `responses` | `watsonx` | `responses` only; Responses coverage: 62/137 (45%) |
+| `responses` | `gpt` | `responses` only; Responses coverage: 138/138 (100%) |
+| `responses` | `azure` | `responses` only; Responses coverage: 112/138 (81%) |
+| `gpt-reasoning` | `gpt-reasoning` | 2 roots; Responses coverage: 138/138 (100%) |
+| `responses` | `watsonx` | `responses` only; Responses coverage: 62/138 (45%) |
 | `thegrid` | `thegrid` | `test_openai_completion.py` only |
-| `responses` | `vertexai` | `responses` only; Responses coverage: 70/137 (51%) |
-| `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 27/137 (20%) |
+| `responses` | `vertexai` | `responses` only; Responses coverage: 70/138 (51%) |
+| `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 27/138 (20%) |
 | `base-vllm-subset` | `vllm` | `inference` only |
-| `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 8/137 (6%) |
-| `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/137 (2%) |
+| `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 8/138 (6%) |
+| `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/138 (2%) |
 | `messages` | `ollama` | `messages` only |
 | `messages-openai` | `gpt` | `messages` only |
+| `messages` | `vllm` | `messages` only |
+| `messages` | `fireworks` | `messages` only |
+| `messages` | `anthropic` | `messages` only |
+| `messages` | `meta` | `messages` only |
+| `messages` | `deepseek` | `messages` only |
 | `interactions` | `gemini` | `interactions` only |
 | `base` | `fireworks` |  |
 | `llama-cpp-server` | `llama-cpp-server` | `inference` only |
 | `text-embeddings-inference` | `text-embeddings-inference` | `test_openai_embeddings.py` only |
 | `systemone` | `typesafe` | server client only; `test_systemone.py` only |
 | `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
+| `systemone` | `llama-cpp-server-systemone` | server client only; `test_systemone.py` only |
 
 ## CI Lanes (Scheduled)
 
@@ -40,19 +46,22 @@ Cron: `1 0 * * 0`
 | Suite | Setup | Notes |
 |-------|-------|-------|
 | `base` | `vllm` |  |
-| `base` | `vllm-qwen3next` |  |
 
 ## CI-backed Setups
 
 | Setup | Text Model | Vision Model | Embedding Model | Safety Model | Default CI | Scheduled CI |
 |-------|------------|--------------|-----------------|--------------|------------|--------------|
+| `anthropic` | anthropic/claude-haiku-5-5 | — | — | — | `messages` | — |
 | `azure` | azure/gpt-4o | azure/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 | `bedrock` | bedrock/openai.gpt-oss-20b-1:0 | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `bedrock`, `bedrock-responses` | — |
-| `fireworks` | fireworks/accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base` | — |
+| `deepseek` | deepseek/deepseek-chat | — | — | — | `messages` | — |
+| `fireworks` | fireworks/accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `messages`, `base` | — |
 | `gemini` | gemini/gemini-2.5-flash-lite | — | gemini/text-embedding-004 | — | `interactions` | — |
 | `gpt` | openai/gpt-4o | openai/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses`, `messages-openai` | — |
 | `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `gpt-reasoning` | — |
 | `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `llama-cpp-server` | — |
+| `llama-cpp-server-systemone` | — | — | — | — | `systemone` | — |
+| `meta` | meta/muse-spark-1.3-contributor | — | — | — | `messages` | — |
 | `ollama` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base`, `messages` | — |
 | `ollama-postgres` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base` | — |
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
@@ -62,19 +71,19 @@ Cron: `1 0 * * 0`
 | `thegrid` | thegrid/text-standard | — | — | — | `thegrid` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
-| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base-vllm-subset`, `vllm-reasoning` | `base` |
-| `vllm-qwen3next` | Qwen3-Next-80B-A3B-Instruct-FP8 | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | — | `base` |
+| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base-vllm-subset`, `vllm-reasoning`, `messages` | `base` |
 | `watsonx` | watsonx/meta-llama/llama-3-3-70b-instruct | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 
 ## Additional Named Setups
 
 | Setup | Text Model | Vision Model | Embedding Model | Safety Model | Default CI | Scheduled CI |
 |-------|------------|--------------|-----------------|--------------|------------|--------------|
-| `anthropic` | anthropic/claude-3-5-haiku-20241022 | — | — | — | — | — |
 | `cerebras` | cerebras/gpt-oss-120b | — | — | — | — | — |
 | `databricks` | databricks/databricks-meta-llama-3-3-70b-instruct | — | databricks/databricks-bge-large-en | — | — | — |
 | `groq` | groq/llama-3.3-70b-versatile | — | — | — | — | — |
 | `llama-api` | llama_openai_compat/Llama-3.3-8B-Instruct | — | — | — | — | — |
+| `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | — | — |
+| `sglang-systemone` | — | — | — | — | — | — |
 | `tgi` | tgi/Qwen/Qwen3-0.6B | — | — | — | — | — |
 | `together` | together/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free | — | together/togethercomputer/m2-bert-80M-32k-retrieval | — | — | — |
 
@@ -84,12 +93,12 @@ This section is derived from the same replay recordings used to generate `docs/d
 
 | Provider | Tested | Passing | Coverage |
 |----------|--------|---------|----------|
-| OpenAI | 137 | 137 | 100% |
-| Azure | 112 | 112 | 82% |
+| OpenAI | 138 | 138 | 100% |
+| Azure | 112 | 112 | 81% |
 | Vertex AI | 70 | 70 | 51% |
 | WatsonX | 62 | 62 | 45% |
 | Bedrock | 27 | 27 | 20% |
 | vLLM | 8 | 8 | 6% |
 | Ollama | 3 | 3 | 2% |
 
-Total Responses features counted: 137.
+Total Responses features counted: 138.
