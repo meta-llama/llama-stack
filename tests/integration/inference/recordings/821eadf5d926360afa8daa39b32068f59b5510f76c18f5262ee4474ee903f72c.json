@@ -16,7 +16,7 @@
     "endpoint": "/v1/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -30,7 +30,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " ______",
+              "text": " ___",
               "matched_stop": null
             }
           ],
@@ -50,7 +50,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": "_",
+              "text": " Vers",
               "matched_stop": null
             }
           ],
@@ -70,167 +70,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": ".\n",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": "The",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " answer",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " should",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " be",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " one",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " word",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": ".\n",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": "There",
+              "text": "es",
               "matched_stop": null
             }
           ],
@@ -270,7 +110,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " many",
+              "text": " all",
               "matched_stop": null
             }
           ],
@@ -290,7 +130,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " different",
+              "text": "__.",
               "matched_stop": null
             }
           ],
@@ -310,7 +150,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " types",
+              "text": " J",
               "matched_stop": null
             }
           ],
@@ -330,7 +170,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " of",
+              "text": "OURNAL",
               "matched_stop": null
             }
           ],
@@ -350,7 +190,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " roses",
+              "text": "ST",
               "matched_stop": null
             }
           ],
@@ -370,7 +210,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " and",
+              "text": "ABLE",
               "matched_stop": null
             }
           ],
@@ -390,7 +230,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " v",
+              "text": "S",
               "matched_stop": null
             }
           ],
@@ -410,7 +250,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": "io",
+              "text": "\n",
               "matched_stop": null
             }
           ],
@@ -430,7 +270,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": "lets",
+              "text": "Answer",
               "matched_stop": null
             }
           ],
@@ -450,7 +290,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": ".",
+              "text": ":\n",
               "matched_stop": null
             }
           ],
@@ -470,7 +310,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " However",
+              "text": "R",
               "matched_stop": null
             }
           ],
@@ -490,7 +330,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": ",",
+              "text": "oses",
               "matched_stop": null
             }
           ],
@@ -510,7 +350,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " in",
+              "text": " are",
               "matched_stop": null
             }
           ],
@@ -530,47 +370,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " most",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " market",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": "places",
+              "text": " red",
               "matched_stop": null
             }
           ],
@@ -591,106 +391,6 @@
               "index": 0,
               "logprobs": null,
               "text": ",",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " the",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " types",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " of",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " roses",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " and",
               "matched_stop": null
             }
           ],
@@ -790,7 +490,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " usually",
+              "text": " RED",
               "matched_stop": null
             }
           ],
@@ -810,7 +510,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " referred",
+              "text": " V",
               "matched_stop": null
             }
           ],
@@ -830,7 +530,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " to",
+              "text": "ERS",
               "matched_stop": null
             }
           ],
@@ -850,87 +550,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " as",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": " ______",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": "__",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": ".\n",
-              "matched_stop": null
-            }
-          ],
-          "created": 0,
-          "model": "Qwen/Qwen3-0.6B",
-          "object": "text_completion",
-          "system_fingerprint": null,
-          "usage": null
-        }
-      },
-      {
-        "__type__": "openai.types.completion.Completion",
-        "__data__": {
-          "id": "rec-821eadf5d926",
-          "choices": [
-            {
-              "finish_reason": null,
-              "index": 0,
-              "logprobs": null,
-              "text": "You",
+              "text": "ES",
               "matched_stop": null
             }
           ],
@@ -970,7 +590,7 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " under",
+              "text": " all",
               "matched_stop": null
             }
           ],
@@ -990,7 +610,387 @@
               "finish_reason": null,
               "index": 0,
               "logprobs": null,
-              "text": " the",
+              "text": " ST",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "YLES",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "\n",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "**\n",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "Answer",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ":\n",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "R",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "oses",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " are",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " red",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ",",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " v",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "io",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": "lets",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " are",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " RED",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": ",",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " verses",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " are",
+              "matched_stop": null
+            }
+          ],
+          "created": 0,
+          "model": "Qwen/Qwen3-0.6B",
+          "object": "text_completion",
+          "system_fingerprint": null,
+          "usage": null
+        }
+      },
+      {
+        "__type__": "openai.types.completion.Completion",
+        "__data__": {
+          "id": "rec-821eadf5d926",
+          "choices": [
+            {
+              "finish_reason": null,
+              "index": 0,
+              "logprobs": null,
+              "text": " all",
               "matched_stop": null
             }
           ],
@@ -1010,7 +1010,7 @@
               "finish_reason": "length",
               "index": 0,
               "logprobs": null,
-              "text": " impression",
+              "text": " ST",
               "matched_stop": null
             }
           ],

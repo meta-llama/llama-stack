@@ -16,7 +16,7 @@
     "endpoint": "/v1/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -29,7 +29,7 @@
             "finish_reason": "length",
             "index": 0,
             "logprobs": null,
-            "text": ". The math equations are shown as linear equations. The sentence requires additional audiences of",
+            "text": " and debuted behind the podium of the World Championship of Solo and became the champion of",
             "matched_stop": null
           }
         ],

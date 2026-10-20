@@ -36,7 +36,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -58,7 +58,7 @@
               "function_call": null,
               "tool_calls": [
                 {
-                  "id": "call_0b78d3f460a14d558a0dfd27",
+                  "id": "call_31027bcdbd714395bb745cb5",
                   "function": {
                     "arguments": "{\"city\": \"Tokyo\"}",
                     "name": "get_weather"
@@ -67,7 +67,7 @@
                   "index": 0
                 }
               ],
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user is asking for the weather in Tokyo. I need to use the get_weather function provided. Let me check the parameters. The function requires a city name, which is Tokyo. I should make sure to format the tool call correctly. The city parameter is a string, so I'll input \"Tokyo\". No other parameters are needed here. Let me structure the JSON as specified.\n"
             },
             "matched_stop": null
           }
@@ -81,7 +81,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 21
+              "end": 105
             }
           ]
         },
@@ -89,12 +89,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 21,
-          "prompt_tokens": 184,
-          "total_tokens": 205,
+          "completion_tokens": 105,
+          "prompt_tokens": 180,
+          "total_tokens": 285,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 83
         }
       }
     },

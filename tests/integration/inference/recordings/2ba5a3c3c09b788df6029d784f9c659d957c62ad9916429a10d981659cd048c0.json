@@ -54,7 +54,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -76,7 +76,7 @@
               "function_call": null,
               "tool_calls": [
                 {
-                  "id": "call_d72e27fc3449440288c5c124",
+                  "id": "call_662b05f6732a4e9d97288d92",
                   "function": {
                     "arguments": "{\"x\": 5, \"y\": 3, \"operation\": \"add\"}",
                     "name": "calculate"
@@ -85,7 +85,7 @@
                   "index": 0
                 }
               ],
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user wants to calculate 5 plus 3. Let me check the tools available. There's a function called calculate that takes x, y, and operation. The operation can be add, sub, mul, or div. Since the user is asking for addition, the operation is \"add\". The parameters required are x, y, and operation. The numbers here are 5 and 3, so I need to set x to 5, y to 3, and operation to \"add\". I should make sure all required fields are included. No other parameters are needed. So the tool call should be straightforward.\n"
             },
             "matched_stop": null
           }
@@ -99,7 +99,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 31
+              "end": 163
             }
           ]
         },
@@ -107,12 +107,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 31,
-          "prompt_tokens": 228,
-          "total_tokens": 259,
+          "completion_tokens": 163,
+          "prompt_tokens": 224,
+          "total_tokens": 387,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 131
         }
       }
     },

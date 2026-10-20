@@ -13,7 +13,7 @@
     "endpoint": "/v1/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -26,7 +26,7 @@
             "finish_reason": "length",
             "index": 0,
             "logprobs": null,
-            "text": " as an American child who is now irrespective in these oddities of techno-urban",
+            "text": ", and is one of the most famous athletes of our time. So, the",
             "matched_stop": null
           }
         ],

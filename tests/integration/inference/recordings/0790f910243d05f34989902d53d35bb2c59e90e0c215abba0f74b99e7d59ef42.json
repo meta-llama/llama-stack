@@ -18,7 +18,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -32,14 +32,14 @@
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "Humans live on **Earth**, which is a planet in the **Solar System**.",
+              "content": "\n\nHumans live on **Earth**.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
               "tool_calls": null,
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user is asking which planet humans live on. Let me start by recalling that humans are Earth's native species. The answer is straightforward: Earth. I should make sure to explain that humans are on Earth, not any other planet. Maybe add a bit about how Earth's environment supports life, like the atmosphere, water, and temperature. Also, check if there's any possibility of confusion, like if they might think of a different planet. But since the question is direct, the answer is just Earth. Keep it simple and clear.\n"
             },
             "matched_stop": 151645
           }
@@ -53,7 +53,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 18
+              "end": 122
             }
           ]
         },
@@ -61,12 +61,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 18,
-          "prompt_tokens": 19,
-          "total_tokens": 37,
+          "completion_tokens": 122,
+          "prompt_tokens": 15,
+          "total_tokens": 137,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 113
         }
       }
     },

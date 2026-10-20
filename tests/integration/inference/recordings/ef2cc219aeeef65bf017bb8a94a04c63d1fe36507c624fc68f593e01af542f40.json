@@ -18,7 +18,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -32,14 +32,14 @@
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "Humans live on the planet **Earth**.",
+              "content": "\n\nHumans live on **Earth**. It is the only planet where life has evolved and exists in the form of humans, with conditions such as liquid water, an atmosphere, and a stable climate.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
               "tool_calls": null,
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user is asking which planet humans live on. Let me think. I know that humans are on Earth. But maybe they're confused because they might think of other planets. I should clarify that Earth is the only planet where humans have evolved and live. I should mention that Earth is the only planet with the necessary conditions for life, like water, atmosphere, and suitable temperature. Also, maybe explain why other planets aren't suitable. Need to make sure the answer is simple and accurate.\n"
             },
             "matched_stop": 151645
           }
@@ -53,7 +53,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 10
+              "end": 144
             }
           ]
         },
@@ -61,12 +61,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 10,
-          "prompt_tokens": 19,
-          "total_tokens": 29,
+          "completion_tokens": 144,
+          "prompt_tokens": 15,
+          "total_tokens": 159,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 103
         }
       }
     },

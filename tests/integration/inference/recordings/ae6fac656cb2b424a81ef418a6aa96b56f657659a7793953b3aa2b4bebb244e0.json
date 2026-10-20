@@ -30,7 +30,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -52,7 +52,7 @@
               "function_call": null,
               "tool_calls": [
                 {
-                  "id": "call_ba6c878f11f348bd821c6355",
+                  "id": "call_9d5b4291f5014a37a713935c",
                   "function": {
                     "arguments": "{}",
                     "name": "no_args_tool"
@@ -61,7 +61,7 @@
                   "index": 0
                 }
               ],
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user wants me to call the no_args_tool. Let me check the available functions. The tool provided has no arguments and is called no_args_tool. Since there are no parameters needed for this function, I just need to trigger it. I'll make sure to format the tool call correctly within the XML tags as specified. No need for any additional steps here.\n"
             },
             "matched_stop": null
           }
@@ -75,7 +75,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 17
+              "end": 96
             }
           ]
         },
@@ -83,12 +83,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 17,
-          "prompt_tokens": 150,
-          "total_tokens": 167,
+          "completion_tokens": 96,
+          "prompt_tokens": 146,
+          "total_tokens": 242,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 78
         }
       }
     },

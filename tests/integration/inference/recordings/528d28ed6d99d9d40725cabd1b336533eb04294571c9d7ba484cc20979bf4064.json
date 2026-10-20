@@ -47,7 +47,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -61,14 +61,14 @@
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "{\n  \"name\": \"process_data\",\n  \"arguments\": {\n    \"data\": [\n      1,\n      2,\n      3,\n      4,\n      5\n    ]\n  }\n}",
+              "content": "\n\nPlease provide the structured data you would like to process. Once you share the data, I can use the `process_data` function to handle it for you.",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
               "tool_calls": null,
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user wants me to process the data. Let me check the tools available. There's a function called process_data that takes an object with a data property which is an array of numbers. But the user hasn't provided any specific data yet. I need to ask them to include the data they want processed so I can call the function properly.\n"
             },
             "matched_stop": 151645
           }
@@ -82,7 +82,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 45
+              "end": 108
             }
           ]
         },
@@ -90,12 +90,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 45,
-          "prompt_tokens": 194,
-          "total_tokens": 239,
+          "completion_tokens": 108,
+          "prompt_tokens": 190,
+          "total_tokens": 298,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 74
         }
       }
     },

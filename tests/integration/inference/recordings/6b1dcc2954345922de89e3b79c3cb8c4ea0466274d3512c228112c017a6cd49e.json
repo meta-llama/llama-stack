@@ -44,7 +44,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -66,7 +66,7 @@
               "function_call": null,
               "tool_calls": [
                 {
-                  "id": "call_95eb116ea1a8463fbef91710",
+                  "id": "call_8fcde6256c2b455eb417cd09",
                   "function": {
                     "arguments": "{\"location\": \"San Francisco, CA\"}",
                     "name": "get_weather"
@@ -75,7 +75,7 @@
                   "index": 0
                 }
               ],
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user is asking about the weather in San Francisco, CA. I need to check if there's a function available for this. Looking at the tools provided, there's a get_weather function that requires the location parameter. The location is specified as a string like \"San Francisco, CA\". Since the user provided both city and state, I can use that. I should call the get_weather function with the location set to \"San Francisco, CA\". No other parameters are needed. Just make sure the JSON is correctly formatted with the function name and the arguments.\n"
             },
             "matched_stop": null
           }
@@ -89,7 +89,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 23
+              "end": 141
             }
           ]
         },
@@ -97,12 +97,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 23,
-          "prompt_tokens": 199,
-          "total_tokens": 222,
+          "completion_tokens": 141,
+          "prompt_tokens": 195,
+          "total_tokens": 336,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 117
         }
       }
     },

@@ -12,7 +12,7 @@
     "endpoint": "/v1/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -25,7 +25,7 @@
             "finish_reason": "length",
             "index": 0,
             "logprobs": null,
-            "text": " _______.\nThe sentence is: \"Roses are red, violets",
+            "text": " ____. What is the result of the problem 1 + 5 ? A",
             "matched_stop": null
           }
         ],

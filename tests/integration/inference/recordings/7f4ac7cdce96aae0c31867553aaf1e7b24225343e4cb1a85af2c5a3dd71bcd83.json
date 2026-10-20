@@ -18,7 +18,7 @@
     "endpoint": "/v1/chat/completions",
     "model": "Qwen/Qwen3-0.6B",
     "provider_metadata": {
-      "openai_sdk_version": "3.29.0"
+      "openai_sdk_version": "3.31.0"
     }
   },
   "response": {
@@ -32,14 +32,14 @@
             "index": 0,
             "logprobs": null,
             "message": {
-              "content": "Hello, world!",
+              "content": "\n\nHello, world! \ud83d\ude0a How are you today? If you're learning programming or anything else, feel free to ask!",
               "refusal": null,
               "role": "assistant",
               "annotations": null,
               "audio": null,
               "function_call": null,
               "tool_calls": null,
-              "reasoning_content": null
+              "reasoning_content": "\nOkay, the user just said \"Hello, world!\" So I need to respond to that. Let me start by acknowledging their message. I should make sure the response is friendly and maybe add a small note. Since they used \"Hello, world!\", maybe they're learning how to program or just testing. I should keep it simple and positive. Let me check for any typos or errors in the response. Alright, \"Hello, world!\" is correct. Maybe add a line about programming or something else to keep it engaging. Let me put that together.\n"
             },
             "matched_stop": 151645
           }
@@ -53,7 +53,7 @@
             {
               "version": "default",
               "start": 0,
-              "end": 5
+              "end": 142
             }
           ]
         },
@@ -61,12 +61,12 @@
         "service_tier": null,
         "system_fingerprint": null,
         "usage": {
-          "completion_tokens": 5,
-          "prompt_tokens": 16,
-          "total_tokens": 21,
+          "completion_tokens": 142,
+          "prompt_tokens": 12,
+          "total_tokens": 154,
           "completion_tokens_details": null,
           "prompt_tokens_details": null,
-          "reasoning_tokens": 0
+          "reasoning_tokens": 115
         }
       }
     },
