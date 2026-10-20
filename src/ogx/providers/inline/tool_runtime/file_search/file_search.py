@@ -37,7 +37,7 @@ log = get_logger(name=__name__, category="tool_runtime")
 
 
 class FileSearchToolRuntimeImpl(ToolGroupsProtocolPrivate, ToolRuntime):
-    """Tool runtime implementation for document ingestion and semantic file search."""
+    """Tool runtime implementation for semantic file search."""
 
     def __init__(
         self,
