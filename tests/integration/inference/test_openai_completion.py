@@ -61,6 +61,9 @@ def skip_if_doesnt_support_completions_logprobs(client_with_models, model_id):
         # boolean logprobs + top_logprobs, returning a non-OAI {"content": [...]} shape.
         # Integer logprobs=N (what these tests send) isn't honored at all.
         "remote::llama-cpp-server",
+        # SGLang can return fewer than logprobs=N entries or omit the sampled token.
+        # Revisit when its top_logprobs satisfy the shared completions contract.
+        "remote::sglang",
     ):
         pytest.skip(f"Model {model_id} hosted by {provider_type} doesn't support /v1/completions logprobs.")
 
