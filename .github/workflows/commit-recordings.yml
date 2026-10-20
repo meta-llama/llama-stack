@@ -261,6 +261,21 @@ jobs:
             fi
           fi
 
+      - name: Set up uv
+        if: steps.pr-info.outputs.skip != 'true'
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Sync dev dependencies
+        if: steps.pr-info.outputs.skip != 'true'
+        run: uv sync --group dev
+
+      # Model-list recordings accumulate a new digest whenever a provider's
+      # catalog drifts between recordings. Prune the redundant digests here so
+      # the pushed commit is already a fixed point of the CI cleanup check.
+      - name: Prune redundant model-list recordings
+        if: steps.pr-info.outputs.skip != 'true'
+        run: PYTHONPATH=$PWD uv run --no-sync --group dev ./scripts/cleanup_recordings.py --model-lists-only --delete
+
       - name: Commit and push recordings
         id: commit
         if: steps.pr-info.outputs.skip != 'true'
