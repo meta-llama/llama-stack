@@ -82,7 +82,7 @@ def split_pip_packages(packages: list[str]) -> tuple[list[str], list[str]]:
     normal_deps = []
     special_deps = []
     for package in packages:
-        if any(f in package for f in ["--no-deps", "--index-url", "--extra-index-url"]):
+        if any(f in package for f in ["--no-deps", "--no-index", "--index-url", "--extra-index-url"]):
             special_deps.append(package)
         else:
             normal_deps.append(package)

@@ -569,12 +569,38 @@ def _pip_install_command() -> list[str]:
     return [sys.executable, "-m", "pip", "install"]
 
 
+def _run_installer(installer: list[str], packages: list[str]) -> bool:
+    """Run one install command and, on failure, print a short summary instead of its full output.
+
+    The installer's own output is captured because its full error dump (e.g. pip's PEP 668
+    "externally-managed-environment" explanation) otherwise buries the failure.
+    """
+    result = subprocess.run([*installer, *packages], capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if result.returncode == 0:
+        return True
+
+    output_lines = (result.stderr or result.stdout or "").strip().splitlines()
+    error_lines = [line.strip() for line in output_lines if line.strip().lower().startswith("error")]
+    summary_lines = error_lines or [line.strip() for line in output_lines[-5:]]
+    cprint(f"  ✗ Failed to install {' '.join(packages)} into {sys.executable}", color="red", file=sys.stderr)
+    for line in summary_lines:
+        cprint(f"      {line}", color="red", file=sys.stderr)
+    if "externally" in "\n".join(output_lines).lower():
+        cprint(
+            "      This Python is externally managed (PEP 668). Run `ogx go` from a virtual environment or with `uvx`.",
+            color="yellow",
+            file=sys.stderr,
+        )
+    logger.warning("Failed to install provider dependencies", packages=packages, returncode=result.returncode)
+    return False
+
+
 def _install_provider_deps(normal_deps: list[str], special_deps: list[str]) -> bool:
     """Install provider pip dependencies into the current environment.
 
     Uses `uv pip install` when uv is available, falling back to `pip install`.
-    A non-zero exit is logged as a warning rather than aborting startup,
-    since packages may already satisfy the declared constraints.
+    A failed install is reported rather than aborting startup, since packages may
+    already satisfy the declared constraints.
 
     Returns True when every install command succeeded.
     """
@@ -583,28 +609,27 @@ def _install_provider_deps(normal_deps: list[str], special_deps: list[str]) -> b
 
     if normal_deps:
         cprint("Installing provider dependencies...", color="cyan")
-        result = subprocess.run([*installer, *normal_deps])
-        if result.returncode != 0:
-            logger.warning("Failed to install provider dependencies", returncode=result.returncode)
-            succeeded = False
+        succeeded = _run_installer(installer, normal_deps)
 
     for special_dep in special_deps:
-        result = subprocess.run([*installer, *special_dep.split()])
-        if result.returncode != 0:
-            logger.warning(
-                "Failed to install special provider dependency", dep=special_dep, returncode=result.returncode
-            )
-            succeeded = False
+        succeeded = _run_installer(installer, special_dep.split()) and succeeded
 
     return succeeded
 
 
 async def _is_reachable(base_url: str, timeout_seconds: float = 2) -> bool:
-    """Return True when a server answers HTTP at base_url, whatever the status code."""
+    """Return True when a server answers HTTP(S) at base_url, whatever the status code.
+
+    This only answers "is something serving on this port", so TLS verification is off:
+    a backend with a self-signed certificate (vLLM, SGLang or llama.cpp started with TLS)
+    must still count as reachable. Certificate validity and backend identity are checked
+    by the re-probe, which instantiates the provider and calls list_models() through the
+    provider's own client with its normal TLS settings.
+    """
     if not base_url:
         return False
     try:
-        async with httpx2.AsyncClient(timeout=timeout_seconds) as client:
+        async with httpx2.AsyncClient(timeout=timeout_seconds, verify=False) as client:
             await client.get(base_url)
     except httpx2.HTTPError:
         return False

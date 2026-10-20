@@ -7,9 +7,17 @@
 """Unit tests for `ogx go` and `ogx stack go` CLI commands."""
 
 import argparse
+import base64
+import hashlib
+import importlib.util
+import shutil
+import subprocess
 import sys
+import venv
 import warnings
+import zipfile
 from collections.abc import Callable
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx2
@@ -269,6 +277,29 @@ _OLLAMA_OK = (_ProbeStatus.OK, [], "http://localhost:11434/v1", "default", None)
 _UNREACHABLE = (_ProbeStatus.UNREACHABLE, [], "", "default", None)
 
 
+_STUB_PACKAGE = "ogx_install_target_stub"
+
+
+def _build_stub_wheel(wheels_dir: Path, name: str) -> None:
+    """Write a minimal pure-python wheel for `name` 0.0.1, with a valid RECORD, into wheels_dir."""
+    dist_info = f"{name}-0.0.1.dist-info"
+    files = {
+        f"{name}/__init__.py": b"",
+        f"{dist_info}/METADATA": f"Metadata-Version: 2.1\nName: {name}\nVersion: 0.0.1\n".encode(),
+        f"{dist_info}/WHEEL": b"Wheel-Version: 1.0\nGenerator: ogx-tests\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+    }
+    record_lines = []
+    for path, content in files.items():
+        digest = base64.urlsafe_b64encode(hashlib.sha256(content).digest()).rstrip(b"=").decode()
+        record_lines.append(f"{path},sha256={digest},{len(content)}")
+    record_lines.append(f"{dist_info}/RECORD,,")
+    files[f"{dist_info}/RECORD"] = ("\n".join(record_lines) + "\n").encode()
+
+    with zipfile.ZipFile(wheels_dir / f"{name}-0.0.1-py3-none-any.whl", "w") as wheel:
+        for path, content in files.items():
+            wheel.writestr(path, content)
+
+
 def _ollama_probe(*ollama_results: tuple) -> Callable[..., tuple]:
     """Return a probe side effect that yields ollama_results in order and UNREACHABLE for others."""
     remaining = list(ollama_results)
@@ -349,16 +380,57 @@ class TestInstallMissingDeps:
         with patch("ogx.cli.stack.lets_go.shutil.which", return_value=None):
             assert _pip_install_command() == [sys.executable, "-m", "pip", "install"]
 
-    def test_install_provider_deps_reports_failure(self):
-        failed = MagicMock(returncode=1)
-        with patch("ogx.cli.stack.lets_go.subprocess.run", return_value=failed):
+    def test_install_provider_deps_summarizes_failure(self, capsys: pytest.CaptureFixture[str]):
+        pep_668_error = subprocess.CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="",
+            stderr=(
+                "error: externally-managed-environment\n\n"
+                "This environment is externally managed\n"
+                "To install Python packages system-wide, try apt install python3-xyz.\n"
+                + "\n".join(f"    hint line {i}" for i in range(20))
+            ),
+        )
+        with patch("ogx.cli.stack.lets_go.subprocess.run", return_value=pep_668_error):
             assert _install_provider_deps(["typesafe-sdk>=0.7.2"], []) is False
 
+        err = capsys.readouterr().err
+        assert "Failed to install typesafe-sdk>=0.7.2" in err
+        assert "error: externally-managed-environment" in err
+        assert "PEP 668" in err
+        assert "hint line" not in err
+
     def test_install_provider_deps_reports_success(self):
-        ok = MagicMock(returncode=0)
+        ok = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
         with patch("ogx.cli.stack.lets_go.subprocess.run", return_value=ok) as mock_run:
             assert _install_provider_deps(["typesafe-sdk>=0.7.2"], ["torch --index-url https://example"]) is True
         assert mock_run.call_count == 2
+
+    def test_install_provider_deps_targets_the_running_interpreter(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """Packages land in the interpreter running `ogx go` (sys.executable), not the caller's environment.
+
+        Under `uvx ogx go` these differ: without `--python`, `uv pip install` would target
+        $VIRTUAL_ENV or a .venv found from the working directory instead. Hermetic: the venv
+        is created offline and the package comes from a local wheel with --no-index.
+        """
+        monkeypatch.chdir(tmp_path)
+        venv_dir = tmp_path / "venv"
+        # uv installs into a venv without pip; the pip fallback needs pip, from ensurepip's bundled wheel.
+        venv.create(venv_dir, with_pip=shutil.which("uv") is None)
+        venv_python = venv_dir / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+        wheels_dir = tmp_path / "wheels"
+        wheels_dir.mkdir()
+        _build_stub_wheel(wheels_dir, _STUB_PACKAGE)
+
+        normal, special = split_pip_packages([f"{_STUB_PACKAGE} --no-index --find-links {wheels_dir}"])
+        with patch("ogx.cli.stack.lets_go.sys.executable", str(venv_python)):
+            assert _install_provider_deps(normal, special) is True
+
+        subprocess.run([str(venv_python), "-c", f"import {_STUB_PACKAGE}"], check=True)
+        assert importlib.util.find_spec(_STUB_PACKAGE) is None
 
     async def test_is_reachable_without_base_url(self):
         assert await _is_reachable("") is False
@@ -371,10 +443,22 @@ class TestInstallMissingDeps:
         with patch("ogx.cli.stack.lets_go.httpx2.AsyncClient.get", AsyncMock(return_value=MagicMock(status_code=404))):
             assert await _is_reachable("http://localhost:11434/v1") is True
 
+    async def test_is_reachable_skips_tls_verification(self):
+        client = MagicMock()
+        client.get = AsyncMock(return_value=MagicMock(status_code=200))
+        client_cls = MagicMock()
+        client_cls.return_value.__aenter__ = AsyncMock(return_value=client)
+        client_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+        with patch("ogx.cli.stack.lets_go.httpx2.AsyncClient", client_cls):
+            assert await _is_reachable("https://localhost:8000/v1") is True
+        assert client_cls.call_args.kwargs["verify"] is False
+
     def test_split_pip_packages_separates_flagged_entries(self):
-        normal, special = split_pip_packages(["ollama", "torch --index-url https://example", "x --no-deps"])
+        normal, special = split_pip_packages(
+            ["ollama", "torch --index-url https://example", "x --no-deps", "y --no-index --find-links /wheels"]
+        )
         assert normal == ["ollama"]
-        assert special == ["torch --index-url https://example", "x --no-deps"]
+        assert special == ["torch --index-url https://example", "x --no-deps", "y --no-index --find-links /wheels"]
 
 
 class TestRunCommandSync:
