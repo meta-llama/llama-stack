@@ -177,6 +177,20 @@ By default, the recording directory is `tests/integration/recordings`. You can o
 
 ## Managing Recordings
 
+### Model-List Recordings
+
+`models-*.json` files record provider model-list responses
+(`models-{request_hash}-{model_set_digest}.json`). Replay unions the bodies of
+every digest for a request hash, so stale model catalogs accumulate one digest
+per recording. `scripts/cleanup_recordings.py` prunes them:
+
+- files whose filename hash no longer matches the current hash function are
+  unreachable by any replay lookup, and
+- model-set digests that add no model referenced by the test suites (recording
+  requests + CI stack-config registrations) are redundant, with the
+  guarantee that the kept files per (directory, request hash) still cover
+  every referenced model and that each group keeps at least one file.
+
 ### Viewing Recordings
 
 ```bash
