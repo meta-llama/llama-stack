@@ -34,7 +34,7 @@ def available_providers() -> list[ProviderSpec]:
             ],
             module="ogx.providers.inline.tool_runtime.file_search",
             config_class="ogx.providers.inline.tool_runtime.file_search.config.FileSearchToolRuntimeConfig",
-            api_dependencies=[Api.vector_io, Api.inference, Api.files],
+            api_dependencies=[Api.vector_io, Api.inference],
             toolgroup_id="builtin::file_search",
             description="File search tool runtime for document ingestion, chunking, and semantic search.",
         ),

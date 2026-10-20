@@ -152,14 +152,14 @@ jobs:
 
           # Determine which providers to run
           # Security: For pull_request, only run secret-free providers (ollama variants,
-          # llama-cpp-server, vllm and text-embeddings-inference, which record against
+          # llama-cpp-server, vllm, sglang and text-embeddings-inference, which record against
           # locally-started servers)
           # Manual workflow_dispatch uses input providers (defaults to API providers)
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             PROVIDERS="$INPUT_PROVIDERS"
           else
             # Auto-trigger on PR: only secret-free providers (no secrets exposed to any PR)
-            PROVIDERS="ollama,ollama-reasoning,ollama-systemone,llama-cpp-server,llama-cpp-server-systemone,vllm,text-embeddings-inference"
+            PROVIDERS="ollama,ollama-reasoning,ollama-systemone,llama-cpp-server,llama-cpp-server-systemone,vllm,sglang,sglang-systemone,text-embeddings-inference"
           fi
 
           {
@@ -244,6 +244,10 @@ jobs:
             suite: base-vllm-subset
           - setup: vllm
             suite: vllm-reasoning
+          - setup: sglang
+            suite: sglang
+          - setup: sglang-systemone
+            suite: systemone
           - setup: text-embeddings-inference
             suite: text-embeddings-inference
           - setup: gpt
@@ -280,10 +284,24 @@ jobs:
         env:
           PROVIDERS_TO_RUN: ${{ needs.compute-pr-info.outputs.providers_to_run }}
           CURRENT_PROVIDER: ${{ matrix.provider.setup }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           # Trim whitespace and normalize to comma-separated list
           PROVIDERS=$(echo "$PROVIDERS_TO_RUN" | tr -d ' ')
           CURRENT="$CURRENT_PROVIDER"
+
+          CPU_FEATURE=amx_tile
+
+          if [[ ",$PROVIDERS," == *",$CURRENT,"* && "$CURRENT" == sglang* ]] && ! grep -qw "$CPU_FEATURE" /proc/cpuinfo; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "SGLang recording skipped for $CURRENT: this runner lacks $CPU_FEATURE. Re-run this job to request a supported runner. No recordings were produced." >> "$GITHUB_STEP_SUMMARY"
+            if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+              echo "::error::Failed to record $CURRENT: this runner lacks $CPU_FEATURE. Re-run this job on a supported runner."
+              exit 1
+            fi
+            echo "::warning::Skipping $CURRENT recording because this runner lacks $CPU_FEATURE. Re-run this job to request another runner."
+            exit 0
+          fi
 
           if [[ ",$PROVIDERS," == *",$CURRENT,"* ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -318,7 +336,9 @@ jobs:
 
       - name: Setup test environment
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/setup-test-environment@ba7c01d930156cdaaeff0e2f3f9bb742de500ec0
+        uses: ogx-ai/ogx/.github/actions/setup-test-environment@ee0bb716745751a4b4de822ce79deea45ded6d1b
+        env:
+          SGLANG_MODEL: ${{ matrix.provider.setup == 'sglang-systemone' && 'togethercomputer/Tev1-0.8B-experimental' || 'Qwen/Qwen3-0.6B' }}
         with:
           python-version: "3.12"
           client-version: "latest"
@@ -352,7 +372,7 @@ jobs:
 
       - name: Run and record tests
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@0807a93e8508bb22dcd633de0a993343a6b1b346
+        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@ee0bb716745751a4b4de822ce79deea45ded6d1b
         env:
           OPENAI_API_KEY: ${{ matrix.provider.setup == 'gpt' && secrets.OPENAI_API_KEY || '' }}
           AZURE_API_KEY: ${{ matrix.provider.setup == 'azure' && secrets.AZURE_API_KEY || '' }}
@@ -425,6 +445,10 @@ jobs:
             }
 
             let message = `${COMMENT_MARKER}\n**Recording workflow ${status === 'success' ? 'completed' : 'finished with status: ' + status}**\n\nProviders: ${providers.join(', ')}\n\n`;
+
+            if (providers.some(provider => provider.startsWith('sglang'))) {
+              message += 'SGLang recording uses the AMX backend of the pinned CPU image. Any hardware skips are reported in the job summaries; re-run those jobs to request another runner. Replay tests do not require AMX.\n\n';
+            }
 
             if (process.env.INFER_MODE === 'record') {
               message += '**Forced re-record**: all existing recordings for the selected provider/suite were overwritten.\n\n';

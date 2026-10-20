@@ -177,6 +177,33 @@ By default, the recording directory is `tests/integration/recordings`. You can o
 
 ## Managing Recordings
 
+### SGLang Recordings
+
+SGLang uses Qwen3-0.6B for the `sglang` setup and
+`togethercomputer/Tev1-0.8B-experimental` for `sglang-systemone`. Live recording
+uses the AMX backend of the pinned SGLang CPU image. An AVX-512-only
+runner can pass import but hit an illegal instruction in Qwen3 Q/K norm; Tev1
+also needs the AMX gated RMSNorm path. Automatic PR recording skips unsupported
+runners and
+reports the skip in the job summary; manually dispatched recording fails with a
+message to re-run that job. No recordings are produced in either case. Re-run the
+job to request another runner. Replay uses the saved responses and does not
+require AMX or a running SGLang server.
+
+### Model-List Recordings
+
+`models-*.json` files record provider model-list responses
+(`models-{request_hash}-{model_set_digest}.json`). Replay unions the bodies of
+every digest for a request hash, so stale model catalogs accumulate one digest
+per recording. `scripts/cleanup_recordings.py` prunes them:
+
+- files whose filename hash no longer matches the current hash function are
+  unreachable by any replay lookup, and
+- model-set digests that add no model referenced by the test suites (recording
+  requests + CI stack-config registrations) are redundant, with the
+  guarantee that the kept files per (directory, request hash) still cover
+  every referenced model and that each group keeps at least one file.
+
 ### Viewing Recordings
 
 ```bash
