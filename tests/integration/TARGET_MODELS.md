@@ -22,6 +22,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `responses` | `vertexai` | `responses` only; Responses coverage: 62/131 (47%) |
 | `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/131 (17%) |
 | `base-vllm-subset` | `vllm` | `inference` only |
+| `sglang` | `sglang` | `inference` only |
 | `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 3/131 (2%) |
 | `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/131 (2%) |
 | `messages` | `ollama` | `messages` only |
@@ -38,6 +39,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `systemone` | `typesafe` | server client only; `test_systemone.py` only |
 | `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
 | `systemone` | `llama-cpp-server-systemone` | server client only; `test_systemone.py` only |
+| `systemone` | `sglang-systemone` | server client only; `test_systemone.py` only |
 
 ## CI Lanes (Scheduled)
 
@@ -67,6 +69,8 @@ Cron: `1 0 * * 0`
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
 | `ollama-systemone` | — | — | — | — | `systemone` | — |
 | `ollama-vision` | — | ollama/qwen3-vl:2b | ollama/nomic-embed-text:v1.5 | — | `vision` | — |
+| `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `sglang` | — |
+| `sglang-systemone` | — | — | — | — | `systemone` | — |
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
 | `thegrid` | thegrid/text-standard | — | — | — | `thegrid` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
@@ -82,8 +86,6 @@ Cron: `1 0 * * 0`
 | `databricks` | databricks/databricks-meta-llama-3-3-70b-instruct | — | databricks/databricks-bge-large-en | — | — | — |
 | `groq` | groq/llama-3.3-70b-versatile | — | — | — | — | — |
 | `llama-api` | llama_openai_compat/Llama-3.3-8B-Instruct | — | — | — | — | — |
-| `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | — | — |
-| `sglang-systemone` | — | — | — | — | — | — |
 | `tgi` | tgi/Qwen/Qwen3-0.6B | — | — | — | — | — |
 | `together` | together/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free | — | together/togethercomputer/m2-bert-80M-32k-retrieval | — | — | — |
 
