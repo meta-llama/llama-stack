@@ -60,6 +60,7 @@ from ogx_api import (
     OpenAIResponseCompaction,
     OpenAIResponseError,
     OpenAIResponseInput,
+    OpenAIResponseInputFunctionToolCallOutput,
     OpenAIResponseInputMessageContentFile,
     OpenAIResponseInputMessageContentImage,
     OpenAIResponseInputMessageContentText,
@@ -68,6 +69,7 @@ from ogx_api import (
     OpenAIResponseMessage,
     OpenAIResponseObject,
     OpenAIResponseObjectStream,
+    OpenAIResponseOutputMessageFunctionToolCall,
     OpenAIResponsePrompt,
     OpenAIResponseReasoning,
     OpenAIResponseText,
@@ -375,23 +377,38 @@ class OpenAIResponsesImpl:
         OpenAIResponseUsage | None,
         list[str] | None,
         list[OpenAIResponseInput],
+        list[OpenAIMessageParam] | None,
     ]:
         """Process input with optional previous response context.
 
         Returns:
             tuple: (all_input, messages, tool context, previous usage, inherited skills,
-            history_input). history_input is the resolved history *before* this call's
-            own input is merged in -- used only to decide what auto-compaction may
-            summarize (see _maybe_auto_compact), never for storage. It's deliberately
-            richer than all_input in conversation= mode: all_input there can be just the
-            new turn (to keep per-response storage O(1) instead of duplicating the whole
-            conversation into every response row), but compaction needs the full
-            conversation to have anything meaningful to compact.
+            history_input, messages_for_compaction). history_input is the resolved
+            history *before* this call's own input is merged in -- used only to decide
+            what auto-compaction may summarize (see _maybe_auto_compact), never for
+            storage. It's deliberately richer than all_input in conversation= mode:
+            all_input there can be just the new turn (to keep per-response storage O(1)
+            instead of duplicating the whole conversation into every response row), but
+            compaction needs the full conversation to have anything meaningful to
+            compact.
+
+            messages_for_compaction is set only in conversation= mode once a stored
+            chat-message log exists, and takes priority over history_input for
+            compaction when set. It exists because a conversation's raw item log (what
+            history_input would otherwise be, in this mode) never shrinks after a
+            compaction -- compaction items are deliberately excluded from it (see
+            _sync_response_to_conversation) -- so after the first compaction every
+            later turn would still be over threshold and would re-summarize the entire
+            ever-growing raw history from scratch. The stored chat-message log doesn't
+            have this problem: it already reflects any earlier compaction (it's built
+            from the compacting turn's own post-compaction messages), so compacting from
+            it keeps each compaction's input bounded to what's new since the last one.
         """
         tool_context = ToolContext(tools)
         previous_usage: OpenAIResponseUsage | None = None
         inherited_skills: list[str] | None = None
         history_input: list[OpenAIResponseInput] = []
+        messages_for_compaction: list[OpenAIMessageParam] | None = None
         if previous_response_id:
             previous_response: _OpenAIResponseObjectWithInputAndMessages = (
                 await self.responses_store.get_response_object(previous_response_id)
@@ -444,6 +461,12 @@ class OpenAIResponsesImpl:
                     all_input = conv_items
                 else:
                     all_input = input
+                    # Stored messages already reflect any earlier compaction (they're
+                    # built from the compacting turn's own post-compaction messages),
+                    # unlike full_conversation_items, which keeps every raw item
+                    # forever. Snapshot before extending below with this turn's new
+                    # input -- compaction must only see history *before* this turn.
+                    messages_for_compaction = list(stored_messages)
 
                 messages = stored_messages or []
                 new_messages = await convert_response_input_to_chat_messages(
@@ -454,7 +477,15 @@ class OpenAIResponsesImpl:
             all_input = input
             messages = await convert_response_input_to_chat_messages(all_input, files_api=self.files_api)
 
-        return all_input, messages, tool_context, previous_usage, inherited_skills, history_input
+        return (
+            all_input,
+            messages,
+            tool_context,
+            previous_usage,
+            inherited_skills,
+            history_input,
+            messages_for_compaction,
+        )
 
     @staticmethod
     def _insert_memory_context(messages: list[OpenAIMessageParam], memory_context: str) -> None:
@@ -1341,6 +1372,7 @@ class OpenAIResponsesImpl:
             previous_usage,
             inherited_skills,
             history_input,
+            messages_for_compaction,
         ) = await self._process_input_with_previous_response(
             request.input, request.tools, request.previous_response_id, request.conversation
         )
@@ -1358,7 +1390,12 @@ class OpenAIResponsesImpl:
             else:
                 new_input_items = list(request.input)
 
-            if history_input:
+            if messages_for_compaction is not None:
+                # conversation= mode with a stored message log takes priority -- see
+                # _process_input_with_previous_response's docstring for why history_input
+                # (the raw, ever-growing conversation item log) can't be used here.
+                history_for_compaction = []
+            elif history_input:
                 # previous_response_id / conversation already supplied real history --
                 # the new turn is exactly what the caller submitted this call.
                 history_for_compaction = history_input
@@ -1377,8 +1414,8 @@ class OpenAIResponsesImpl:
                 request.model,
                 request.context_management,
                 instructions=request.instructions,
-                max_output_tokens=request.max_output_tokens,
                 extra_body=extra_body,
+                messages_for_compaction=messages_for_compaction,
             )
             if compaction_item is not None:
                 compacted_history_applied = True
@@ -1491,6 +1528,18 @@ class OpenAIResponsesImpl:
             incremental = bool(request.previous_response_id) and not compacted_history_applied
             if incremental:
                 input_items_for_storage = self._prepare_input_items_for_storage(request.input)
+            elif compacted_history_applied:
+                # The compaction item is already surfaced as this response's own
+                # output[0] (via pending_compaction_item above); storing it a second
+                # time in .input would make the *next* previous_response_id turn's
+                # history (= previous.input + previous.output) contain it twice,
+                # double-counting its tokens and re-summarizing it twice on the next
+                # compaction.
+                assert isinstance(all_input, list)
+                stored_input: list[OpenAIResponseInput] = [
+                    item for item in all_input if not isinstance(item, OpenAIResponseCompaction)
+                ]
+                input_items_for_storage = self._prepare_input_items_for_storage(stored_input)
             else:
                 input_items_for_storage = self._prepare_input_items_for_storage(all_input)
 
@@ -1859,6 +1908,97 @@ class OpenAIResponsesImpl:
         total_chars = sum(len(s) for s in self._extract_text_segments(input))
         return max(1, total_chars // APPROX_CHARS_PER_TOKEN)
 
+    @staticmethod
+    def _extract_text_segments_from_messages(messages: list[OpenAIMessageParam]) -> list[str]:
+        segments: list[str] = []
+        for message in messages:
+            content = getattr(message, "content", None)
+            if isinstance(content, str):
+                segments.append(content)
+            elif isinstance(content, list):
+                for part in content:
+                    text = getattr(part, "text", None)
+                    if text:
+                        segments.append(text)
+            for tool_call in getattr(message, "tool_calls", None) or []:
+                arguments = getattr(tool_call.function, "arguments", None)
+                if arguments:
+                    segments.append(arguments)
+        return segments
+
+    def _count_message_tokens(
+        self, messages: list[OpenAIMessageParam], model: str = "", extra_body: dict | None = None
+    ) -> int:
+        """Same estimation strategy as _count_tokens, for already-converted chat
+        messages instead of OpenAIResponseInput items (used by conversation= mode's
+        compaction, which compacts from the stored message log -- see
+        _process_input_with_previous_response's messages_for_compaction docstring).
+        """
+        segments = self._extract_text_segments_from_messages(messages)
+        encoding = self._resolve_encoding(model, extra_body)
+        if encoding is not None:
+            return sum(len(encoding.encode(s)) for s in segments)
+        return max(1, sum(len(s) for s in segments) // APPROX_CHARS_PER_TOKEN)
+
+    @staticmethod
+    def _split_open_tool_calls(
+        history: list[OpenAIResponseInput], new_input: list[OpenAIResponseInput]
+    ) -> tuple[list[OpenAIResponseInput], list[OpenAIResponseInput]]:
+        """Pull function_call items out of history whose matching function_call_output
+        is arriving right now in new_input, so they survive compaction instead of being
+        silently dropped.
+
+        _build_compaction's "keep every user message verbatim" rule only preserves
+        OpenAIResponseMessage items -- a function_call in history that's about to be
+        answered by new_input would otherwise be summarized away, leaving the
+        function_call_output with no corresponding function_call anywhere in the final
+        input and making convert_response_input_to_chat_messages raise. Returns
+        (compactable_history, open_calls); open_calls must be re-inserted into the
+        final input, after the compaction item and before new_input.
+        """
+        pending_call_ids = {
+            item.call_id for item in new_input if isinstance(item, OpenAIResponseInputFunctionToolCallOutput)
+        }
+        if not pending_call_ids:
+            return history, []
+        compactable_history: list[OpenAIResponseInput] = []
+        open_calls: list[OpenAIResponseInput] = []
+        for item in history:
+            if isinstance(item, OpenAIResponseOutputMessageFunctionToolCall) and item.call_id in pending_call_ids:
+                open_calls.append(item)
+            else:
+                compactable_history.append(item)
+        return compactable_history, open_calls
+
+    @staticmethod
+    def _open_calls_from_messages(
+        messages: list[OpenAIMessageParam], new_input: list[OpenAIResponseInput]
+    ) -> list[OpenAIResponseInput]:
+        """Same as _split_open_tool_calls, but reconstructs the function_call items
+        from chat-message tool_calls instead of OpenAIResponseInput items -- for
+        conversation= mode's compaction, which only has the stored message log, not
+        the original items (see messages_for_compaction).
+        """
+        pending_call_ids = {
+            item.call_id for item in new_input if isinstance(item, OpenAIResponseInputFunctionToolCallOutput)
+        }
+        if not pending_call_ids:
+            return []
+        open_calls: list[OpenAIResponseInput] = []
+        seen: set[str] = set()
+        for message in messages:
+            for tool_call in getattr(message, "tool_calls", None) or []:
+                if tool_call.id in pending_call_ids and tool_call.id not in seen:
+                    seen.add(tool_call.id)
+                    open_calls.append(
+                        OpenAIResponseOutputMessageFunctionToolCall(
+                            call_id=tool_call.id,
+                            name=tool_call.function.name,
+                            arguments=tool_call.function.arguments,
+                        )
+                    )
+        return open_calls
+
     async def _maybe_auto_compact(
         self,
         history: list[OpenAIResponseInput],
@@ -1866,8 +2006,8 @@ class OpenAIResponsesImpl:
         model: str,
         context_management: list,
         instructions: str | None = None,
-        max_output_tokens: int | None = None,
         extra_body: dict | None = None,
+        messages_for_compaction: list[OpenAIMessageParam] | None = None,
     ) -> tuple[list[OpenAIResponseInput], OpenAIResponseCompaction | None, OpenAIChatCompletionUsage | None]:
         """Auto-compact history if its token count (together with new_input) exceeds
         compact_threshold.
@@ -1879,8 +2019,12 @@ class OpenAIResponsesImpl:
         chat_usage): effective_input is history+new_input unchanged when nothing was
         compacted (compaction_item is then None), or
         compacted_history_output_items+new_input when it was.
+
+        messages_for_compaction, when given, is compacted from instead of history (see
+        _process_input_with_previous_response's docstring) -- history is then expected
+        to be empty, and only used as the source for the open-tool-call carryover.
         """
-        if not history:
+        if not history and not messages_for_compaction:
             return history + new_input, None, None
 
         for entry in context_management:
@@ -1899,15 +2043,27 @@ class OpenAIResponsesImpl:
             # Always count the current effective context (history + the new turn being
             # added right now), not a previous turn's stale usage -- the new turn is
             # exactly what might push this over threshold.
-            token_count = self._count_tokens(history + new_input, model=model, extra_body=extra_body)
+            if messages_for_compaction is not None:
+                token_count = self._count_message_tokens(
+                    messages_for_compaction, model=model, extra_body=extra_body
+                ) + self._count_tokens(new_input, model=model, extra_body=extra_body)
+            else:
+                token_count = self._count_tokens(history + new_input, model=model, extra_body=extra_body)
             if token_count > threshold:
                 logger.debug("Auto-compacting", token_count=token_count, threshold=threshold)
+                compactable_history, open_calls = self._split_open_tool_calls(history, new_input)
+                if messages_for_compaction is not None:
+                    open_calls = open_calls + self._open_calls_from_messages(messages_for_compaction, new_input)
                 result = await self._build_compaction(
                     model,
-                    history,
+                    compactable_history,
                     instructions=instructions,
                     extra_body=extra_body,
-                    max_output_tokens=max_output_tokens,
+                    # The summary is internal housekeeping, not part of the answer the
+                    # caller asked for -- it must have its own cap, never the answer's
+                    # own max_output_tokens (see CompactionConfig.summary_max_output_tokens).
+                    max_output_tokens=self.compaction_config.summary_max_output_tokens,
+                    messages_override=messages_for_compaction,
                 )
                 if result is None:
                     logger.warning(
@@ -1916,7 +2072,7 @@ class OpenAIResponsesImpl:
                         threshold=threshold,
                     )
                     return history + new_input, None, None
-                return result.output_items + new_input, result.compaction_item, result.chat_usage
+                return result.output_items + open_calls + new_input, result.compaction_item, result.chat_usage
 
         return history + new_input, None, None
 

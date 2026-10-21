@@ -756,7 +756,11 @@ async def test_store_response_uses_incremental_input_with_previous_response(
 async def test_store_response_disables_incremental_input_when_auto_compaction_applies(
     openai_responses_impl, mock_responses_store, mock_inference_api
 ):
-    """When auto-compaction rewrites history, storage must persist the effective compacted input snapshot."""
+    """When auto-compaction rewrites history, storage must persist the effective compacted input snapshot,
+    minus the compaction item itself: it's already surfaced as this response's own output[0], and storing
+    it a second time in .input would make the next previous_response_id turn's history
+    (previous.input + previous.output) contain it twice (see TestCompactionItemNotDuplicatedInNextHistory
+    in test_auto_compaction.py)."""
 
     previous_response = _OpenAIResponseObjectWithInputAndMessages(
         id="resp-previous-123",
@@ -815,11 +819,10 @@ async def test_store_response_disables_incremental_input_when_auto_compaction_ap
     stored_input = store_call_args.kwargs["input"]
 
     assert store_call_args.kwargs["incremental_input"] is False
-    assert len(stored_input) == 2
-    assert isinstance(stored_input[0], OpenAIResponseCompaction)
-    assert stored_input[0].encrypted_content == "Compacted context summary"
-    assert isinstance(stored_input[1], OpenAIResponseMessage)
-    assert stored_input[1].content[0].text == "Now what is 3+3?"
+    assert len(stored_input) == 1
+    assert not any(isinstance(item, OpenAIResponseCompaction) for item in stored_input)
+    assert isinstance(stored_input[0], OpenAIResponseMessage)
+    assert stored_input[0].content[0].text == "Now what is 3+3?"
 
 
 @pytest.mark.parametrize(
