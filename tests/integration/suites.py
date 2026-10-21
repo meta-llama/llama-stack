@@ -96,6 +96,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "vllm-systemone": Setup(
+        name="vllm",
+        description=(
+            "vLLM server serving the Tev1-0.8B-experimental decision model on its structured "
+            "decisions API (/v1/systemone), via vLLM's CPU next-token read strategy. Small "
+            "enough for the CI-pinned CPU wheel, unlike SGLang's 9B clef-flash."
+        ),
+        env={
+            "VLLM_URL": "http://localhost:8000/v1",
+        },
+        defaults={
+            "judge_model": "vllm/togethercomputer/Tev1-0.8B-experimental",
+        },
+    ),
     "sglang": Setup(
         name="sglang",
         description=(
