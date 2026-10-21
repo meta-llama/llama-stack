@@ -130,15 +130,8 @@ class _BackgroundWorkItem:
 
 @dataclass
 class _CompactionResult:
-    """Pure result of summarizing a block of history, with no storage side effects.
-
-    output_items is the compacted representation (verbatim user messages from the
-    compacted range, followed by the compaction item) -- the same shape
-    compact_openai_response has always returned, just produced without storing a
-    response object. usage is Responses-shaped for callers that surface it directly
-    (the manual /v1/responses/compact endpoint); chat_usage is the raw
-    OpenAIChatCompletionUsage from the summarization call, for callers that need to
-    fold it into a StreamingResponseOrchestrator's own usage accumulator.
+    """Pure result of summarizing a block of history: no storage side effects, and no
+    assumptions about what the caller does with it (see _build_compaction).
     """
 
     output_items: list[OpenAIResponseInput]
@@ -381,28 +374,9 @@ class OpenAIResponsesImpl:
     ]:
         """Process input with optional previous response context.
 
-        Returns:
-            tuple: (all_input, messages, tool context, previous usage, inherited skills,
-            history_input, messages_for_compaction). history_input is the resolved
-            history *before* this call's own input is merged in -- used only to decide
-            what auto-compaction may summarize (see _maybe_auto_compact), never for
-            storage. It's deliberately richer than all_input in conversation= mode:
-            all_input there can be just the new turn (to keep per-response storage O(1)
-            instead of duplicating the whole conversation into every response row), but
-            compaction needs the full conversation to have anything meaningful to
-            compact.
-
-            messages_for_compaction is set only in conversation= mode once a stored
-            chat-message log exists, and takes priority over history_input for
-            compaction when set. It exists because a conversation's raw item log (what
-            history_input would otherwise be, in this mode) never shrinks after a
-            compaction -- compaction items are deliberately excluded from it (see
-            _sync_response_to_conversation) -- so after the first compaction every
-            later turn would still be over threshold and would re-summarize the entire
-            ever-growing raw history from scratch. The stored chat-message log doesn't
-            have this problem: it already reflects any earlier compaction (it's built
-            from the compacting turn's own post-compaction messages), so compacting from
-            it keeps each compaction's input bounded to what's new since the last one.
+        Returns (all_input, messages, tool context, previous usage, inherited skills,
+        history_input, messages_for_compaction) -- the last two exist only to feed
+        auto-compaction's decision of what to summarize; see _maybe_auto_compact.
         """
         tool_context = ToolContext(tools)
         previous_usage: OpenAIResponseUsage | None = None
@@ -437,18 +411,33 @@ class OpenAIResponsesImpl:
 
             tool_context.recover_tools_from_previous_response(previous_response)
         elif conversation is not None:
-            full_conversation_items = await self._fetch_full_conversation_items(conversation)
-            history_input = full_conversation_items
-
-            # Use stored messages as source of truth (like previous_response.messages)
+            # Use stored messages as source of truth (like previous_response.messages).
+            # Checked first and, in the common case (every turn after the conversation's
+            # first), checked alone: once a stored message log exists it's never the
+            # first turn, and that log is also what compaction uses (messages_for_compaction
+            # below), so there's nothing left for the conversation's raw item log to tell
+            # us -- fetching it in that case would cost a full, possibly multi-page
+            # pagination for no reason on every single turn.
             stored_messages = await self.responses_store.get_conversation_messages(conversation)
-
             all_input = input
-            if not full_conversation_items:
-                # First turn - just convert the new input
-                messages = await convert_response_input_to_chat_messages(input, files_api=self.files_api)
+            if stored_messages:
+                messages_for_compaction = list(stored_messages)
+                messages = stored_messages or []
+                new_messages = await convert_response_input_to_chat_messages(
+                    all_input, previous_messages=messages, files_api=self.files_api
+                )
+                messages.extend(new_messages)
             else:
-                if not stored_messages:
+                # No stored message log -- either this is the conversation's first turn
+                # (nothing stored yet) or a degraded case (e.g. a response stored before
+                # the messages cache existed). Either way, the raw item log is needed:
+                # to tell the two apart, and, if not the first turn, to reconstruct the
+                # chat history from scratch.
+                full_conversation_items = await self._fetch_full_conversation_items(conversation)
+                history_input = full_conversation_items
+                if not full_conversation_items:
+                    messages = await convert_response_input_to_chat_messages(input, files_api=self.files_api)
+                else:
                     conv_items: list[OpenAIResponseInput] = list(full_conversation_items)
                     if isinstance(input, str):
                         conv_items.append(
@@ -459,20 +448,7 @@ class OpenAIResponsesImpl:
                     else:
                         conv_items.extend(input)
                     all_input = conv_items
-                else:
-                    all_input = input
-                    # Stored messages already reflect any earlier compaction (they're
-                    # built from the compacting turn's own post-compaction messages),
-                    # unlike full_conversation_items, which keeps every raw item
-                    # forever. Snapshot before extending below with this turn's new
-                    # input -- compaction must only see history *before* this turn.
-                    messages_for_compaction = list(stored_messages)
-
-                messages = stored_messages or []
-                new_messages = await convert_response_input_to_chat_messages(
-                    all_input, previous_messages=messages, files_api=self.files_api
-                )
-                messages.extend(new_messages)
+                    messages = await convert_response_input_to_chat_messages(all_input, files_api=self.files_api)
         else:
             all_input = input
             messages = await convert_response_input_to_chat_messages(all_input, files_api=self.files_api)
@@ -1606,21 +1582,14 @@ class OpenAIResponsesImpl:
         max_output_tokens: int | None = None,
         messages_override: list[OpenAIMessageParam] | None = None,
     ) -> _CompactionResult | None:
-        """Summarize items_to_compact into a compaction item. No storage side effects --
-        callers decide whether/how to persist the result (see compact_openai_response for
-        the storing manual endpoint, and _maybe_auto_compact for the non-storing automatic
-        path).
+        """Summarize items_to_compact into a compaction item, with no storage side
+        effects -- callers decide whether/how to persist the result.
 
-        messages_override lets a caller that already has the full chat-message history
-        available (e.g. compact_openai_response's previous_response.messages, which is
-        complete even when previous_response.input only holds the latest turn in
-        conversation= mode) skip re-deriving messages from items_to_compact.
-
-        Returns None if the summarization call produces an empty summary -- e.g. a
-        reasoning model that hits max_output_tokens while still thinking, leaving
-        choice.message.content null. Returning None rather than a hollow result lets
-        every caller decide for itself whether that's an error or something to silently
-        fall back from, instead of baking one answer in here.
+        messages_override, when given, is used in place of messages derived from
+        items_to_compact (e.g. a caller that already has the full chat-message history
+        on hand). Returns None, rather than a hollow result, if the summarization call
+        produces an empty summary, so each caller can decide for itself whether that's
+        an error or something to fall back from.
         """
         if messages_override is not None:
             messages = messages_override
@@ -1653,12 +1622,24 @@ class OpenAIResponsesImpl:
 
         # Extract summary text from the completion
         summary_text = ""
+        choice = None
         if hasattr(completion, "choices") and completion.choices:
             choice = completion.choices[0]
             if choice.message and choice.message.content:
                 summary_text = choice.message.content
         if not summary_text.strip():
             return None
+        if choice is not None and choice.finish_reason == "length":
+            # Truncated mid-thought by max_output_tokens (the summary's own cap --
+            # see CompactionConfig.summary_max_output_tokens -- not the triggering
+            # response's). Unlike an empty summary, a truncated-but-nonempty one is
+            # still usable and is kept rather than failed/discarded, but it may be
+            # missing context the model needed, so this is worth surfacing to admins
+            # tuning that cap.
+            logger.warning(
+                "Compaction summary was truncated by its own output token cap",
+                model=summarization_model,
+            )
 
         # Extract user messages from input (matching OpenAI behavior: all user messages verbatim)
         output_items: list[OpenAIResponseInput] = []
@@ -1729,6 +1710,7 @@ class OpenAIResponsesImpl:
         previous_response_id: str | None = None,
         prompt_cache_key: str | None = None,
         extra_body: dict | None = None,
+        max_output_tokens: int | None = None,
     ) -> OpenAICompactedResponse:
         # Resolve input from previous_response_id or direct input
         resolved_messages = None
@@ -1772,12 +1754,6 @@ class OpenAIResponsesImpl:
                 )
                 messages_override.extend(new_messages)
 
-        # extra_body is also where an out-of-band max_output_tokens arrives for this
-        # endpoint (CompactResponseRequest has no typed field for it, but allows extra
-        # keys -- see impl.py's compact_openai_response wrapper).
-        extra_body = dict(extra_body) if extra_body else {}
-        max_output_tokens = extra_body.pop("max_output_tokens", None)
-
         result = await self._build_compaction(
             model,
             all_input,
@@ -1788,7 +1764,10 @@ class OpenAIResponsesImpl:
             messages_override=messages_override,
         )
         if result is None:
-            raise ValueError("Failed to compact response: summarization produced an empty summary")
+            # Not the client's fault -- the request was well-formed, the summarization
+            # model just returned nothing (ValueError maps to 400 BAD_REQUEST via
+            # core/exceptions/mapping.py; InternalServerError maps to 500).
+            raise InternalServerError("Failed to compact response: summarization produced an empty summary")
 
         # _build_compaction already raised if both are unset.
         effective_model = model or self.compaction_config.summarization_model
@@ -2020,9 +1999,15 @@ class OpenAIResponsesImpl:
         compacted (compaction_item is then None), or
         compacted_history_output_items+new_input when it was.
 
-        messages_for_compaction, when given, is compacted from instead of history (see
-        _process_input_with_previous_response's docstring) -- history is then expected
-        to be empty, and only used as the source for the open-tool-call carryover.
+        messages_for_compaction, when given, is compacted from instead of history --
+        history is then expected to be empty, and only used as the source for the
+        open-tool-call carryover. It's set only in conversation= mode once a stored
+        chat-message log exists, because that mode's raw item log never shrinks after
+        a compaction (compaction items are deliberately excluded from it), so using it
+        here would re-summarize the entire, ever-growing raw history every turn after
+        the first compaction. The stored message log doesn't have that problem: it
+        already reflects any earlier compaction, so compacting from it keeps each
+        compaction's input bounded to what's new since the last one.
         """
         if not history and not messages_for_compaction:
             return history + new_input, None, None
