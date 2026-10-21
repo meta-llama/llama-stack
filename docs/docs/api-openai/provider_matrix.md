@@ -19,13 +19,13 @@ inference provider, based on integration test results.
 
 | Provider | Tested | Passing | Failing | Coverage |
 |----------|--------|---------|---------|----------|
-| azure | 112 | 112 | 0 | 81% |
-| bedrock | 27 | 27 | 0 | 20% |
+| azure | 111 | 111 | 0 | 85% |
+| bedrock | 22 | 22 | 0 | 17% |
 | ollama | 3 | 3 | 0 | 2% |
-| openai | 138 | 138 | 0 | 100% |
-| vertexai | 70 | 70 | 0 | 51% |
-| vllm | 8 | 8 | 0 | 6% |
-| watsonx | 62 | 62 | 0 | 45% |
+| openai | 128 | 128 | 0 | 98% |
+| vertexai | 62 | 62 | 0 | 47% |
+| vllm | 3 | 3 | 0 | 2% |
+| watsonx | 48 | 48 | 0 | 37% |
 
 ## Provider Details
 
@@ -37,7 +37,7 @@ Models, endpoints, and versions used during test recordings.
 | bedrock | openai.gpt-oss-20b-1:0 | bedrock-runtime.us-west-2.amazonaws.com | openai sdk: 2.30.0 |
 | ollama | deepseek-r1:1.5b | — | openai sdk: 2.43.0 |
 | openai | gpt-4o, o4-mini, text-embedding-3-small | api.openai.com | openai sdk: 2.43.0 |
-| vertexai | publishers/google/models/gemini-2.0-flash | — | openai sdk: 2.5.0, provider: vertexai |
+| vertexai | publishers/google/models/gemini-2.0-flash | — | provider: vertexai |
 | vllm | Qwen/Qwen3-0.6B | — | openai sdk: 2.5.0, vllm server: 0.17.2rc1.dev79+g5ce2d10e4 |
 | watsonx | meta-llama/llama-3-3-70b-instruct | us-south.ml.cloud.ibm.com | openai sdk: 2.5.0 |
 
@@ -45,11 +45,10 @@ Models, endpoints, and versions used during test recordings.
 
 | Feature | azure | bedrock | ollama | openai | vertexai | vllm | watsonx |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| extra body guided choice | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
-| include logprobs non streaming | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
-| include logprobs streaming | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
-| include logprobs with function tools | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
-| include logprobs with web search | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
+| include logprobs non streaming | ✅ | ✅ | — | ✅ | ⏭️ | — | ⏭️ |
+| include logprobs streaming | ✅ | ✅ | — | ✅ | ⏭️ | — | ⏭️ |
+| include logprobs with function tools | ✅ | ✅ | — | ✅ | ⏭️ | — | ⏭️ |
+| include logprobs with web search | ✅ | ⏭️ | — | ✅ | ⏭️ | — | ⏭️ |
 | non streaming basic | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
 | non streaming image | ✅ | ⏭️ | — | ✅ | ⏭️ | — | ⏭️ |
 | non streaming multi turn | ✅ | ✅ | — | ✅ | ✅ | — | ✅ |
@@ -70,8 +69,8 @@ Models, endpoints, and versions used during test recordings.
 | compact single message | ✅ | — | — | ✅ | ✅ | — | — |
 | compact with previous response id | ✅ | — | — | ✅ | ✅ | — | — |
 | compact with tool calls dropped | ✅ | — | — | ✅ | ✅ | — | — |
-| context management auto compacts large input | ✅ | — | — | ✅ | ✅ | — | — |
-| context management no compact below threshold | ✅ | — | — | ✅ | ✅ | — | — |
+| context management auto compacts large input | ✅ | — | — | ✅ | ⏭️ | — | — |
+| context management no compact below threshold | ✅ | — | — | ✅ | ⏭️ | — | — |
 | context management none does not compact | ✅ | — | — | ✅ | ✅ | — | — |
 
 ## Conversation Responses
@@ -100,9 +99,8 @@ Models, endpoints, and versions used during test recordings.
 
 | Feature | azure | bedrock | ollama | openai | vertexai | vllm | watsonx |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| mcp authorization backward compatibility | ✅ | ✅ | — | ✅ | — | — | ⏭️ |
-| mcp authorization bearer | ✅ | ✅ | — | ✅ | — | — | ⏭️ |
-| mcp authorization error when header provided | ⏭️ | ⏭️ | — | ✅ | — | — | ✅ |
+| mcp authorization backward compatibility | ✅ | ✅ | — | ✅ | — | — | — |
+| mcp authorization bearer | ✅ | ✅ | — | ✅ | — | — | — |
 
 ## Openai Responses
 
@@ -167,14 +165,9 @@ Models, endpoints, and versions used during test recordings.
 
 | Feature | azure | bedrock | ollama | openai | vertexai | vllm | watsonx |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| reasoning basic streaming | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| reasoning multi turn passthrough | ⏭️ | ✅ | ✅ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning no summary without request | ⏭️ | ⏭️ | ⏭️ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning non streaming | ⏭️ | ✅ | ✅ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning summary event ordering | ⏭️ | ⏭️ | ⏭️ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning summary non streaming | ⏭️ | ⏭️ | ⏭️ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning summary streaming | ⏭️ | ⏭️ | ⏭️ | ✅ | ⏭️ | ✅ | ✅ |
-| reasoning summary usage included | ⏭️ | ⏭️ | ⏭️ | ✅ | ⏭️ | ✅ | ✅ |
+| reasoning basic streaming | ✅ | — | ✅ | — | — | ✅ | — |
+| reasoning multi turn passthrough | ⏭️ | — | ✅ | — | — | ✅ | — |
+| reasoning non streaming | ⏭️ | — | ✅ | — | — | ✅ | — |
 
 ## Responses Access Control
 
