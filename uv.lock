@@ -42,7 +42,7 @@ constraints = [
     { name = "msgpack", specifier = ">=1.2.1" },
     { name = "multidict", specifier = ">=6.9.1" },
     { name = "oauthlib", specifier = ">=4.0.0" },
-    { name = "pillow", specifier = ">=12.3.0" },
+    { name = "pillow", specifier = ">=13.0.0" },
     { name = "protobuf", specifier = ">=5.29.6" },
     { name = "pyasn1", specifier = ">=0.6.4" },
     { name = "pydantic-settings", specifier = ">=2.14.2" },
