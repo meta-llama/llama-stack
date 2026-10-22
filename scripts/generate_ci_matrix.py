@@ -34,7 +34,7 @@ PROVIDER_PATH_TO_SETUPS: list[tuple[str, list[str]]] = [
     ("src/ogx/providers/remote/inference/openai/", ["gpt", "gpt-reasoning"]),
     ("src/ogx/providers/remote/inference/azure/", ["azure"]),
     ("src/ogx/providers/remote/inference/bedrock/", ["bedrock"]),
-    ("src/ogx/providers/remote/inference/vllm/", ["vllm"]),
+    ("src/ogx/providers/remote/inference/vllm/", ["vllm", "vllm-systemone"]),
     ("src/ogx/providers/remote/inference/sglang/", ["sglang", "sglang-systemone"]),
     ("src/ogx/providers/remote/inference/watsonx/", ["watsonx"]),
     ("src/ogx/providers/remote/inference/vertexai/", ["vertexai"]),

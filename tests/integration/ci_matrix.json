@@ -28,7 +28,8 @@
     {"suite": "systemone", "setup": "typesafe", "allowed_clients": ["server"]},
     {"suite": "systemone", "setup": "ollama-systemone", "allowed_clients": ["server"]},
     {"suite": "systemone", "setup": "llama-cpp-server-systemone", "allowed_clients": ["server"]},
-    {"suite": "systemone", "setup": "sglang-systemone", "allowed_clients": ["server"]}
+    {"suite": "systemone", "setup": "sglang-systemone", "allowed_clients": ["server"]},
+    {"suite": "systemone", "setup": "vllm-systemone", "allowed_clients": ["server"]}
   ],
   "schedules": {
     "1 0 * * 0": [

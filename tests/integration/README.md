@@ -190,6 +190,15 @@ message to re-run that job. No recordings are produced in either case. Re-run th
 job to request another runner. Replay uses the saved responses and does not
 require AMX or a running SGLang server.
 
+### vLLM SystemOne Recordings
+
+The `vllm` setup uses Qwen/Qwen3-0.6B, and `vllm-systemone` uses
+`togethercomputer/Tev1-0.8B-experimental`, served natively (no container) by
+the pinned vLLM 0.32.0 CPU wheel against vLLM's structured decisions API
+(`/v1/systemone`). Both checkpoints are pinned to immutable HuggingFace
+commits, and every file is sha256-verified before use. Replay uses the saved
+responses and does not require a running vLLM server.
+
 ### Model-List Recordings
 
 `models-*.json` files record provider model-list responses
