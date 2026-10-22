@@ -954,7 +954,8 @@ class OpenAIResponsesImpl:
                 raise InvalidParameterError(
                     "tools",
                     "web_search",
-                    "Failed to find a registered web_search tool. Register a web search tool_runtime provider or remove web_search from tools.",
+                    "Web search is not enabled on this server, so the web_search tool cannot be used. "
+                    "Remove web_search from your request, or use a server with web search enabled.",
                 ) from exc
 
         if request.guardrails and not self.moderation_endpoint:
