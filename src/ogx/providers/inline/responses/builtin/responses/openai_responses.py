@@ -86,6 +86,7 @@ from ogx_api import (
     ToolGroups,
     ToolRuntime,
     VectorIO,
+    WebSearchToolTypes,
 )
 from ogx_api.inference import OpenAIChatCompletionRequestWithExtraBody, ServiceTier
 
@@ -944,6 +945,17 @@ class OpenAIResponsesImpl:
                                 key,
                                 "Authorization credentials must be passed via the 'authorization' parameter, not 'headers'.",
                             )
+
+        # Resolve the web search tool here so a missing provider is a 400 before any stream starts.
+        if request.tools and any(tool.type in WebSearchToolTypes for tool in request.tools):
+            try:
+                await self.tool_groups_api.get_tool("web_search")
+            except ValueError as exc:
+                raise InvalidParameterError(
+                    "tools",
+                    "web_search",
+                    "Failed to find a registered web_search tool. Register a web search tool_runtime provider or remove web_search from tools.",
+                ) from exc
 
         if request.guardrails and not self.moderation_endpoint:
             raise ServiceNotEnabledError(
