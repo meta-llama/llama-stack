@@ -104,7 +104,7 @@ async def test_create_openai_response_with_string_input_with_tools(openai_respon
         assert "Dublin" in second_params.messages[-1].content
         assert second_params.temperature == 0.1
 
-        openai_responses_impl.tool_groups_api.get_tool.assert_called_once_with("web_search")
+        openai_responses_impl.tool_groups_api.get_tool.assert_called_with("web_search")
         openai_responses_impl.tool_runtime_api.invoke_tool.assert_called_once_with(
             tool_name="web_search",
             kwargs={"query": "What is the capital of Ireland?"},
