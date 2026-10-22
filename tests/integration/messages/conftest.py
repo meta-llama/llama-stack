@@ -34,6 +34,18 @@ def messages_base_url(ogx_client):
     return ogx_client.base_url
 
 
+@pytest.fixture(scope="session")
+def mock_sentinel():
+    """The fixed reply of the mock model backend, or None when the selected setup uses a real model."""
+    from tests.integration.suites import SETUP_DEFINITIONS
+
+    setup_obj = SETUP_DEFINITIONS.get(os.environ.get("OGX_TEST_SETUP", ""))
+    if setup_obj is None:
+        return None
+    sentinel = setup_obj.defaults.get("sentinel")
+    return str(sentinel) if sentinel else None
+
+
 # Single timeout for every messages request in this suite. Mirrors
 # AnthropicMixin.anthropic_messages_timeout (300s, the provider's own upstream
 # timeout unless network.timeout is set) so the test client is never the first

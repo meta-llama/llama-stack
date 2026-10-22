@@ -96,6 +96,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "vllm-systemone": Setup(
+        name="vllm",
+        description=(
+            "vLLM server serving the Tev1-0.8B-experimental decision model on its structured "
+            "decisions API (/v1/systemone), via vLLM's CPU next-token read strategy. Small "
+            "enough for the CI-pinned CPU wheel, unlike SGLang's 9B clef-flash."
+        ),
+        env={
+            "VLLM_URL": "http://localhost:8000/v1",
+        },
+        defaults={
+            "judge_model": "vllm/togethercomputer/Tev1-0.8B-experimental",
+        },
+    ),
     "sglang": Setup(
         name="sglang",
         description=(
@@ -305,6 +319,26 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
         description="Groq models",
         defaults={
             "text_model": "groq/llama-3.3-70b-versatile",
+        },
+    ),
+    "mock": Setup(
+        name="mock",
+        description=(
+            "Deterministic in-repo mock model backend (scripts/mock_backend.py) standing in "
+            "for a text model and an embedding model behind the llama-cpp-server provider. "
+            "scripts/integration-tests.sh starts the backend on the setup's port when this "
+            "setup is selected. Every chat completion replies with the fixed 'sentinel' "
+            "default, which tests assert on to prove a round-trip; keep it in sync with "
+            "scripts/mock_backend.py."
+        ),
+        env={
+            "LLAMA_CPP_SERVER_URL": "http://127.0.0.1:8090/v1",
+        },
+        defaults={
+            "text_model": "llama-cpp-server/Llama-3.1-8B-Instruct",
+            "embedding_model": "llama-cpp-server/text-embedding-3-small",
+            "embedding_dimension": 1536,
+            "sentinel": "OGX-E2E-SENTINEL-42",
         },
     ),
     "llama-cpp-server": Setup(

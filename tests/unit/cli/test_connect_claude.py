@@ -284,6 +284,20 @@ class TestEnvironment:
         env = connect_claude._build_env("http://localhost:8321", {})
         assert env["MY_CUSTOM_VAR"] == "hello"
 
+    def test_build_env_defaults_max_thinking_tokens_off(
+        self, connect_claude: ConnectClaude, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.delenv("MAX_THINKING_TOKENS", raising=False)
+        env = connect_claude._build_env("http://localhost:8321", {})
+        assert env["MAX_THINKING_TOKENS"] == "0"
+
+    def test_build_env_keeps_user_max_thinking_tokens(
+        self, connect_claude: ConnectClaude, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("MAX_THINKING_TOKENS", "4096")
+        env = connect_claude._build_env("http://localhost:8321", {})
+        assert env["MAX_THINKING_TOKENS"] == "4096"
+
 
 class TestPrintEnv:
     def test_prints_export_statements(self, connect_claude: ConnectClaude, capsys: pytest.CaptureFixture[str]) -> None:
