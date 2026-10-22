@@ -117,6 +117,7 @@ class ConnectClaude(Subcommand):
                 "ANTHROPIC_DEFAULT_HAIKU_MODEL",
                 "ANTHROPIC_DEFAULT_SONNET_MODEL",
                 "ANTHROPIC_DEFAULT_OPUS_MODEL",
+                "MAX_THINKING_TOKENS",
             ]:
                 if key in env:
                     print(f"export {key}={env[key]}")
@@ -198,6 +199,11 @@ class ConnectClaude(Subcommand):
         env = {**os.environ}
         env["ANTHROPIC_BASE_URL"] = base_url.removesuffix("/v1")
         env["ANTHROPIC_AUTH_TOKEN"] = "ogx"  # noqa: S105 — placeholder, not a real secret
+        if "MAX_THINKING_TOKENS" not in env:
+            # Claude Code requests extended thinking by default, which
+            # non-Anthropic backends cannot yet translate. Default it off until
+            # the providers implement that.
+            env["MAX_THINKING_TOKENS"] = "0"
         env.update(model_mapping)
         for key in _VARS_TO_UNSET:
             env.pop(key, None)

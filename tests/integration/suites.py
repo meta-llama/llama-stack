@@ -307,6 +307,26 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "text_model": "groq/llama-3.3-70b-versatile",
         },
     ),
+    "mock": Setup(
+        name="mock",
+        description=(
+            "Deterministic in-repo mock model backend (scripts/mock_backend.py) standing in "
+            "for a text model and an embedding model behind the llama-cpp-server provider. "
+            "scripts/integration-tests.sh starts the backend on the setup's port when this "
+            "setup is selected. Every chat completion replies with the fixed 'sentinel' "
+            "default, which tests assert on to prove a round-trip; keep it in sync with "
+            "scripts/mock_backend.py."
+        ),
+        env={
+            "LLAMA_CPP_SERVER_URL": "http://127.0.0.1:8090/v1",
+        },
+        defaults={
+            "text_model": "llama-cpp-server/Llama-3.1-8B-Instruct",
+            "embedding_model": "llama-cpp-server/text-embedding-3-small",
+            "embedding_dimension": 1536,
+            "sentinel": "OGX-E2E-SENTINEL-42",
+        },
+    ),
     "llama-cpp-server": Setup(
         name="llama-cpp-server",
         description=(
