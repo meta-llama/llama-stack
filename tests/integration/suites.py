@@ -96,6 +96,20 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "embedding_model": "sentence-transformers/nomic-ai/nomic-embed-text-v1.5",
         },
     ),
+    "vllm-systemone": Setup(
+        name="vllm",
+        description=(
+            "vLLM server serving the Tev1-0.8B-experimental decision model on its structured "
+            "decisions API (/v1/systemone), via vLLM's CPU next-token read strategy. Small "
+            "enough for the CI-pinned CPU wheel, unlike SGLang's 9B clef-flash."
+        ),
+        env={
+            "VLLM_URL": "http://localhost:8000/v1",
+        },
+        defaults={
+            "judge_model": "vllm/togethercomputer/Tev1-0.8B-experimental",
+        },
+    ),
     "sglang": Setup(
         name="sglang",
         description=(
@@ -307,6 +321,26 @@ SETUP_DEFINITIONS: dict[str, Setup] = {
             "text_model": "groq/llama-3.3-70b-versatile",
         },
     ),
+    "mock": Setup(
+        name="mock",
+        description=(
+            "Deterministic in-repo mock model backend (scripts/mock_backend.py) standing in "
+            "for a text model and an embedding model behind the llama-cpp-server provider. "
+            "scripts/integration-tests.sh starts the backend on the setup's port when this "
+            "setup is selected. Every chat completion replies with the fixed 'sentinel' "
+            "default, which tests assert on to prove a round-trip; keep it in sync with "
+            "scripts/mock_backend.py."
+        ),
+        env={
+            "LLAMA_CPP_SERVER_URL": "http://127.0.0.1:8090/v1",
+        },
+        defaults={
+            "text_model": "llama-cpp-server/Llama-3.1-8B-Instruct",
+            "embedding_model": "llama-cpp-server/text-embedding-3-small",
+            "embedding_dimension": 1536,
+            "sentinel": "OGX-E2E-SENTINEL-42",
+        },
+    ),
     "llama-cpp-server": Setup(
         name="llama-cpp-server",
         description=(
@@ -384,25 +418,14 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=base_roots,
         default_setup="ollama",
     ),
-    "base-vllm-subset": Suite(
-        name="base-vllm-subset",
+    # Full inference directory against a single self-hosted text backend (vllm, sglang,
+    # llama-cpp-server, or ollama via default_setup). These CI servers serve a text,
+    # embedding, and (for llama-cpp-server) rerank model, but no vision model, so
+    # vision tests skip.
+    "inference": Suite(
+        name="inference",
         roots=["tests/integration/inference"],
-        default_setup="vllm",
-    ),
-    # SGLang backend, scoped like base-vllm-subset (the full inference directory): the
-    # CI server serves one text model, so vision tests skip.
-    "sglang": Suite(
-        name="sglang",
-        roots=["tests/integration/inference"],
-        default_setup="sglang",
-    ),
-    # llama.cpp multi-model router backend (llama-server --models-preset), scoped like
-    # base-vllm-subset (the full inference directory). The router serves a text, an
-    # embedding, and a rerank model, but no vision model, so vision tests skip.
-    "llama-cpp-server": Suite(
-        name="llama-cpp-server",
-        roots=["tests/integration/inference"],
-        default_setup="llama-cpp-server",
+        default_setup="ollama",
     ),
     # Text-Embeddings-Inference backend. TEI only serves embeddings (no chat or
     # completion endpoint), so this suite is scoped to the embeddings tests only.
@@ -453,20 +476,12 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         ],
         default_setup="ollama-reasoning",
     ),
+    # The gpt setup exercises the Anthropic-to-OpenAI translation path, since
+    # OpenAI has no native /v1/messages endpoint.
     "messages": Suite(
         name="messages",
         roots=["tests/integration/messages"],
         default_setup="ollama",
-    ),
-    # Exercises the /v1/messages translation path: Anthropic request format is
-    # translated to OpenAI Chat Completions, dispatched to OpenAI, and the response
-    # is translated back to Anthropic format. OpenAI is not in _NATIVE_MESSAGES_MODULES,
-    # so this setup guarantees the translation codepath in providers/inline/messages/impl.py
-    # is covered end-to-end (rather than the native passthrough used by the ollama suite).
-    "messages-openai": Suite(
-        name="messages-openai",
-        roots=["tests/integration/messages"],
-        default_setup="gpt",
     ),
     "interactions": Suite(
         name="interactions",

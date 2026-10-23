@@ -6,9 +6,9 @@
 
 """Integration tests for the Anthropic Message Batches API.
 
-Covers POST/GET/cancel/results under /v1/messages/batches. Each batch request
-reuses the Anthropic↔OpenAI translation path, so these tests are intended to
-run under the `messages-openai` suite.
+Covers POST/GET/cancel/results under /v1/messages/batches. Under the `messages`
+suite with the `gpt` setup, each batch request exercises the
+Anthropic-to-OpenAI translation path.
 """
 
 import json
