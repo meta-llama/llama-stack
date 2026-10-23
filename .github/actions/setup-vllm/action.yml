@@ -72,6 +72,10 @@ runs:
           get_file chat_template.jinja d78de6bee4c952ca3145eb161921560a6ede7b59a34e7e4be815f3c5386b4364
           get_file model.safetensors-00001-of-00001.safetensors 197de1eb141b93984a15e2def8a840726c5dd1349ea4e1b73b8e53abb9257408
           get_file tokenizer.json 5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42
+          # Tev1 is a Qwen3.5-VL (multimodal) checkpoint; vLLM builds its
+          # Qwen3VLProcessor from these at engine init and crashes without them.
+          get_file preprocessor_config.json 27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516
+          get_file video_preprocessor_config.json 7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13
         else
           # 2. Qwen/Qwen3-0.6B, pinned to an immutable HuggingFace commit. Download if
           #    missing, but always re-verify the on-disk file (catches a corrupt cached copy).
