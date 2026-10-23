@@ -18,6 +18,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `responses` | `azure` | `responses` only; Responses coverage: 111/131 (85%) |
 | `gpt-reasoning` | `gpt-reasoning` | 2 roots; Responses coverage: 128/131 (98%) |
 | `responses` | `watsonx` | `responses` only; Responses coverage: 48/131 (37%) |
+| `thegrid` | `thegrid` | `test_openai_completion.py` only |
 | `responses` | `vertexai` | `responses` only; Responses coverage: 62/131 (47%) |
 | `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/131 (17%) |
 | `base-vllm-subset` | `vllm` | `inference` only |
@@ -71,6 +72,7 @@ Cron: `1 0 * * 0`
 | `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `sglang` | — |
 | `sglang-systemone` | — | — | — | — | `systemone` | — |
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
+| `thegrid` | thegrid/text-standard | — | — | — | `thegrid` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 | `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base-vllm-subset`, `vllm-reasoning`, `messages` | `base` |
