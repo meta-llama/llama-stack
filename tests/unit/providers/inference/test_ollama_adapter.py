@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import httpx2
+import models_dev
 import pytest
 
 from ogx.providers.inline.responses.builtin.responses.types import AssistantMessageWithReasoning
@@ -389,20 +390,26 @@ def test_construct_model_from_identifier_keeps_metadata_of_previously_hardcoded_
 
 
 @pytest.mark.parametrize(
-    "identifier,dimension",
+    "identifier,models_dev_provider,models_dev_id",
     [
-        ("qwen3-embedding:0.6b", 1024),
-        ("qwen3-embedding:4b", 2560),
-        ("qwen3-embedding:8b", 4096),
+        ("qwen3-embedding:0.6b", "digitalocean", "qwen3-embedding-0.6b"),
+        ("qwen3-embedding:4b", "privatemode-ai", "qwen3-embedding-4b"),
+        ("qwen3-embedding:8b", "scaleway", "qwen3-embedding-8b"),
     ],
 )
-def test_construct_model_from_identifier_reads_models_dev_dimension_of_the_size_tag(identifier, dimension):
+def test_construct_model_from_identifier_reads_models_dev_dimension_of_the_size_tag(
+    identifier, models_dev_provider, models_dev_id
+):
+    provider_models = next((p.models for p in models_dev.providers() if p.id == models_dev_provider), {})
+    record = provider_models.get(models_dev_id)
+    assert record is not None, f"models.dev has no {models_dev_id} record under provider {models_dev_provider}"
+
     model = _make_adapter().construct_model_from_identifier(identifier)
 
     assert model.model_type == ModelType.embedding
     assert model.identifier == identifier
     assert model.provider_resource_id == identifier
-    assert model.metadata["embedding_dimension"] == dimension
+    assert model.metadata["embedding_dimension"] == record.limit.output
 
 
 @pytest.mark.parametrize(
