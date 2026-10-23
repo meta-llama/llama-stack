@@ -210,13 +210,7 @@ def _job_notes(
 
     provider = SETUP_PROVIDER_ALIASES.get(job["setup"])
     coverage = responses_summary.get(provider)
-    if coverage and job["suite"] in {
-        "responses",
-        "bedrock-responses",
-        "gpt-reasoning",
-        "vllm-reasoning",
-        "ollama-reasoning",
-    }:
+    if coverage and job["suite"] in {"responses", "bedrock-responses", "reasoning"}:
         notes.append(f"Responses coverage: {coverage['passing']}/{responses_total} ({coverage['coverage_pct']}%)")
 
     return "; ".join(notes)
