@@ -25,7 +25,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 3/131 (2%) |
 | `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/131 (2%) |
 | `messages` | `ollama` | `messages` only |
-| `messages-openai` | `gpt` | `messages` only |
+| `messages` | `gpt` | `messages` only |
 | `messages` | `vllm` | `messages` only |
 | `messages` | `fireworks` | `messages` only |
 | `messages` | `anthropic` | `messages` only |
@@ -58,7 +58,7 @@ Cron: `1 0 * * 0`
 | `deepseek` | deepseek/deepseek-chat | — | — | — | `messages` | — |
 | `fireworks` | fireworks/accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `messages`, `base` | — |
 | `gemini` | gemini/gemini-2.5-flash-lite | — | gemini/text-embedding-004 | — | `interactions` | — |
-| `gpt` | openai/gpt-4o | openai/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses`, `messages-openai` | — |
+| `gpt` | openai/gpt-4o | openai/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses`, `messages` | — |
 | `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `gpt-reasoning` | — |
 | `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `inference` | — |
 | `llama-cpp-server-systemone` | — | — | — | — | `systemone` | — |
