@@ -20,8 +20,8 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `responses` | `watsonx` | `responses` only; Responses coverage: 48/131 (37%) |
 | `responses` | `vertexai` | `responses` only; Responses coverage: 62/131 (47%) |
 | `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/131 (17%) |
-| `base-vllm-subset` | `vllm` | `inference` only |
-| `sglang` | `sglang` | `inference` only |
+| `inference` | `vllm` | `inference` only |
+| `inference` | `sglang` | `inference` only |
 | `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 3/131 (2%) |
 | `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/131 (2%) |
 | `messages` | `ollama` | `messages` only |
@@ -33,7 +33,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `messages` | `deepseek` | `messages` only |
 | `interactions` | `gemini` | `interactions` only |
 | `base` | `fireworks` |  |
-| `llama-cpp-server` | `llama-cpp-server` | `inference` only |
+| `inference` | `llama-cpp-server` | `inference` only |
 | `text-embeddings-inference` | `text-embeddings-inference` | `test_openai_embeddings.py` only |
 | `systemone` | `typesafe` | server client only; `test_systemone.py` only |
 | `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
@@ -60,7 +60,7 @@ Cron: `1 0 * * 0`
 | `gemini` | gemini/gemini-2.5-flash-lite | — | gemini/text-embedding-004 | — | `interactions` | — |
 | `gpt` | openai/gpt-4o | openai/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses`, `messages-openai` | — |
 | `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `gpt-reasoning` | — |
-| `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `llama-cpp-server` | — |
+| `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `inference` | — |
 | `llama-cpp-server-systemone` | — | — | — | — | `systemone` | — |
 | `meta` | meta/muse-spark-1.3-contributor | — | — | — | `messages` | — |
 | `ollama` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base`, `messages` | — |
@@ -68,12 +68,12 @@ Cron: `1 0 * * 0`
 | `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
 | `ollama-systemone` | — | — | — | — | `systemone` | — |
 | `ollama-vision` | — | ollama/qwen3-vl:2b | ollama/nomic-embed-text:v1.5 | — | `vision` | — |
-| `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `sglang` | — |
+| `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference` | — |
 | `sglang-systemone` | — | — | — | — | `systemone` | — |
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
-| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `base-vllm-subset`, `vllm-reasoning`, `messages` | `base` |
+| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `vllm-reasoning`, `messages` | `base` |
 | `watsonx` | watsonx/meta-llama/llama-3-3-70b-instruct | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 
 ## Additional Named Setups
