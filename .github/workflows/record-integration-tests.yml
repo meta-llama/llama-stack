@@ -231,7 +231,7 @@ jobs:
           - setup: ollama-vision
             suite: vision
           - setup: ollama-reasoning
-            suite: ollama-reasoning
+            suite: reasoning
           - setup: ollama
             suite: messages
           - setup: ollama-systemone
@@ -243,7 +243,7 @@ jobs:
           - setup: vllm
             suite: inference
           - setup: vllm
-            suite: vllm-reasoning
+            suite: reasoning
           - setup: sglang
             suite: inference
           - setup: sglang-systemone

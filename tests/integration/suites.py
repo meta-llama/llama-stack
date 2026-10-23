@@ -452,29 +452,18 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=["tests/integration/inference/test_vision_inference.py"],
         default_setup="ollama-vision",
     ),
-    "vllm-reasoning": Suite(
-        name="vllm-reasoning",
-        roots=["tests/integration/responses/test_reasoning.py"],
-        default_setup="vllm",
-    ),
-    "gpt-reasoning": Suite(
-        name="gpt-reasoning",
+    # Reasoning tests self-skip when the model or provider lacks the relevant
+    # capability (reasoning content, reasoning_effort, reasoning summaries), so
+    # a single suite can be run against any reasoning-capable setup.
+    "reasoning": Suite(
+        name="reasoning",
         roots=[
+            "tests/integration/responses/test_reasoning.py",
             "tests/integration/responses/test_openai_responses.py::test_openai_response_reasoning_effort",
             "tests/integration/responses/test_openai_responses.py::test_openai_response_reasoning_effort_streaming",
+            "tests/integration/inference/test_openai_completion.py::test_openai_chat_completion_reasoning_passthrough",
         ],
         default_setup="gpt-reasoning",
-    ),
-    "ollama-reasoning": Suite(
-        name="ollama-reasoning",
-        roots=[
-            "tests/integration/inference/test_openai_completion.py::test_openai_chat_completion_reasoning_passthrough",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_basic_streaming",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_non_streaming",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_multi_turn_with_tool_call",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_multi_turn_passthrough",
-        ],
-        default_setup="ollama-reasoning",
     ),
     "messages": Suite(
         name="messages",

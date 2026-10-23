@@ -16,14 +16,14 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `vision` | `ollama-vision` | `test_vision_inference.py` only |
 | `responses` | `gpt` | `responses` only; Responses coverage: 128/131 (98%) |
 | `responses` | `azure` | `responses` only; Responses coverage: 111/131 (85%) |
-| `gpt-reasoning` | `gpt-reasoning` | 2 roots; Responses coverage: 128/131 (98%) |
+| `reasoning` | `gpt-reasoning` | 4 roots; Responses coverage: 128/131 (98%) |
 | `responses` | `watsonx` | `responses` only; Responses coverage: 48/131 (37%) |
 | `responses` | `vertexai` | `responses` only; Responses coverage: 62/131 (47%) |
 | `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/131 (17%) |
 | `inference` | `vllm` | `inference` only |
 | `inference` | `sglang` | `inference` only |
-| `vllm-reasoning` | `vllm` | `test_reasoning.py` only; Responses coverage: 3/131 (2%) |
-| `ollama-reasoning` | `ollama-reasoning` | 5 roots; Responses coverage: 3/131 (2%) |
+| `reasoning` | `vllm` | 4 roots; Responses coverage: 3/131 (2%) |
+| `reasoning` | `ollama-reasoning` | 4 roots; Responses coverage: 3/131 (2%) |
 | `messages` | `ollama` | `messages` only |
 | `messages-openai` | `gpt` | `messages` only |
 | `messages` | `vllm` | `messages` only |
@@ -59,13 +59,13 @@ Cron: `1 0 * * 0`
 | `fireworks` | fireworks/accounts/fireworks/models/nemotron-lightning-3p5-30b-a3b | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `messages`, `base` | — |
 | `gemini` | gemini/gemini-2.5-flash-lite | — | gemini/text-embedding-004 | — | `interactions` | — |
 | `gpt` | openai/gpt-4o | openai/gpt-4o | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses`, `messages-openai` | — |
-| `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `gpt-reasoning` | — |
+| `gpt-reasoning` | openai/o4-mini | — | openai/text-embedding-3-small | — | `reasoning` | — |
 | `llama-cpp-server` | llama-cpp-server/qwen3-0.6b | — | llama-cpp-server/nomic-embed-text-v1.5 | — | `inference` | — |
 | `llama-cpp-server-systemone` | — | — | — | — | `systemone` | — |
 | `meta` | meta/muse-spark-1.3-contributor | — | — | — | `messages` | — |
 | `ollama` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base`, `messages` | — |
 | `ollama-postgres` | ollama/llama3.2:3b-instruct-fp16 | — | ollama/nomic-embed-text:v1.5 | — | `base` | — |
-| `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `ollama-reasoning` | — |
+| `ollama-reasoning` | ollama/deepseek-r1:1.5b | — | ollama/nomic-embed-text:v1.5 | — | `reasoning` | — |
 | `ollama-systemone` | — | — | — | — | `systemone` | — |
 | `ollama-vision` | — | ollama/qwen3-vl:2b | ollama/nomic-embed-text:v1.5 | — | `vision` | — |
 | `sglang` | sglang/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference` | — |
@@ -73,7 +73,7 @@ Cron: `1 0 * * 0`
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
-| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `vllm-reasoning`, `messages` | `base` |
+| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `reasoning`, `messages` | `base` |
 | `watsonx` | watsonx/meta-llama/llama-3-3-70b-instruct | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 
 ## Additional Named Setups
