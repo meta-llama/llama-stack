@@ -123,6 +123,11 @@ runs:
         # startup budget on the runner's single bound core. Cap vision input at 448x448
         # (196 tokens); the /v1/systemone judgment path is text-only, so the vision path
         # is never exercised.
+        #
+        # VLLM_CPU_OMP_THREADS_BIND: auto-setup gives the single worker one core, and a
+        # GDN judgment call on one core is far too slow for a client read timeout. Bind
+        # all 4 runner cores to the worker so decode runs ~4x faster.
+        VLLM_CPU_OMP_THREADS_BIND='0-3' \
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Tev1-0.8B-experimental" \
           --host 127.0.0.1 \
           --port "$PORT" \
