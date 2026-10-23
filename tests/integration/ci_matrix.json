@@ -29,10 +29,5 @@
     {"suite": "systemone", "setup": "ollama-systemone", "allowed_clients": ["server"]},
     {"suite": "systemone", "setup": "llama-cpp-server-systemone", "allowed_clients": ["server"]},
     {"suite": "systemone", "setup": "sglang-systemone", "allowed_clients": ["server"]}
-  ],
-  "schedules": {
-    "1 0 * * 0": [
-      {"suite": "base", "setup": "vllm"}
-    ]
-  }
+  ]
 }
