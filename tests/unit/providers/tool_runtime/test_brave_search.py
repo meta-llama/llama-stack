@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx2
 import pytest
-from pydantic import SecretStr
+from pydantic import HttpUrl, SecretStr, ValidationError
 
 from ogx.core.stack import replace_env_vars
 from ogx.providers.remote.tool_runtime.brave_search.brave_search import BraveSearchToolRuntimeImpl
@@ -303,10 +303,16 @@ class TestBaseUrl:
     @patch.dict(os.environ, {"BRAVE_SEARCH_BASE_URL": "http://brave-proxy:8080"})
     def test_sample_run_config_reads_base_url_from_environment(self):
         config_data = replace_env_vars(BraveSearchToolConfig.sample_run_config(__distro_dir__=""))
-        assert BraveSearchToolConfig.model_validate(config_data).base_url == "http://brave-proxy:8080"
+        assert BraveSearchToolConfig.model_validate(config_data).base_url == HttpUrl("http://brave-proxy:8080")
 
     def test_sample_run_config_defaults_to_public_endpoint(self):
         with patch.dict(os.environ):
             os.environ.pop("BRAVE_SEARCH_BASE_URL", None)
             config_data = replace_env_vars(BraveSearchToolConfig.sample_run_config(__distro_dir__=""))
-        assert BraveSearchToolConfig.model_validate(config_data).base_url == "https://api.search.brave.com"
+        assert BraveSearchToolConfig.model_validate(config_data).base_url == HttpUrl("https://api.search.brave.com")
+
+    @pytest.mark.parametrize("base_url", ["", "not a url", "brave-proxy:8080"])
+    def test_invalid_base_url_fails_at_config_load(self, base_url):
+        """A bad BRAVE_SEARCH_BASE_URL is rejected up front, not as an opaque error at request time."""
+        with pytest.raises(ValidationError):
+            BraveSearchToolConfig(base_url=base_url)

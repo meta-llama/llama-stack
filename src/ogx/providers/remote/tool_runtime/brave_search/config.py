@@ -6,7 +6,7 @@
 
 from typing import Any
 
-from pydantic import Field, SecretStr
+from pydantic import Field, HttpUrl, SecretStr
 
 from ogx.providers.utils.common.http import BaseToolRuntimeConfig
 
@@ -16,8 +16,8 @@ DEFAULT_BASE_URL = "https://api.search.brave.com"
 class BraveSearchToolConfig(BaseToolRuntimeConfig):
     """Configuration for the Brave Search tool runtime."""
 
-    base_url: str = Field(
-        default=DEFAULT_BASE_URL,
+    base_url: HttpUrl = Field(
+        default=HttpUrl(DEFAULT_BASE_URL),
         description="Base URL of the Brave Search API. Set it to point the tool at a Brave-compatible proxy or alternate backend.",
     )
     api_key: SecretStr | None = Field(
