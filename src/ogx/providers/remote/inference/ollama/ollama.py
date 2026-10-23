@@ -141,8 +141,9 @@ class OllamaInferenceAdapter(AnthropicMixin, OpenAIMixin):
     def construct_model_from_identifier(self, identifier: str) -> Model:
         model = super().construct_model_from_identifier(identifier)
         if model.model_type == ModelType.llm:
-            # models.dev writes an Ollama `name:tag` as `name-tag`. The tag stays in the lookup because
-            # a size tag is a different model with its own embedding dimension.
+            # Ollama `name:tag` is looked up as `name-tag` because some models.dev providers
+            # (e.g. digitalocean, scaleway) list dash-form ids that coincide with Ollama tags, so
+            # each size tag keeps its own entry and its own embedding dimension.
             classified = classify_model(identifier.replace(":", "-"), self.__provider_id__)
             # Ollama has no rerank API, so a rerank-named model stays an llm.
             if classified is not None and classified.model_type == ModelType.embedding:
