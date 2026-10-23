@@ -418,25 +418,14 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=base_roots,
         default_setup="ollama",
     ),
-    "base-vllm-subset": Suite(
-        name="base-vllm-subset",
+    # Full inference directory against a single self-hosted text backend (vllm, sglang,
+    # llama-cpp-server, or ollama via default_setup). These CI servers serve a text,
+    # embedding, and (for llama-cpp-server) rerank model, but no vision model, so
+    # vision tests skip.
+    "inference": Suite(
+        name="inference",
         roots=["tests/integration/inference"],
-        default_setup="vllm",
-    ),
-    # SGLang backend, scoped like base-vllm-subset (the full inference directory): the
-    # CI server serves one text model, so vision tests skip.
-    "sglang": Suite(
-        name="sglang",
-        roots=["tests/integration/inference"],
-        default_setup="sglang",
-    ),
-    # llama.cpp multi-model router backend (llama-server --models-preset), scoped like
-    # base-vllm-subset (the full inference directory). The router serves a text, an
-    # embedding, and a rerank model, but no vision model, so vision tests skip.
-    "llama-cpp-server": Suite(
-        name="llama-cpp-server",
-        roots=["tests/integration/inference"],
-        default_setup="llama-cpp-server",
+        default_setup="ollama",
     ),
     # Text-Embeddings-Inference backend. TEI only serves embeddings (no chat or
     # completion endpoint), so this suite is scoped to the embeddings tests only.

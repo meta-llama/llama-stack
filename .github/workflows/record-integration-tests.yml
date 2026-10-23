@@ -237,17 +237,17 @@ jobs:
           - setup: ollama-systemone
             suite: systemone
           - setup: llama-cpp-server
-            suite: llama-cpp-server
+            suite: inference
           - setup: llama-cpp-server-systemone
             suite: systemone
           - setup: vllm
-            suite: base-vllm-subset
+            suite: inference
           - setup: vllm
             suite: vllm-reasoning
           - setup: vllm-systemone
             suite: systemone
           - setup: sglang
-            suite: sglang
+            suite: inference
           - setup: sglang-systemone
             suite: systemone
           - setup: text-embeddings-inference
