@@ -14,16 +14,16 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `bedrock` | `bedrock` | library client only; 3 roots |
 | `base` | `ollama-postgres` | server client only; Postgres store |
 | `vision` | `ollama-vision` | `test_vision_inference.py` only |
-| `responses` | `gpt` | `responses` only; Responses coverage: 128/131 (98%) |
-| `responses` | `azure` | `responses` only; Responses coverage: 111/131 (85%) |
-| `reasoning` | `gpt-reasoning` | 4 roots; Responses coverage: 128/131 (98%) |
-| `responses` | `watsonx` | `responses` only; Responses coverage: 48/131 (37%) |
-| `responses` | `vertexai` | `responses` only; Responses coverage: 62/131 (47%) |
-| `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/131 (17%) |
+| `responses` | `gpt` | `responses` only; Responses coverage: 128/132 (97%) |
+| `responses` | `azure` | `responses` only; Responses coverage: 111/132 (84%) |
+| `reasoning` | `gpt-reasoning` | 4 roots; Responses coverage: 128/132 (97%) |
+| `responses` | `watsonx` | `responses` only; Responses coverage: 48/132 (36%) |
+| `responses` | `vertexai` | `responses` only; Responses coverage: 62/132 (47%) |
+| `bedrock-responses` | `bedrock` | 6 roots; Responses coverage: 22/132 (17%) |
 | `inference` | `vllm` | `inference` only |
 | `inference` | `sglang` | `inference` only |
-| `reasoning` | `vllm` | 4 roots; Responses coverage: 3/131 (2%) |
-| `reasoning` | `ollama-reasoning` | 4 roots; Responses coverage: 3/131 (2%) |
+| `reasoning` | `vllm` | 4 roots; Responses coverage: 3/132 (2%) |
+| `reasoning` | `ollama-reasoning` | 4 roots; Responses coverage: 4/132 (3%) |
 | `messages` | `ollama` | `messages` only |
 | `messages` | `gpt` | `messages` only |
 | `messages` | `vllm` | `messages` only |
@@ -39,14 +39,6 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
 | `systemone` | `llama-cpp-server-systemone` | server client only; `test_systemone.py` only |
 | `systemone` | `sglang-systemone` | server client only; `test_systemone.py` only |
-
-## CI Lanes (Scheduled)
-
-Cron: `1 0 * * 0`
-
-| Suite | Setup | Notes |
-|-------|-------|-------|
-| `base` | `vllm` |  |
 
 ## CI-backed Setups
 
@@ -73,7 +65,7 @@ Cron: `1 0 * * 0`
 | `text-embeddings-inference` | — | — | text-embeddings-inference/nomic-ai/nomic-embed-text-v1.5 | — | `text-embeddings-inference` | — |
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
-| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `reasoning`, `messages` | `base` |
+| `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `reasoning`, `messages` | — |
 | `watsonx` | watsonx/meta-llama/llama-3-3-70b-instruct | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 
 ## Additional Named Setups
@@ -95,12 +87,12 @@ This section is derived from the same replay recordings used to generate `docs/d
 
 | Provider | Tested | Passing | Coverage |
 |----------|--------|---------|----------|
-| OpenAI | 128 | 128 | 98% |
-| Azure | 111 | 111 | 85% |
+| OpenAI | 128 | 128 | 97% |
+| Azure | 111 | 111 | 84% |
 | Vertex AI | 62 | 62 | 47% |
-| WatsonX | 48 | 48 | 37% |
+| WatsonX | 48 | 48 | 36% |
 | Bedrock | 22 | 22 | 17% |
-| Ollama | 3 | 3 | 2% |
+| Ollama | 4 | 4 | 3% |
 | vLLM | 3 | 3 | 2% |
 
-Total Responses features counted: 131.
+Total Responses features counted: 132.
