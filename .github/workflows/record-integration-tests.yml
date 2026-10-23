@@ -253,7 +253,7 @@ jobs:
           - setup: gpt
             suite: responses
           - setup: gpt
-            suite: messages-openai
+            suite: messages
           - setup: azure
             suite: responses
           - setup: bedrock
