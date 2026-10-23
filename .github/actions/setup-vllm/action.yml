@@ -115,6 +115,14 @@ runs:
         # init never finishes (no shm broadcast block, health never comes up). The eager
         # path skips compilation and starts in seconds; the perf cost is irrelevant for a
         # 0.8B decision model.
+        #
+        # --mm-processor-kwargs '{"max_pixels": 200704}': Tev1 is a VL architecture, so
+        # vLLM profiles the multimodal encoder cache with a max-size dummy image. At the
+        # processor default (longest_edge 16777216 px = 4096x4096 = 65k raw patches) the
+        # vision tower's O(n^2) global attention takes far longer than the 15-minute
+        # startup budget on the runner's single bound core. Cap vision input at 448x448
+        # (196 tokens); the /v1/systemone judgment path is text-only, so the vision path
+        # is never exercised.
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Tev1-0.8B-experimental" \
           --host 127.0.0.1 \
           --port "$PORT" \
@@ -122,6 +130,7 @@ runs:
           --max-model-len 8192 \
           --gpu-memory-utilization 0.5 \
           --enforce-eager \
+          --mm-processor-kwargs '{"max_pixels": 200704}' \
           < /dev/null > "$WORKDIR/vllm.log" 2>&1 &
         VLLM_PID=$!
         echo "vLLM launched (detached, pid $VLLM_PID)"
