@@ -159,7 +159,7 @@ jobs:
             PROVIDERS="$INPUT_PROVIDERS"
           else
             # Auto-trigger on PR: only secret-free providers (no secrets exposed to any PR)
-            PROVIDERS="ollama,ollama-reasoning,ollama-systemone,llama-cpp-server,llama-cpp-server-systemone,vllm,sglang,sglang-systemone,text-embeddings-inference"
+            PROVIDERS="ollama,ollama-reasoning,ollama-systemone,llama-cpp-server,llama-cpp-server-systemone,vllm,vllm-systemone,sglang,sglang-systemone,text-embeddings-inference"
           fi
 
           {
@@ -244,6 +244,8 @@ jobs:
             suite: inference
           - setup: vllm
             suite: reasoning
+          - setup: vllm-systemone
+            suite: systemone
           - setup: sglang
             suite: inference
           - setup: sglang-systemone
@@ -336,7 +338,7 @@ jobs:
 
       - name: Setup test environment
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/setup-test-environment@ee0bb716745751a4b4de822ce79deea45ded6d1b
+        uses: ogx-ai/ogx/.github/actions/setup-test-environment@d4ffee2179c7035d3e1377fc0468e83936feb11a
         env:
           SGLANG_MODEL: ${{ matrix.provider.setup == 'sglang-systemone' && 'togethercomputer/Tev1-0.8B-experimental' || 'Qwen/Qwen3-0.6B' }}
         with:
@@ -372,7 +374,7 @@ jobs:
 
       - name: Run and record tests
         if: steps.should_run.outputs.run == 'true'
-        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@ee0bb716745751a4b4de822ce79deea45ded6d1b
+        uses: ogx-ai/ogx/.github/actions/run-and-record-tests@d4ffee2179c7035d3e1377fc0468e83936feb11a
         env:
           OPENAI_API_KEY: ${{ matrix.provider.setup == 'gpt' && secrets.OPENAI_API_KEY || '' }}
           AZURE_API_KEY: ${{ matrix.provider.setup == 'azure' && secrets.AZURE_API_KEY || '' }}

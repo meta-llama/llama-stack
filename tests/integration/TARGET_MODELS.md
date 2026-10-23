@@ -39,6 +39,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `systemone` | `ollama-systemone` | server client only; `test_systemone.py` only |
 | `systemone` | `llama-cpp-server-systemone` | server client only; `test_systemone.py` only |
 | `systemone` | `sglang-systemone` | server client only; `test_systemone.py` only |
+| `systemone` | `vllm-systemone` | server client only; `test_systemone.py` only |
 
 ## CI-backed Setups
 
@@ -66,6 +67,7 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `typesafe` | — | — | — | — | `systemone` | — |
 | `vertexai` | vertexai/publishers/google/models/gemini-2.0-flash | vertexai/publishers/google/models/gemini-2.0-flash | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 | `vllm` | vllm/Qwen/Qwen3-0.6B | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `inference`, `reasoning`, `messages` | — |
+| `vllm-systemone` | — | — | — | — | `systemone` | — |
 | `watsonx` | watsonx/meta-llama/llama-3-3-70b-instruct | — | sentence-transformers/nomic-ai/nomic-embed-text-v1.5 | — | `responses` | — |
 
 ## Additional Named Setups
@@ -79,7 +81,6 @@ These jobs come from the `default` section of `ci_matrix.json`. They all run in 
 | `mock` | llama-cpp-server/Llama-3.1-8B-Instruct | — | llama-cpp-server/text-embedding-3-small | — | — | — |
 | `tgi` | tgi/Qwen/Qwen3-0.6B | — | — | — | — | — |
 | `together` | together/meta-llama/Llama-3.3-70B-Instruct-Turbo-Free | — | together/togethercomputer/m2-bert-80M-32k-retrieval | — | — | — |
-| `vllm-systemone` | — | — | — | — | — | — |
 
 ## Responses Coverage Summary
 

@@ -72,6 +72,10 @@ runs:
           get_file chat_template.jinja d78de6bee4c952ca3145eb161921560a6ede7b59a34e7e4be815f3c5386b4364
           get_file model.safetensors-00001-of-00001.safetensors 197de1eb141b93984a15e2def8a840726c5dd1349ea4e1b73b8e53abb9257408
           get_file tokenizer.json 5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42
+          # Tev1 is a Qwen3.5-VL (multimodal) checkpoint; vLLM builds its
+          # Qwen3VLProcessor from these at engine init and crashes without them.
+          get_file preprocessor_config.json 27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516
+          get_file video_preprocessor_config.json 7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13
         else
           # 2. Qwen/Qwen3-0.6B, pinned to an immutable HuggingFace commit. Download if
           #    missing, but always re-verify the on-disk file (catches a corrupt cached copy).
@@ -105,12 +109,33 @@ runs:
         # keeps running after the step's shell exits (unlike a plain `&`). No chat/tool/
         # reasoning flags: those are the chat-serving path's own concerns and don't apply
         # to a decision checkpoint served for /v1/systemone.
+        #
+        # --enforce-eager: Tev1's hybrid GDN/Mamba (linear-attention) layers stall
+        # torch.compile's inductor warmup on the runner's single bound core, so engine
+        # init never finishes (no shm broadcast block, health never comes up). The eager
+        # path skips compilation and starts in seconds; the perf cost is irrelevant for a
+        # 0.8B decision model.
+        #
+        # --mm-processor-kwargs '{"max_pixels": 200704}': Tev1 is a VL architecture, so
+        # vLLM profiles the multimodal encoder cache with a max-size dummy image. At the
+        # processor default (longest_edge 16777216 px = 4096x4096 = 65k raw patches) the
+        # vision tower's O(n^2) global attention takes far longer than the 15-minute
+        # startup budget on the runner's single bound core. Cap vision input at 448x448
+        # (196 tokens); the /v1/systemone judgment path is text-only, so the vision path
+        # is never exercised.
+        #
+        # VLLM_CPU_OMP_THREADS_BIND: auto-setup gives the single worker one core, and a
+        # GDN judgment call on one core is far too slow for a client read timeout. Bind
+        # all 4 runner cores to the worker so decode runs ~4x faster.
+        VLLM_CPU_OMP_THREADS_BIND='0-3' \
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Tev1-0.8B-experimental" \
           --host 127.0.0.1 \
           --port "$PORT" \
           --served-model-name togethercomputer/Tev1-0.8B-experimental \
           --max-model-len 8192 \
           --gpu-memory-utilization 0.5 \
+          --enforce-eager \
+          --mm-processor-kwargs '{"max_pixels": 200704}' \
           < /dev/null > "$WORKDIR/vllm.log" 2>&1 &
         VLLM_PID=$!
         echo "vLLM launched (detached, pid $VLLM_PID)"
