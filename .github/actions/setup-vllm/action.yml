@@ -109,12 +109,19 @@ runs:
         # keeps running after the step's shell exits (unlike a plain `&`). No chat/tool/
         # reasoning flags: those are the chat-serving path's own concerns and don't apply
         # to a decision checkpoint served for /v1/systemone.
+        #
+        # --enforce-eager: Tev1's hybrid GDN/Mamba (linear-attention) layers stall
+        # torch.compile's inductor warmup on the runner's single bound core, so engine
+        # init never finishes (no shm broadcast block, health never comes up). The eager
+        # path skips compilation and starts in seconds; the perf cost is irrelevant for a
+        # 0.8B decision model.
         HF_HUB_OFFLINE=1 setsid nohup "$WORKDIR/venv/bin/vllm" serve "$WORKDIR/models/Tev1-0.8B-experimental" \
           --host 127.0.0.1 \
           --port "$PORT" \
           --served-model-name togethercomputer/Tev1-0.8B-experimental \
           --max-model-len 8192 \
           --gpu-memory-utilization 0.5 \
+          --enforce-eager \
           < /dev/null > "$WORKDIR/vllm.log" 2>&1 &
         VLLM_PID=$!
         echo "vLLM launched (detached, pid $VLLM_PID)"
