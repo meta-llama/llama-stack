@@ -370,6 +370,77 @@ def test_construct_model_from_identifier_keeps_embedding_type():
     assert embedding_model.model_type == ModelType.embedding
 
 
+@pytest.mark.parametrize(
+    "identifier,dimension,context_length",
+    [
+        ("all-minilm:l6-v2", 384, 512),
+        ("nomic-embed-text:latest", 768, 8192),
+        ("nomic-embed-text:v1.5", 768, 8192),
+        ("nomic-embed-text:137m-v1.5-fp16", 768, 8192),
+    ],
+)
+def test_construct_model_from_identifier_keeps_metadata_of_previously_hardcoded_embedding_models(
+    identifier, dimension, context_length
+):
+    model = _make_adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type == ModelType.embedding
+    assert model.metadata == {"embedding_dimension": dimension, "context_length": context_length}
+
+
+@pytest.mark.parametrize(
+    "identifier,dimension",
+    [
+        ("qwen3-embedding:0.6b", 1024),
+        ("qwen3-embedding:4b", 2560),
+        ("qwen3-embedding:8b", 4096),
+    ],
+)
+def test_construct_model_from_identifier_reads_models_dev_dimension_of_the_size_tag(identifier, dimension):
+    model = _make_adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type == ModelType.embedding
+    assert model.identifier == identifier
+    assert model.provider_resource_id == identifier
+    assert model.metadata["embedding_dimension"] == dimension
+
+
+@pytest.mark.parametrize(
+    "identifier",
+    [
+        "qwen3-embedding:latest",
+        "snowflake-arctic-embed:22m",
+        "mxbai-embed-large",
+        "embeddinggemma:latest",
+        "granite-embedding:278m",
+    ],
+)
+def test_construct_model_from_identifier_does_not_invent_dimension_unknown_to_models_dev(identifier):
+    model = _make_adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type == ModelType.embedding
+    assert "embedding_dimension" not in model.metadata
+
+
+@pytest.mark.parametrize(
+    "identifier",
+    [
+        "llama3.2:3b",
+        "qwen3:8b",
+        "deepseek-r1:1.5b",
+        "gpt-oss:20b",
+        "gemma3:4b",
+        "mistral:latest",
+        "dengcao/Qwen3-Reranker-4B:Q8_0",
+    ],
+)
+def test_construct_model_from_identifier_keeps_non_embedding_models_as_llm(identifier):
+    model = _make_adapter().construct_model_from_identifier(identifier)
+
+    assert model.model_type == ModelType.llm
+    assert model.metadata == {}
+
+
 async def test_list_models_registers_decision_models_as_systemone():
     """Decision models from the /v1/models listing must be typed as systemone by name."""
     adapter = _make_adapter()
