@@ -452,44 +452,25 @@ SUITE_DEFINITIONS: dict[str, Suite] = {
         roots=["tests/integration/inference/test_vision_inference.py"],
         default_setup="ollama-vision",
     ),
-    "vllm-reasoning": Suite(
-        name="vllm-reasoning",
-        roots=["tests/integration/responses/test_reasoning.py"],
-        default_setup="vllm",
-    ),
-    "gpt-reasoning": Suite(
-        name="gpt-reasoning",
+    # Reasoning tests self-skip when the model or provider lacks the relevant
+    # capability (reasoning content, reasoning_effort, reasoning summaries), so
+    # a single suite can be run against any reasoning-capable setup.
+    "reasoning": Suite(
+        name="reasoning",
         roots=[
+            "tests/integration/responses/test_reasoning.py",
             "tests/integration/responses/test_openai_responses.py::test_openai_response_reasoning_effort",
             "tests/integration/responses/test_openai_responses.py::test_openai_response_reasoning_effort_streaming",
+            "tests/integration/inference/test_openai_completion.py::test_openai_chat_completion_reasoning_passthrough",
         ],
         default_setup="gpt-reasoning",
     ),
-    "ollama-reasoning": Suite(
-        name="ollama-reasoning",
-        roots=[
-            "tests/integration/inference/test_openai_completion.py::test_openai_chat_completion_reasoning_passthrough",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_basic_streaming",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_non_streaming",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_multi_turn_with_tool_call",
-            "tests/integration/responses/test_reasoning.py::test_reasoning_multi_turn_passthrough",
-        ],
-        default_setup="ollama-reasoning",
-    ),
+    # The gpt setup exercises the Anthropic-to-OpenAI translation path, since
+    # OpenAI has no native /v1/messages endpoint.
     "messages": Suite(
         name="messages",
         roots=["tests/integration/messages"],
         default_setup="ollama",
-    ),
-    # Exercises the /v1/messages translation path: Anthropic request format is
-    # translated to OpenAI Chat Completions, dispatched to OpenAI, and the response
-    # is translated back to Anthropic format. OpenAI is not in _NATIVE_MESSAGES_MODULES,
-    # so this setup guarantees the translation codepath in providers/inline/messages/impl.py
-    # is covered end-to-end (rather than the native passthrough used by the ollama suite).
-    "messages-openai": Suite(
-        name="messages-openai",
-        roots=["tests/integration/messages"],
-        default_setup="gpt",
     ),
     "interactions": Suite(
         name="interactions",
