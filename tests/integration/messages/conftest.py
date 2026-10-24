@@ -112,9 +112,26 @@ def _thinking_params_fragment() -> dict[str, Any]:
 # existing recordings (the request body is hashed for replay).
 _TEMP_LOCKED_SETUPS = frozenset({"anthropic"})
 
+# Models known to restrict sampling parameters in chat completions:
+# non-default temperature values are rejected ("Only the default (1) value
+# is supported") and the stop parameter is rejected entirely ("Unsupported
+# parameter: 'stop'"). Verified against gpt-5-nano; add models here as
+# their restrictions are verified.
+_LIMITED_SAMPLING_MODELS = frozenset({"gpt-5-nano"})
 
-def _temperature_value(default: float) -> float:
+
+def _model_name(model_id: str) -> str:
+    return model_id.rsplit("/", 1)[-1]
+
+
+def _is_limited_sampling_model(model_id: str) -> bool:
+    return _model_name(model_id) in _LIMITED_SAMPLING_MODELS
+
+
+def _temperature_value(model_id: str, default: float) -> float:
     if os.environ.get("OGX_TEST_SETUP") in _TEMP_LOCKED_SETUPS:
+        return 1.0
+    if _is_limited_sampling_model(model_id):
         return 1.0
     return default
 
@@ -157,7 +174,7 @@ def _build_messages_body(
             tool_choice = {"type": "auto"}
         body["tool_choice"] = tool_choice
     if temperature is not None:
-        body["temperature"] = _temperature_value(temperature)
+        body["temperature"] = _temperature_value(model, temperature)
     if stop_sequences is not None and not _is_meta_limited():
         body["stop_sequences"] = stop_sequences
     return body
